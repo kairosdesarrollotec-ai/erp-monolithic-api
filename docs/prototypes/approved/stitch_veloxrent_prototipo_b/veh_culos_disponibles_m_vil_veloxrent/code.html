@@ -1,0 +1,335 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vehículos disponibles — Móvil - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              primary: '#1F2A33',
+              accent: '#C6600A',
+              accentHover: '#ab5208',
+              muted: '#4E4A45',
+              border: '#E5E0D8',
+              bgLight: '#F6F3ED',
+              success: '#1E7D4B',
+              successBg: '#EBF5EC',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Hide scrollbar for clean app experience */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#1F2A33] antialiased min-h-screen flex flex-col justify-between w-[390px] mx-auto border-x border-[#E5E0D8] selection:bg-[#C6600A] selection:text-white">
+
+  <!-- TOP APP BAR / HEADER MÓVIL -->
+  <header class="sticky top-0 z-30 bg-white border-b border-[#E5E0D8] px-4 py-3">
+    <!-- Barra superior de estado / navegación -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <button type="button" class="w-9 h-9 rounded flex items-center justify-center text-[#4E4A45] hover:bg-[#F6F3ED] active:bg-[#E5E0D8] transition-colors" aria-label="Volver">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+            <span class="text-[11px] font-semibold tracking-wider text-[#4E4A45] uppercase">Ayacucho · Central</span>
+          </div>
+          <h1 class="text-base font-bold text-[#1F2A33] leading-tight">Vehículos disponibles</h1>
+        </div>
+      </div>
+
+      <!-- Indicador de operador -->
+      <div class="flex items-center space-x-1.5 bg-[#F6F3ED] px-2 py-1 rounded text-xs font-medium text-[#4E4A45] border border-[#E5E0D8]">
+        <div class="w-5 h-5 rounded bg-[#1F2A33] text-white flex items-center justify-center font-bold text-[10px]">MQ</div>
+        <span class="text-[11px] font-medium">Front-office</span>
+      </div>
+    </div>
+
+    <!-- Rango de fechas y filtro rápido -->
+    <div class="mt-2.5 pt-2 border-t border-[#F0EBE1] flex items-center justify-between text-xs text-[#4E4A45]">
+      <div class="flex items-center space-x-1.5">
+        <svg class="w-3.5 h-3.5 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span class="font-medium text-[#1F2A33]">04 sep — 07 sep</span>
+        <span class="bg-[#F6F3ED] px-1.5 py-0.5 rounded text-[10px] text-[#4E4A45] font-semibold">3 días</span>
+      </div>
+      <div class="text-[11px] text-[#4E4A45]">
+        <span class="font-bold text-[#1F2A33]">3</span> unidades libres
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL: SCROLL VERTICAL NATURAL -->
+  <main class="flex-1 px-4 py-3.5 space-y-4 bg-white">
+
+    <!-- AVISO DE MODALIDAD VIRTUAL ACTIVA -->
+    <div class="bg-[#FFF8F2] border border-[#F3DFC9] rounded-md p-3 flex items-start space-x-2.5">
+      <div class="w-5 h-5 rounded-full bg-[#C6600A] text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="text-xs text-[#4E4A45] leading-relaxed">
+        <span class="font-bold text-[#1F2A33]">Modalidad Virtual:</span> puedes compartir video 360° o cotización directa antes de formalizar la reserva.
+      </div>
+    </div>
+
+    <!-- TARJETA 1: TOYOTA HILUX 4X4 -->
+    <article class="bg-white rounded-lg border border-[#E5E0D8] shadow-sm overflow-hidden flex flex-col">
+      <!-- Foto de ancho completo, 140px de alto -->
+      <div class="relative w-full h-[140px] bg-[#EAE7E1] overflow-hidden">
+        <img src="https://lh3.googleusercontent.com/aida/AEtjO1VpZxzy_KIN30sqq171EU4vFnN1XaT6pMsNlyvCEEM_TxOQBLiyZTPSupt4H7CmWgh-mNA7E4V-QeW2KIPGif4XTCrdCK2a9uSuysIY8Q5nFvOciGkRqhxziMYIgKWrlkD1G8xWJLVRZSnmwioGVo0_3zmBPUMzHDjPh7HiE0fsIl9XiSo22odNGq6-cidNur4ofWM8YEiDKnr5KGZzAd7u_FlStenFMeW-MIN69XkyIzvlzIE_gt6kMyk" alt="Toyota Hilux 4x4 (2024)" class="w-full h-full object-cover">
+        <!-- Badge de disponibilidad -->
+        <div class="absolute top-2.5 left-2.5 flex items-center space-x-1.5 bg-[#EBF5EC] border border-[#C2E4C7] text-[#1E7D4B] px-2 py-0.5 rounded text-[11px] font-bold shadow-xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span>
+          <span class="">Disponible</span>
+        </div>
+        <!-- Placa -->
+        <div class="absolute bottom-2 right-2 bg-black/75 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[11px] font-mono tracking-wider font-semibold">
+          DOY-704
+        </div>
+        <!-- Tipo combustible -->
+        <div class="absolute top-2.5 right-2.5 bg-white/90 text-[#1F2A33] px-1.5 py-0.5 rounded text-[10px] font-medium border border-[#E5E0D8]">
+          Diésel · 4x4 Alta
+        </div>
+      </div>
+
+      <!-- Datos del vehículo -->
+      <div class="p-3.5 space-y-3">
+        <div class="flex items-baseline justify-between">
+          <div>
+            <h2 class="text-base font-bold text-[#1F2A33] leading-snug">Toyota Hilux 4x4 (2024)</h2>
+            <p class="text-xs text-[#4E4A45]">Camioneta Pick-up · Mecánica 6 vel.</p>
+          </div>
+          <div class="text-right">
+            <div class="flex items-baseline justify-end space-x-0.5">
+              <span class="text-xs font-semibold text-[#1F2A33]">S/</span>
+              <span class="text-xl font-extrabold text-[#1F2A33] leading-none">280</span>
+            </div>
+            <span class="text-[10px] text-[#4E4A45]">/ día (Total: S/ 840)</span>
+          </div>
+        </div>
+
+        <!-- Ficha técnica compacta móvil -->
+        <div class="grid grid-cols-3 gap-1.5 text-center py-1.5 px-2 bg-[#F6F3ED] rounded border border-[#EBE6DC] text-[11px] text-[#4E4A45]">
+          <div class=""><span class="font-bold text-[#1F2A33]">5</span> asientos</div>
+          <div class="border-x border-[#E5E0D8]"><span class="font-bold text-[#1F2A33]">Mecánica</span></div>
+          <div class=""><span class="font-bold text-[#1F2A33]">18,420</span> km</div>
+        </div>
+
+        <!-- Botón Principal: Reservar este vehículo (h >= 48px, fondo #C6600A, objetivo táctil cómodo) -->
+        <button type="button" class="w-full min-h-[48px] h-12 bg-[#C6600A] hover:bg-[#ab5208] active:bg-[#8f4405] text-white font-bold text-sm rounded flex items-center justify-center space-x-2 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#C6600A]/40" style="background-color: rgb(158, 76, 8);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span class="">Reservar este vehículo</span>
+        </button>
+
+        <!-- Botón de acción secundaria (Modalidad Virtual) -->
+        <button type="button" class="w-full min-h-[38px] py-1.5 bg-[#F6F3ED] hover:bg-[#EAE5DC] text-[#1F2A33] border border-[#D5CFC5] rounded text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          <span class="">Enviar evidencia (video 360°)</span>
+        </button>
+
+        <!-- Enlace de texto discreto "Ver más detalles" -->
+        <div class="text-center pt-0.5">
+          <button type="button" class="text-xs text-[#4E4A45] hover:text-[#1F2A33] font-medium py-1 inline-flex items-center space-x-1" style="background-color: rgb(158, 76, 8);">
+            <span class="">Ver más detalles</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <!-- TARJETA 2: TOYOTA FORTUNER 4X4 -->
+    <article class="bg-white rounded-lg border border-[#E5E0D8] shadow-sm overflow-hidden flex flex-col">
+      <!-- Foto de ancho completo, 140px de alto -->
+      <div class="relative w-full h-[140px] bg-[#EAE7E1] overflow-hidden">
+        <img src="https://lh3.googleusercontent.com/aida/AEtjO1UI3z1iuadEYxTiC5Moh7HRJ0Gm08bZfYVikupAPw53HGZJoOWm5U15lysRfmpfe7S7j5XhFPBQr9Yzti-fp6RXpLySdx-sWFDqLrLckiMzd_ZFq0FRqv_ivPfeo99-FGmPEZW7a7F9JpTK8vuvX4nwjhE_s9xd9bwqi6hzt1Nmw35eyTAo-4obsBFMowSAH577J64eo3ZUD1DLE6akQXUgHjze6MXhBllA7gHLhIIfotf-dBYlaw1NvB8" alt="Toyota Fortuner 4x4 (2023)" class="w-full h-full object-cover">
+        <!-- Badge de disponibilidad -->
+        <div class="absolute top-2.5 left-2.5 flex items-center space-x-1.5 bg-[#EBF5EC] border border-[#C2E4C7] text-[#1E7D4B] px-2 py-0.5 rounded text-[11px] font-bold shadow-xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span>
+          <span class="">Disponible</span>
+        </div>
+        <!-- Placa -->
+        <div class="absolute bottom-2 right-2 bg-black/75 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[11px] font-mono tracking-wider font-semibold">
+          B4X-102
+        </div>
+        <!-- Tipo combustible -->
+        <div class="absolute top-2.5 right-2.5 bg-white/90 text-[#1F2A33] px-1.5 py-0.5 rounded text-[10px] font-medium border border-[#E5E0D8]">
+          Turbo Diésel · Confort Plus
+        </div>
+      </div>
+
+      <!-- Datos del vehículo -->
+      <div class="p-3.5 space-y-3">
+        <div class="flex items-baseline justify-between">
+          <div>
+            <h2 class="text-base font-bold text-[#1F2A33] leading-snug">Toyota Fortuner 4x4 (2023)</h2>
+            <p class="text-xs text-[#4E4A45]">SUV Familiar · Secuencial 4x4</p>
+          </div>
+          <div class="text-right">
+            <div class="flex items-baseline justify-end space-x-0.5">
+              <span class="text-xs font-semibold text-[#1F2A33]">S/</span>
+              <span class="text-xl font-extrabold text-[#1F2A33] leading-none">350</span>
+            </div>
+            <span class="text-[10px] text-[#4E4A45]">/ día (Total: S/ 1,050)</span>
+          </div>
+        </div>
+
+        <!-- Ficha técnica compacta móvil -->
+        <div class="grid grid-cols-3 gap-1.5 text-center py-1.5 px-2 bg-[#F6F3ED] rounded border border-[#EBE6DC] text-[11px] text-[#4E4A45]">
+          <div class=""><span class="font-bold text-[#1F2A33]">7</span> asientos</div>
+          <div class="border-x border-[#E5E0D8]"><span class="font-bold text-[#1F2A33]">Secuencial</span></div>
+          <div class=""><span class="font-bold text-[#1F2A33]">24,110</span> km</div>
+        </div>
+
+        <!-- Botón Principal: Reservar este vehículo (h >= 48px, fondo #C6600A) -->
+        <button type="button" class="w-full min-h-[48px] h-12 bg-[#C6600A] hover:bg-[#ab5208] active:bg-[#8f4405] text-white font-bold text-sm rounded flex items-center justify-center space-x-2 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#C6600A]/40" style="background-color: rgb(158, 76, 8);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span class="">Reservar este vehículo</span>
+        </button>
+
+        <!-- Botón de acción secundaria (Modalidad Virtual) -->
+        <button type="button" class="w-full min-h-[38px] py-1.5 bg-[#F6F3ED] hover:bg-[#EAE5DC] text-[#1F2A33] border border-[#D5CFC5] rounded text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          <span class="">Enviar evidencia (video 360°)</span>
+        </button>
+
+        <!-- Enlace de texto discreto "Ver más detalles" -->
+        <div class="text-center pt-0.5">
+          <button type="button" class="text-xs text-[#4E4A45] hover:text-[#1F2A33] font-medium py-1 inline-flex items-center space-x-1" style="background-color: rgb(158, 76, 8);">
+            <span class="">Ver más detalles</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <!-- TARJETA 3: HYUNDAI CRETA -->
+    <article class="bg-white rounded-lg border border-[#E5E0D8] shadow-sm overflow-hidden flex flex-col">
+      <!-- Foto de ancho completo, 140px de alto -->
+      <div class="relative w-full h-[140px] bg-[#EAE7E1] overflow-hidden">
+        <img src="https://lh3.googleusercontent.com/aida/AEtjO1X-FgmD-zUETnXuuu4qvZ6yg0dJVZ65lksM-nCpLbBPYdiNb5jaQWffMcYTp2_tMVQ1rIJZBnyO12LJHzttB20GKQNGOezKKKwlkq8uUDHAhjkrC1BjCK25hW2ajX8x68WnVomHSa-l85d3peAv6Nbafqemg9pGZ8qWdh4BQTfI1G1YVVFmldfc2dST3o7d3kDS77nzwtXkp2Gbalj7OkRv7a2gBF53bq8AvPbZMnkZqyuucaEHkiPjakw" alt="Hyundai Creta (2024)" class="w-full h-full object-cover">
+        <!-- Badge de disponibilidad -->
+        <div class="absolute top-2.5 left-2.5 flex items-center space-x-1.5 bg-[#EBF5EC] border border-[#C2E4C7] text-[#1E7D4B] px-2 py-0.5 rounded text-[11px] font-bold shadow-xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span>
+          <span class="">Disponible</span>
+        </div>
+        <!-- Placa -->
+        <div class="absolute bottom-2 right-2 bg-black/75 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[11px] font-mono tracking-wider font-semibold">
+          A8W-519
+        </div>
+        <!-- Tipo combustible -->
+        <div class="absolute top-2.5 right-2.5 bg-white/90 text-[#1F2A33] px-1.5 py-0.5 rounded text-[10px] font-medium border border-[#E5E0D8]">
+          Gasolina 95 · Automática
+        </div>
+      </div>
+
+      <!-- Datos del vehículo -->
+      <div class="p-3.5 space-y-3">
+        <div class="flex items-baseline justify-between">
+          <div>
+            <h2 class="text-base font-bold text-[#1F2A33] leading-snug">Hyundai Creta (2024)</h2>
+            <p class="text-xs text-[#4E4A45]">SUV Urbana · Automática CVT</p>
+          </div>
+          <div class="text-right">
+            <div class="flex items-baseline justify-end space-x-0.5">
+              <span class="text-xs font-semibold text-[#1F2A33]">S/</span>
+              <span class="text-xl font-extrabold text-[#1F2A33] leading-none">210</span>
+            </div>
+            <span class="text-[10px] text-[#4E4A45]">/ día (Total: S/ 630)</span>
+          </div>
+        </div>
+
+        <!-- Ficha técnica compacta móvil -->
+        <div class="grid grid-cols-3 gap-1.5 text-center py-1.5 px-2 bg-[#F6F3ED] rounded border border-[#EBE6DC] text-[11px] text-[#4E4A45]">
+          <div class=""><span class="font-bold text-[#1F2A33]">5</span> asientos</div>
+          <div class="border-x border-[#E5E0D8]"><span class="font-bold text-[#1F2A33]">CVT Auto</span></div>
+          <div class=""><span class="font-bold text-[#1F2A33]">9,850</span> km</div>
+        </div>
+
+        <!-- Botón Principal: Reservar este vehículo (h >= 48px, fondo #C6600A) -->
+        <button type="button" class="w-full min-h-[48px] h-12 bg-[#C6600A] hover:bg-[#ab5208] active:bg-[#8f4405] text-white font-bold text-sm rounded flex items-center justify-center space-x-2 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#C6600A]/40" style="background-color: rgb(158, 76, 8);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span class="">Reservar este vehículo</span>
+        </button>
+
+        <!-- Botón de acción secundaria (Modalidad Virtual) -->
+        <button type="button" class="w-full min-h-[38px] py-1.5 bg-[#F6F3ED] hover:bg-[#EAE5DC] text-[#1F2A33] border border-[#D5CFC5] rounded text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          <span class="">Enviar evidencia (video 360°)</span>
+        </button>
+
+        <!-- Enlace de texto discreto "Ver más detalles" -->
+        <div class="text-center pt-0.5">
+          <button type="button" class="text-xs text-[#4E4A45] hover:text-[#1F2A33] font-medium py-1 inline-flex items-center space-x-1" style="background-color: rgb(158, 76, 8);">
+            <span class="">Ver más detalles</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- PIE DE PÁGINA MÓVIL FIJO / SOPORTE Y CIERRE -->
+  <footer class="sticky bottom-0 z-20 bg-white/95 backdrop-blur-sm border-t border-[#E5E0D8] px-4 py-2.5 flex items-center justify-between text-xs text-[#4E4A45]">
+    <div class="flex items-center space-x-1.5">
+      <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+      <span class="">Soporte Front-office: <strong class="text-[#1F2A33]">Anexo 103</strong></span>
+    </div>
+    <button type="button" class="text-[#C22B2B] hover:underline font-medium text-xs">
+      Cerrar sesión
+    </button>
+  </footer>
+
+
+
+
+
+</body></html>

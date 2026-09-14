@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Notificaciones — VeloxRent</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              orange: '#C6600A',
+              muted: '#A39C90',
+              secondary: '#4E4A45',
+              border: '#E2DFDA',
+              lightBg: '#F9F8F6',
+              danger: '#C22B2B',
+              dangerBg: '#FBE9E9',
+              warningBg: '#FDF1DE',
+              warningText: '#B5720A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      color: #1F2A33;
+    }
+    .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F9F8F6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D5D1CB;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A39C90;
+    }
+  </style>
+</head>
+<body class="bg-[#F6F5F3] text-[#1F2A33] antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- TOP BAR / HEADER COMÚN VELOXRENT -->
+<header class="w-full bg-white border-b border-[#E8E6E1] px-8 py-3.5 flex items-center justify-between z-20">
+<div class="flex items-center gap-3">
+<span class="font-heading font-bold text-xl tracking-tight text-[#1F2A33]">VeloxRent</span>
+<span class="text-[#D0CBC2]">|</span>
+<span class="px-2.5 py-0.5 bg-[#F4F2EE] text-[#4E4A45] text-xs font-medium rounded border border-[#E2DFDA]">
+        Acceso y Tableros
+      </span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+<span class="text-xs text-[#4E4A45] font-medium">En línea</span>
+</div>
+<!-- Icono campana activo que despliega el panel -->
+<button class="relative p-2 rounded hover:bg-[#F4F2EE] transition text-[#1F2A33] border border-[#C6600A] bg-[#FFF8F2]" title="Notificaciones (abierto)">
+<svg class="w-4 h-4 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1 right-1 w-2 h-2 bg-[#C6600A] rounded-full ring-2 ring-white"></span>
+</button>
+<div class="flex items-center gap-2 text-xs text-[#4E4A45] bg-[#F4F2EE] px-3 py-1.5 rounded border border-[#E2DFDA]">
+<svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+</div>
+</header>
+<!-- CONTENIDO DE FONDO (Tablero contextual atenuado/overlay detrás del drawer lateral) -->
+<div class="flex-1 flex relative">
+<!-- Vista previa del fondo (Tablero en segundo plano) -->
+<main class="flex-1 p-10 max-w-5xl mx-auto opacity-40 pointer-events-none transition select-none">
+<div class="flex items-start justify-between mb-8">
+<div>
+<h1 class="font-heading text-3xl font-bold text-[#1F2A33] tracking-tight">Hola, Personal Operativo</h1>
+<p class="text-sm text-[#4E4A45] mt-1">Resumen general y accesos del sistema interno.</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-6 mb-8">
+<div class="bg-white p-6 rounded border border-[#A39C90] h-32 flex flex-col justify-between">
+<span class="text-xs uppercase tracking-wider text-[#A39C90]">Flota y Alquileres</span>
+<span class="font-heading text-2xl font-bold text-[#1F2A33]">18 activos</span>
+</div>
+<div class="bg-white p-6 rounded border border-[#A39C90] h-32 flex flex-col justify-between">
+<span class="text-xs uppercase tracking-wider text-[#A39C90]">Operaciones Hoy</span>
+<span class="font-heading text-2xl font-bold text-[#C6600A]">4 pendientes</span>
+</div>
+<div class="bg-white p-6 rounded border border-[#A39C90] h-32 flex flex-col justify-between">
+<span class="text-xs uppercase tracking-wider text-[#A39C90]">Alertas de Mantenimiento</span>
+<span class="font-heading text-2xl font-bold text-[#1F2A33]">1 programado</span>
+</div>
+</div>
+</main>
+<!-- BACKDROP SEMI-TRANSPARENTE (Sutil para dar enfoque al panel lateral) -->
+<div class="absolute inset-0 bg-[#1F2A33]/15 backdrop-blur-[1px] z-20"></div>
+<!-- PANEL LATERAL DE NOTIFICACIONES (Exactamente 360px en Desktop) -->
+<aside class="absolute right-0 top-0 bottom-0 w-[360px] bg-white border-l border-[#E2DFDA] shadow-2xl flex flex-col z-30 transform transition-transform duration-200">
+<!-- ENCABEZADO DEL PANEL -->
+<div class="p-5 border-b border-[#EFECE6] flex items-center justify-between bg-white sticky top-0 z-10"><div class="flex items-center gap-2.5"><h2 class="font-heading font-bold text-lg text-[#1F2A33] tracking-tight">Notificaciones</h2></div><div class="flex items-center gap-3"><button aria-label="Cerrar panel" class="text-[#A39C90] hover:text-[#1F2A33] p-1 rounded hover:bg-[#F4F2EE] transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div></div>
+<!-- LISTA DE NOTIFICACIONES (SCROLLABLE) -->
+<div class="flex-1 overflow-y-auto divide-y divide-[#F2EFEA]"><div class="h-full flex flex-col items-center justify-center p-8 text-center"><div class="w-14 h-14 rounded-full bg-[#FAF9F7] border border-[#E8E6E1] flex items-center justify-center text-[#A39C90] mb-3.5"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path><path class="text-[#C6600A]" d="M9 11l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><p class="text-[15px] text-[#4E4A45] leading-relaxed max-w-[240px]">Estás al día — no tienes notificaciones nuevas</p></div></div>
+<!-- PIE DEL PANEL LATERAL -->
+<div class="p-3.5 bg-[#FAF9F7] border-t border-[#EFECE6] text-center">
+<a class="text-xs font-medium text-[#4E4A45] hover:text-[#C6600A] transition inline-flex items-center gap-1.5" href="#">
+<span>Ver historial completo de avisos</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+</div>
+</aside>
+</div>
+<!-- PIE DE PÁGINA GLOBAL -->
+<footer class="w-full bg-white border-t border-[#E8E6E1] px-8 py-3 flex items-center justify-between text-xs text-[#8C8479] z-10">
+<div>VeloxRent © 2025 · Sistema de Gestión Interna</div>
+<div class="flex items-center gap-6">
+<span>Soporte Central: anexo 100</span>
+<a class="text-[#4E4A45] hover:underline" href="#">Cerrar sesión</a>
+</div>
+</footer>
+
+
+</body></html>

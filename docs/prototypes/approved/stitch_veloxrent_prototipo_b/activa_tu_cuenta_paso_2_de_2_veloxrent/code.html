@@ -1,0 +1,319 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activa tu cuenta — Paso 2 de 2 - VeloxRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Public Sans', sans-serif;
+      color: #1F2A33;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1F2A33;
+      margin-bottom: 24px;
+    }
+
+    /* Stepper */
+    .stepper-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stepper-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #C6600A;
+    }
+
+    .step-line {
+      width: 20px;
+      height: 2px;
+      background-color: #C6600A;
+    }
+
+    .step-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #706B63;
+    }
+
+    .title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1F2A33;
+      margin-bottom: 20px;
+    }
+
+    /* QR Code Container */
+    .qr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .qr-box {
+      width: 148px;
+      height: 148px;
+      background: #FFFFFF;
+      border: 1.5px solid #E2DED9;
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .qr-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .help-text {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #4E4A45;
+      max-width: 340px;
+    }
+
+    /* 6-digit code section */
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1F2A33;
+      margin-bottom: 10px;
+    }
+
+    .digit-inputs {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .digit-box {
+      width: 52px;
+      height: 52px;
+      border: 1.5px solid #A39C90;
+      border-radius: 2px;
+      background-color: #FFFFFF;
+      font-family: 'Space Grotesk', monospace, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1F2A33;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .digit-box:focus {
+      border-color: #C6600A;
+      box-shadow: 0 0 0 1px #C6600A;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      background-color: #1F2A33;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Public Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-submit:hover {
+      background-color: #2b3945;
+    }
+
+    .btn-submit:active {
+      background-color: #172027;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">VeloxRent</div>
+
+    <!-- Stepper 2 de 2 -->
+    <div class="stepper-container">
+      <div class="stepper-dots">
+        <div class="dot"></div>
+        <div class="step-line"></div>
+        <div class="dot"></div>
+      </div>
+      <span class="step-label">PASO 2 DE 2</span>
+    </div>
+
+    <!-- Titulo -->
+    <h1 class="title">Protege tu cuenta</h1>
+
+    <!-- Codigo QR simulado -->
+    <div class="qr-card">
+      <div class="qr-box">
+        <svg class="qr-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer corner squares (Finder patterns) -->
+          <!-- Top-Left -->
+          <rect x="10" y="10" width="30" height="30" rx="3" stroke="#1F2A33" stroke-width="5" fill="none"></rect>
+          <rect x="19" y="19" width="12" height="12" rx="1.5" fill="#1F2A33"></rect>
+
+          <!-- Top-Right -->
+          <rect x="80" y="10" width="30" height="30" rx="3" stroke="#1F2A33" stroke-width="5" fill="none"></rect>
+          <rect x="89" y="19" width="12" height="12" rx="1.5" fill="#1F2A33"></rect>
+
+          <!-- Bottom-Left -->
+          <rect x="10" y="80" width="30" height="30" rx="3" stroke="#1F2A33" stroke-width="5" fill="none"></rect>
+          <rect x="19" y="89" width="12" height="12" rx="1.5" fill="#1F2A33"></rect>
+
+          <!-- QR Data Modules / Matrix pattern -->
+          <rect x="46" y="12" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="58" y="12" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="68" y="12" width="6" height="6" fill="#1F2A33"></rect>
+
+          <rect x="46" y="24" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="68" y="24" width="6" height="6" fill="#1F2A33"></rect>
+
+          <rect x="46" y="34" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="58" y="34" width="6" height="6" fill="#1F2A33"></rect>
+
+          <!-- Middle bands -->
+          <rect x="12" y="48" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="24" y="48" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="36" y="48" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="48" y="48" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="66" y="48" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="78" y="48" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="96" y="48" width="6" height="6" fill="#1F2A33"></rect>
+
+          <rect x="12" y="60" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="30" y="60" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="54" y="60" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="72" y="60" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="90" y="60" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="102" y="60" width="6" height="6" fill="#1F2A33"></rect>
+
+          <rect x="24" y="68" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="42" y="68" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="60" y="68" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="84" y="68" width="6" height="6" fill="#1F2A33"></rect>
+
+          <!-- Bottom right matrix -->
+          <rect x="46" y="80" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="60" y="80" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="72" y="80" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="90" y="80" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="102" y="80" width="6" height="6" fill="#1F2A33"></rect>
+
+          <rect x="46" y="92" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="72" y="92" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="84" y="92" width="6" height="6" fill="#1F2A33"></rect>
+
+          <rect x="60" y="102" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="78" y="102" width="6" height="6" fill="#1F2A33"></rect>
+          <rect x="96" y="102" width="6" height="6" fill="#1F2A33"></rect>
+        </svg>
+      </div>
+      <p class="help-text">Escanea este código con tu app de autenticación (Google Authenticator, Authy, etc.)</p>
+    </div>
+
+    <!-- Campo Codigo de 6 digitos -->
+    <div class="form-group">
+      <label class="input-label">Código de 6 dígitos</label>
+      <div class="digit-inputs">
+        <input type="text" maxlength="1" inputmode="numeric" class="digit-box" autocomplete="one-time-code" autofocus="">
+        <input type="text" maxlength="1" inputmode="numeric" class="digit-box">
+        <input type="text" maxlength="1" inputmode="numeric" class="digit-box">
+        <input type="text" maxlength="1" inputmode="numeric" class="digit-box">
+        <input type="text" maxlength="1" inputmode="numeric" class="digit-box">
+        <input type="text" maxlength="1" inputmode="numeric" class="digit-box">
+      </div>
+    </div>
+
+    <!-- Boton Activar cuenta -->
+    <button type="button" class="btn-submit">Activar cuenta</button>
+  </div>
+
+  <script>
+    // Auto-advance cursor across the 6 boxes
+    const inputs = document.querySelectorAll('.digit-box');
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (input.value.length === 1 && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+        if (/^\d+$/.test(pasteData)) {
+          const chars = pasteData.slice(0, 6).split('');
+          chars.forEach((char, i) => {
+            if (inputs[i]) inputs[i].value = char;
+          });
+          const nextIndex = Math.min(chars.length, inputs.length - 1);
+          inputs[nextIndex].focus();
+        }
+      });
+    });
+  </script>
+
+</body></html>

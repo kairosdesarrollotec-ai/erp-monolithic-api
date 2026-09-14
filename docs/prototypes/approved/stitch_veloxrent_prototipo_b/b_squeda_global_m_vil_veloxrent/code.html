@@ -1,0 +1,283 @@
+<!DOCTYPE html><html lang="es" class="h-full"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Buscar — VeloxRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              accent: '#C6600A',
+              border: '#E2DCD5',
+              surface: '#FFFFFF',
+              subtle: '#F8F6F2',
+              muted: '#4E4A45',
+              text: '#1F2A33',
+              success: '#1E7D4B',
+              successBg: '#E9F5EC'
+            }
+          },
+          boxShadow: {
+            touch: '0 1px 2px rgba(0, 0, 0, 0.04)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-brand-surface text-brand-text h-full flex flex-col antialiased selection:bg-[#FBEFE3] selection:text-[#C6600A]">
+
+  <!-- Mobile Top Bar: Search Input Area -->
+  <header class="sticky top-0 z-30 bg-white border-b border-[#EAE6DF] px-4 pt-3 pb-3 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+    <!-- Status / Context bar info -->
+    <div class="flex items-center justify-between text-[11px] font-medium text-[#78726A] mb-2 px-0.5">
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span class="font-semibold text-brand-dark">Ayacucho — Central</span>
+      </div>
+      <div class="text-[11px] tracking-wide text-[#78726A]">BÚSQUEDA GLOBAL</div>
+    </div>
+
+    <!-- Search Input in Active Focus State (borde #C6600A) -->
+    <div class="relative flex items-center gap-2.5">
+      <div class="relative flex-1">
+        <!-- Search Icon -->
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#C6600A]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+
+        <!-- Input with active focus ring and caret simulation -->
+        <div class="w-full bg-[#FCFBF9] border-2 border-[#C6600A] rounded-lg pl-10 pr-10 py-2.5 text-[15px] font-medium text-brand-dark shadow-[0_0_0_3px_rgba(198,96,10,0.12)] flex items-center justify-between">
+          <div class="flex items-center">
+            <span>Maria</span>
+            <!-- Blinking cursor indicator simulating auto-opened keyboard focus -->
+            <span class="inline-block w-[2px] h-5 bg-[#C6600A] ml-0.5 animate-pulse"></span>
+          </div>
+          <!-- Clear text button inside input -->
+          <button type="button" aria-label="Limpiar campo" class="p-0.5 rounded-full text-[#A39C90] hover:text-[#4E4A45] transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+              <circle cx="12" cy="12" r="9" fill="#EAE6DF" stroke="none"></circle>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l6 6m0-6L9 15" stroke="#4E4A45"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Close "X" Button -->
+      <button type="button" aria-label="Cerrar búsqueda" class="h-11 w-11 flex-shrink-0 flex items-center justify-center rounded-lg bg-[#F5F2EC] hover:bg-[#EAE6DF] active:bg-[#DFDAD2] text-brand-dark transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Quick filter tags / chips -->
+    <div class="flex items-center gap-2 mt-2.5 overflow-x-auto no-scrollbar py-0.5 text-[12px]">
+      <span class="text-[11px] font-semibold text-[#8C857B] uppercase tracking-wider pl-0.5">Filtrar:</span>
+      <button class="bg-brand-dark text-white font-medium px-2.5 py-1 rounded-full text-xs shadow-sm">Todos (2)</button>
+      <button class="bg-[#F5F2EB] text-[#4E4A45] hover:bg-[#ECE8E0] font-medium px-2.5 py-1 rounded-full text-xs">Clientes (1)</button>
+      <button class="bg-[#F5F2EB] text-[#4E4A45] hover:bg-[#ECE8E0] font-medium px-2.5 py-1 rounded-full text-xs">Alquileres (1)</button>
+      <button class="bg-[#F5F2EB] text-[#4E4A45] hover:bg-[#ECE8E0] font-medium px-2.5 py-1 rounded-full text-xs">Reservas (0)</button>
+    </div>
+  </header>
+
+  <!-- Results List Content (Scrollable) -->
+  <main class="flex-1 overflow-y-auto px-4 py-3 divide-y divide-[#F0ECE5]">
+
+    <!-- SECTION: CLIENTES -->
+    <div class="pb-3 pt-1">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-[12px] font-bold text-brand-muted tracking-wider uppercase font-sans">
+          CLIENTES
+        </h2>
+        <span class="text-[11px] font-semibold text-[#7E7870] bg-[#F3EFE9] px-2 py-0.5 rounded-full">
+          1 coincidencia
+        </span>
+      </div>
+
+      <!-- Result Card (min-h-[56px] for touch target) -->
+      <a href="#" class="group block w-full bg-white border border-[#E7E2DA] hover:border-[#D4CDC3] active:bg-[#F9F7F4] rounded-xl p-3 min-h-[56px] transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#C6600A]">
+        <div class="flex items-center justify-between gap-3">
+          <!-- Avatar and Details -->
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg bg-[#EFECE6] group-active:bg-[#E5E1D8] border border-[#E2DDD5] text-brand-dark font-bold text-[13px] flex items-center justify-center flex-shrink-0 tracking-wider">
+              MQ
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-[15px] text-brand-dark truncate leading-tight">
+                  María Quispe Huamán
+                </span>
+              </div>
+              <div class="flex items-center gap-2 mt-0.5 text-[12px] text-[#5C5750]">
+                <span class="font-mono text-[#33302B]">DNI ****5910</span>
+                <span class="text-[#B8B1A7]">•</span>
+                <span class="text-[#6B655E] truncate">Cliente recurrente</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status badge and disclosure arrow -->
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brand-successBg text-brand-success border border-[#CDE8D4]">
+              Activo
+            </span>
+            <svg class="w-4 h-4 text-[#A8A196] group-active:text-brand-dark transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- SECTION: ALQUILERES -->
+    <div class="pt-3 pb-3">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-[12px] font-bold text-brand-muted tracking-wider uppercase font-sans">
+          ALQUILERES
+        </h2>
+        <span class="text-[11px] font-semibold text-[#7E7870] bg-[#F3EFE9] px-2 py-0.5 rounded-full">
+          1 coincidencia
+        </span>
+      </div>
+
+      <!-- Result Card (min-h-[56px] for touch target) -->
+      <a href="#" class="group block w-full bg-white border border-[#E7E2DA] hover:border-[#D4CDC3] active:bg-[#F9F7F4] rounded-xl p-3 min-h-[56px] transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#C6600A]">
+        <div class="flex items-center justify-between gap-3">
+          <!-- Icon and Details -->
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg bg-[#EFECE6] group-active:bg-[#E5E1D8] border border-[#E2DDD5] text-brand-dark flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-brand-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-[14px] text-brand-dark tracking-tight truncate leading-tight">
+                  #ALQ-1187 <span class="font-normal text-[#6B655E]">— Toyota Hilux</span>
+                </span>
+              </div>
+              <div class="flex items-center gap-2 mt-0.5 text-[12px] text-[#5C5750]">
+                <span class="font-mono bg-[#F2EFE9] px-1.5 py-0.2 rounded text-[11px] font-semibold text-brand-dark border border-[#E2DCD5]">Placa D0Y-704</span>
+                <span class="text-[#B8B1A7]">•</span>
+                <span class="text-[#6B655E] truncate">Sede Ayacucho</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status badge and disclosure arrow -->
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brand-successBg text-brand-success border border-[#CDE8D4]">
+              Activo
+            </span>
+            <svg class="w-4 h-4 text-[#A8A196] group-active:text-brand-dark transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Actions / Bottom Search Utilities -->
+    <div class="pt-3 pb-2">
+      <button type="button" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-brand-dark text-brand-dark text-[14px] font-semibold hover:bg-[#F6F3EE] active:bg-[#EBE6DE] transition-colors min-h-[50px]">
+        <span>Ver todos los resultados (2)</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+        </svg>
+      </button>
+
+      <!-- Tip info for mobile users -->
+      <p class="text-center text-[11px] text-[#7A746C] mt-2.5">
+        Busca por DNI, RUC, nombre, número de contrato o placa vehicular.
+      </p>
+    </div>
+  </main>
+
+  <!-- Simulated Mobile Keyboard Area to represent "Teclado abierto automáticamente" -->
+  <footer class="bg-[#D1D5DB] border-t border-[#B9BFC7] select-none pt-2 pb-5 px-1.5 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+    <!-- Suggestions bar -->
+    <div class="flex items-center justify-around text-xs text-[#222] font-medium pb-2 border-b border-[#C2C7CF] px-2 mb-1.5">
+      <span class="py-1 px-3 bg-white/70 rounded shadow-sm">"Maria"</span>
+      <span class="py-1 px-3 bg-white/40 rounded">Mariana</span>
+      <span class="py-1 px-3 bg-white/40 rounded">Morales</span>
+    </div>
+
+    <!-- Key row 1 -->
+    <div class="flex justify-center gap-1.5 mb-2">
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">q</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">w</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">e</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">r</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">t</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">y</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">u</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">i</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">o</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">p</div>
+    </div>
+
+    <!-- Key row 2 -->
+    <div class="flex justify-center gap-1.5 mb-2 px-3">
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">a</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">s</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">d</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">f</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">g</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">h</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">j</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">k</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">l</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">ñ</div>
+    </div>
+
+    <!-- Key row 3 -->
+    <div class="flex justify-center gap-1.5 mb-2">
+      <div class="bg-[#B2B8C2] rounded-md py-2.5 px-3.5 flex items-center justify-center shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"></path></svg>
+      </div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">z</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">x</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">c</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">v</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">b</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">n</div>
+      <div class="bg-white rounded-md py-2.5 flex-1 text-center font-medium text-sm shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">m</div>
+      <div class="bg-[#B2B8C2] rounded-md py-2.5 px-3.5 flex items-center justify-center shadow-[0_1px_0_rgba(0,0,0,0.3)] text-gray-800">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6-6h12a1 1 0 011 1v10a1 1 0 01-1 1H9l-6-6z"></path></svg>
+      </div>
+    </div>
+
+    <!-- Key row 4 (bottom) -->
+    <div class="flex justify-center gap-1.5 px-1">
+      <div class="bg-[#B2B8C2] rounded-md py-2.5 px-3 font-semibold text-xs flex items-center justify-center text-gray-800 shadow-[0_1px_0_rgba(0,0,0,0.3)]">123</div>
+      <div class="bg-[#B2B8C2] rounded-md py-2.5 px-2.5 flex items-center justify-center text-gray-800 shadow-[0_1px_0_rgba(0,0,0,0.3)]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+      </div>
+      <div class="bg-white rounded-md py-2.5 flex-[3] text-center font-medium text-xs text-gray-600 shadow-[0_1px_0_rgba(0,0,0,0.3)]">espacio</div>
+      <div class="bg-[#C6600A] text-white rounded-md py-2.5 flex-[1.5] text-center font-semibold text-xs shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-1">
+        Buscar
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

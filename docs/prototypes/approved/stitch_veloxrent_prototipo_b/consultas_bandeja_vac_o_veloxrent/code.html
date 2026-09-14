@@ -1,0 +1,161 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultas — Bandeja (Vacío) - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FBFBFA;
+      color: #1F2A33;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-[#FBFBFA] text-[#1F2A33]">
+
+  <!-- Cabecera Superior Corporativa -->
+  <header class="bg-white border-b border-[#EFEDE7] px-8 py-3.5 flex items-center justify-between sticky top-0 z-20">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3">
+        <span class="font-heading text-xl font-bold tracking-tight text-[#1F2A33]">VeloxRent</span>
+        <span class="bg-[#F4F2EB] text-[#4E4A45] text-xs font-medium px-2 py-0.5 rounded">Gestión Interna</span>
+      </div>
+      <div class="h-4 w-[1px] bg-[#EFEDE7]"></div>
+      <nav class="flex items-center gap-2 text-sm text-[#4E4A45]" aria-label="Breadcrumb">
+        <span class="font-medium text-[#1F2A33]">Consultas</span>
+        <svg class="w-4 h-4 text-[#8C887E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="font-semibold text-[#1F2A33]">Bandeja</span>
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-5">
+      <!-- Indicador Estado de Conexión -->
+      <div class="flex items-center gap-2 bg-[#E9F6ED] text-[#1E7D4B] px-3 py-1 rounded-full text-xs font-semibold border border-[#D0EBD8]">
+        <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+        En línea
+      </div>
+
+      <!-- Sede Activa -->
+      <div class="flex items-center gap-2 text-xs font-medium text-[#4E4A45] bg-[#F4F2EB] px-3 py-1.5 rounded border border-[#EFEDE7]">
+        <svg class="w-3.5 h-3.5 text-[#8C887E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+        </svg>
+        <span>Ayacucho — Sede Central</span>
+      </div>
+
+      <!-- Campana de Notificaciones -->
+      <button type="button" class="relative p-1.5 text-[#4E4A45] hover:text-[#1F2A33] rounded transition" title="Notificaciones">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        <span class="absolute top-1 right-1 w-2 h-2 bg-[#C6600A] rounded-full ring-2 ring-white"></span>
+      </button>
+
+      <!-- Usuario y Rol -->
+      <div class="flex items-center gap-2.5 pl-2 border-l border-[#EFEDE7]">
+        <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center text-xs font-semibold">
+          ME
+        </div>
+        <div class="flex flex-col text-left">
+          <span class="text-xs font-bold leading-tight text-[#1F2A33]">María Ejecutivo</span>
+          <span class="text-[11px] text-[#8C887E] leading-tight">Front-office</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal de la Página -->
+  <main class="max-w-[1440px] w-full mx-auto px-8 py-8 flex-1 flex flex-col">
+    
+    <!-- Encabezado de Sección: Título y Acción Principal -->
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="font-heading text-[22px] font-bold text-[#1F2A33] tracking-tight">Consultas</h1>
+        <p class="text-sm text-[#4E4A45] mt-1">Bandeja general de requerimientos, solicitudes comerciales y cotizaciones de clientes.</p>
+      </div>
+      <button class="flex items-center gap-2 bg-[#C6600A] hover:bg-[#A95107] active:bg-[#8D4205] text-white text-sm font-semibold px-4 py-2.5 rounded transition shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span>Nueva Consulta</span>
+      </button>
+    </div>
+
+    <!-- Fila de Búsqueda y Filtros Colapsados -->
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div class="relative flex-1 max-w-xl">
+        <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8C887E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" placeholder="Buscar por cliente, RUC o DNI..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-[#D5D2C9] rounded text-sm text-[#1F2A33] placeholder-[#8C887E] focus:outline-none focus:border-[#C6600A] focus:ring-1 focus:ring-[#C6600A] transition shadow-xs">
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button class="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-[#D5D2C9] hover:bg-[#F4F2EB] rounded text-sm font-medium text-[#4E4A45] transition shadow-xs">
+          <svg class="w-4 h-4 text-[#8C887E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+          </svg>
+          <span>Más filtros</span>
+          <svg class="w-3.5 h-3.5 text-[#8C887E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+
+        <button class="p-2.5 bg-white border border-[#D5D2C9] hover:bg-[#F4F2EB] text-[#4E4A45] rounded transition shadow-xs" title="Actualizar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenedor del Estado Vacío (reemplazo exacto de la tabla) -->
+    <div class="bg-white border border-[#EFEDE7] rounded-lg p-16 flex-1 flex flex-col items-center justify-center text-center shadow-xs min-h-[460px]">
+      <!-- Ícono de Carpeta -->
+      <div class="w-16 h-16 rounded-full bg-[#F4F2EB] flex items-center justify-center mb-5 text-[#8C887E]">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+        </svg>
+      </div>
+
+      <!-- Mensaje Central Solicitado -->
+      <h2 class="text-base font-semibold text-[#1F2A33] mb-1.5 font-heading">
+        Todavía no hay consultas registradas hoy
+      </h2>
+      <p class="text-sm text-[#4E4A45] max-w-md mb-6 leading-relaxed">
+        Las consultas y cotizaciones ingresadas por los canales presencial o virtual aparecerán en esta bandeja.
+      </p>
+
+      <!-- Botón Nueva Consulta repetido como CTA principal -->
+      <button class="inline-flex items-center gap-2 bg-[#C6600A] hover:bg-[#A95107] active:bg-[#8D4205] text-white text-sm font-semibold px-5 py-2.5 rounded transition shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span>Nueva Consulta</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Pie de Página Institucional Unificado -->
+  <footer class="bg-white border-t border-[#EFEDE7] px-8 py-3.5 text-xs text-[#4E4A45] flex items-center justify-between">
+    <div>
+      VeloxRent © 2025 · Sistema de Gestión Interna
+    </div>
+    <div class="flex items-center gap-6">
+      <span>Soporte Front-office: anexo 103</span>
+      <span class="w-[1px] h-3 bg-[#EFEDE7]"></span>
+      <button class="text-[#C22B2B] hover:underline font-medium">Cerrar sesión</button>
+    </div>
+  </footer>
+
+
+</body></html>

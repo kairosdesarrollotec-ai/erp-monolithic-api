@@ -1,0 +1,381 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Vacantes — Personal / Reclutamiento y Selección - VeloxRent</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              dark: '#141C24',
+              orange: '#C6600A',
+              orangeHover: '#AD5409',
+              green: '#1E7D4B',
+              greenLight: '#E8F5EE',
+              red: '#C22B2B',
+              redLight: '#FBE9E9',
+              blue: '#2166B0',
+              blueLight: '#EAF2FB',
+              grayBg: '#F8F9FA',
+              border: '#E2E6E9',
+              textMain: '#1A2027',
+              textMuted: '#5F6B7A',
+              sand: '#FAF8F5'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Space Grotesk"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1A2027;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white flex flex-col justify-between text-[14px]">
+<!-- Top Global Header (VeloxRent Standard) -->
+<div>
+<header class="border-b border-gray-200 bg-white">
+<div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2">
+<span class="font-display font-bold text-2xl tracking-tight text-[#1F2A33]">Velox<span class="text-[#C6600A]">Rent</span></span>
+<span class="text-xs px-2.5 py-1 bg-gray-100 text-gray-700 font-medium rounded border border-gray-200 ml-1">Recursos Humanos</span>
+</div>
+<span class="text-gray-300">|</span>
+<nav class="flex items-center space-x-1 text-sm text-[#5F6B7A]">
+<span class="hover:text-gray-900 cursor-pointer">Personal</span>
+<svg class="w-4 h-4 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="hover:text-gray-900 cursor-pointer">Reclutamiento y Selección</span>
+<svg class="w-4 h-4 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-[#1A2027] font-semibold">Vacantes</span>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2 text-xs bg-[#E8F5EE] text-[#1E7D4B] px-3 py-1.5 rounded-full font-medium border border-[#CDE9D9]">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+<span>En línea</span>
+</div>
+<div class="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded font-medium border border-gray-200 flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<div class="flex items-center space-x-2.5 pl-2 border-l border-gray-200">
+<div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">
+              RO
+            </div>
+<div class="flex flex-col text-left leading-tight">
+<span class="text-xs font-semibold text-gray-900">Rodrigo Ortiz</span>
+<span class="text-[11px] text-gray-500">Jefe de RR.HH.</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="max-w-[1440px] mx-auto px-6 py-8">
+<!-- Page Header with Action Button -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between pb-6 border-b border-gray-200 mb-6 gap-4">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h1 class="text-2xl font-bold font-display tracking-tight text-[#1F2A33]">Vacantes</h1>
+<span class="bg-gray-100 text-gray-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-gray-200">4 registros</span>
+</div>
+<p class="text-sm text-[#5F6B7A]">Gestión integral de requerimientos de contratación y seguimiento del estado de selección.</p>
+</div>
+<div class="flex items-center gap-3">
+<!-- Button: Crear necesidad in #C6600A -->
+<button class="inline-flex items-center justify-center gap-2 bg-[#C6600A] hover:bg-[#AD5409] text-white px-4 py-2.5 rounded font-medium text-sm transition-colors shadow-sm cursor-pointer" style="border-radius: 4px;" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path></svg>
+<span>Crear necesidad</span>
+</button>
+</div>
+</div>
+<!-- Quick Metrics Summary -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="bg-white p-4 rounded border border-gray-200 shadow-sm flex items-center justify-between">
+<div>
+<span class="text-xs font-medium text-[#5F6B7A] uppercase tracking-wider block">Vacantes Activas</span>
+<span class="text-2xl font-bold font-display text-[#1F2A33] mt-1 block">3</span>
+</div>
+<span class="p-2.5 rounded bg-blue-50 text-[#2166B0]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="bg-white p-4 rounded border border-gray-200 shadow-sm flex items-center justify-between">
+<div>
+<span class="text-xs font-medium text-[#5F6B7A] uppercase tracking-wider block">En Evaluación</span>
+<span class="text-2xl font-bold font-display text-[#C6600A] mt-1 block">3 candidatos</span>
+</div>
+<span class="p-2.5 rounded bg-[#FDF1DE] text-[#C6600A]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="bg-white p-4 rounded border border-gray-200 shadow-sm flex items-center justify-between">
+<div>
+<span class="text-xs font-medium text-[#5F6B7A] uppercase tracking-wider block">Por Renuncia</span>
+<span class="text-2xl font-bold font-display text-[#C22B2B] mt-1 block">1</span>
+</div>
+<span class="p-2.5 rounded bg-[#FBE9E9] text-[#C22B2B]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="bg-white p-4 rounded border border-gray-200 shadow-sm flex items-center justify-between">
+<div>
+<span class="text-xs font-medium text-[#5F6B7A] uppercase tracking-wider block">Cubiertas este mes</span>
+<span class="text-2xl font-bold font-display text-[#1E7D4B] mt-1 block">1</span>
+</div>
+<span class="p-2.5 rounded bg-[#E8F5EE] text-[#1E7D4B]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+</div>
+<!-- Filter / Search toolbar -->
+<div class="bg-white p-3.5 rounded border border-gray-200 mb-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+<div class="flex items-center gap-3 flex-1 min-w-[280px]">
+<div class="relative w-full max-w-sm">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-[#C6600A]" placeholder="Buscar por puesto o código de vacante..." type="text">
+</div>
+<div class="flex items-center gap-2">
+<select class="border border-gray-200 rounded px-2.5 py-1.5 text-xs text-gray-700 bg-white focus:outline-none focus:border-[#C6600A]">
+<option>Todas las fuentes</option>
+<option>Renuncia</option>
+<option>Crecimiento</option>
+<option>Área nueva</option>
+</select>
+<select class="border border-gray-200 rounded px-2.5 py-1.5 text-xs text-gray-700 bg-white focus:outline-none focus:border-[#C6600A]">
+<option>Todas las áreas</option>
+<option>Operaciones y Flota</option>
+<option>Campo / Inspección</option>
+<option>Mantenimiento</option>
+<option>Tecnología y Sistemas</option>
+</select>
+</div>
+</div>
+<div class="text-gray-500 font-medium">
+          Mostrando 4 vacantes registradas
+        </div>
+</div>
+<!-- Table Container -->
+<div class="bg-white rounded border border-gray-200 overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm border-collapse">
+<thead>
+<tr class="bg-[#F8F9FA] border-b border-gray-200 text-xs font-semibold text-[#5F6B7A] tracking-wider uppercase">
+<th class="py-3.5 px-5" scope="col">Puesto</th>
+<th class="py-3.5 px-5" scope="col">Área</th>
+<th class="py-3.5 px-5" scope="col">Empresa</th>
+<th class="py-3.5 px-5" scope="col">Fuente</th>
+<th class="py-3.5 px-5" scope="col">Estado</th>
+<th class="py-3.5 px-5 text-right" scope="col">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200">
+<!-- Row 1: Conductor / Inspector de Campo (Renuncia) -->
+<tr class="hover:bg-[#FAF8F5] transition-colors">
+<td class="py-4 px-5">
+<div class="flex flex-col">
+<span class="font-semibold text-gray-900">Conductor / Inspector de Campo</span>
+<span class="text-xs text-gray-500 font-mono mt-0.5">VAC-2025-014 · Jornada completa</span>
+</div>
+</td>
+<td class="py-4 px-5 text-gray-700">
+                  Campo / Inspección Técnica
+                </td>
+<td class="py-4 px-5">
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-gray-900">VeloxRent Perú S.A.C.</span>
+<span class="text-xs text-gray-400">· Sede Ayacucho</span>
+</div>
+</td>
+<td class="py-4 px-5">
+<!-- Badge: Renuncia #C22B2B -->
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold" style="background-color: #FBE9E9; color: #C22B2B; border: 1px solid #F5C6C6;">
+<span class="w-1.5 h-1.5 rounded-full" style="background-color: #C22B2B;"></span>
+                    Renuncia
+                  </span>
+</td>
+<td class="py-4 px-5">
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#FDF1DE] text-[#B5720A] border border-[#F9E2BE]">
+                      En proceso (1 candidato)
+                    </span>
+</div>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] px-2.5 py-1 rounded border border-gray-300 hover:border-[#C6600A] transition-colors" type="button">
+                    Ver detalle →
+                  </button>
+</td>
+</tr>
+<!-- Row 2: Mecánico Especialista 4x4 (Crecimiento) -->
+<tr class="hover:bg-[#FAF8F5] transition-colors">
+<td class="py-4 px-5">
+<div class="flex flex-col">
+<span class="font-semibold text-gray-900">Mecánico Especialista 4x4 / Flota Minera</span>
+<span class="text-xs text-gray-500 font-mono mt-0.5">VAC-2025-015 · Sistema de turnos</span>
+</div>
+</td>
+<td class="py-4 px-5 text-gray-700">
+                  Mantenimiento y Taller
+                </td>
+<td class="py-4 px-5">
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-gray-900">VeloxRent Servicios Mineros</span>
+<span class="text-xs text-gray-400">· Taller Central</span>
+</div>
+</td>
+<td class="py-4 px-5">
+<!-- Badge: Crecimiento #1E7D4B -->
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold" style="background-color: #E8F5EE; color: #1E7D4B; border: 1px solid #CDE9D9;">
+<span class="w-1.5 h-1.5 rounded-full" style="background-color: #1E7D4B;"></span>
+                    Crecimiento
+                  </span>
+</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#FDF1DE] text-[#B5720A] border border-[#F9E2BE]">
+                    En evaluación (2 candidatos)
+                  </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] px-2.5 py-1 rounded border border-gray-300 hover:border-[#C6600A] transition-colors" type="button">
+                    Ver detalle →
+                  </button>
+</td>
+</tr>
+<!-- Row 3: Especialista en Telemetría y Monitoreo IoT (Área nueva) -->
+<tr class="hover:bg-[#FAF8F5] transition-colors">
+<td class="py-4 px-5">
+<div class="flex flex-col">
+<span class="font-semibold text-gray-900">Analista de Telemetría y Monitoreo IoT</span>
+<span class="text-xs text-gray-500 font-mono mt-0.5">VAC-2025-016 · Jornada híbrida</span>
+</div>
+</td>
+<td class="py-4 px-5 text-gray-700">
+                  Tecnología y Telemática
+                </td>
+<td class="py-4 px-5">
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-gray-900">VeloxRent Corporativo</span>
+<span class="text-xs text-gray-400">· Central Lima</span>
+</div>
+</td>
+<td class="py-4 px-5">
+<!-- Badge: Área nueva #2166B0 -->
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold" style="background-color: #EAF2FB; color: #2166B0; border: 1px solid #C8DEF4;">
+<span class="w-1.5 h-1.5 rounded-full" style="background-color: #2166B0;"></span>
+                    Área nueva
+                  </span>
+</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                    Abierta / Publicada
+                  </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] px-2.5 py-1 rounded border border-gray-300 hover:border-[#C6600A] transition-colors" type="button">
+                    Ver detalle →
+                  </button>
+</td>
+</tr>
+<!-- Row 4: Supervisor de Front-office (Cubierta reciente) -->
+<tr class="hover:bg-[#FAF8F5] transition-colors bg-gray-50/50">
+<td class="py-4 px-5">
+<div class="flex flex-col">
+<span class="font-semibold text-gray-900">Supervisor de Front-office y Mostrador</span>
+<span class="text-xs text-gray-500 font-mono mt-0.5">VAC-2025-012 · Concluida</span>
+</div>
+</td>
+<td class="py-4 px-5 text-gray-700">
+                  Operaciones Comerciales
+                </td>
+<td class="py-4 px-5">
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-gray-900">VeloxRent Perú S.A.C.</span>
+<span class="text-xs text-gray-400">· Sede Ayacucho</span>
+</div>
+</td>
+<td class="py-4 px-5">
+<!-- Badge: Crecimiento #1E7D4B -->
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold" style="background-color: #E8F5EE; color: #1E7D4B; border: 1px solid #CDE9D9;">
+<span class="w-1.5 h-1.5 rounded-full" style="background-color: #1E7D4B;"></span>
+                    Crecimiento
+                  </span>
+</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#E8F5EE] text-[#1E7D4B] border border-[#CDE9D9]">
+                    Cubierta
+                  </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-xs font-semibold text-gray-600 hover:text-[#1F2A33] px-2.5 py-1 rounded border border-gray-200 hover:border-gray-400 transition-colors" type="button">
+                    Ver expediente →
+                  </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination / Footer -->
+<div class="px-5 py-3.5 bg-[#F8F9FA] border-t border-gray-200 flex items-center justify-between text-xs text-[#5F6B7A]">
+<div>
+            Mostrando 1 a 4 de 4 vacantes
+          </div>
+<div class="flex items-center space-x-1">
+<button class="px-2.5 py-1 border border-gray-200 rounded text-gray-400 bg-white cursor-not-allowed" disabled="">Anterior</button>
+<button class="px-2.5 py-1 border border-gray-300 rounded font-semibold text-gray-900 bg-white shadow-xs">1</button>
+<button class="px-2.5 py-1 border border-gray-200 rounded text-gray-400 bg-white cursor-not-allowed" disabled="">Siguiente</button>
+</div>
+</div>
+</div>
+<!-- Contextual Policy / SLA Note -->
+<div class="mt-6 bg-[#FAF8F5] border border-gray-200 p-4 rounded text-xs text-[#5F6B7A] flex items-start gap-3">
+<svg class="w-4 h-4 text-[#C6600A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<div>
+<span class="font-semibold text-gray-800">Protocolo de Reclutamiento y Aprobación de Necesidades (PR-RRHH-003):</span>
+          Las vacantes generadas por renuncia cuentan con prioridad de cobertura de 15 días hábiles. La creación de necesidades por área nueva requiere ratificación previa de Gerencia General y presupuesto asignado.
+        </div>
+</div>
+</main>
+</div>
+<!-- Standard VeloxRent Footer -->
+<footer class="border-t border-gray-200 bg-white py-4 mt-12 text-xs text-gray-500">
+<div class="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2">
+<div class="flex items-center space-x-4">
+<span><strong>VeloxRent</strong> © 2025</span>
+<span class="text-gray-300">·</span>
+<span>Sistema de Gestión Interna</span>
+<span class="text-gray-300">·</span>
+<span>Protocolo SST-RRHH-001 / Selección de Personal</span>
+</div>
+<div class="flex items-center space-x-6">
+<span>Soporte RR.HH.: <strong>anexo 104</strong></span>
+<span class="text-gray-300">·</span>
+<span>Mesa de Operaciones: <strong>anexo 101</strong></span>
+<span class="text-gray-300">·</span>
+<a class="text-gray-700 hover:text-[#C6600A] flex items-center gap-1 font-medium" href="#">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Cerrar sesión
+        </a>
+</div>
+</div>
+</footer>
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs" id="modal-nueva-necesidad"><div class="bg-white rounded-lg shadow-xl w-full max-w-xl border border-[#E2DFD8] overflow-hidden flex flex-col"><div class="flex items-start justify-between px-6 py-5 border-b border-gray-200 bg-white"><div><h2 class="font-display text-[20px] font-bold text-[#1F2A33] leading-tight">Nueva necesidad de personal</h2><p class="text-[13px] text-[#6E685F] mt-1">Paso 1 de 2: Origen y puesto requerido</p></div><button aria-label="Cerrar" class="text-gray-400 hover:text-gray-700 p-1.5 rounded hover:bg-gray-100 transition-colors inline-flex items-center justify-center" onclick="document.getElementById('modal-nueva-necesidad').remove()" type="button"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="px-6 py-5 space-y-4 bg-white"><div class="space-y-2"><label class="block text-xs font-semibold text-[#1F2A33]">Fuente del requerimiento <span class="text-[#C22B2B]">*</span></label><div class="grid grid-cols-3 gap-2.5"><button class="flex items-center justify-center gap-2 px-3 py-2.5 rounded border border-gray-200 hover:border-gray-300 text-xs font-medium text-gray-700 bg-white transition-colors" type="button"><span class="w-2 h-2 rounded-full bg-[#C22B2B]"></span><span>Renuncia</span></button><button class="flex items-center justify-center gap-2 px-3 py-2.5 rounded border-2 border-[#1E7D4B] bg-[#E8F5EE] text-xs font-semibold text-[#1E7D4B] shadow-xs" type="button"><span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span><span>Crecimiento</span><svg class="w-3.5 h-3.5 ml-0.5 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg></button><button class="flex items-center justify-center gap-2 px-3 py-2.5 rounded border border-gray-200 hover:border-gray-300 text-xs font-medium text-gray-700 bg-white transition-colors" type="button"><span class="w-2 h-2 rounded-full bg-[#2166B0]"></span><span>Área nueva</span></button></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">Empresa <span class="text-[#C22B2B]">*</span></label><div class="relative"><select class="w-full px-3 py-2 text-xs border border-gray-300 rounded text-gray-800 bg-white focus:outline-none focus:border-[#C6600A]"><option selected="">VeloxRent Perú S.A.C.</option><option>VeloxRent Servicios Mineros</option><option>VeloxRent Corporativo</option></select></div></div><div><label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">Área <span class="text-[#C22B2B]">*</span></label><div class="relative"><select class="w-full px-3 py-2 text-xs border border-gray-300 rounded text-gray-800 bg-white focus:outline-none focus:border-[#C6600A]"><option>Campo / Inspección Técnica</option><option>Mantenimiento y Taller</option><option>Operaciones Comerciales</option><option>Tecnología y Telemática</option><option>Administración y Finanzas</option></select></div></div></div><div><label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">Puesto requerido <span class="text-[#C22B2B]">*</span></label><input class="w-full px-3 py-2 text-xs border border-gray-300 rounded text-gray-900 bg-white focus:outline-none focus:border-[#C6600A]" placeholder="ej. Inspector de Flota y Patio 4x4" type="text" value="Inspector de Flota y Patio 4x4"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">Fecha tentativa de incorporación</label><input class="w-full px-3 py-2 text-xs border border-gray-300 rounded text-gray-700 bg-white focus:outline-none focus:border-[#C6600A]" type="date" value="2025-04-01"></div><div><label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">Tipo de contrato previsto</label><select class="w-full px-3 py-2 text-xs border border-gray-300 rounded text-gray-800 bg-white focus:outline-none focus:border-[#C6600A]"><option selected="">Plazo indeterminado</option><option>Plazo fijo sujeto a modalidad</option><option>Por obra determinada / minería</option></select></div></div><div><label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">Justificación breve o nota del requerimiento <span class="text-gray-400 font-normal">(opcional)</span></label><textarea class="w-full px-3 py-2 text-xs border border-gray-300 rounded text-gray-800 bg-white focus:outline-none focus:border-[#C6600A] resize-none" placeholder="Detallar motivo de vacante o proyecto minero asociado..." rows="2">Reemplazo por aumento de flota asignada a contrato minero en Ayacucho.</textarea></div></div><div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-[#F8F9FA]"><button class="px-4 py-2 text-xs font-medium text-[#4E4A45] hover:text-gray-800 border border-[#D5D1C8] hover:bg-white rounded transition-colors" onclick="document.getElementById('modal-nueva-necesidad').remove()" type="button">Cancelar</button><button class="inline-flex items-center gap-2 bg-[#1F2A33] hover:bg-[#2b3a47] text-white px-6 py-2.5 rounded text-[14px] font-medium transition-colors shadow-sm cursor-pointer" type="button"><span>Continuar a perfil</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div></div></div>
+</body></html>

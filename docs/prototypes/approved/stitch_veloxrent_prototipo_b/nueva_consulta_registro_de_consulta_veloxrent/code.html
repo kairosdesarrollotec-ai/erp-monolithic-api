@@ -1,0 +1,399 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nueva Consulta — Registro de consulta - VeloxRent</title>
+<!-- Google Fonts: Space Grotesk & Public Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              orange: '#C6600A',
+              orangeLight: '#FFF8F2',
+              green: '#1E7D4B',
+              greenBg: '#EDF8F1',
+              border: '#E2E6E9',
+              muted: '#717D86',
+              danger: '#C22B2B',
+              lightGray: '#F9FAFB'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-typography-and-resets">
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    input[type="date"]::-webkit-inner-spin-button,
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-white text-[#1F2A33]">
+<!-- BEGIN: TopNavigation -->
+<header class="w-full border-b border-[#E6EAEC] bg-white sticky top-0 z-30">
+<div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+<!-- Left side: Brand, Tag, Breadcrumb -->
+<div class="flex items-center space-x-4">
+<!-- Logo -->
+<a class="flex items-center text-[22px] tracking-tight font-extrabold text-[#111827]" href="#">
+<span>Velox</span><span class="text-[#C6600A]">Rent</span>
+</a>
+<!-- Badge Gestión Interna -->
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#F0F2F4] text-[#4A5560]">
+          Gestión Interna
+        </span>
+<!-- Separator -->
+<div class="h-4 w-px bg-gray-300 mx-1"></div>
+<!-- Breadcrumb -->
+<nav aria-label="Breadcrumb" class="flex items-center space-x-2 text-sm text-[#5B656F]">
+<a class="hover:text-gray-900 transition-colors" href="#">Consultas</a>
+<svg class="w-3.5 h-3.5 text-gray-400 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<a class="hover:text-gray-900 transition-colors" href="#">Bandeja</a>
+<svg class="w-3.5 h-3.5 text-gray-400 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium text-[#1F2A33]">Nueva Consulta</span>
+</nav>
+</div>
+<!-- Right side: Status, Sede, Notification & User -->
+<div class="flex items-center space-x-4">
+<!-- Badge En Línea -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#EBF7F0] text-[#1E7D4B]">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+          En línea
+        </span>
+<!-- Sede Selector Button -->
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium text-[#4A5560] bg-[#F7F9FA] border border-[#E1E5E8] hover:bg-gray-100 transition-colors" type="button">
+<svg class="w-3.5 h-3.5 text-[#6B7785]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Ayacucho — Sede Central
+        </button>
+<!-- Notification Bell Icon -->
+<div class="relative cursor-pointer p-1 rounded-full hover:bg-gray-100">
+<svg class="w-5 h-5 text-[#5B656F]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<!-- Notification Alert Dot -->
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#E56A15] ring-2 ring-white"></span>
+</div>
+<!-- User profile Avatar -->
+<div class="flex items-center gap-2 pl-2">
+<div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">
+            ME
+          </div>
+<div class="flex flex-col text-left leading-none">
+<span class="text-xs font-semibold text-[#1F2A33]">María Ejecutivo</span>
+<span class="text-[11px] text-[#717D86] mt-0.5">Front-office</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 w-full max-w-[840px] mx-auto px-4 py-8">
+<!-- Page Header Title & Cancel Action -->
+<section class="flex items-start justify-between mb-6">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-[#1F2A33]">Nueva Consulta</h1>
+<p class="text-sm text-[#667085] mt-1">Registra los requerimientos del cliente para generar cotización o reserva inmediata.</p>
+</div>
+<a class="inline-flex items-center text-sm font-medium text-[#4A5560] hover:text-[#1F2A33] pt-1" href="#">
+<svg class="w-3.5 h-3.5 mr-1.5 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+        Cancelar
+      </a>
+</section>
+<!-- Main Form Container -->
+<div class="bg-white border border-[#E3E8EC] rounded-xl p-8 shadow-sm">
+<form action="#" class="space-y-7" id="new-consultation-form" method="POST">
+<!-- BEGIN: ChannelSelection -->
+<div>
+<label class="block text-xs font-bold tracking-wider text-[#475467] uppercase mb-3">
+            Canal de atención <span class="text-red-500">*</span>
+</label>
+<div class="flex flex-wrap gap-3">
+<!-- Canal Presencial (Active) -->
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-[#C6600A] bg-[#FFFBF7] text-[#C6600A] text-sm font-semibold transition-all" id="btn-channel-inperson" type="button">
+<svg class="w-4 h-4 text-[#C6600A]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Presencial (Mostrador)
+            </button>
+<!-- Canal Virtual (Inactive) -->
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[#344054] text-sm font-medium hover:bg-gray-50 transition-all" id="btn-channel-virtual" type="button">
+<svg class="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Virtual (Web / WhatsApp)
+            </button>
+</div>
+</div>
+<!-- END: ChannelSelection -->
+<div class="border-t border-[#EDF1F3]"></div>
+<!-- BEGIN: ClientDataSection -->
+<section class="space-y-4">
+<!-- Section Title with Orange Bar Accent -->
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-4 bg-[#C6600A] rounded-full inline-block"></span>
+<h2 class="text-base font-semibold text-[#1F2A33] font-heading">Datos del cliente</h2>
+</div>
+<!-- Nombre completo o Razón Social -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="client-name">
+              Nombre completo o Razón Social <span class="text-red-500">*</span>
+</label>
+<input class="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D0D5DD] rounded-lg text-[#1F2A33] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="client-name" name="client_name" placeholder="Ej. Minera Los Andes S.A.C. o Juan Carlos Pérez" required="" type="text">
+</div>
+<!-- Row: Nacionalidad & Documento -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Selector Nacionalidad -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5">
+                Nacionalidad <span class="text-red-500">*</span>
+</label>
+<div class="grid grid-cols-2 gap-1 p-1 bg-[#F2F4F7] rounded-lg border border-[#EAECF0]" data-purpose="nationality-toggle">
+<!-- Opción Peruano (Selected) -->
+<button class="flex items-center justify-center gap-2 py-1.5 px-3 bg-white text-[#1F2A33] font-medium text-xs rounded shadow-sm border border-black/5 transition-all" id="tab-peruano" type="button">
+<!-- Red-white-red stripe flag icon -->
+<span class="inline-flex w-4 h-3 rounded-[2px] overflow-hidden border border-gray-200">
+<span class="w-1/3 h-full bg-[#D91023]"></span>
+<span class="w-1/3 h-full bg-white"></span>
+<span class="w-1/3 h-full bg-[#D91023]"></span>
+</span>
+                  Peruano
+                </button>
+<!-- Opción Extranjero -->
+<button class="flex items-center justify-center gap-2 py-1.5 px-3 text-[#475467] font-medium text-xs rounded hover:bg-white/60 transition-all" id="tab-extranjero" type="button">
+<svg class="w-3.5 h-3.5 text-[#0BA5EC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke-linecap="round"></path>
+</svg>
+                  Extranjero
+                </button>
+</div>
+</div>
+<!-- Documento de identidad (DNI / RUC) -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="doc-number">
+                Documento de identidad (DNI / RUC) <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<input class="w-full pl-3.5 pr-24 py-2.5 text-sm bg-white border border-[#D0D5DD] rounded-lg text-[#1F2A33] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="doc-number" name="document_number" placeholder="Ingrese número de documento" required="" type="text">
+<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-[#98A2B3] pointer-events-none">
+                  8 u 11 dígitos
+                </span>
+</div>
+</div>
+</div>
+<!-- Conditional Field: Visible when Extranjero is clicked -->
+<div class="hidden" id="foreign-document-container">
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="foreign-document">
+              Documento de hospedaje / Pasaporte <span class="text-red-500">*</span>
+</label>
+<input class="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D0D5DD] rounded-lg text-[#1F2A33] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="foreign-document" name="foreign_document" placeholder="Ingrese número de Pasaporte o Carné de Extranjería" type="text">
+</div>
+<!-- Row: Teléfono & Correo electrónico -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="phone">
+                Teléfono de contacto
+              </label>
+<input class="w-full px-3.5 py-2.5 text-sm bg-white border border-[#EAECF0] rounded-lg text-[#344054] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="phone" name="phone" type="tel" value="+51 987 654 321">
+</div>
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="email">
+                Correo electrónico
+              </label>
+<input class="w-full px-3.5 py-2.5 text-sm bg-white border border-[#EAECF0] rounded-lg text-[#344054] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="email" name="email" placeholder="cliente@empresa.com" type="email">
+</div>
+</div>
+</section>
+<!-- END: ClientDataSection -->
+<div class="border-t border-[#EDF1F3]"></div>
+<!-- BEGIN: TripNeedSection -->
+<section class="space-y-4">
+<!-- Section Title with Orange Bar Accent -->
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-4 bg-[#C6600A] rounded-full inline-block"></span>
+<h2 class="text-base font-semibold text-[#1F2A33] font-heading">Necesidad de viaje</h2>
+</div>
+<!-- Row: Destino, Fecha, Pasajeros -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Destino principal -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="destination">
+                Destino principal <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<input class="w-full pl-3.5 pr-9 py-2.5 text-sm bg-white border border-[#D0D5DD] rounded-lg text-[#1F2A33] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="destination" name="destination" placeholder="Ej. Huanta, Vilcashuamán, Mina..." required="" type="text">
+<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#98A2B3]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Fecha estimada de salida -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="departure-date">
+                Fecha estimada de salida <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<input class="w-full pl-3.5 pr-9 py-2.5 text-sm bg-white border border-[#D0D5DD] rounded-lg text-[#1F2A33] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="departure-date" name="departure_date" required="" type="text" value="10/16/2025">
+<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#475467]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Número de personas -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="passengers">
+                Número de personas <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<select class="w-full appearance-none pl-3.5 pr-9 py-2.5 text-sm bg-white border border-[#D0D5DD] rounded-lg text-[#1F2A33] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="passengers" name="passengers" required="">
+<option selected="">4 personas (Camioneta / SUV)</option>
+<option>1 a 2 personas (Sedán / Compacto)</option>
+<option>3 a 5 personas (SUV / Pick-up)</option>
+<option>6 a 12 personas (Van ejecutiva)</option>
+<option>Más de 12 personas (Minibús)</option>
+</select>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#667085]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Row: Preferencia flota & Notas -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Preferencia de flota -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="fleet-preference">
+                Preferencia de categoría de flota (Opcional)
+              </label>
+<input class="w-full px-3.5 py-2.5 text-sm bg-white border border-[#EAECF0] rounded-lg text-[#344054] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="fleet-preference" name="fleet_preference" type="text" value="Cualquier categoría recomendada">
+</div>
+<!-- Notas u observaciones iniciales -->
+<div>
+<label class="block text-xs font-medium text-[#344054] mb-1.5" for="initial-notes">
+                Notas u observaciones iniciales
+              </label>
+<input class="w-full px-3.5 py-2.5 text-sm bg-white border border-[#EAECF0] rounded-lg text-[#344054] placeholder-[#98A2B3] focus:ring-2 focus:ring-[#C6600A]/20 focus:border-[#C6600A] outline-none transition" id="initial-notes" name="initial_notes" placeholder="Ej. Requiere equipamiento minero o chofer local" type="text">
+</div>
+</div>
+</section>
+<!-- END: TripNeedSection -->
+<!-- BEGIN: ActionButtons -->
+<div class="pt-4 space-y-3">
+<button class="w-full py-3 px-4 bg-[#1F2A33] hover:bg-[#161e25] text-white font-medium text-sm rounded transition duration-150 flex items-center justify-center gap-2 shadow-sm" type="submit">
+<span>Continuar</span>
+<svg class="w-4 h-4 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<div class="text-center">
+<button class="text-sm font-medium text-[#4E4A45] hover:text-[#1F2A33] transition-colors py-1" type="button">
+              Cerrar
+            </button>
+</div>
+</div>
+<!-- END: ActionButtons -->
+</form>
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="w-full border-t border-[#E6EAEC] bg-white text-xs text-[#5B656F] py-4 mt-8">
+<div class="max-w-[1440px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+<div>
+        VeloxRent © 2025 · Sistema de Gestión Interna
+      </div>
+<div class="flex items-center space-x-3">
+<span>Soporte Front-office: anexo 103</span>
+<span class="text-gray-300">|</span>
+<a class="text-[#C22B2B] hover:underline font-medium" href="#">Cerrar sesión</a>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+<!-- BEGIN: InteractiveScripts -->
+<script data-purpose="form-interactivity">
+    // Interactive channel chips switch
+    const btnPresencial = document.getElementById('btn-channel-inperson');
+    const btnVirtual = document.getElementById('btn-channel-virtual');
+
+    btnPresencial.addEventListener('click', () => {
+      btnPresencial.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-[#C6600A] bg-[#FFFBF7] text-[#C6600A] text-sm font-semibold transition-all';
+      btnPresencial.querySelector('svg').className = 'w-4 h-4 text-[#C6600A]';
+
+      btnVirtual.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[#344054] text-sm font-medium hover:bg-gray-50 transition-all';
+      btnVirtual.querySelector('svg').className = 'w-4 h-4 text-[#667085]';
+    });
+
+    btnVirtual.addEventListener('click', () => {
+      btnVirtual.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-[#C6600A] bg-[#FFFBF7] text-[#C6600A] text-sm font-semibold transition-all';
+      btnVirtual.querySelector('svg').className = 'w-4 h-4 text-[#C6600A]';
+
+      btnPresencial.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[#344054] text-sm font-medium hover:bg-gray-50 transition-all';
+      btnPresencial.querySelector('svg').className = 'w-4 h-4 text-[#667085]';
+    });
+
+    // Interactive Nationality toggle & conditional field display
+    const tabPeruano = document.getElementById('tab-peruano');
+    const tabExtranjero = document.getElementById('tab-extranjero');
+    const foreignDocContainer = document.getElementById('foreign-document-container');
+    const foreignDocInput = document.getElementById('foreign-document');
+
+    tabExtranjero.addEventListener('click', () => {
+      tabExtranjero.className = 'flex items-center justify-center gap-2 py-1.5 px-3 bg-white text-[#1F2A33] font-medium text-xs rounded shadow-sm border border-black/5 transition-all';
+      tabPeruano.className = 'flex items-center justify-center gap-2 py-1.5 px-3 text-[#475467] font-medium text-xs rounded hover:bg-white/60 transition-all';
+      foreignDocContainer.classList.remove('hidden');
+      foreignDocInput.setAttribute('required', 'true');
+    });
+
+    tabPeruano.addEventListener('click', () => {
+      tabPeruano.className = 'flex items-center justify-center gap-2 py-1.5 px-3 bg-white text-[#1F2A33] font-medium text-xs rounded shadow-sm border border-black/5 transition-all';
+      tabExtranjero.className = 'flex items-center justify-center gap-2 py-1.5 px-3 text-[#475467] font-medium text-xs rounded hover:bg-white/60 transition-all';
+      foreignDocContainer.classList.add('hidden');
+      foreignDocInput.removeAttribute('required');
+    });
+  </script>
+<!-- END: InteractiveScripts -->
+</body></html>

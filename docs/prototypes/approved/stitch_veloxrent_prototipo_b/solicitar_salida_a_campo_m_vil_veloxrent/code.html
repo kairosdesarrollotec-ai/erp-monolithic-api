@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitar salida a campo — Móvil - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #f6f3ed;
+      color: #1f2a33;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    /* Estilos personalizados para input time en móvil */
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex justify-center items-start sm:py-6">
+
+  <!-- Mobile Shell (390px) -->
+  <div class="w-full max-w-[390px] min-h-screen bg-white flex flex-col justify-between relative shadow-lg sm:rounded-lg overflow-hidden border border-[#dddad4]">
+
+    <!-- Header Móvil Superior -->
+    <header class="sticky top-0 z-30 bg-white border-b border-[#dddad4] px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button type="button" class="w-9 h-9 flex items-center justify-center rounded text-[#1f2a33] hover:bg-[#f6f3ed] active:bg-[#dddad4] transition-colors" aria-label="Volver">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <span class="text-[11px] font-semibold text-[#8b7355] uppercase tracking-wider block">Personal • Salida a campo</span>
+          <h1 class="font-heading text-[17px] font-bold text-[#1f2a33] leading-tight">Solicitar salida a campo</h1>
+        </div>
+      </div>
+
+      <!-- Estado Sincronización / Conexión -->
+      <div class="flex items-center gap-1.5 bg-[#eaf3ed] px-2 py-1 rounded text-[11px] font-medium text-[#1e7d4b]">
+        <span class="w-2 h-2 rounded-full bg-[#1e7d4b]"></span>
+        <span>En línea</span>
+      </div>
+    </header>
+
+    <!-- Contenido Principal / Formulario -->
+    <main class="flex-1 px-5 pt-5 pb-28">
+
+      <!-- Ficha del solicitante en campo -->
+      <div class="mb-5 p-3 rounded bg-[#f6f3ed] border border-[#dddad4] flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-[#1f2a33] text-white font-heading font-semibold text-xs flex items-center justify-center">
+            EA
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-[#1f2a33]">Edwin Alanya Córdoba</div>
+            <div class="text-[11px] text-[#5c5446]">Mecánico de Flota • Sede Ayacucho</div>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider bg-[#dddad4] text-[#4e4a45] px-2 py-0.5 rounded">
+          Nivel 1
+        </span>
+      </div>
+
+      <!-- Formulario apilado -->
+      <form class="space-y-4" onsubmit="event.preventDefault();">
+
+        <!-- Campo 1: Área (Heredado, Solo Lectura, Fondo gris claro) -->
+        <div>
+          <label class="block text-xs font-bold text-[#1f2a33] uppercase tracking-wider mb-1.5">
+            Área
+          </label>
+          <div class="relative">
+            <input 
+              type="text" 
+              value="Mantenimiento y Patio" 
+              readonly 
+              class="w-full h-12 px-3.5 bg-[#f0ede6] border border-[#dddad4] rounded text-[14px] font-medium text-[#5c5446] cursor-not-allowed select-none focus:outline-none"
+            />
+            <div class="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b7355] text-xs flex items-center gap-1">
+              <svg class="w-4 h-4 text-[#8b7355]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <span class="text-[11px]">Heredado</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-[#78716c] mt-1">Determinada automáticamente por tu rol activo en el sistema.</p>
+        </div>
+
+        <!-- Campo 2: Tema de la salida (Input de texto, altura 48px) -->
+        <div>
+          <label for="tema" class="block text-xs font-bold text-[#1f2a33] uppercase tracking-wider mb-1.5">
+            Tema de la salida <span class="text-[#c22b2b]">*</span>
+          </label>
+          <input 
+            id="tema"
+            type="text" 
+            placeholder="Ej. Asistencia técnica de urgencia en ruta Huanta" 
+            value="Auxilio mecánico en ruta Huanta — Toyota Hilux D0Y-704"
+            class="w-full h-12 px-3.5 bg-white border border-[#a39c90] rounded text-[14px] text-[#1f2a33] placeholder-[#8b7355] focus:border-[#9e4c08] focus:ring-1 focus:ring-[#9e4c08] focus:outline-none transition-all"
+            required
+          />
+        </div>
+
+        <!-- Campo 3: Hora de salida (Selector nativo apilado) -->
+        <div>
+          <label for="hora_salida" class="block text-xs font-bold text-[#1f2a33] uppercase tracking-wider mb-1.5">
+            Hora de salida <span class="text-[#c22b2b]">*</span>
+          </label>
+          <div class="relative">
+            <input 
+              id="hora_salida"
+              type="time" 
+              value="14:30"
+              class="w-full h-12 px-3.5 bg-white border border-[#a39c90] rounded text-[15px] font-semibold text-[#1f2a33] focus:border-[#9e4c08] focus:ring-1 focus:ring-[#9e4c08] focus:outline-none transition-all"
+              required
+            />
+          </div>
+          <p class="text-[11px] text-[#78716c] mt-1">Hora programada para abandonar la sede.</p>
+        </div>
+
+        <!-- Campo 4: Hora estimada de retorno (Selector nativo apilado, uno debajo del otro) -->
+        <div>
+          <label for="hora_retorno" class="block text-xs font-bold text-[#1f2a33] uppercase tracking-wider mb-1.5">
+            Hora estimada de retorno <span class="text-[#c22b2b]">*</span>
+          </label>
+          <div class="relative">
+            <input 
+              id="hora_retorno"
+              type="time" 
+              value="18:00"
+              class="w-full h-12 px-3.5 bg-white border border-[#a39c90] rounded text-[15px] font-semibold text-[#1f2a33] focus:border-[#9e4c08] focus:ring-1 focus:ring-[#9e4c08] focus:outline-none transition-all"
+              required
+            />
+          </div>
+          <p class="text-[11px] text-[#78716c] mt-1">Tiempo estimado total fuera de sede: 3 h 30 min.</p>
+        </div>
+
+        <!-- Nota técnica de política interna -->
+        <div class="p-3 bg-[#fff7ed] border border-[#fed7aa] rounded flex items-start gap-2.5 mt-2">
+          <svg class="w-4 h-4 text-[#9e4c08] shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="text-[11px] text-[#854d0e] leading-relaxed">
+            La solicitud requiere autorización del supervisor de guardia (Fiorella Olivos) antes de registrar la salida física en garita.
+          </div>
+        </div>
+
+      </form>
+    </main>
+
+    <!-- Barra Inferior Fija con Botón de Enviar Solicitud -->
+    <footer class="fixed sm:absolute bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-white border-t border-[#dddad4] p-4 z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+      <button 
+        type="button" 
+        class="w-full h-[52px] bg-[#9e4c08] hover:bg-[#853f06] active:bg-[#6c3305] text-white font-heading font-bold text-[15px] rounded tracking-wide shadow transition-colors flex items-center justify-center gap-2"
+      >
+        <span>Enviar solicitud</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </button>
+      <div class="text-center mt-2">
+        <a href="#" class="text-xs text-[#5c5446] hover:text-[#1f2a33] underline">Cancelar y volver</a>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

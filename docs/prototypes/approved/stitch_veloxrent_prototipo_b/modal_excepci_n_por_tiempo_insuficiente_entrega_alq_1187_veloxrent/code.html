@@ -1,0 +1,252 @@
+<!DOCTYPE html><html lang="es" class="h-full"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excepción por tiempo insuficiente — Entrega #ALQ-1187 - VeloxRent</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              primary: '#1A1D21',
+              accent: '#C6600A',
+              warning: '#B5720A',
+              danger: '#C22B2B',
+              success: '#1E7D4B',
+              border: '#E2DFD9',
+              borderDark: '#A39C90',
+              muted: '#4E4A45',
+              surface: '#FCF9F3',
+              surfaceHigh: '#EFEDE7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #f6f3ed;
+      color: #1A1D21;
+    }
+    .font-space {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F6F3ED] text-[#1A1D21] relative overflow-hidden flex flex-col justify-between select-none">
+
+  <!-- BACKGROUND: Entrega de vehículo - Etapa 4 / Checklist contextually rendered behind overlay -->
+  <div class="absolute inset-0 z-0 pointer-events-none flex flex-col justify-between opacity-80 filter blur-[1.5px]" aria-hidden="true">
+    
+    <!-- Header simulado ERP -->
+    <header class="bg-[#1F2A33] text-white px-8 py-3.5 flex items-center justify-between border-b border-[#2C3B47]">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded bg-[#C6600A] flex items-center justify-center font-bold text-white tracking-wider text-sm">VR</div>
+          <span class="font-space font-bold tracking-tight text-lg">VeloxRent</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-[#2A3742] text-slate-300 ml-1 font-medium">ERP v2.6</span>
+        </div>
+        <div class="h-4 w-px bg-slate-600"></div>
+        <nav class="flex items-center gap-4 text-xs font-medium text-slate-300">
+          <span class="text-white font-semibold flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#C6600A]"></span>
+            Alquileres / Expediente #ALQ-1187
+          </span>
+          <span>Flota</span>
+          <span>Pagos</span>
+          <span>Operaciones</span>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <span class="text-slate-300">Sede: <strong class="text-white">Ayacucho Principal</strong></span>
+        <span class="text-slate-300">Inspector: <strong class="text-white">María Quispe H.</strong></span>
+        <div class="w-6 h-6 rounded-full bg-slate-600 text-center leading-6 text-white font-semibold">M</div>
+      </div>
+    </header>
+
+    <!-- Subheader / Stepper de Entrega -->
+    <div class="bg-white border-b border-[#E2DFD9] px-8 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold px-2 py-0.5 rounded bg-[#E7F5EC] text-[#1E7D4B] border border-[#1E7D4B]/20">ALQUILER ACTIVO</span>
+        <h1 class="font-space font-bold text-lg text-[#1A1D21]">Entrega de vehículo — Toyota Hilux D0Y-704</h1>
+      </div>
+      <!-- Stepper 5 etapas -->
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-[#1E7D4B] font-medium">✓ 1. Cliente</span>
+        <span class="text-[#8C857B]">/</span>
+        <span class="text-[#1E7D4B] font-medium">✓ 2. Validaciones</span>
+        <span class="text-[#8C857B]">/</span>
+        <span class="text-[#1E7D4B] font-medium">✓ 3. Contrato</span>
+        <span class="text-[#8C857B]">/</span>
+        <span class="font-bold text-[#C6600A] bg-[#FDF1DE] px-2 py-0.5 rounded border border-[#C6600A]/30">4. Checklist y evidencia</span>
+        <span class="text-[#8C857B]">/</span>
+        <span class="text-[#8C857B]">5. Confirmar</span>
+      </div>
+    </div>
+
+    <!-- Main content background: Patio Checklist -->
+    <main class="flex-1 p-8 max-w-7xl mx-auto w-full grid grid-cols-12 gap-6">
+      <div class="col-span-8 space-y-4">
+        <div class="bg-white rounded border border-[#E2DFD9] p-5 shadow-sm space-y-3">
+          <div class="flex justify-between items-center pb-3 border-b border-[#EFEDE7]">
+            <h2 class="font-space font-bold text-base text-[#1A1D21]">Zona 2 de 5: Interior y cabina</h2>
+            <span class="text-xs text-[#4E4A45] font-mono">HASH: a8f4...09e1</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="h-28 bg-[#EFEDE7] rounded border border-dashed border-[#A39C90] flex items-center justify-center text-xs text-[#8C857B]">Foto odómetro y combustible</div>
+            <div class="h-28 bg-[#EFEDE7] rounded border border-dashed border-[#A39C90] flex items-center justify-center text-xs text-[#8C857B]">Foto asientos delanteros</div>
+            <div class="h-28 bg-[#EFEDE7] rounded border border-dashed border-[#A39C90] flex items-center justify-center text-xs text-[#8C857B]">Foto kit de herramientas</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-4 space-y-4">
+        <div class="bg-white rounded border border-[#E2DFD9] p-5 shadow-sm space-y-3">
+          <h3 class="font-space font-bold text-sm text-[#1A1D21]">Monitoreo de inspección</h3>
+          <div class="p-3 bg-[#FDF1DE] border border-[#B5720A]/30 rounded text-xs space-y-1">
+            <div class="flex justify-between">
+              <span class="text-[#4E4A45]">Tiempo transcurrido:</span>
+              <span class="font-bold text-[#B5720A] font-mono">22 min 14 seg</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-[#4E4A45]">Tiempo mínimo reglamentario:</span>
+              <span class="font-semibold text-[#1A1D21] font-mono">30 min 00 seg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer background -->
+    <footer class="bg-white border-t border-[#E2DFD9] px-8 py-3 text-xs text-[#8C857B] flex justify-between">
+      <span>VeloxRent ERP • Protocolo Operativo Patio PAT-MIN-004</span>
+      <span>Soporte Patio: Anexo 108</span>
+    </footer>
+  </div>
+
+  <!-- OVERLAY OSCURO SEMITRANSPARENTE (40% de opacidad) -->
+  <div class="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] transition-opacity"></div>
+
+  <!-- MODAL CONTAINER (Centrado en pantalla) -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    
+    <!-- TARJETA CENTRADA: 420px de ancho, radio 6px, fondo blanco -->
+    <div class="bg-white rounded-[6px] shadow-2xl border border-[#E2DFD9] w-full max-w-[420px] p-6 text-left relative transform transition-all">
+      
+      <!-- ÍCONO DE ALERTA: Color #B5720A arriba -->
+      <div class="mb-4">
+        <div class="w-12 h-12 rounded-full bg-[#FDF1DE] border border-[#B5720A]/20 flex items-center justify-center text-[#B5720A]">
+          <!-- Exclamation Warning Triangle Icon SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+      </div>
+
+      <!-- TÍTULO: Space Grotesk 18px bold color #1A1D21 -->
+      <h2 class="font-space text-[18px] leading-tight font-bold text-[#1A1D21] tracking-tight mb-2">
+        Tiempo técnico insuficiente
+      </h2>
+
+      <!-- TEXTO DEBAJO: Public Sans 14px color #4E4A45 -->
+      <p class="font-sans text-[14px] leading-relaxed text-[#4E4A45] mb-5">
+        El tiempo técnico registrado fue de 22 minutos, menos del mínimo de 30 requerido
+      </p>
+
+      <!-- METADATA CONTEXTUAL DE CONTROL (Auditoría interna #ALQ-1187) -->
+      <div class="mb-5 p-3 rounded bg-[#FAF8F5] border border-[#E2DFD9] text-xs space-y-1.5 font-sans">
+        <div class="flex justify-between items-center text-[#4E4A45]">
+          <span>Expediente de entrega:</span>
+          <span class="font-bold text-[#1A1D21] font-mono">#ALQ-1187</span>
+        </div>
+        <div class="flex justify-between items-center text-[#4E4A45]">
+          <span>Tiempo cronometrado:</span>
+          <span class="font-bold text-[#B5720A] font-mono">22 min / 30 min (-8 min)</span>
+        </div>
+        <div class="flex justify-between items-center text-[#4E4A45]">
+          <span>Norma de calidad:</span>
+          <span class="text-[#1A1D21] font-medium">PAT-MIN-004 (Pick-up 4x4)</span>
+        </div>
+      </div>
+
+      <!-- CAMPO DE TEXTO OBLIGATORIO: Textarea (no checkbox) -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="motivo-excepcion" class="font-sans text-[13px] font-semibold text-[#1A1D21] flex items-center gap-1">
+            Motivo de la excepción
+            <span class="text-[#C22B2B] text-xs">*</span>
+          </label>
+          <span class="text-[11px] text-[#8C857B] font-mono" id="char-counter">0 / 250</span>
+        </div>
+
+        <textarea id="motivo-excepcion" rows="3" placeholder="Escriba la justificación técnica por la cual se finaliza la inspección antes de los 30 minutos obligatorios..." class="w-full text-[13px] font-sans text-[#1A1D21] placeholder-[#8C857B] bg-white border border-[#A39C90] rounded-[4px] p-2.5 focus:outline-none focus:ring-1 focus:ring-[#B5720A] focus:border-[#B5720A] transition-colors resize-none leading-normal" required=""></textarea>
+        
+        <p class="mt-1.5 text-[11px] text-[#8C857B] leading-tight">
+          Esta justificación quedará anexada al acta digital de entrega y será auditada por Gerencia de Operaciones.
+        </p>
+      </div>
+
+      <!-- DOS BOTONES AL FINAL: Uno al lado del otro -->
+      <div class="flex items-center gap-3 pt-1 border-t border-[#EFEDE7]">
+        <!-- BOTÓN CANCELAR: Borde 1.5px #A39C90, texto #1A1D21 -->
+        <button type="button" class="flex-1 py-2.5 px-3 rounded-[4px] border-[1.5px] border-[#A39C90] bg-white hover:bg-[#F6F3ED] active:bg-[#EFEDE7] text-[#1A1D21] font-sans text-[13px] font-semibold text-center transition-colors focus:outline-none">
+          Cancelar
+        </button>
+
+        <!-- BOTÓN REGISTRAR EXCEPCIÓN Y FINALIZAR: Fondo #B5720A, texto blanco, deshabilitado hasta escribir motivo -->
+        <button id="btn-registrar" type="button" disabled="" class="flex-1 py-2.5 px-3 rounded-[4px] bg-[#B5720A] text-white font-sans text-[13px] font-semibold text-center transition-all opacity-45 cursor-not-allowed shadow-sm focus:outline-none flex items-center justify-center gap-1.5" title="Debe ingresar el motivo de la excepción para habilitar este botón">
+          <!-- Small lock / check icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Registrar excepción y finalizar</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Interactivity Script for Input Validation & Enabling the Submit Button -->
+  <script>
+    const textarea = document.getElementById('motivo-excepcion');
+    const btnRegistrar = document.getElementById('btn-registrar');
+    const charCounter = document.getElementById('char-counter');
+
+    textarea.addEventListener('input', function() {
+      const val = this.value.trim();
+      const length = this.value.length;
+      charCounter.textContent = `${length} / 250`;
+
+      if (val.length > 0) {
+        btnRegistrar.disabled = false;
+        btnRegistrar.classList.remove('opacity-45', 'cursor-not-allowed');
+        btnRegistrar.classList.add('hover:bg-[#9E6206]', 'active:bg-[#855304]', 'cursor-pointer');
+        btnRegistrar.setAttribute('title', 'Confirmar y registrar excepción en el expediente #ALQ-1187');
+      } else {
+        btnRegistrar.disabled = true;
+        btnRegistrar.classList.add('opacity-45', 'cursor-not-allowed');
+        btnRegistrar.classList.remove('hover:bg-[#9E6206]', 'active:bg-[#855304]', 'cursor-pointer');
+        btnRegistrar.setAttribute('title', 'Debe ingresar el motivo de la excepción para habilitar este botón');
+      }
+    });
+  </script>
+
+
+
+</body></html>

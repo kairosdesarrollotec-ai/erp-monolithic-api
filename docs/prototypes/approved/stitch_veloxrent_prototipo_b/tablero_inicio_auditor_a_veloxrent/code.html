@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tablero — Inicio (Auditoría) - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              muted: '#4E4A45',
+              border: '#A39C90',
+              accent: '#C6600A',
+              bgLight: '#F5F4F0',
+              inputBg: '#FFFFFF',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      color: #1F2A33;
+      background-color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .custom-border {
+      border: 1.5px solid #A39C90;
+    }
+    .custom-border:focus-within,
+    .search-card:hover {
+      border-color: #C6600A;
+    }
+    .quick-pill {
+      border: 1px solid #D8D4CE;
+      transition: all 0.15s ease;
+    }
+    .quick-pill:hover {
+      border-color: #C6600A;
+      color: #C6600A;
+      background-color: #FFF9F5;
+    }
+  </style>
+</head>
+<body class="bg-white flex flex-col justify-between selection:bg-[#C6600A]/10 selection:text-[#C6600A]">
+
+  <!-- Top Header Navigation -->
+  <header class="border-b border-[#E5E3DF] bg-white px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="font-heading font-bold text-xl tracking-tight text-[#1F2A33]">VeloxRent</span>
+      <span class="text-[#A39C90] font-light">|</span>
+      <span class="text-xs px-2.5 py-1 bg-[#F5F4F0] text-[#4E4A45] rounded font-medium border border-[#E5E3DF]">
+        Auditoría y Control
+      </span>
+    </div>
+    <div class="flex items-center gap-4 text-xs">
+      <div class="flex items-center gap-2 text-[#4E4A45]">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>En línea</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-6 py-10 flex flex-col justify-start">
+    
+    <!-- Greeting & Header Info -->
+    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-6 border-b border-[#EBE8E3]">
+      <div>
+        <h1 class="font-heading text-3xl md:text-[34px] font-bold text-[#1F2A33] tracking-tight leading-tight">
+          Hola, Valeria
+        </h1>
+        <p class="text-[#4E4A45] text-sm mt-1.5 font-normal">
+          Consulta inmutable de trazas, accesos y operaciones registradas en el sistema.
+        </p>
+      </div>
+      <div class="self-start inline-flex items-center gap-2 px-3 py-1.5 bg-[#F5F4F0] rounded border border-[#E5E3DF] text-xs font-medium text-[#4E4A45]">
+        <svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+        </svg>
+        <span>Ayacucho — Sede Central</span>
+      </div>
+    </div>
+
+    <!-- Section: Un solo acceso grande de búsqueda directa -->
+    <div class="mt-8">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-bold tracking-wider text-[#4E4A45] uppercase font-sans">
+          Módulo de Consulta Directa
+        </span>
+        <span class="text-xs font-mono text-[#A39C90]">
+          AUD-01
+        </span>
+      </div>
+
+      <!-- Tarjeta principal de búsqueda -->
+      <div class="search-card bg-white custom-border rounded p-6 sm:p-8 transition-colors duration-200">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded bg-[#F5F4F0] flex items-center justify-center text-[#1F2A33] border border-[#E5E3DF]">
+            <svg class="w-5 h-5 text-[#1F2A33]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="font-heading text-xl font-bold text-[#1F2A33]">
+              Buscar en auditoría
+            </h2>
+            <p class="text-xs text-[#4E4A45] mt-0.5">
+              Inspección de logs de eventos, modificaciones de tarifas, asignaciones y eventos de autenticación.
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulario integrado de búsqueda directa -->
+        <form class="mt-6" onsubmit="event.preventDefault();">
+          <div class="relative flex flex-col sm:flex-row items-stretch gap-3">
+            <div class="relative flex-1">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#A39C90]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+              <input type="text" id="auditSearchInput" placeholder="Buscar por usuario, ID de evento, placa vehicular, IP o acción (ej: USR-042, D0Y-704, LOGIN_FAIL)..." class="w-full pl-11 pr-4 py-3 bg-[#FFFFFF] border border-[#A39C90] rounded text-sm text-[#1F2A33] placeholder-[#A39C90] focus:outline-none focus:border-[#C6600A] focus:ring-1 focus:ring-[#C6600A] transition-all" autofocus="">
+            </div>
+            <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-[#1F2A33] hover:bg-[#2C3B47] text-white text-sm font-medium rounded transition-colors duration-150 gap-2 whitespace-nowrap cursor-pointer">
+              <span>Ejecutar búsqueda</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Filtros rápidos de un solo toque -->
+          <div class="mt-5 pt-5 border-t border-[#F0EFEB] flex flex-wrap items-center gap-2">
+            <span class="text-xs text-[#4E4A45] font-medium mr-1">Filtros frecuentes:</span>
+            <button type="button" class="quick-pill px-2.5 py-1 text-xs rounded bg-white text-[#4E4A45]" onclick="document.getElementById('auditSearchInput').value='event:LOGIN_FAIL';">
+              Fallos de autenticación
+            </button>
+            <button type="button" class="quick-pill px-2.5 py-1 text-xs rounded bg-white text-[#4E4A45]" onclick="document.getElementById('auditSearchInput').value='module:FINANZAS action:UPDATE';">
+              Modificaciones de pagos
+            </button>
+            <button type="button" class="quick-pill px-2.5 py-1 text-xs rounded bg-white text-[#4E4A45]" onclick="document.getElementById('auditSearchInput').value='module:ADM action:ROLE_CHANGE';">
+              Cambios de permisos
+            </button>
+            <button type="button" class="quick-pill px-2.5 py-1 text-xs rounded bg-white text-[#4E4A45]" onclick="document.getElementById('auditSearchInput').value='today:all';">
+              Trazas de hoy
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Nota de confidencialidad y estado del rol -->
+      <div class="mt-4 flex items-center justify-between text-xs text-[#A39C90] px-1 font-mono">
+        <span>Perfil: Auditor Senior (Solo lectura de logs)</span>
+        <span>Registro criptográfico inmutable v2.4</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-[#E5E3DF] bg-white px-8 py-4 text-xs text-[#4E4A45] flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div>
+      VeloxRent © 2025 · Sistema de Gestión Interna
+    </div>
+    <div class="flex items-center gap-6">
+      <span>Soporte Auditoría / TI: anexo 101</span>
+      <a href="#" class="hover:text-[#C6600A] transition-colors underline">Cerrar sesión</a>
+    </div>
+  </footer>
+
+
+</body></html>

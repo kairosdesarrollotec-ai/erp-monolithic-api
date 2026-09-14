@@ -1,0 +1,440 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar capacitación — Personal - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              sand: '#FAF9F5',
+              gray: '#4E4A45',
+              border: '#E5E2DC',
+              success: '#1E7D4B',
+              warning: '#B5720A',
+              danger: '#C22B2B',
+              info: '#2166B0',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-space {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #C6600A;
+      box-shadow: 0 0 0 1px #C6600A;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #F4F3EF;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #D5D2CA;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white text-[#1F2A33] flex flex-col justify-between selection:bg-[#C6600A]/15 selection:text-[#C6600A]">
+
+  <!-- TOP APP BAR -->
+  <header class="border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+    <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Navigation Breadcrumbs -->
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+          <span class="font-space font-bold text-2xl tracking-tight text-[#C6600A]">Velox<span class="text-[#1F2A33]">Rent</span></span>
+          <span class="text-[11px] font-mono bg-[#FAF9F5] text-[#4E4A45] border border-[#E5E2DC] px-1.5 py-0.5 rounded font-semibold ml-1">ERP v3.4</span>
+        </div>
+
+        <div class="h-5 w-[1px] bg-[#E5E2DC]"></div>
+
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center space-x-2 text-[13px] text-[#4E4A45]">
+          <span class="hover:text-[#1F2A33] cursor-pointer">Recursos Humanos</span>
+          <span class="text-[#A39C90]">›</span>
+          <span class="hover:text-[#1F2A33] cursor-pointer">Personal</span>
+          <span class="text-[#A39C90]">›</span>
+          <span class="hover:text-[#1F2A33] cursor-pointer">Capacitación</span>
+          <span class="text-[#A39C90]">›</span>
+          <span class="font-medium text-[#1F2A33]">Registrar capacitación</span>
+        </nav>
+      </div>
+
+      <!-- System status & User Profile -->
+      <div class="flex items-center space-x-6 text-[13px]">
+        <div class="flex items-center space-x-2 text-[#1E7D4B] font-medium bg-[#E8F5EC] px-2.5 py-1 rounded-full text-xs">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <div class="flex items-center space-x-2 text-[#4E4A45]">
+          <svg class="w-4 h-4 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="font-normal text-xs text-[#1F2A33]">Ayacucho — Sede Central</span>
+        </div>
+
+        <div class="h-6 w-[1px] bg-[#E5E2DC]"></div>
+
+        <!-- User profile badge -->
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded bg-[#1F2A33] text-white flex items-center justify-center font-space font-semibold text-xs">
+            RO
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-xs font-semibold leading-tight text-[#1F2A33]">Rodrigo Ortiz</span>
+            <span class="text-[11px] text-[#4E4A45] leading-tight">Jefe de RR.HH.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECONDARY CONTEXT / AUDIT BAR -->
+  <div class="bg-[#FAF9F5] border-b border-[#E5E2DC] py-2.5">
+    <div class="max-w-[1440px] mx-auto px-6 flex items-center justify-between text-xs">
+      <div class="flex items-center space-x-6">
+        <a href="#" class="inline-flex items-center space-x-1.5 text-[#4E4A45] hover:text-[#1F2A33] font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span>Volver a Capacitaciones y Talleres</span>
+        </a>
+        <span class="text-[#E5E2DC]">|</span>
+        <div class="flex items-center space-x-2 text-[#4E4A45]">
+          <span>Código de registro:</span>
+          <span class="font-mono font-semibold text-[#1F2A33]">#CAP-2026-031</span>
+        </div>
+        <span class="text-[#E5E2DC]">|</span>
+        <div class="flex items-center space-x-2 text-[#4E4A45]">
+          <span>Programa anual:</span>
+          <span class="text-[#1F2A33] font-medium">Plan de Formación Interna y Seguridad 2026</span>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3 text-[#4E4A45]">
+        <span class="bg-[#FAF9F5] border border-[#E5E2DC] px-2 py-0.5 rounded text-[11px] font-mono">Protocolo: PR-RRHH-019</span>
+        <span class="text-[11px] text-[#A39C90]">• Registro directo en taller</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <main class="max-w-[1440px] mx-auto px-6 py-8 flex-1 w-full">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Page Title & Guidance -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="font-space text-2xl font-bold text-[#1F2A33] tracking-tight">Registrar capacitación</h1>
+            <p class="text-[13px] text-[#4E4A45] mt-1">Registro ágil de sesión interna, inducción técnica o taller operativo para el equipo en sede.</p>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded bg-[#F4F3EF] border border-[#E5E2DC] text-xs text-[#4E4A45] font-mono">
+            Modalidad: Taller presencial / Práctico
+          </span>
+        </div>
+      </div>
+
+      <!-- FORM CARD CONTAINER -->
+      <form class="space-y-6" onsubmit="event.preventDefault();">
+        
+        <!-- SECTION 1: DATOS PRINCIPALES DEL TALLER -->
+        <div class="bg-white border border-[#E5E2DC] rounded p-6 shadow-sm">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45] mb-5 pb-2 border-b border-[#F0EFEB] flex items-center justify-between">
+            <span>1. Datos del Taller</span>
+            <span class="text-[11px] font-normal lowercase text-[#A39C90]">* Campos obligatorios</span>
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+            <!-- Tema -->
+            <div class="md:col-span-12">
+              <label for="tema" class="block text-xs font-medium text-[#1F2A33] mb-1.5">
+                Tema de la capacitación <span class="text-[#C22B2B]">*</span>
+              </label>
+              <input type="text" id="tema" name="tema" value="Procedimiento de seguridad en cambio de alternador y batería en ruta minera 4x4" placeholder="Ej. Inducción de seguridad en taller, uso de escáner automotriz..." class="w-full h-10 px-3.5 bg-white border border-[#E5E2DC] rounded text-sm text-[#1F2A33] placeholder-[#A39C90] focus:bg-white transition-all font-sans">
+              <p class="text-[11px] text-[#4E4A45] mt-1.5">Indica con claridad el tópico técnico u operativo abordado en la sesión.</p>
+            </div>
+
+            <!-- Fecha -->
+            <div class="md:col-span-6">
+              <label for="fecha" class="block text-xs font-medium text-[#1F2A33] mb-1.5">
+                Fecha <span class="text-[#C22B2B]">*</span>
+              </label>
+              <div class="relative">
+                <input type="date" id="fecha" name="fecha" value="2026-09-08" class="w-full h-10 px-3.5 bg-white border border-[#E5E2DC] rounded text-sm text-[#1F2A33] font-mono focus:bg-white transition-all">
+              </div>
+              <p class="text-[11px] text-[#4E4A45] mt-1.5">Fecha de ejecución del taller en sede o garita.</p>
+            </div>
+
+            <!-- Duración (Texto de referencia, no bloqueante) -->
+            <div class="md:col-span-6">
+              <label class="block text-xs font-medium text-[#1F2A33] mb-1.5">
+                Duración
+              </label>
+              <div class="h-10 px-3.5 bg-[#FAF9F5] border border-[#E5E2DC] rounded flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <svg class="w-4 h-4 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-sm font-mono font-medium text-[#1F2A33]">~1 hora</span>
+                </div>
+                <span class="text-[11px] text-[#A39C90] bg-white border border-[#E5E2DC] px-2 py-0.5 rounded">Referencia (no bloqueante)</span>
+              </div>
+              <p class="text-[11px] text-[#4E4A45] mt-1.5">Tiempo promedio estimado para talleres prácticos de sede. No condiciona el guardado.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: ASISTENTES (SELECTOR MÚLTIPLE DE PERSONAL) -->
+        <div class="bg-white border border-[#E5E2DC] rounded p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#F0EFEB]">
+            <div>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45]">
+                2. Asistentes <span class="text-[#C22B2B]">*</span>
+              </h2>
+              <p class="text-[11px] text-[#4E4A45] mt-0.5">Selecciona el personal que participó en el taller o sesión formativa.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-medium text-[#1F2A33]">Seleccionados:</span>
+              <span class="font-mono text-xs font-bold bg-[#FAF9F5] border border-[#E5E2DC] px-2 py-0.5 rounded text-[#C6600A]">4 colaboradores</span>
+            </div>
+          </div>
+
+          <!-- Quick search filter for personnel -->
+          <div class="mb-3.5">
+            <div class="relative">
+              <input type="text" placeholder="Buscar colaborador por nombre, DNI, puesto o área..." value="" class="w-full h-9 pl-9 pr-3.5 bg-[#FAF9F5] border border-[#E5E2DC] rounded text-xs text-[#1F2A33] placeholder-[#A39C90] transition-all">
+              <svg class="w-4 h-4 text-[#A39C90] absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Multiple selector container (List of staff with checkboxes) -->
+          <div class="border border-[#E5E2DC] rounded divide-y divide-[#E5E2DC] max-h-[290px] overflow-y-auto custom-scroll">
+            
+            <!-- Colaborador 1: Edwin Alanya (Checked) -->
+            <label class="flex items-center justify-between p-3 hover:bg-[#FAF9F5] cursor-pointer transition-colors bg-[#FDFBF7]">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" checked="" class="w-4 h-4 text-[#1F2A33] rounded border-[#A39C90] focus:ring-[#C6600A] accent-[#1F2A33]">
+                <div class="w-8 h-8 rounded bg-[#1F2A33] text-white flex items-center justify-center font-space text-xs font-semibold">
+                  EA
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Edwin Alanya Córdoba</span>
+                    <span class="text-[10px] font-mono text-[#4E4A45] bg-white border border-[#E5E2DC] px-1.5 py-0.2 rounded">DNI 47829103</span>
+                  </div>
+                  <div class="text-[11px] text-[#4E4A45]">Mecánico Especialista 4x4 / Flota Minera • <span class="text-[#1F2A33]">Taller Central Ayacucho</span></div>
+                </div>
+              </div>
+              <span class="text-[11px] font-medium text-[#1E7D4B] bg-[#E8F5EC] border border-[#BDE5CB] px-2 py-0.5 rounded">Asistente</span>
+            </label>
+
+            <!-- Colaborador 2: Víctor Hugo Morales Quispe (Checked) -->
+            <label class="flex items-center justify-between p-3 hover:bg-[#FAF9F5] cursor-pointer transition-colors bg-[#FDFBF7]">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" checked="" class="w-4 h-4 text-[#1F2A33] rounded border-[#A39C90] focus:ring-[#C6600A] accent-[#1F2A33]">
+                <div class="w-8 h-8 rounded bg-[#4E4A45] text-white flex items-center justify-center font-space text-xs font-semibold">
+                  VM
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Víctor Hugo Morales Quispe</span>
+                    <span class="text-[10px] font-mono text-[#4E4A45] bg-white border border-[#E5E2DC] px-1.5 py-0.2 rounded">DNI 41908234</span>
+                  </div>
+                  <div class="text-[11px] text-[#4E4A45]">Conductor / Inspector de Campo • <span class="text-[#1F2A33]">Operaciones de Ruta</span></div>
+                </div>
+              </div>
+              <span class="text-[11px] font-medium text-[#1E7D4B] bg-[#E8F5EC] border border-[#BDE5CB] px-2 py-0.5 rounded">Asistente</span>
+            </label>
+
+            <!-- Colaborador 3: Marcos Talavera Hinostroza (Checked) -->
+            <label class="flex items-center justify-between p-3 hover:bg-[#FAF9F5] cursor-pointer transition-colors bg-[#FDFBF7]">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" checked="" class="w-4 h-4 text-[#1F2A33] rounded border-[#A39C90] focus:ring-[#C6600A] accent-[#1F2A33]">
+                <div class="w-8 h-8 rounded bg-[#4E4A45] text-white flex items-center justify-center font-space text-xs font-semibold">
+                  MT
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Marcos Talavera Hinostroza</span>
+                    <span class="text-[10px] font-mono text-[#4E4A45] bg-white border border-[#E5E2DC] px-1.5 py-0.2 rounded">DNI 28391024</span>
+                  </div>
+                  <div class="text-[11px] text-[#4E4A45]">Jefe de Taller Central • <span class="text-[#1F2A33]">Mantenimiento Mecánico</span></div>
+                </div>
+              </div>
+              <span class="text-[11px] font-medium text-[#1E7D4B] bg-[#E8F5EC] border border-[#BDE5CB] px-2 py-0.5 rounded">Asistente</span>
+            </label>
+
+            <!-- Colaborador 4: Carlos Mendoza Huamán (Checked) -->
+            <label class="flex items-center justify-between p-3 hover:bg-[#FAF9F5] cursor-pointer transition-colors bg-[#FDFBF7]">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" checked="" class="w-4 h-4 text-[#1F2A33] rounded border-[#A39C90] focus:ring-[#C6600A] accent-[#1F2A33]">
+                <div class="w-8 h-8 rounded bg-[#4E4A45] text-white flex items-center justify-center font-space text-xs font-semibold">
+                  CM
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Carlos Mendoza Huamán</span>
+                    <span class="text-[10px] font-mono text-[#4E4A45] bg-white border border-[#E5E2DC] px-1.5 py-0.2 rounded">DNI 45192834</span>
+                  </div>
+                  <div class="text-[11px] text-[#4E4A45]">Técnico de Monitoreo GPS &amp; IoT • <span class="text-[#1F2A33]">Telemática</span></div>
+                </div>
+              </div>
+              <span class="text-[11px] font-medium text-[#1E7D4B] bg-[#E8F5EC] border border-[#BDE5CB] px-2 py-0.5 rounded">Asistente</span>
+            </label>
+
+            <!-- Colaborador 5: Rosa Huamán Prado (Unchecked) -->
+            <label class="flex items-center justify-between p-3 hover:bg-[#FAF9F5] cursor-pointer transition-colors">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" class="w-4 h-4 text-[#1F2A33] rounded border-[#A39C90] focus:ring-[#C6600A] accent-[#1F2A33]">
+                <div class="w-8 h-8 rounded bg-[#FAF9F5] text-[#4E4A45] border border-[#E5E2DC] flex items-center justify-center font-space text-xs font-semibold">
+                  RH
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-medium text-[#1F2A33]">Rosa Huamán Prado</span>
+                    <span class="text-[10px] font-mono text-[#A39C90] bg-white border border-[#E5E2DC] px-1.5 py-0.2 rounded">DNI 43819201</span>
+                  </div>
+                  <div class="text-[11px] text-[#4E4A45]">Asistente de Contabilidad y Facturación • <span class="text-[#4E4A45]">Finanzas</span></div>
+                </div>
+              </div>
+              <span class="text-[11px] text-[#A39C90]">No seleccionado</span>
+            </label>
+
+            <!-- Colaborador 6: María Quispe Mendoza (Unchecked) -->
+            <label class="flex items-center justify-between p-3 hover:bg-[#FAF9F5] cursor-pointer transition-colors">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" class="w-4 h-4 text-[#1F2A33] rounded border-[#A39C90] focus:ring-[#C6600A] accent-[#1F2A33]">
+                <div class="w-8 h-8 rounded bg-[#FAF9F5] text-[#4E4A45] border border-[#E5E2DC] flex items-center justify-center font-space text-xs font-semibold">
+                  MQ
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-medium text-[#1F2A33]">María Quispe Mendoza</span>
+                    <span class="text-[10px] font-mono text-[#A39C90] bg-white border border-[#E5E2DC] px-1.5 py-0.2 rounded">DNI 46102938</span>
+                  </div>
+                  <div class="text-[11px] text-[#4E4A45]">Ejecutiva de Front-office y Reservas • <span class="text-[#4E4A45]">Comercial</span></div>
+                </div>
+              </div>
+              <span class="text-[11px] text-[#A39C90]">No seleccionado</span>
+            </label>
+          </div>
+
+          <!-- Quick bulk selection actions -->
+          <div class="mt-2.5 flex items-center justify-between text-xs text-[#4E4A45]">
+            <div class="flex items-center space-x-3">
+              <button type="button" class="text-xs text-[#C6600A] hover:underline font-medium">Seleccionar área Taller completo (3)</button>
+              <span class="text-[#E5E2DC]">•</span>
+              <button type="button" class="text-xs text-[#4E4A45] hover:underline">Limpiar selección</button>
+            </div>
+            <span class="text-[11px] text-[#A39C90]">Mostrando 6 de 24 colaboradores activos</span>
+          </div>
+        </div>
+
+        <!-- SECTION 3: NOTAS SOBRE COMPRENSIÓN GENERAL (TEXTAREA SIMPLE) -->
+        <div class="bg-white border border-[#E5E2DC] rounded p-6 shadow-sm">
+          <div class="mb-4 pb-2 border-b border-[#F0EFEB]">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45]">
+              3. Notas sobre comprensión general
+            </h2>
+            <p class="text-[11px] text-[#4E4A45] mt-0.5">Observaciones directas del facilitador sobre la asimilación del contenido (no es un formulario de evaluación formal).</p>
+          </div>
+
+          <div>
+            <textarea id="notas" name="notas" rows="4" placeholder="Anota observaciones prácticas, dudas frecuentes resueltas o aspectos que requieren refuerzo en campo..." class="w-full p-3.5 bg-white border border-[#E5E2DC] rounded text-sm text-[#1F2A33] placeholder-[#A39C90] focus:bg-white transition-all font-sans leading-relaxed resize-y">El equipo técnico demostró dominio de los protocolos de desconexión segura en bornes y uso de guantes dieléctricos. Edwin Alanya y Carlos Mendoza realizaron la simulación práctica en 25 minutos con diagnóstico acertado en escáner. Se recomienda reforzar calibración de torque en terminales auxiliares durante la siguiente ronda de mantenimiento.</textarea>
+            
+            <div class="mt-2 flex items-center justify-between text-[11px] text-[#4E4A45]">
+              <span class="flex items-center space-x-1.5 text-[#4E4A45]">
+                <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Registro cualitativo de uso interno para el legajo de personal y seguimiento operacional.</span>
+              </span>
+              <span class="font-mono text-[#A39C90]">354 caracteres</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIONS ROW -->
+        <div class="pt-2 flex items-center justify-between border-t border-[#E5E2DC]">
+          <a href="#" class="text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] transition-colors">
+            Cancelar y volver a Capacitaciones
+          </a>
+
+          <div class="flex items-center space-x-3">
+            <button type="button" class="px-4 py-2.5 rounded border border-[#E5E2DC] bg-white text-xs font-medium text-[#1F2A33] hover:bg-[#FAF9F5] transition-colors">
+              Guardar borrador
+            </button>
+
+            <!-- Botón principal "Registrar taller" fondo #1F2A33 -->
+            <button type="submit" class="px-6 py-2.5 rounded bg-[#1F2A33] hover:bg-[#2C3B47] text-white text-xs font-medium font-sans flex items-center space-x-2 transition-all shadow-sm active:translate-y-0.5">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>Registrar taller</span>
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+  </main>
+
+  <!-- INSTITUTIONAL FOOTER -->
+  <footer class="border-t border-[#E5E2DC] bg-white py-4 mt-12 text-xs text-[#4E4A45]">
+    <div class="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-4">
+        <span class="font-medium text-[#1F2A33]">VeloxRent © 2026</span>
+        <span class="text-[#E5E2DC]">•</span>
+        <span>Sistema de Gestión Interna</span>
+        <span class="text-[#E5E2DC]">•</span>
+        <span>Módulo Personal / Programa de Capacitación Interna</span>
+      </div>
+
+      <div class="flex items-center space-x-6 text-[11px]">
+        <span>Soporte RR.HH.: <strong class="font-mono text-[#1F2A33]">anexo 104</strong></span>
+        <span class="text-[#E5E2DC]">•</span>
+        <span>Mesa Operaciones: <strong class="font-mono text-[#1F2A33]">anexo 101</strong></span>
+        <span class="text-[#E5E2DC]">•</span>
+        <a href="#" class="hover:text-[#C6600A] flex items-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

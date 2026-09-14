@@ -1,0 +1,547 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "secondary-fixed-dim": "#ffb68a",
+          "secondary-container": "#fd8a38",
+          "on-secondary-fixed": "#321300",
+          "on-primary-container": "#86919c",
+          "secondary": "#994700",
+          "surface-container-lowest": "#ffffff",
+          "surface-variant": "#e5e2dc",
+          "on-primary": "#ffffff",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#d8e4f0",
+          "error": "#ba1a1a",
+          "on-secondary-container": "#662d00",
+          "outline": "#74777b",
+          "surface-dim": "#dddad4",
+          "on-surface-variant": "#44474b",
+          "on-surface": "#1c1c18",
+          "inverse-primary": "#bcc8d4",
+          "primary-fixed-dim": "#bcc8d4",
+          "inverse-on-surface": "#f4f0ea",
+          "tertiary-fixed": "#d4e3ff",
+          "on-error-container": "#93000a",
+          "on-primary-fixed": "#121d25",
+          "on-tertiary-fixed-variant": "#004785",
+          "background": "#fcf9f3",
+          "surface-tint": "#54606a",
+          "tertiary-container": "#002951",
+          "on-secondary-fixed-variant": "#743400",
+          "error-container": "#ffdad6",
+          "surface": "#fcf9f3",
+          "on-error": "#ffffff",
+          "outline-variant": "#c4c7cb",
+          "primary-container": "#1f2a33",
+          "surface-container-highest": "#e5e2dc",
+          "surface-container-high": "#ebe8e2",
+          "surface-container-low": "#f6f3ed",
+          "secondary-fixed": "#ffdbc8",
+          "on-primary-fixed-variant": "#3d4852",
+          "inverse-surface": "#31302d",
+          "primary": "#0a161e",
+          "surface-container": "#f1ede7",
+          "on-background": "#1c1c18",
+          "on-tertiary-container": "#5692df",
+          "on-tertiary-fixed": "#001c3a",
+          "surface-bright": "#fcf9f3",
+          "on-tertiary": "#ffffff",
+          "tertiary": "#00142d",
+          "tertiary-fixed-dim": "#a5c8ff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "spacing-2xs": "0.125rem",
+          "margin-desktop": "1.5rem",
+          "gutter-tablet": "0.75rem",
+          "spacing-sm": "0.5rem",
+          "spacing-2xl": "2rem",
+          "gutter-desktop": "1rem",
+          "spacing-xl": "1.5rem",
+          "gutter-mobile": "0.5rem",
+          "margin-mobile": "0.75rem",
+          "margin-tablet": "1rem",
+          "spacing-lg": "1.25rem",
+          "spacing-base": "1rem",
+          "spacing-3xl": "3rem",
+          "spacing-xs": "0.25rem",
+          "spacing-md": "0.75rem"
+        },
+        "fontFamily": {
+          "body-sm": [
+            "Public Sans"
+          ],
+          "label-sm": [
+            "Public Sans"
+          ],
+          "headline-lg": [
+            "Public Sans"
+          ],
+          "headline-sm": [
+            "Public Sans"
+          ],
+          "body-base": [
+            "Public Sans"
+          ],
+          "label-md": [
+            "Public Sans"
+          ],
+          "headline-xl": [
+            "Public Sans"
+          ],
+          "headline-xl-mobile": [
+            "Public Sans"
+          ],
+          "code-operational": [
+            "Space Grotesk"
+          ],
+          "body-lg": [
+            "Public Sans"
+          ],
+          "code-operational-sm": [
+            "Space Grotesk"
+          ]
+        },
+        "fontSize": {
+          "body-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "0.6875rem",
+            {
+              "lineHeight": "0.875rem",
+              "letterSpacing": "0.04em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-sm": [
+            "1.125rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-base": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "0.8125rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "2rem",
+            {
+              "lineHeight": "2.5rem",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "700"
+            }
+          ],
+          "headline-xl-mobile": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "700"
+            }
+          ],
+          "code-operational": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-lg": [
+            "1rem",
+            {
+              "lineHeight": "1.5rem",
+              "fontWeight": "400"
+            }
+          ],
+          "code-operational-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.03em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      }
+    }
+  };</script></head><body class="bg-surface font-body-base text-body-base text-on-surface min-h-screen"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 flex items-center px-spacing-lg gap-spacing-md bg-surface-container"><div class="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-on-secondary font-headline-sm text-headline-sm font-bold shadow-sm">V</div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-primary leading-none">VeloxRent</span><span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant uppercase tracking-wider mt-spacing-2xs">ERP Logística</span></div></div><div class="px-spacing-md pt-spacing-lg pb-spacing-xs"><span class="px-spacing-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Módulos Operativos</span></div><nav class="flex flex-col gap-spacing-2xs px-spacing-sm" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="dashboard-general" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span>Flota y Control</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="gestion-vehicular" href="#"><span class="material-symbols-outlined text-[20px]">directions_car</span>Parque Automotor</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="contratos-alquiler" href="#"><span class="material-symbols-outlined text-[20px]">assignment</span>Contratos &amp; Actas</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="mantenimiento-taller" href="#"><span class="material-symbols-outlined text-[20px]">build</span>Mantenimiento</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="liquidacion-facturacion" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span>Facturación &amp; Tarifas</a></nav><div class="px-spacing-md pt-spacing-lg pb-spacing-xs"><span class="px-spacing-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Sede &amp; Ajustes</span></div><nav class="flex flex-col gap-spacing-2xs px-spacing-sm" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="configuracion-sede" href="#"><span class="material-symbols-outlined text-[20px]">corporate_fare</span>Sedes &amp; Terminales</a><a aria-current="page" class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg transition-colors bg-primary-container text-on-primary font-semibold shadow-sm" data-path="auditoria-sistema" href="#"><span class="material-symbols-outlined text-[20px]">security</span>Auditoría TI</a></nav></div><div class="p-spacing-md bg-surface-container-lowest m-spacing-sm rounded-lg shadow-sm"><div class="flex items-center gap-spacing-sm text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">dns</span><span class="font-code-operational-sm text-code-operational-sm">Cluster: AYAC-SRV-01</span></div><div class="flex items-center justify-between mt-spacing-xs"><span class="font-label-sm text-label-sm text-on-surface-variant">Estado Backend</span><span class="inline-flex items-center px-spacing-xs py-spacing-2xs rounded bg-surface-container font-code-operational-sm text-code-operational-sm text-secondary font-bold">SYNC 99.8%</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-30 flex items-center justify-between px-spacing-xl"><div class="flex items-center gap-spacing-base"><span class="inline-flex items-center px-spacing-sm py-spacing-xs rounded bg-primary-container text-on-primary font-code-operational-sm text-code-operational-sm uppercase tracking-wide">ERP v4.2.1-PROD</span><div class="flex items-center gap-spacing-xs text-on-surface-variant font-body-sm text-body-sm"><span class="hover:text-on-surface cursor-pointer">Sistemas</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="hover:text-on-surface cursor-pointer">Operaciones</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="text-on-surface font-semibold">Panel Principal</span></div></div><div class="flex items-center gap-spacing-lg"><div class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span><span class="font-label-sm text-label-sm font-semibold text-[#1E7D4B] uppercase tracking-wide">Online</span></div><div class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-lg bg-surface-container-high text-on-surface"><span class="material-symbols-outlined text-[18px] text-secondary">location_on</span><span class="font-label-md text-label-md font-semibold">Ayacucho — Sede Central</span></div><div class="h-6 w-px bg-surface-variant"></div><div class="flex items-center gap-spacing-md"><div class="text-right hidden sm:flex flex-col"><span class="font-label-md text-label-md font-bold text-on-surface leading-tight">Gustavo Alarcón</span><span class="font-label-sm text-label-sm text-on-surface-variant">Administrador de Sistemas</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface-container-lowest flex-1 px-spacing-xl py-spacing-xl"><div class="flex flex-col w-full">
+<!-- Tarjeta Contenedor Principal (Fondo Blanco Institucional) -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm p-spacing-xl flex flex-col gap-spacing-xl">
+<!-- 1. BARRA DE PROGRESO DE ZONAS (5 Segmentos Operativos) -->
+<div class="flex flex-col gap-spacing-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-spacing-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Secuencia Pericial 360°</span>
+<span class="inline-flex items-center px-spacing-xs py-spacing-2xs rounded bg-surface-container font-code-operational-sm text-code-operational-sm text-secondary font-bold">1 de 5 ZONAS</span>
+</div>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">Protocolo SST-DEV-014 • Sede Ayacucho</span>
+</div>
+<!-- Segmentos interactivos de progreso -->
+<div class="grid grid-cols-1 md:grid-cols-5 gap-spacing-sm">
+<!-- Zona 1: Activa con hallazgo/evaluación ámbar -->
+<div class="relative bg-[#FDF1DE] border-2 border-[#8A5505] text-on-surface p-spacing-sm rounded-lg flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-[#8A5505] tracking-wider">ZONA 01</span>
+<span class="inline-flex items-center gap-spacing-2xs px-spacing-xs py-spacing-2xs rounded bg-surface-container-lowest font-code-operational-sm text-code-operational-sm font-bold text-[#8A5505]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#8A5505] animate-pulse"></span>
+              EN CURSO (OBS.)
+            </span>
+</div>
+<div class="mt-spacing-xs">
+<span class="font-label-md text-label-md font-bold block leading-tight text-on-surface">Exterior Frontal</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Inspección de 3/4 y paragolpe</span>
+</div>
+</div>
+<!-- Zona 2: Pendiente -->
+<div class="bg-surface-container-low text-on-surface-variant p-spacing-sm rounded-lg flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm text-outline font-semibold">ZONA 02</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Pendiente</span>
+</div>
+<div class="mt-spacing-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface block leading-tight">Cabina e Interior</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tapicería, tablero y odómetro</span>
+</div>
+</div>
+<!-- Zona 3: Pendiente -->
+<div class="bg-surface-container-low text-on-surface-variant p-spacing-sm rounded-lg flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm text-outline font-semibold">ZONA 03</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Pendiente</span>
+</div>
+<div class="mt-spacing-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface block leading-tight">Costados y Tolva</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Laterales, estribos y compuerta</span>
+</div>
+</div>
+<!-- Zona 4: Pendiente -->
+<div class="bg-surface-container-low text-on-surface-variant p-spacing-sm rounded-lg flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm text-outline font-semibold">ZONA 04</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Pendiente</span>
+</div>
+<div class="mt-spacing-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface block leading-tight">Posterior y Ruedas</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Neumáticos, aros y luces traseras</span>
+</div>
+</div>
+<!-- Zona 5: Pendiente -->
+<div class="bg-surface-container-low text-on-surface-variant p-spacing-sm rounded-lg flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm text-outline font-semibold">ZONA 05</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Pendiente</span>
+</div>
+<div class="mt-spacing-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface block leading-tight">Motor y Seguridad</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Fluidos, kit auxilio y pernos</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 2. CABECERA DEL EXPEDIENTE TÉCNICO DE DEVOLUCIÓN -->
+<div class="bg-surface-container-low rounded-lg p-spacing-lg flex flex-col gap-spacing-md">
+<div class="flex flex-wrap items-center justify-between gap-spacing-md">
+<div class="flex flex-wrap items-center gap-spacing-sm">
+<span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded bg-primary text-on-primary font-code-operational-sm text-code-operational-sm font-bold">
+<span class="material-symbols-outlined text-[16px]">folder_open</span>
+            Expediente: #DEV-0456
+          </span>
+<span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded bg-surface-container-high text-on-surface font-code-operational-sm text-code-operational-sm">
+            Alquiler asociado: #ALQ-1187
+          </span>
+<span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded bg-secondary-fixed text-on-secondary-fixed font-code-operational-sm text-code-operational-sm font-bold">
+<span class="material-symbols-outlined text-[16px]">pin</span>
+            Placa: D0Y-704
+          </span>
+</div>
+<div class="flex items-center gap-spacing-xs text-on-surface-variant font-code-operational-sm text-code-operational-sm bg-surface-container-lowest px-spacing-sm py-spacing-xs rounded shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-[#1E7D4B]">verified_user</span>
+<span class="">Integridad de fotos certificada (Hash SHA-256)</span>
+</div>
+</div>
+<!-- Cuadrícula de metadatos del expediente -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-spacing-md pt-spacing-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Unidad Operativa</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Toyota Hilux 4x4 MT</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Conductor / Asignación</span>
+<span class="font-body-base text-body-base font-semibold text-on-surface truncate">Víctor Hugo Morales Q.</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Minera Los Andes S.A.C.</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Fecha &amp; Hora Retorno</span>
+<span class="font-code-operational text-code-operational font-bold text-on-surface">07/09/2025 - 11:20 AM</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Patio Recepción Ayacucho</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Perito de Patio</span>
+<span class="font-body-base text-body-base font-semibold text-on-surface flex items-center gap-spacing-2xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">badge</span>
+            Carlos Vega
+          </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Matrícula CIP: #48102</span>
+</div>
+</div>
+</div>
+<!-- 3. TÍTULO PRINCIPAL Y PROTOCOLO -->
+<div class="flex flex-col gap-spacing-2xs">
+<div class="flex items-center gap-spacing-sm">
+<span class="w-2.5 h-6 bg-secondary rounded-full"></span>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Resultado — Zona 1 de 5: Exterior</h1>
+</div>
+<p class="font-body-base text-body-base text-on-surface-variant pl-spacing-md">Protocolo SST-DEV-014 • Peritaje comparativo de entrega vs. retorno fotogramétrico</p>
+</div>
+<!-- 4. COMPARATIVA LADO A LADO (2 COLUMNAS CON MISMO ENCUADRE) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-spacing-lg">
+<!-- COLUMNA IZQUIERDA: ENTREGA -->
+<div class="bg-surface-container-low rounded-lg p-spacing-md flex flex-col gap-spacing-md shadow-sm">
+<!-- Cabecera de Columna Izquierda -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-spacing-xs">
+<span class="inline-flex items-center justify-center w-7 h-7 rounded bg-surface-container-high text-on-surface font-code-operational-sm text-code-operational-sm font-bold">A</span>
+<div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Entrega (04/09)</span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant block">04/09/2025 • 09:14 AM</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded bg-[#E7F5EC] text-[#1E7D4B] font-label-md text-label-md font-bold">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+            Sin daños al salir
+          </span>
+</div>
+<!-- Imagen de Entrega -->
+<div class="relative w-full rounded-lg overflow-hidden bg-surface-container-highest aspect-[16/10] shadow-inner group">
+<img alt="Toyota Hilux entrega inicial en patio" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1XInwInu2q76PqTv0lkefHM5j2_fHISLy1a9WD--3ADxM3p4O5AVyZGVtj-oJ8HlSAb--psMdtuih88X6jMcFBRUhNgKGk7lnVKzkgyFpfc59LMtmYAeHCt1bioIjA9OtSWs7lek48LzDKGjG3MqEETQXfxsNq12ColOyWnTZDxs4mUFkzGAI0sstXDs4yNMOBpWWpSwYNgrnJ5Tb3UvqLILsx9iihoelqzhTnwDvUX2HmSQGNEWnnq9EA">
+<div class="absolute bottom-spacing-sm left-spacing-sm right-spacing-sm flex items-center justify-between p-spacing-xs rounded bg-primary/80 backdrop-blur-md text-on-primary">
+<span class="font-code-operational-sm text-code-operational-sm">Toma ref. #ENT-01</span>
+<span class="font-code-operational-sm text-code-operational-sm font-semibold">Odómetro: 037,850 km</span>
+</div>
+</div>
+<!-- Metadatos de la toma original -->
+<div class="bg-surface-container-lowest rounded p-spacing-md flex flex-col gap-spacing-xs font-body-sm text-body-sm">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-semibold">Ángulo:</span>
+<span class="font-body-base text-body-base text-on-surface text-right font-medium">Frontal panorámica 3/4 (Zona 1 Exterior)</span>
+</div>
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-semibold">Estado de carrocería:</span>
+<span class="font-body-base text-body-base text-[#1E7D4B] text-right font-semibold">Limpio, pintura intacta, sin abolladuras</span>
+</div>
+<div class="flex justify-between items-center pt-spacing-2xs">
+<span class="text-on-surface-variant font-semibold">Inspeccionado por:</span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface">Téc. Jorge Santillán (Despacho)</span>
+</div>
+</div>
+</div>
+<!-- COLUMNA DERECHA: DEVOLUCIÓN -->
+<div class="bg-surface-container-low rounded-lg p-spacing-md flex flex-col gap-spacing-md shadow-sm">
+<!-- Cabecera de Columna Derecha -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-spacing-xs">
+<span class="inline-flex items-center justify-center w-7 h-7 rounded bg-secondary text-on-secondary font-code-operational-sm text-code-operational-sm font-bold">B</span>
+<div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Devolución (07/09)</span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant block">07/09/2025 • 11:15 AM</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded bg-surface-container-highest text-on-surface-variant font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[16px] text-secondary">center_focus_strong</span>
+            Mismo encuadre verificado
+          </span>
+</div>
+<!-- Imagen de Devolución -->
+<div class="relative w-full rounded-lg overflow-hidden bg-surface-container-highest aspect-[16/10] shadow-inner group">
+<img alt="Toyota Hilux retorno recepción con raspón en paragolpe" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1WLxoSy40ZKEEIsy9fpCb3Oi6XOMpNJpjg4wks20Se1fCP3sGAi5IVC4AIzPp26VOqxbbAxm92izFnCbu-lZGQshQjaYmU01nHBhzv54Bvvk-8f7_7YTL6kC4D-j1facBa-RMUAoZZGFXqlvgcUlH2huOjJvhYyGrKARRbTBUj7xmFf29LgSNbRKoHC5B35GalPIiRS8pNaYuyNuXOHX26xmEbR4mH8TkidZjjWll_09dIrXg44ck7YDMk">
+<!-- Overlay indicador de hallazgo / discrepancia -->
+<div class="absolute top-spacing-sm right-spacing-sm">
+<span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded bg-[#FDF1DE] text-[#8A5505] font-code-operational-sm text-code-operational-sm font-bold shadow-sm">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+              Hallazgo visual activo
+            </span>
+</div>
+<div class="absolute bottom-spacing-sm left-spacing-sm right-spacing-sm flex items-center justify-between p-spacing-xs rounded bg-primary/80 backdrop-blur-md text-on-primary">
+<span class="font-code-operational-sm text-code-operational-sm">Toma peritaje #DEV-01</span>
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary-fixed">Odómetro: 038,412 km (+562 km)</span>
+</div>
+</div>
+<!-- Metadatos de la toma actual -->
+<div class="bg-surface-container-lowest rounded p-spacing-md flex flex-col gap-spacing-xs font-body-sm text-body-sm">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-semibold">Ángulo:</span>
+<span class="font-body-base text-body-base text-on-surface text-right font-medium">Frontal panorámica 3/4</span>
+</div>
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-semibold">Condición observada:</span>
+<span class="font-body-base text-body-base text-[#8A5505] text-right font-bold">Discrepancia detectada respecto a la línea base</span>
+</div>
+<div class="flex justify-between items-center pt-spacing-2xs">
+<span class="text-on-surface-variant font-semibold">Inspector receptor:</span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface font-semibold">Carlos Vega (Patio Central)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 5. DICTAMEN DE ZONA: BOTONES Y CRITERIOS OPERATIVOS CON BORDES DESTACADOS -->
+<div class="bg-surface-container-low rounded-lg p-spacing-lg flex flex-col gap-spacing-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface uppercase tracking-wider">Dictamen Pericial de Zona 1</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Seleccione una opción para registrar la validez técnica</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-spacing-md" id="dictamen-group">
+<!-- Opción A: Sin Daño -->
+<button class="text-left p-spacing-lg rounded-lg bg-surface-container-lowest border-2 border-[#1E7D4B] shadow-sm hover:bg-[#E7F5EC]/40 transition-all flex flex-col gap-spacing-xs cursor-pointer group" id="btn-sin-dano" onclick="selectDictamen('sin-dano')" type="button">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-spacing-sm">
+<span class="w-8 h-8 rounded-full bg-[#E7F5EC] text-[#1E7D4B] flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</span>
+<span class="font-headline-sm text-headline-sm font-bold text-[#1E7D4B]">Sin daño</span>
+</div>
+<span class="font-code-operational-sm text-code-operational-sm text-[#1E7D4B] font-bold px-spacing-xs py-spacing-2xs rounded bg-[#E7F5EC]">CONFORME</span>
+</div>
+<p class="font-body-base text-body-base text-on-surface-variant pl-11">
+            La zona exterior frontal coincide íntegramente con la línea base de entrega sin anomalías ni gastos imputables.
+          </p>
+</button>
+<!-- Opción B: Marcar con daño en esta zona con borde destacado #8A5505 -->
+<button class="text-left p-spacing-lg rounded-lg bg-[#FDF1DE]/40 border-2 border-[#8A5505] shadow-sm hover:bg-[#FDF1DE] transition-all flex flex-col gap-spacing-xs cursor-pointer group" id="btn-con-dano" onclick="selectDictamen('con-dano')" type="button">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-spacing-sm">
+<span class="w-8 h-8 rounded-full bg-[#FDF1DE] text-[#8A5505] flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">report_problem</span>
+</span>
+<span class="font-headline-sm text-headline-sm font-bold text-[#8A5505]">Marcar con daño en esta zona</span>
+</div>
+<span class="font-code-operational-sm text-code-operational-sm text-[#8A5505] font-bold px-spacing-xs py-spacing-2xs rounded bg-[#FDF1DE]">OBSERVACIÓN</span>
+</div>
+<p class="font-body-base text-body-base text-on-surface-variant pl-11">
+            Habilita el registro descriptivo, tipificación de avería y la imputación técnica para la liquidación de garantía.
+          </p>
+</button>
+</div>
+<!-- Detalle técnico colapsable / descriptivo si hay discrepancia -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-md flex flex-col gap-spacing-sm" id="panel-detalle-dano">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[18px] text-[#8A5505]">edit_note</span>
+            Imputación Técnica Preliminar — Zona 1
+          </span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">Código Avería: <strong class="text-on-surface">CAR-EXT-F01</strong></span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-spacing-md">
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase block mb-spacing-2xs">Sub-componente afectado</label>
+<div class="px-spacing-md py-spacing-xs bg-surface-container rounded font-body-base text-body-base text-on-surface font-medium">
+              Bisel inferior y spoiler frontal derecho
+            </div>
+</div>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase block mb-spacing-2xs">Tipo de Daño</label>
+<div class="px-spacing-md py-spacing-xs bg-surface-container rounded font-body-base text-body-base text-on-surface font-medium">
+              Abrasión / Raspón con pérdida de esmalte
+            </div>
+</div>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase block mb-spacing-2xs">Acción Sugerida Taller</label>
+<div class="px-spacing-md py-spacing-xs bg-surface-container rounded font-body-base text-body-base text-on-surface font-medium">
+              Pulido técnico y reacabado local
+            </div>
+</div>
+</div>
+</div>
+</div>
+<!-- 6. ACCIONES DE NAVEGACIÓN INFERIOR DE INSPECCIÓN -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-spacing-md pt-spacing-sm">
+<button class="w-full sm:w-auto px-spacing-xl py-spacing-md rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md font-bold flex items-center justify-center gap-spacing-sm shadow-sm cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[18px]">pause_circle</span>
+        Pausar peritaje y guardar borrador
+      </button>
+<div class="flex items-center gap-spacing-sm w-full sm:w-auto">
+<button class="w-full sm:w-auto px-spacing-2xl py-spacing-md rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-all font-label-md text-label-md font-bold flex items-center justify-center gap-spacing-sm shadow-sm cursor-pointer group" type="button">
+<span class="">Guardar Zona 1 y pasar a Zona 2 (Cabina)</span>
+<span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- 7. PIE INSTITUCIONAL INTERNO CON SOPORTE DE PATIO -->
+<div class="bg-surface-container rounded-lg px-spacing-lg py-spacing-sm flex flex-wrap items-center justify-between gap-spacing-md font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-spacing-md">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-on-surface">VeloxRent FleetOps™</span>
+<span class="">•</span>
+<div class="flex items-center gap-spacing-2xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">support_agent</span>
+<span class="">Soporte Patio Devolución: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 108</strong></span>
+</div>
+<span class="">•</span>
+<div class="flex items-center gap-spacing-2xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">desk</span>
+<span class="">Front-Office Liquidaciones: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 103</strong></span>
+</div>
+</div>
+<div class="flex items-center gap-spacing-xs">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+<span class="font-code-operational-sm text-code-operational-sm">Sincronización Pericial Activa</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function selectDictamen(type) {
+    const btnSin = document.getElementById('btn-sin-dano');
+    const btnCon = document.getElementById('btn-con-dano');
+    const panel = document.getElementById('panel-detalle-dano');
+
+    if (type === 'sin-dano') {
+      btnSin.classList.add('bg-[#E7F5EC]');
+      btnSin.classList.remove('bg-surface-container-lowest');
+      btnCon.classList.remove('bg-[#FDF1DE]/40', 'bg-[#FDF1DE]');
+      btnCon.classList.add('bg-surface-container-lowest');
+      if (panel) panel.style.display = 'none';
+    } else {
+      btnCon.classList.add('bg-[#FDF1DE]/50');
+      btnCon.classList.remove('bg-surface-container-lowest');
+      btnSin.classList.remove('bg-[#E7F5EC]');
+      btnSin.classList.add('bg-surface-container-lowest');
+      if (panel) panel.style.display = 'flex';
+    }
+  }
+</script></main><footer class="w-full bg-surface-container-low shadow-[0_-1px_8px_rgba(0,0,0,0.03)] px-spacing-xl py-spacing-md"><div class="flex flex-wrap items-center justify-between gap-spacing-md font-body-sm text-body-sm text-on-surface-variant"><div class="flex items-center gap-spacing-lg"><span class="font-label-md text-label-md text-on-surface font-bold">VeloxRent ERP © 2025</span><span class="hidden md:inline text-outline-variant">|</span><div class="flex items-center gap-spacing-xs"><span class="material-symbols-outlined text-[16px] text-secondary">call</span><span class="">Mesa TI: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 101</strong></span></div><div class="flex items-center gap-spacing-xs"><span class="material-symbols-outlined text-[16px] text-secondary">security</span><span class="">Soporte Seguridad: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 102</strong></span></div></div><div class="flex items-center gap-spacing-xl"><span class="">Módulo Activo: <span class="font-code-operational-sm text-code-operational-sm text-on-surface font-semibold">ADM-AYAC-LOG</span></span><a class="flex items-center gap-spacing-xs text-error hover:text-on-error-container font-label-md text-label-md transition-colors" data-path="iniciar-sesion" href="#"><span class="material-symbols-outlined text-[18px]">logout</span>Cerrar Sesión</a></div></div></footer></div>
+
+</body></html>

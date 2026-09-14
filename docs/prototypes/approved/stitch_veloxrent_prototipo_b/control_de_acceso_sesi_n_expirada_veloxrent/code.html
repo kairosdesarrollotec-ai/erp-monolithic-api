@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Control de acceso — VeloxRent</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              primary: '#C6600A',
+              textMuted: '#4E4A45',
+              border: '#A39C90',
+              error: '#C22B2B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-between font-sans text-[#1F2A33] antialiased select-none">
+<!-- Minimal Brand Header -->
+<header class="w-full px-8 py-6">
+<div class="max-w-7xl mx-auto flex items-center">
+<span class="font-heading font-bold text-xl tracking-tight text-[#1F2A33]">VeloxRent</span>
+</div>
+</header>
+<!-- Centered Access Denied Card / State -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 -mt-10">
+<div class="w-full max-w-md flex flex-col items-center text-center">
+<!-- Padlock Icon with X Badge -->
+<div class="relative mb-6 flex items-center justify-center"><svg class="w-16 h-16 text-[#1F2A33]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+<!-- Title: Space Grotesk 20px -->
+<h1 class="font-heading text-[20px] font-bold text-[#1F2A33] leading-snug tracking-tight mb-2">Tu sesión expiró por inactividad</h1>
+<!-- Subtitle: Public Sans 14px color #4E4A45 -->
+<p class="font-sans text-[14px] text-[#4E4A45] leading-normal mb-8 max-w-sm">Vuelve a iniciar sesión para continuar — lo que ya escribiste, si estaba autorizado a guardarse localmente, sigue disponible</p>
+<!-- CTA Button: fondo #1F2A33 -->
+<button class="w-full max-w-xs h-11 px-6 bg-[#1F2A33] hover:bg-[#2B3844] active:bg-[#151D24] text-white font-sans text-sm font-medium rounded transition-colors duration-150 flex items-center justify-center shadow-sm cursor-pointer" type="button">Iniciar sesión de nuevo</button>
+</div>
+</main>
+<!-- Footer Info / Sede / Soporte -->
+<footer class="w-full py-4 px-8 text-center text-xs text-[#A39C90]">
+    VeloxRent © 2025 · Sistema de Gestión Interna
+  </footer>
+
+
+</body></html>

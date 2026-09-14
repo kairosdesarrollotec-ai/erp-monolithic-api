@@ -1,0 +1,405 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Falta — Rosa Huamán Prado, 06/09/2026 - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              dark: '#141D24',
+              accent: '#C6600A',
+              border: '#E5E2DC',
+              bg: '#F9F8F6',
+              text: '#1F2A33',
+              muted: '#6B6862',
+              danger: '#C22B2B',
+              warning: '#B5720A',
+              success: '#1E7D4B',
+              info: '#2166B0'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#FFFFFF] text-brand-text font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-brand-accent/20">
+
+  <!-- TOP APP HEADER -->
+  <header class="border-b border-brand-border bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+          <span class="font-mono text-xl font-bold tracking-tight text-brand-navy">Velox<span class="text-brand-accent">Rent</span></span>
+          <span class="text-xs px-2 py-0.5 rounded bg-gray-100 text-brand-muted font-mono">ERP v3.4</span>
+        </div>
+        <div class="h-4 w-px bg-brand-border"></div>
+        <nav class="flex items-center space-x-2 text-sm text-brand-muted">
+          <span>Recursos Humanos</span>
+          <span>›</span>
+          <a href="#" class="hover:text-brand-navy transition-colors">Personal</a>
+          <span>›</span>
+          <a href="#" class="hover:text-brand-navy transition-colors">Asistencia</a>
+          <span>›</span>
+          <span class="text-brand-navy font-semibold">Registro de Incidencia</span>
+        </nav>
+      </div>
+
+      <div class="flex items-center space-x-6 text-sm">
+        <div class="flex items-center space-x-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">En línea</span>
+        </div>
+        <div class="flex items-center space-x-2 text-brand-muted">
+          <svg class="w-4 h-4 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="text-xs font-medium">Ayacucho — Sede Central</span>
+        </div>
+        <div class="flex items-center space-x-3 pl-2 border-l border-brand-border">
+          <div class="w-8 h-8 rounded-full bg-brand-navy text-white font-mono text-xs font-bold flex items-center justify-center tracking-tight">
+            RO
+          </div>
+          <div class="text-left leading-tight">
+            <div class="text-xs font-bold text-brand-navy">Rodrigo Ortiz</div>
+            <div class="text-[11px] text-brand-muted">Jefe de RR.HH.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUB-BARRA CONTEXTUAL OPERATIVA -->
+    <div class="bg-[#F9F8F6] border-t border-brand-border/80 px-6 py-2">
+      <div class="max-w-7xl mx-auto flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-4">
+          <a href="#" class="inline-flex items-center text-brand-muted hover:text-brand-navy font-medium group transition-colors">
+            <svg class="w-3.5 h-3.5 mr-1 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Volver a Asistencia — Septiembre 2026
+          </a>
+          <span class="text-brand-border">|</span>
+          <span class="text-brand-muted">Periodo: <strong class="text-brand-navy font-mono">Septiembre 2026</strong></span>
+          <span class="text-brand-border">|</span>
+          <span class="text-brand-muted">Ámbito: <strong class="text-brand-navy">Finanzas y Tesorería</strong></span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-red-100 text-red-800 font-semibold border border-red-200">
+            INCIDENCIA: AUSENCIA NO PREVISTA
+          </span>
+          <span class="text-brand-muted">Protocolo: <strong class="font-mono text-brand-navy">PR-RRHH-005</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-4xl mx-auto px-6 py-8 flex-1 w-full">
+
+    <!-- HEADER TITLE & DATE -->
+    <div class="mb-6 flex items-start justify-between">
+      <div>
+        <div class="flex items-center space-x-3 mb-1">
+          <span class="w-7 h-7 rounded bg-red-100 text-red-700 flex items-center justify-center font-bold text-sm">
+            ✕
+          </span>
+          <h1 class="text-2xl font-bold tracking-tight text-brand-navy">
+            Falta — Rosa Huamán Prado, 06/09/2026
+          </h1>
+        </div>
+        <p class="text-sm text-brand-muted ml-10">
+          Registro reglamentario de inasistencia en jornada laboral ordinaria y cómputo de compensación salarial.
+        </p>
+      </div>
+
+      <!-- STATUS BADGE -->
+      <div class="text-right">
+        <span class="inline-flex items-center px-2.5 py-1 rounded bg-red-50 text-red-700 border border-red-200 text-xs font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></span>
+          Falta injustificada preliminar
+        </span>
+        <div class="text-[11px] text-brand-muted mt-1 font-mono">Fecha de corte: 06 Sep 2026</div>
+      </div>
+    </div>
+
+    <!-- COLABORADOR CONTEXT CARD -->
+    <div class="bg-white border border-brand-border rounded-md p-4 mb-6 shadow-sm flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-mono font-bold text-sm">
+          RH
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 class="font-bold text-brand-navy text-base">Rosa Huamán Prado</h2>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+              Planilla — Plazo Indeterminado
+            </span>
+          </div>
+          <div class="text-xs text-brand-muted mt-0.5 flex items-center space-x-3">
+            <span><strong>DNI:</strong> 43819201</span>
+            <span>•</span>
+            <span><strong>Cargo:</strong> Asistente de Contabilidad y Facturación</span>
+            <span>•</span>
+            <span><strong>Empresa:</strong> VeloxRent Perú S.A.C.</span>
+            <span>•</span>
+            <span><strong>Horario:</strong> Lun-Sáb 08:00 - 17:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-right border-l border-brand-border pl-6">
+        <div class="text-[11px] text-brand-muted uppercase tracking-wider font-semibold">Marcación biométrica</div>
+        <div class="text-xs font-bold text-red-600 font-mono mt-0.5">SIN MARCACIÓN (06/09)</div>
+        <div class="text-[10px] text-brand-muted">Terminal: Sede Central Huamanga</div>
+      </div>
+    </div>
+
+    <!-- BANNER DE REINCIDENCIA -->
+    <div class="mb-6 rounded-md p-4 bg-[#FDF1DE] border border-[#F5D8A0] flex items-start space-x-3 text-brand-navy shadow-sm">
+      <div class="flex-shrink-0 mt-0.5">
+        <svg class="w-5 h-5 text-[#B5720A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold text-[#8F5500]">
+          Esta es la 2ª falta del mes — se generará un memo de advertencia automáticamente
+        </div>
+        <div class="text-xs text-[#995E05] mt-1 leading-relaxed">
+          Historial del periodo Septiembre 2026: <strong>1ª inasistencia</strong> registrada el día 02/09/2026. Según el Reglamento Interno de Trabajo (RIT) Art. 44, la acumulación de dos o más inasistencias injustificadas en un periodo mensual genera automáticamente un memorando de apercibimiento con copia al expediente laboral y a la Jefatura de Área.
+        </div>
+      </div>
+      <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#F9E2BC] text-[#8F5500] border border-[#ECD09D]">
+        2 / 3 LÍMITE RIT
+      </span>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="bg-white border border-brand-border rounded-md shadow-sm divide-y divide-brand-border mb-6">
+      
+      <!-- SECCIÓN MOTIVO & JUSTIFICACIÓN -->
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-brand-navy uppercase tracking-wider">
+              1. Motivo y Justificación de la Inasistencia
+            </h3>
+            <p class="text-xs text-brand-muted mt-0.5">
+              Ingrese la justificación documentada presentada por la colaboradora o el descargo informado por el área.
+            </p>
+          </div>
+          <span class="text-xs text-brand-muted">
+            Campo obligatorio *
+          </span>
+        </div>
+
+        <div class="space-y-4">
+          <!-- TIPO DE DESCARGO -->
+          <div class="grid grid-cols-3 gap-3">
+            <label class="border border-brand-navy bg-gray-50 rounded p-3 flex items-start space-x-2.5 cursor-pointer">
+              <input type="radio" name="tipo_falta" checked="" class="mt-0.5 text-brand-navy focus:ring-brand-accent">
+              <div>
+                <span class="text-xs font-bold text-brand-navy block">Injustificada / Sin sustento legal</span>
+                <span class="text-[11px] text-brand-muted">Aplica descuento y cómputo disciplinario</span>
+              </div>
+            </label>
+
+            <label class="border border-brand-border hover:bg-gray-50 rounded p-3 flex items-start space-x-2.5 cursor-pointer">
+              <input type="radio" name="tipo_falta" class="mt-0.5 text-brand-navy focus:ring-brand-accent">
+              <div>
+                <span class="text-xs font-bold text-brand-navy block">Trámite de descanso médico</span>
+                <span class="text-[11px] text-brand-muted">Pendiente de validación CITT EsSalud</span>
+              </div>
+            </label>
+
+            <label class="border border-brand-border hover:bg-gray-50 rounded p-3 flex items-start space-x-2.5 cursor-pointer">
+              <input type="radio" name="tipo_falta" class="mt-0.5 text-brand-navy focus:ring-brand-accent">
+              <div>
+                <span class="text-xs font-bold text-brand-navy block">Permiso sin goce de haber</span>
+                <span class="text-[11px] text-brand-muted">Sujeto a visto bueno de Jefatura</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- CAMPO TEXTAREA JUSTIFICACIÓN -->
+          <div>
+            <label for="justificacion" class="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1.5">
+              Justificación *
+            </label>
+            <textarea id="justificacion" name="justificacion" rows="4" placeholder="Describa detalladamente el motivo de la inasistencia, comunicación recibida o descargo remitido por el colaborador..." class="w-full text-sm text-brand-navy bg-white border border-brand-border rounded p-3 focus:outline-none focus:ring-2 focus:ring-brand-navy/30 focus:border-brand-navy transition placeholder:text-gray-400 leading-relaxed font-sans">Colaboradora no se presentó al turno de finanzas en Sede Central el día 06/09/2026 sin comunicación previa a su jefatura inmediata. Se contactó vía telefónica a las 11:30 hrs manifestando inconvenientes de fuerza mayor particulares. No presenta certificado médico oficial ni boleta de atención de emergencia hasta el momento.</textarea>
+            <div class="flex items-center justify-between text-[11px] text-brand-muted mt-1.5">
+              <span>Registrado por: Rodrigo Ortiz (Jefe de RR.HH.)</span>
+              <span>Caracteres: 342 / 1,000</span>
+            </div>
+          </div>
+
+          <!-- ADJUNTAR EVIDENCIA / DOCUMENTO -->
+          <div class="flex items-center justify-between p-3 bg-gray-50 border border-brand-border rounded">
+            <div class="flex items-center space-x-3">
+              <svg class="w-5 h-5 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+              </svg>
+              <div>
+                <span class="text-xs font-semibold text-brand-navy">Documentos probatorios o descargos</span>
+                <span class="text-[11px] text-brand-muted block">Adjunte correos, capturas de WhatsApp institucional o solicitudes físicas (.PDF, .PNG, .JPG)</span>
+              </div>
+            </div>
+            <button type="button" class="px-3 py-1 text-xs font-medium border border-brand-border bg-white rounded hover:bg-gray-100 transition-colors text-brand-navy">
+              Examinar archivo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN CÁLCULO DE DESCUENTO (SOLO LECTURA) -->
+      <div class="p-6 bg-[#FAFAF8]">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-brand-navy uppercase tracking-wider flex items-center space-x-2">
+              <span>2. Impacto Económico en Planilla</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-gray-200 text-brand-navy font-bold">SOLO LECTURA</span>
+            </h3>
+            <p class="text-xs text-brand-muted mt-0.5">
+              Cálculo normativo automático según valor día de contrato laboral (Ley N° 276 y D.L. 728).
+            </p>
+          </div>
+          <div class="text-xs font-mono font-bold text-brand-navy bg-white px-3 py-1 border border-brand-border rounded">
+            Fórmula: Rem. Básica / 30 días
+          </div>
+        </div>
+
+        <!-- RECUADRO DESTACADO CON CÁLCULO EXACTO -->
+        <div class="bg-white border-2 border-brand-border rounded-md p-4 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <div class="w-10 h-10 rounded bg-red-50 border border-red-100 text-red-700 flex items-center justify-center font-mono font-bold text-lg">
+                S/
+              </div>
+              <div>
+                <div class="text-base font-bold text-brand-navy leading-snug">
+                  "Se descuenta S/45 de la quincena, aplicado en el pago de fin de mes"
+                </div>
+                <div class="text-xs text-brand-muted mt-0.5 flex items-center space-x-2">
+                  <span>Jornada no laborada: <strong>1 día hábil (06/09/2026)</strong></span>
+                  <span>•</span>
+                  <span>Impacto colateral: <strong>Pérdida proporcional del 6° día (descanso dominical remunerado)</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right pl-6 border-l border-brand-border">
+              <div class="text-[11px] text-brand-muted uppercase font-semibold">Total a descontar</div>
+              <div class="text-2xl font-bold font-mono text-red-600">S/ 45.00</div>
+              <div class="text-[10px] text-brand-muted font-mono">Planilla Septiembre 2026</div>
+            </div>
+          </div>
+
+          <!-- DETALLE DESGLOSADO DE LECTURA -->
+          <div class="mt-4 pt-3 border-t border-brand-border/70 grid grid-cols-3 gap-4 text-xs">
+            <div>
+              <span class="text-brand-muted block">Remuneración bruta mensual:</span>
+              <span class="font-mono font-bold text-brand-navy">S/ 1,350.00</span>
+            </div>
+            <div>
+              <span class="text-brand-muted block">Valor alícuota por día:</span>
+              <span class="font-mono font-bold text-brand-navy">S/ 45.00 / jornada</span>
+            </div>
+            <div>
+              <span class="text-brand-muted block">Aplicación en nómina:</span>
+              <span class="font-semibold text-brand-navy">Cierre contable 30/09/2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AVISO DE PROTOCOLO NORMATIVO -->
+        <div class="mt-4 flex items-start space-x-2 text-[11px] text-brand-muted">
+          <svg class="w-4 h-4 text-brand-muted flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>
+            Este descuento es calculado automáticamente por el motor de planillas de VeloxRent. Si la colaboradora presenta justificación médica válida dentro de las 48 horas posteriores, el área de RR.HH. emitirá la anulación de descuento mediante nota de abono complementaria.
+          </span>
+        </div>
+      </div>
+
+      <!-- SECCIÓN ACCIÓN Y CONFIRMACIÓN -->
+      <div class="p-6 flex items-center justify-between bg-white">
+        <div class="flex items-center space-x-4">
+          <a href="#" class="text-xs font-semibold text-brand-muted hover:text-brand-navy transition-colors">
+            Cancelar y volver a Asistencia
+          </a>
+          <span class="text-brand-border">|</span>
+          <span class="text-xs text-brand-muted">
+            Se notificará a: <strong class="text-brand-navy">Jefatura de Finanzas</strong> y <strong class="text-brand-navy">Auditoría Laboral</strong>
+          </span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button type="button" class="px-4 py-2 text-xs font-semibold text-brand-muted border border-brand-border rounded hover:bg-gray-50 transition-colors">
+            Guardar como borrador
+          </button>
+          
+          <!-- BOTÓN CONFIRMAR CON FONDO #1F2A33 -->
+          <button type="button" class="px-6 py-2.5 bg-[#1F2A33] hover:bg-[#141D24] text-white text-xs font-bold tracking-wide rounded shadow-sm flex items-center space-x-2 transition-all transform active:scale-[0.98]">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>Confirmar</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- NOTA DE AUDITORÍA AL PIE -->
+    <div class="p-4 bg-white border border-brand-border rounded-md text-xs text-brand-muted flex items-start space-x-3">
+      <svg class="w-5 h-5 text-brand-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+      </svg>
+      <div>
+        <strong class="text-brand-navy">Trazabilidad y Control Normativo (PR-RRHH-005):</strong>
+        Al presionar <em>Confirmar</em>, la inasistencia quedará sellada con firma digital del usuario <strong class="text-brand-navy">Rodrigo Ortiz</strong>, se actualizará el calendario mensual de asistencia con el estado <span class="font-bold text-red-600">✕ Falta</span> y se emitirá el memorando correlativo <strong class="font-mono text-brand-navy">MEM-2026-042</strong> dirigido a Rosa Huamán Prado por reincidencia.
+      </div>
+    </div>
+
+  </main>
+
+  <!-- CORPORATE FOOTER -->
+  <footer class="border-t border-brand-border bg-white py-4 px-6 text-xs text-brand-muted mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-4">
+        <span class="font-mono font-bold text-brand-navy">VeloxRent © 2025</span>
+        <span>•</span>
+        <span>Sistema de Gestión Interna</span>
+        <span>•</span>
+        <span>Protocolo SST-RRHH-001 / Control de Asistencia y Biometría</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <span>Soporte RR.HH.: <strong class="font-mono text-brand-navy">anexo 104</strong></span>
+        <span>•</span>
+        <span>Mesa de Operaciones: <strong class="font-mono text-brand-navy">anexo 101</strong></span>
+        <span>•</span>
+        <a href="#" class="inline-flex items-center text-brand-muted hover:text-brand-danger transition-colors font-medium">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          Cerrar sesión
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+</body></html>

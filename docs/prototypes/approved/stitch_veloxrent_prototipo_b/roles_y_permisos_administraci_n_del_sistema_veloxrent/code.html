@@ -1,0 +1,781 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roles y permisos — Administración del sistema - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #FCF9F3;
+      color: #1F2A33;
+    }
+    .font-mono-code, .font-code {
+      font-family: 'Space Grotesk', monospace, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 7px;
+      width: 7px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F4F0E8;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #D5CEC2;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #B8B0A2;
+    }
+    /* Estilo checkbox corporativo */
+    input[type="checkbox"] {
+      accent-color: #1F2A33;
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#FCF9F3] text-[#1F2A33]">
+
+  <!-- Cabecera Superior Corporativa VeloxRent -->
+  <header class="bg-white border-b border-[#E5E2DC] px-6 py-3 sticky top-0 z-40">
+    <div class="max-w-[1600px] mx-auto flex items-center justify-between">
+      
+      <!-- Lado Izquierdo: Logo, Versión y Migas de Pan -->
+      <div class="flex items-center space-x-5">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded bg-[#C6600A] text-white flex items-center justify-center font-bold text-lg font-mono-code shadow-sm">
+            V
+          </div>
+          <span class="text-xl font-bold tracking-tight text-[#1F2A33]">VeloxRent</span>
+          <span class="text-xs bg-[#F4F0E8] text-[#5C5549] px-2 py-0.5 rounded font-mono-code ml-1 border border-[#E5E2DC]">ERP v3.4</span>
+        </div>
+
+        <div class="h-5 w-[1px] bg-[#E5E2DC]"></div>
+
+        <nav class="flex items-center space-x-2 text-sm text-[#5C5549]" aria-label="Breadcrumb">
+          <span class="hover:text-[#1F2A33] transition-colors cursor-pointer">Administración del sistema</span>
+          <span class="text-[#A39C90]">›</span>
+          <span class="text-[#1F2A33] font-semibold">Roles y permisos</span>
+        </nav>
+      </div>
+
+      <!-- Lado Derecho: Estado, Sede y Perfil Administrador -->
+      <div class="flex items-center space-x-4">
+        <!-- Indicador En Línea -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#E8F5EC] border border-[#C6E7D2] text-[#1E7D4B] text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <!-- Sede Asignada -->
+        <div class="flex items-center space-x-1.5 px-3 py-1 bg-[#FAF9F5] border border-[#E5E2DC] rounded text-xs text-[#4E4A45]">
+          <svg class="w-3.5 h-3.5 text-[#5C5549]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span>Ayacucho — Sede Central</span>
+        </div>
+
+        <!-- Perfil Usuario Administrador -->
+        <div class="flex items-center space-x-2.5 pl-2">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center text-xs font-semibold font-mono-code shadow-inner">
+            GA
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-xs font-bold text-[#1F2A33] leading-tight">Gustavo Alarcón</span>
+            <span class="text-[11px] text-[#78716C] leading-tight">Administrador de Sistemas</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Banner Exclusivo: Esta pantalla requiere tabla amplia / solo desktop -->
+  <div class="bg-[#EFF6FF] border-b border-[#BFDBFE] px-6 py-2.5">
+    <div class="max-w-[1600px] mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3 text-xs text-[#1E40AF]">
+        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-[#DBEAFE] text-[#1D4ED8] flex items-center justify-center font-bold">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+        </span>
+        <div>
+          <span class="font-semibold text-[#1E3A8A]">Esta pantalla requiere una tabla amplia, disponible solo en escritorio.</span>
+          <span class="text-[#3B82F6] ml-1">La edición de privilegios RBAC de seguridad y gobernanza no está habilitada para dispositivos móviles por integridad de visualización.</span>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 text-[11px] font-mono-code text-[#1E40AF] bg-[#DBEAFE]/60 px-2 py-0.5 rounded border border-[#BFDBFE]">
+        <svg class="w-3 h-3 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+        <span>POL-SEC-009 / RBAC AUDITED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-6 py-7">
+
+    <!-- Fila de Título, Descripción y Botones de Acción -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+      <div>
+        <div class="flex items-center space-x-3">
+          <h1 class="text-2xl font-bold tracking-tight text-[#1F2A33]">Roles y permisos</h1>
+          <span class="text-xs bg-[#EAF5EF] text-[#1E7D4B] font-mono-code font-semibold px-2.5 py-0.5 rounded border border-[#C6E7D2]">
+            8 roles activos
+          </span>
+          <span class="text-xs bg-[#FAF9F5] text-[#78716C] font-mono-code px-2 py-0.5 rounded border border-[#E5E2DC]">
+            4 acciones estándar (CRUD/Audit)
+          </span>
+        </div>
+        <p class="text-sm text-[#5C5549] mt-1">
+          Matriz de control de accesos granular basada en roles (RBAC). Todo cambio de privilegios requiere reautenticación de doble factor MFA (TR-03) previo al impacto en base de datos.
+        </p>
+      </div>
+
+      <!-- Controles Superiores: Guardar Cambios y Acciones Auxiliares -->
+      <div class="flex items-center space-x-3 flex-shrink-0">
+        <button type="button" class="px-3.5 py-2 bg-white border border-[#E5E2DC] hover:bg-[#FAF9F5] text-[#4E4A45] rounded text-xs font-medium transition-colors flex items-center space-x-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-[#5C5549]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Restablecer valores</span>
+        </button>
+
+        <button type="button" class="px-3.5 py-2 bg-white border border-[#E5E2DC] hover:bg-[#FAF9F5] text-[#4E4A45] rounded text-xs font-medium transition-colors flex items-center space-x-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-[#5C5549]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span>Exportar matriz (.csv)</span>
+        </button>
+
+        <!-- Botón Principal: Guardar Cambios fondo #1F2A33 que dispara MFA (TR-03) -->
+        <button type="button" class="px-5 py-2 bg-[#1F2A33] hover:bg-[#2C3B47] text-white rounded text-xs font-semibold tracking-wide transition-all shadow-sm flex items-center space-x-2">
+          <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+          </svg>
+          <span>Guardar cambios</span>
+          <span class="text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded font-mono-code ml-0.5">Requiere MFA</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Banner Informativo de Protocolo de Aprobación MFA -->
+    <div class="mb-5 bg-[#FAF9F5] border border-[#E5E2DC] rounded p-3.5 flex items-start space-x-3 text-xs text-[#5C5549]">
+      <div class="w-5 h-5 rounded bg-[#FDF1DE] text-[#B5720A] flex items-center justify-center flex-shrink-0 font-bold mt-0.5">
+        !
+      </div>
+      <div class="flex-1 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <p>
+          <strong class="text-[#1F2A33]">Protocolo de Seguridad (TR-03 / BR-ADM-005):</strong> Al hacer clic en <span class="font-semibold text-[#1F2A33]">«Guardar cambios»</span>, el sistema desplegará automáticamente la verificación de identidad <span class="font-mono-code text-[#C6600A] font-semibold">TR-03 (Token TOTP de 6 dígitos)</span>. Ninguna modificación entrará en vigor sin la firma criptográfica del Administrador autenticado.
+        </p>
+        <span class="text-[11px] font-mono-code text-[#78716C] bg-white px-2 py-1 rounded border border-[#E5E2DC] whitespace-nowrap">
+          Última actualización: 12/09/2026 09:14 AM
+        </span>
+      </div>
+    </div>
+
+    <!-- Contenedor Principal de la Matriz RBAC -->
+    <div class="bg-white border border-[#E5E2DC] rounded shadow-sm overflow-hidden mb-6">
+      
+      <!-- Barra de Filtros y Búsqueda de Roles / Módulos -->
+      <div class="p-4 border-b border-[#E5E2DC] bg-[#FAF9F5] flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-3 flex-1 min-w-[300px]">
+          <!-- Input de búsqueda -->
+          <div class="relative w-full max-w-sm">
+            <input type="text" placeholder="Filtrar rol por nombre o área..." value="" class="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-[#D5CEC2] rounded text-[#1F2A33] focus:outline-none focus:border-[#1F2A33] placeholder-[#A39C90]">
+            <svg class="w-4 h-4 text-[#A39C90] absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+
+          <!-- Selector de Ámbito / Módulos -->
+          <select class="px-3 py-1.5 text-xs bg-white border border-[#D5CEC2] rounded text-[#4E4A45] focus:outline-none focus:border-[#1F2A33]">
+            <option>Todos los módulos del ERP (Comercial, Flota, Operaciones, Finanzas, RR.HH.)</option>
+            <option>Módulo Comercial &amp; Reservas</option>
+            <option>Módulo Flota &amp; Devoluciones</option>
+            <option>Módulo Finanzas &amp; Garantías</option>
+            <option>Módulo RR.HH. &amp; Personal</option>
+            <option>Módulo Configuración &amp; Sistemas</option>
+          </select>
+        </div>
+
+        <!-- Leyenda de Permisos Rápidos -->
+        <div class="flex items-center space-x-4 text-xs text-[#5C5549]">
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#1E7D4B]"></span>
+            <span>Permitido</span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#C22B2B]"></span>
+            <span>Restringido</span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#B5720A]"></span>
+            <span>Requiere nivel superior</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla Matriz: Filas = Roles / Columnas = Acciones -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-[#F6F3ED] border-b border-[#E5E2DC] text-[#4E4A45] uppercase tracking-wider font-semibold">
+              <th scope="col" class="py-3.5 px-6 min-w-[280px] border-r border-[#E5E2DC]">
+                Rol en el Sistema / Perfil
+              </th>
+              <th scope="col" class="py-3.5 px-4 text-center min-w-[170px] border-r border-[#E5E2DC]">
+                <div class="flex flex-col items-center justify-center">
+                  <span class="text-xs text-[#1F2A33] font-bold">Crear</span>
+                  <span class="text-[10px] lowercase text-[#78716C] font-normal tracking-normal mt-0.5">Altas, registros y nuevos</span>
+                </div>
+              </th>
+              <th scope="col" class="py-3.5 px-4 text-center min-w-[170px] border-r border-[#E5E2DC]">
+                <div class="flex flex-col items-center justify-center">
+                  <span class="text-xs text-[#1F2A33] font-bold">Aprobar</span>
+                  <span class="text-[10px] lowercase text-[#78716C] font-normal tracking-normal mt-0.5">Liberaciones y firmas N1/N2</span>
+                </div>
+              </th>
+              <th scope="col" class="py-3.5 px-4 text-center min-w-[170px] border-r border-[#E5E2DC]">
+                <div class="flex flex-col items-center justify-center">
+                  <span class="text-xs text-[#1F2A33] font-bold">Ver</span>
+                  <span class="text-[10px] lowercase text-[#78716C] font-normal tracking-normal mt-0.5">Consulta, bandejas y detalle</span>
+                </div>
+              </th>
+              <th scope="col" class="py-3.5 px-4 text-center min-w-[170px] border-r border-[#E5E2DC]">
+                <div class="flex flex-col items-center justify-center">
+                  <span class="text-xs text-[#1F2A33] font-bold">Exportar</span>
+                  <span class="text-[10px] lowercase text-[#78716C] font-normal tracking-normal mt-0.5">Descarga CSV, PDF y reportes</span>
+                </div>
+              </th>
+              <th scope="col" class="py-3.5 px-5 text-left min-w-[230px]">
+                Alcance y Restricción de Sede
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E5E2DC]">
+
+            <!-- Fila 1: Gerencia General / Directorio -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5">
+                    GE
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Gerencia</span>
+                      <span class="text-[10px] bg-[#FAF9F5] text-[#4E4A45] px-1.5 py-0.2 rounded border border-[#D5CEC2] font-mono-code">Nivel 0</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Dirección ejecutiva con atribución de veto, excepciones de alquiler y aprobación final de garantías.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC] bg-[#FAF9F5]/40">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC] bg-[#FAF9F5]/40">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC] bg-[#FAF9F5]/40">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC] bg-[#FAF9F5]/40">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E8F5EC] text-[#1E7D4B] border border-[#C6E7D2]">
+                    Multisede irrestricto
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">Todas las empresas del grupo</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila 2: Front-office (Mostrador garita / Ventas) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#C6600A] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5">
+                    FO
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Front-office</span>
+                      <span class="text-[10px] bg-[#FFF7ED] text-[#C6600A] px-1.5 py-0.2 rounded border border-[#FDBA74] font-mono-code">Comercial</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Atención en mostrador garita: registro de consultas, reservas, formalización de contratos y entregas.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-not-allowed opacity-50" title="Requiere rol de Supervisión o Gerencia">
+                  <input type="checkbox" disabled="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#F4F0E8] text-[#5C5549] border border-[#E5E2DC]">
+                    Sede asignada
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">Sin visibilidad de otras sedes</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila 3: Campo (Técnicos y Choferes de campo) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#2F6B4F] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5">
+                    CA
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Campo</span>
+                      <span class="text-[10px] bg-[#EAF5EF] text-[#2F6B4F] px-1.5 py-0.2 rounded border border-[#A7F3D0] font-mono-code">Operativo</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Inspección en patio, traslados viales, toma de evidencias fotográficas 360°, check de devolución y alcoholímetro.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-not-allowed opacity-50" title="Restringido para rol Campo">
+                  <input type="checkbox" disabled="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-not-allowed opacity-50">
+                  <input type="checkbox" disabled="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#F4F0E8] text-[#5C5549] border border-[#E5E2DC]">
+                    Sede patio local
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">Solo expedientes asignados</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila 4: Jefatura de Operaciones y Flota -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#2166B0] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5">
+                    OF
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Operaciones &amp; Flota</span>
+                      <span class="text-[10px] bg-[#EFF6FF] text-[#2166B0] px-1.5 py-0.2 rounded border border-[#BFDBFE] font-mono-code">Supervisión</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Resolución de incidencias operativas, asignación de unidades, control GPS, talleres y dictamen de daños técnicos.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E8F5EC] text-[#1E7D4B] border border-[#C6E7D2]">
+                    Multisede regional
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">Flotas Ayacucho y anexas</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila 5: Tesorería y Finanzas -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#8A5016] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5">
+                    TF
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Finanzas &amp; Tesorería</span>
+                      <span class="text-[10px] bg-[#FEF3C7] text-[#92400E] px-1.5 py-0.2 rounded border border-[#FDE68A] font-mono-code">Control Caja</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Validación de vouchers OCR de terceros (PAG), conciliación bancaria BCP, liberación de garantías y liquidaciones.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#F4F0E8] text-[#5C5549] border border-[#E5E2DC]">
+                    Empresa asignada
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">VeloxRent Perú S.A.C.</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila 6: Gestión de Personas / RR.HH. -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#703B8C] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5">
+                    RH
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Recursos Humanos</span>
+                      <span class="text-[10px] bg-[#F5F3FF] text-[#7C3AED] px-1.5 py-0.2 rounded border border-[#DDD6FE] font-mono-code">Personal</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Reclutamiento de mecánicos/choferes, contratos notariales, asistencia, periodo de prueba y salidas a campo.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E8F5EC] text-[#1E7D4B] border border-[#C6E7D2]">
+                    Multisede (Ayacucho / Lima)
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">Legajos confidenciales</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila 7: Auditoría Interna / Cumplimiento -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#475569] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5">
+                    AU
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Auditoría &amp; Compliance</span>
+                      <span class="text-[10px] bg-[#F1F5F9] text-[#475569] px-1.5 py-0.2 rounded border border-[#CBD5E1] font-mono-code">Solo Consulta</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Fiscalización de registros inmutables (RIO), alertas PLAFT de depósitos, logs de accesos y peritajes.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear (Inhabilitado estricto: es rol de solo lectura) -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-not-allowed opacity-40" title="Auditoría tiene prohibida la creación operativa">
+                  <input type="checkbox" disabled="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar (Inhabilitado estricto) -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-not-allowed opacity-40" title="Auditoría no aprueba transacciones">
+                  <input type="checkbox" disabled="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E8F5EC] text-[#1E7D4B] border border-[#C6E7D2]">
+                    Multisede irrestricto
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">Trazabilidad global</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila 8: Administrador de Sistemas (TI) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-[#FCFBF7]">
+              <td class="py-3.5 px-6 border-r border-[#E5E2DC]">
+                <div class="flex items-start space-x-3">
+                  <div class="w-7 h-7 rounded bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs font-mono-code flex-shrink-0 mt-0.5 ring-2 ring-[#C6600A]/30">
+                    TI
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-[#1F2A33] text-sm">Administración del sistema</span>
+                      <span class="text-[10px] bg-[#FFF7ED] text-[#C6600A] px-1.5 py-0.2 rounded border border-[#FDBA74] font-mono-code font-semibold">Root ERP</span>
+                    </div>
+                    <p class="text-[11px] text-[#78716C] mt-0.5 leading-snug">
+                      Configuración de base de datos, enrutamiento RBAC, enrolamiento MFA, logs de sincronización y soporte técnico.
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- Crear -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Aprobar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Ver -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Exportar -->
+              <td class="py-3.5 px-4 text-center border-r border-[#E5E2DC]">
+                <label class="inline-flex items-center justify-center p-1.5 cursor-pointer">
+                  <input type="checkbox" checked="" class="rounded border-[#D5CEC2]">
+                </label>
+              </td>
+              <!-- Alcance -->
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E8F5EC] text-[#1E7D4B] border border-[#C6E7D2]">
+                    Control total global
+                  </span>
+                  <span class="text-[11px] text-[#78716C]">Sujeto a auditoría RIO</span>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pie de la Matriz: Resumen de gobernanza y guardado directo -->
+      <div class="p-4 bg-[#FAF9F5] border-t border-[#E5E2DC] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#5C5549]">
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+          <span>8 de 8 roles mapeados en la estructura RBAC actual. Las celdas bloqueadas responden a la directiva de segregación de funciones (SoD).</span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button type="button" class="text-xs text-[#78716C] hover:text-[#1F2A33] underline">
+            Ver registro de auditoría de permisos
+          </button>
+          <button type="button" class="px-4 py-1.5 bg-[#1F2A33] hover:bg-[#2C3B47] text-white rounded text-xs font-medium transition-colors shadow-sm">
+            Guardar cambios (MFA)
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bloque Informativo Inferior: Políticas de Segregación de Funciones (SoD) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <div class="bg-white border border-[#E5E2DC] rounded p-4">
+        <div class="flex items-center space-x-2 text-xs font-bold text-[#1F2A33] mb-1">
+          <svg class="w-4 h-4 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+          <span>Principio de menor privilegio</span>
+        </div>
+        <p class="text-xs text-[#5C5549] leading-relaxed">
+          Ningún usuario posee privilegios fuera de su descriptor de cargo. Las cuentas de nuevo ingreso inician en estado <span class="font-mono-code text-[#B5720A]">«Sin permisos asignados»</span> hasta que el Administrador defina su rol.
+        </p>
+      </div>
+
+      <div class="bg-white border border-[#E5E2DC] rounded p-4">
+        <div class="flex items-center space-x-2 text-xs font-bold text-[#1F2A33] mb-1">
+          <svg class="w-4 h-4 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+          <span>Exigencia de Segundo Factor (TR-03)</span>
+        </div>
+        <p class="text-xs text-[#5C5549] leading-relaxed">
+          La alteración de la matriz de permisos está categorizada como operación crítica. Al pulsar <span class="font-semibold text-[#1F2A33]">Guardar cambios</span> se abrirá el modal de validación MFA de 6 casillas.
+        </p>
+      </div>
+
+      <div class="bg-white border border-[#E5E2DC] rounded p-4">
+        <div class="flex items-center space-x-2 text-xs font-bold text-[#1F2A33] mb-1">
+          <svg class="w-4 h-4 text-[#2166B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+          <span>Inmutabilidad de Auditoría RIO</span>
+        </div>
+        <p class="text-xs text-[#5C5549] leading-relaxed">
+          Cada activación o revocación de casilla se estampa con fecha, hora, IP de conexión y DNI del Administrador en el log inmutable corporativo de VeloxRent.
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Pie de Página Institucional Unificado VeloxRent -->
+  <footer class="bg-white border-t border-[#E5E2DC] py-3 px-6 mt-auto text-xs text-[#5C5549]">
+    <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="font-medium text-[#1F2A33]">VeloxRent © 2026</span>
+        <span class="text-[#E5E2DC]">·</span>
+        <span>Sistema de Gestión Comercial y Flotas</span>
+        <span class="text-[#E5E2DC]">·</span>
+        <span class="font-mono-code text-[#4E4A45]">Módulo Administración / Roles y permisos</span>
+      </div>
+      <div class="flex items-center space-x-5 font-mono-code text-[11px]">
+        <span>Mesa TI / Accesos: <strong class="text-[#1F2A33]">anexo 101</strong></span>
+        <span class="text-[#E5E2DC]">|</span>
+        <span>Soporte Seguridad: <strong class="text-[#1F2A33]">anexo 102</strong></span>
+        <span class="text-[#E5E2DC]">|</span>
+        <a href="#" class="text-[#C22B2B] hover:underline flex items-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

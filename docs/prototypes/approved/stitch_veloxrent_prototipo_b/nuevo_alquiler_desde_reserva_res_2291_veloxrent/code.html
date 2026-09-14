@@ -1,0 +1,414 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Alquiler — desde Reserva #RES-2291 - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              orange: '#C6600A',
+              dark: '#1F2A33',
+              secondary: '#2F6B4F',
+              muted: '#4E4A45',
+              grayBg: '#F9F9F8',
+              border: '#DFDDD6',
+              warning: '#B5720A',
+              warningBg: '#FDF1DE',
+              danger: '#C22B2B',
+              success: '#1E7D4B',
+              successBg: '#EBF7EE',
+              info: '#2166B0',
+              infoBg: '#EAF2FB',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-white text-[#1F2A33] antialiased">
+
+  <!-- Top Navigation Bar -->
+  <header class="w-full bg-white border-b border-[#DFDDD6] sticky top-0 z-30">
+    <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Logo & Breadcrumb Navigation -->
+      <div class="flex items-center gap-6">
+        <div class="flex items-center">
+          <span class="text-xl font-extrabold tracking-tight text-[#1F2A33]">Velox<span class="text-[#C6600A]">Rent</span></span>
+        </div>
+
+        <div class="h-5 w-px bg-[#DFDDD6]"></div>
+
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center space-x-2 text-xs text-[#4E4A45]">
+          <a href="#" class="hover:text-[#1F2A33] transition-colors">Gestión Interna</a>
+          <span>›</span>
+          <a href="#" class="hover:text-[#1F2A33] transition-colors">Alquileres</a>
+          <span>›</span>
+          <span class="text-[#1F2A33] font-semibold">Nuevo alquiler</span>
+        </nav>
+      </div>
+
+      <!-- Right User Controls & Status -->
+      <div class="flex items-center gap-4">
+        <!-- Online Status Pill -->
+        <div class="flex items-center gap-1.5 px-3 py-1 bg-[#EBF7EE] text-[#1E7D4B] rounded-full text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+          <span>En línea</span>
+        </div>
+
+        <!-- Sede Badge -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-[#F9F9F8] border border-[#DFDDD6] rounded-md text-xs font-medium text-[#1F2A33]">
+          <svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+          <span>Ayacucho — Sede Central</span>
+        </div>
+
+        <!-- Bell Notifications Icon -->
+        <button class="relative p-2 text-[#4E4A45] hover:text-[#1F2A33] hover:bg-[#F9F9F8] rounded-md transition-colors" title="Notificaciones">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C6600A] rounded-full"></span>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div class="flex items-center gap-2.5 pl-2 border-l border-[#DFDDD6]">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">
+            ME
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-xs font-semibold text-[#1F2A33] leading-none">María Ejecutivo</span>
+            <span class="text-[11px] text-[#4E4A45] leading-tight">Front-office</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 w-full max-w-[1440px] mx-auto px-6 py-8">
+    
+    <!-- Top Return & Identifier Bar -->
+    <div class="flex items-center justify-between mb-6">
+      <a href="#" class="inline-flex items-center gap-2 text-sm font-medium text-[#4E4A45] hover:text-[#1F2A33] transition-colors group">
+        <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        <span>Volver a Alquileres</span>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45]">Origen:</span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#F9F9F8] border border-[#DFDDD6] text-xs font-mono font-medium text-[#1F2A33]">
+          <svg class="w-3.5 h-3.5 text-[#2166B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Reserva #RES-2291
+        </span>
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#EBF7EE] text-[#1E7D4B] text-[11px] font-semibold rounded-full">
+          Confirmada en sede
+        </span>
+      </div>
+    </div>
+
+    <!-- Title Section -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-1.5">
+        <span class="px-2.5 py-0.5 rounded text-xs font-semibold bg-[#FDF1DE] text-[#C6600A] tracking-wide">
+          CONVERSIÓN DE RESERVA
+        </span>
+        <span class="text-xs text-[#4E4A45]">• Sistema de Gestión Interna</span>
+      </div>
+      <h1 class="text-2xl lg:text-3xl font-bold text-[#1F2A33] tracking-tight">
+        Nuevo Alquiler — desde Reserva #RES-2291
+      </h1>
+      <p class="text-sm text-[#4E4A45] mt-1.5">
+        Generación de expediente contractual operativo. Se heredan los datos validados de reserva y se consolida la liquidación de garantía para la entrega de flota.
+      </p>
+    </div>
+
+    <!-- Form & Panels Layout Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- Left Column: Inherited Summary & Contract Details (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Card: Resumen Heredado de Reserva -->
+        <section class="bg-white border border-[#DFDDD6] rounded-lg p-6 shadow-sm">
+          <div class="flex items-center justify-between pb-4 border-b border-[#DFDDD6] mb-5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-md bg-[#F9F9F8] border border-[#DFDDD6] flex items-center justify-center text-[#1F2A33]">
+                <svg class="w-4 h-4 text-[#1F2A33]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-[#1F2A33]">Resumen heredado de reserva</h2>
+                <p class="text-xs text-[#4E4A45]">Información validada procedente de #RES-2291</p>
+              </div>
+            </div>
+            <span class="text-xs font-semibold text-[#1E7D4B] bg-[#EBF7EE] px-2.5 py-1 rounded">
+              Verificado 100%
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+            <!-- Cliente -->
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45]">Cliente Corporativo</span>
+              <div class="font-bold text-[#1F2A33] text-base leading-snug">Minera Los Andes S.A.C.</div>
+              <p class="text-xs text-[#4E4A45]">RUC: 20491823901</p>
+              <div class="text-xs text-[#4E4A45] pt-1 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span>Contacto: Ing. Roberto Salas (Apoderado)</span>
+              </div>
+            </div>
+
+            <!-- Vehículo Asignado -->
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45]">Vehículo Asignado</span>
+              <div class="font-bold text-[#1F2A33] text-base flex items-center gap-2">
+                <span>Toyota Hilux D0Y-704</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#1F2A33] text-white">4x4 MT</span>
+              </div>
+              <p class="text-xs text-[#4E4A45]">Camioneta Pick-Up Doble Cabina · Diésel Turbo</p>
+              <div class="text-xs text-[#1E7D4B] font-medium pt-1 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span>
+                <span>Unidad bloqueada e inspeccionada en patio</span>
+              </div>
+            </div>
+
+            <!-- Periodo de alquiler -->
+            <div class="space-y-1 pt-3 border-t border-[#DFDDD6] sm:border-t-0 sm:pt-0">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45]">Periodo de Alquiler</span>
+              <div class="font-bold text-[#1F2A33] text-base">04 sep 2025 — 18 sep 2025</div>
+              <p class="text-xs text-[#4E4A45]">Duración pactada: <span class="font-semibold text-[#1F2A33]">14 días calendario</span></p>
+              <p class="text-xs text-[#4E4A45]">Entrega: Sede Central Ayacucho (09:00 hrs)</p>
+            </div>
+
+            <!-- Destino y Tarifa -->
+            <div class="space-y-1 pt-3 border-t border-[#DFDDD6] sm:border-t-0 sm:pt-0">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45]">Ruta y Tarifa Diaria</span>
+              <div class="font-bold text-[#1F2A33] text-base">S/ 280.00 <span class="text-xs font-normal text-[#4E4A45]">/ día</span></div>
+              <p class="text-xs text-[#4E4A45]">Destino: Mina Catalina Huanca (Ruta Mixta / Trocha)</p>
+              <p class="text-xs text-[#2F6B4F] font-medium">GPS y seguro corporativo todo riesgo incluido</p>
+            </div>
+          </div>
+
+          <!-- Documentos Validados Inherited -->
+          <div class="mt-6 pt-4 border-t border-[#DFDDD6] bg-[#F9F9F8] rounded-md p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-full bg-[#EBF7EE] text-[#1E7D4B] flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div class="text-xs">
+                <span class="font-semibold text-[#1F2A33]">Expediente documental previo aprobado:</span>
+                <span class="text-[#4E4A45] ml-1">Ficha RUC, DNI conductor, brevete profesional A-IIb y vigencia de poder.</span>
+              </div>
+            </div>
+            <a href="#" class="text-xs font-semibold text-[#2166B0] hover:underline shrink-0">Ver adjuntos</a>
+          </div>
+        </section>
+
+        <!-- Datos Operativos de Despacho (Campos del contrato) -->
+        <section class="bg-white border border-[#DFDDD6] rounded-lg p-6 shadow-sm">
+          <h2 class="text-base font-bold text-[#1F2A33] mb-1">Configuración inicial del expediente</h2>
+          <p class="text-xs text-[#4E4A45] mb-5">Parámetros operativos que se asignarán al contrato oficial #ALQ-0430.</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <label class="block text-xs font-semibold text-[#4E4A45] mb-1.5 uppercase tracking-wider">Conductor designado en sede</label>
+              <input type="text" value="Víctor Morales Quicaño (DNI 44829104)" class="w-full px-3 py-2 text-sm bg-white border border-[#DFDDD6] rounded font-medium text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]" readonly="">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#4E4A45] mb-1.5 uppercase tracking-wider">Kilometraje inicial de entrega</label>
+              <div class="relative">
+                <input type="text" value="48,320 km (Lectura de patio)" class="w-full px-3 py-2 text-sm bg-[#F9F9F8] border border-[#DFDDD6] rounded font-medium text-[#1F2A33] focus:outline-none" readonly="">
+                <span class="absolute right-3 top-2.5 text-xs text-[#1E7D4B] font-semibold">✓ Verificado</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#4E4A45] mb-1.5 uppercase tracking-wider">Nivel de combustible de salida</label>
+              <div class="flex items-center gap-2">
+                <input type="text" value="Tanque Lleno (8/8)" class="w-full px-3 py-2 text-sm bg-[#F9F9F8] border border-[#DFDDD6] rounded font-medium text-[#1F2A33]" readonly="">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#4E4A45] mb-1.5 uppercase tracking-wider">Checklist 360° de entrega</label>
+              <div class="flex items-center gap-2">
+                <input type="text" value="Acta preliminar generada" class="w-full px-3 py-2 text-sm bg-[#F9F9F8] border border-[#DFDDD6] rounded font-medium text-[#1F2A33]" readonly="">
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: Tarjeta de Garantía & Botón Crear Expediente (5 cols) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- TARJETA DE GARANTÍA (REQUERIMIENTO PRINCIPAL) -->
+        <section class="bg-white border-2 border-[#1F2A33] rounded-lg p-6 shadow-sm relative">
+          <!-- Header Badge -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#1F2A33] bg-[#F9F9F8] px-2.5 py-1 rounded border border-[#DFDDD6]">
+              <svg class="w-4 h-4 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+              Garantía Contractual
+            </span>
+            <span class="text-xs font-semibold text-[#B5720A] bg-[#FDF1DE] px-2.5 py-0.5 rounded">
+              Pendiente de cobro en caja
+            </span>
+          </div>
+
+          <!-- Monto Principal -->
+          <div class="mb-4">
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#4E4A45] block">Monto de resguardo</span>
+            <div class="text-3xl font-extrabold text-[#1F2A33] tracking-tight mt-0.5">
+              Garantía total: S/ 1,000
+            </div>
+            <!-- Subtexto requerido exacto en Public Sans 14px color #4E4A45 -->
+            <p class="text-[14px] text-[#4E4A45] mt-2 font-normal leading-relaxed">
+              S/ 300 ya pagados (reserva) + S/ 700 pendientes
+            </p>
+          </div>
+
+          <!-- Barra Visual de Progreso de Garantía -->
+          <div class="my-5">
+            <div class="flex justify-between text-xs font-semibold mb-1.5">
+              <span class="text-[#1E7D4B]">S/ 300 abonado (30%)</span>
+              <span class="text-[#C6600A]">S/ 700 por liquidar (70%)</span>
+            </div>
+            <div class="w-full h-3 bg-[#EFEDE7] rounded-full overflow-hidden flex">
+              <div class="h-full bg-[#1E7D4B]" style="width: 30%;" title="Depósito de reserva acreditado"></div>
+              <div class="h-full bg-[#C6600A]" style="width: 70%;" title="Saldo de garantía pendiente de retención"></div>
+            </div>
+          </div>
+
+          <!-- Desglose Contable Detallado -->
+          <div class="space-y-3 pt-4 border-t border-[#DFDDD6] text-xs">
+            <!-- Fila 1: Depósito previo -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+                <span class="text-[#4E4A45]">Depósito inicial en reserva (#RES-2291):</span>
+              </div>
+              <span class="font-mono font-bold text-[#1E7D4B] text-sm">S/ 300.00</span>
+            </div>
+
+            <!-- Fila 2: Saldo pendiente -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#C6600A]"></span>
+                <span class="text-[#4E4A45]">Saldo a retener/cobrar en mostrador:</span>
+              </div>
+              <span class="font-mono font-bold text-[#C6600A] text-sm">S/ 700.00</span>
+            </div>
+
+            <!-- Fila 3: Modalidad de retención -->
+            <div class="pt-2 border-t border-dashed border-[#DFDDD6] flex items-center justify-between text-[#4E4A45]">
+              <span>Método pactado para saldo:</span>
+              <span class="font-semibold text-[#1F2A33]">Bloqueo en tarjeta de crédito VISA</span>
+            </div>
+          </div>
+
+          <!-- Alerta informativa -->
+          <div class="mt-5 p-3 rounded bg-[#F9F9F8] border border-[#DFDDD6] flex items-start gap-2.5">
+            <svg class="w-4 h-4 text-[#2166B0] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-xs text-[#4E4A45] leading-relaxed">
+              Al crear el expediente, se emitirá automáticamente la orden de cobro/retención por los <strong class="text-[#1F2A33]">S/ 700.00 pendientes</strong> en la pasarela de front-office antes de imprimir el contrato final.
+            </p>
+          </div>
+        </section>
+
+        <!-- Total de la Operación y Acción Principal -->
+        <div class="bg-white border border-[#DFDDD6] rounded-lg p-6 shadow-sm space-y-5">
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs text-[#4E4A45]">
+              <span>Alquiler pactado (14 días x S/ 280):</span>
+              <span class="font-mono font-semibold text-[#1F2A33]">S/ 3,920.00</span>
+            </div>
+            <div class="flex justify-between text-xs text-[#4E4A45]">
+              <span>IGV (18%):</span>
+              <span class="font-mono font-semibold text-[#1F2A33]">S/ 705.60</span>
+            </div>
+            <div class="flex justify-between text-xs text-[#4E4A45]">
+              <span>Garantía contractual total:</span>
+              <span class="font-mono font-semibold text-[#1F2A33]">S/ 1,000.00</span>
+            </div>
+            <div class="pt-3 border-t border-[#DFDDD6] flex justify-between items-baseline">
+              <span class="text-sm font-bold text-[#1F2A33]">Total liquidación contrato:</span>
+              <span class="text-xl font-extrabold text-[#1F2A33] font-mono">S/ 5,625.60</span>
+            </div>
+          </div>
+
+          <!-- BOTÓN PRINCIPAL REQUERIDO: "Crear expediente" fondo #1F2A33 -->
+          <button type="button" class="w-full py-3.5 px-6 rounded bg-[#1F2A33] hover:bg-[#2C3B47] active:bg-[#151D24] text-white font-semibold text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A33] focus:ring-offset-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>Crear expediente</span>
+          </button>
+
+          <!-- Acciones secundarias -->
+          <div class="flex items-center justify-center gap-4 text-xs pt-1">
+            <a href="#" class="text-[#4E4A45] hover:text-[#1F2A33] hover:underline font-medium">
+              Guardar como borrador
+            </a>
+            <span class="text-[#DFDDD6]">•</span>
+            <a href="#" class="text-[#C22B2B] hover:underline font-medium">
+              Cancelar conversión
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer Corporativo Unificado -->
+  <footer class="w-full bg-white border-t border-[#DFDDD6] mt-auto">
+    <div class="max-w-[1440px] mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#4E4A45] gap-2">
+      <div>
+        VeloxRent © 2025 · Sistema de Gestión Interna
+      </div>
+      <div class="flex items-center gap-6">
+        <span>Soporte Front-office: <strong class="text-[#1F2A33] font-semibold">anexo 103</strong></span>
+        <a href="#" class="text-[#C22B2B] hover:underline font-medium">Cerrar sesión</a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Solicitar salida a campo - VeloxRent</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              orange: '#C6600A',
+              navy: '#1F2A33',
+              dark: '#141B22',
+              gray: '#4E4A45',
+              border: '#E5E2DC',
+              bgLight: '#FAF9F5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white text-[#1F2A33] font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-[#C6600A]/10 selection:text-[#C6600A]">
+<!-- Header Superior Corporativo VeloxRent -->
+<header class="border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+<div class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+<!-- Marca y Navegación de Migas -->
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2">
+<span class="text-xl font-bold font-mono tracking-tight text-[#C6600A]">Velox<span class="text-[#1F2A33]">Rent</span></span>
+<span class="text-[11px] font-mono bg-[#FAF9F5] text-[#4E4A45] px-1.5 py-0.5 rounded border border-[#E5E2DC]">ERP v3.4</span>
+</div>
+<div class="h-4 w-[1px] bg-[#E5E2DC]"></div>
+<nav class="flex items-center space-x-2 text-xs text-[#4E4A45]">
+<span>Recursos Humanos</span>
+<span>›</span>
+<span>Personal</span>
+<span>›</span>
+<span class="text-[#1F2A33] font-medium">Salida a campo</span>
+<span>›</span>
+<span class="text-[#C6600A] font-semibold">Solicitar salida a campo</span>
+</nav>
+</div>
+<!-- Estado de Red y Perfil de Usuario Operativo -->
+<div class="flex items-center space-x-6 text-xs">
+<div class="flex items-center space-x-1.5"><span class="inline-block w-2 h-2 rounded-full bg-[#C22B2B]"></span><span class="text-[#C22B2B] font-medium">Sin conexión</span></div>
+<div class="flex items-center space-x-1.5 text-[#4E4A45]">
+<svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<div class="flex items-center space-x-2 pl-3 border-l border-[#E5E2DC]">
+<div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-mono font-bold text-[11px]">
+            EA
+          </div>
+<div class="leading-tight">
+<div class="font-semibold text-[#1F2A33]">Edwin Alanya Córdoba</div>
+<div class="text-[11px] text-[#4E4A45]">Mecánico Especialista 4x4</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Subbarra Contextual Operativa -->
+<div class="bg-[#FAF9F5] border-t border-[#E5E2DC] px-6 py-2">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between text-xs">
+<div class="flex items-center space-x-6">
+<a class="text-[#4E4A45] hover:text-[#1F2A33] flex items-center space-x-1 font-medium transition-colors" href="#">
+<span>←</span>
+<span>Volver a Salida a campo</span>
+</a>
+<span class="text-[#E5E2DC]">|</span>
+<span class="text-[#4E4A45]">Fecha de registro: <strong class="text-[#1F2A33] font-mono">08/09/2026</strong></span>
+<span class="text-[#E5E2DC]">|</span>
+<span class="text-[#4E4A45]">Ámbito asignado: <strong class="text-[#1F2A33]">Taller Central Ayacucho / Operaciones en Ruta</strong></span>
+</div>
+<div class="flex items-center space-x-3">
+<span class="px-2.5 py-0.5 rounded text-[11px] font-mono font-medium bg-blue-50 text-[#2166B0] border border-blue-200">
+            D.L. 728 — RÉGIMEN LABORAL DE LA ACTIVIDAD PRIVADA
+          </span>
+<span class="text-[11px] text-[#4E4A45] font-mono">Protocolo: PR-CAM-004</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Contenido Principal -->
+<main class="max-w-[1000px] w-full mx-auto px-6 py-8 flex-1">
+<!-- Encabezado de Página -->
+<div class="flex items-start justify-between mb-8 pb-6 border-b border-[#E5E2DC]">
+<div>
+<h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">Solicitar salida a campo</h1>
+<p class="text-sm text-[#4E4A45] mt-1">
+          Registro reglamentario de comisión de servicio fuera de sede para soporte técnico, rescate o inspección vehicular.
+        </p>
+</div>
+<!-- Tarjeta informativa / Estado normativo -->
+<div class="bg-[#FAF9F5] border border-[#E5E2DC] rounded-lg p-3 px-4 text-right">
+<div class="text-[11px] uppercase tracking-wider text-[#4E4A45] font-semibold">TIPO DE DESPLAZAMIENTO</div>
+<div class="text-base font-bold font-mono text-[#1F2A33] mt-0.5">Comisión de Servicio</div>
+<div class="text-[11px] text-[#4E4A45] mt-0.5">Autorización directa en línea</div>
+</div>
+</div>
+<!-- Ficha del Colaborador Solicitante -->
+<div class="border border-[#E5E2DC] rounded-lg p-5 mb-8 bg-[#FAF9F5] flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<div class="w-12 h-12 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-mono font-bold text-base">
+          EA
+        </div>
+<div>
+<div class="flex items-center space-x-3">
+<h2 class="text-base font-bold text-[#1F2A33]">Edwin Alanya Córdoba</h2>
+<span class="bg-emerald-50 text-[#1E7D4B] border border-emerald-200 px-2 py-0.5 rounded text-xs font-medium">
+              Planilla — Plazo Indeterminado
+            </span>
+</div>
+<div class="flex items-center space-x-4 text-xs text-[#4E4A45] mt-1">
+<span>DNI: <strong class="text-[#1F2A33] font-mono">47829103</strong></span>
+<span>•</span>
+<span>Cargo: <strong class="text-[#1F2A33]">Mecánico Especialista 4x4 / Flota Minera</strong></span>
+<span>•</span>
+<span>Empresa: <strong class="text-[#1F2A33]">VeloxRent Servicios Mineros S.A.C.</strong></span>
+</div>
+</div>
+</div>
+<div class="text-right border-l border-[#E5E2DC] pl-6">
+<div class="text-[11px] uppercase tracking-wider text-[#4E4A45] font-semibold">HORARIO HABITUAL</div>
+<div class="text-sm font-bold font-mono text-[#1F2A33] mt-0.5">07:30 – 16:30 hrs</div>
+<div class="text-[11px] text-[#4E4A45]">Turno diurno regular</div>
+</div>
+</div>
+<!-- Formulario de Solicitud de Salida a Campo -->
+<form class="space-y-6" onsubmit="event.preventDefault();">
+<div class="border border-[#E5E2DC] rounded-lg p-8 bg-white text-center flex flex-col items-center justify-center py-12 space-y-4"><div class="w-12 h-12 rounded-full bg-[#FAF9F5] border border-[#E5E2DC] flex items-center justify-center text-[#C22B2B]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L3 3m5.636 2.636a9 9 0 0112.728 0M1.393 9.393a13.955 13.955 0 016.971-3.757m12.022 1.364a13.953 13.953 0 013.614 3.393m-4.243 4.243a8.963 8.963 0 00-2.407-1.393M9.879 9.879a3 3 0 004.242 4.242M3 21l18-18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><div class="max-w-md"><h3 class="text-base font-bold text-[#1F2A33] mb-1">Modo sin conexión detectado</h3><p class="text-sm font-medium text-[#C22B2B] leading-relaxed">Necesitas conexión a internet para solicitar una salida a campo — esta solicitud no se puede guardar sin conexión.</p><p class="text-xs text-[#4E4A45] mt-2">Comprueba tu conexión de datos móviles o señal Wi-Fi de taller para habilitar el registro reglamentario.</p></div></div>
+<!-- Barra de Acciones -->
+<div class="border border-[#E5E2DC] rounded-lg p-5 bg-white flex items-center justify-between"><button class="text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] transition-colors px-3 py-2" type="button">Cancelar y regresar</button><div class="flex items-center space-x-3"><button class="border border-[#A39C90] text-[#1F2A33] hover:bg-[#FAF9F5] text-xs font-semibold px-4 py-2.5 rounded transition-colors flex items-center space-x-1.5" onclick="window.location.reload();" type="button"><svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span>Reintentar conexión</span></button><button class="bg-[#E5E2DC] text-[#4E4A45]/60 text-xs font-semibold px-6 py-2.5 rounded cursor-not-allowed select-none flex items-center space-x-2" disabled="" type="button"><svg class="w-4 h-4 text-[#4E4A45]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span>Enviar solicitud (No disponible)</span></button></div></div>
+</form>
+</main>
+<!-- Pie de Página Institucional VeloxRent -->
+<footer class="border-t border-[#E5E2DC] bg-[#FAF9F5] py-3 text-xs text-[#4E4A45] mt-12">
+<div class="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2">
+<div class="flex items-center space-x-4">
+<span><strong>VeloxRent</strong> © 2025</span>
+<span>•</span>
+<span>Sistema de Gestión Interna</span>
+<span>•</span>
+<span>Protocolo SST-RRHH-014 / Control de Desplazamientos en Campo</span>
+</div>
+<div class="flex items-center space-x-4 font-mono text-[11px]">
+<span>Soporte RR.HH.: <strong class="text-[#1F2A33]">anexo 104</strong></span>
+<span>•</span>
+<span>Mesa de Operaciones: <strong class="text-[#1F2A33]">anexo 101</strong></span>
+<span>•</span>
+<a class="text-[#4E4A45] hover:text-[#1F2A33] flex items-center space-x-1 font-sans" href="#">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Cerrar sesión</span>
+</a>
+</div>
+</div>
+</footer>
+
+
+</body></html>

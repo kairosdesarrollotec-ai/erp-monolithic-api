@@ -1,0 +1,274 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Alcoholímetro de devolución — Recepción #DEV-0456 - VeloxRent</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              sand: '#F8F7F4',
+              border: '#E5E2DC',
+              muted: '#7A756D',
+              text: '#1F2A33',
+              subtext: '#4E4A45',
+              success: '#1E7D4B',
+              warning: '#B5720A',
+              danger: '#C22B2B',
+              info: '#2166B0',
+              softSuccess: '#EBF7EE',
+              softDanger: '#FBE9E9',
+              softWarning: '#FDF1DE'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .font-space {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-white text-[#1F2A33]">
+<!-- TOP APP BAR -->
+<header class="border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+<div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+<!-- Left: Logo & Breadcrumbs -->
+<div class="flex items-center space-x-6">
+<div class="flex items-center">
+<span class="font-space text-2xl font-bold tracking-tight text-[#1F2A33]">Velox<span class="text-[#C6600A]">Rent</span></span>
+</div>
+<div class="h-5 w-[1px] bg-[#E5E2DC]"></div>
+<nav class="flex items-center space-x-2 text-sm text-[#7A756D]"><span>Gestión Interna</span><span class="text-xs text-[#A39C90]">›</span><span>Devoluciones</span><span class="text-xs text-[#A39C90]">›</span><span>Recepción #DEV-0456</span><span class="text-xs text-[#A39C90]">›</span><span class="text-[#1F2A33] font-medium">Alcoholímetro</span></nav>
+</div>
+<!-- Right: Status, Branch, Alerts, User Profile -->
+<div class="flex items-center space-x-4">
+<!-- Status indicator -->
+<div class="flex items-center space-x-2 px-3 py-1 bg-[#EBF7EE] text-[#1E7D4B] rounded-full text-xs font-semibold">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+<span>En línea</span>
+</div>
+<!-- Branch / Location -->
+<div class="flex items-center space-x-2 px-3 py-1.5 border border-[#E5E2DC] rounded-lg text-xs font-medium text-[#4E4A45] bg-[#F8F7F4]">
+<svg class="w-3.5 h-3.5 text-[#7A756D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative p-2 rounded-lg text-[#7A756D] hover:text-[#1F2A33] hover:bg-[#F8F7F4] transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C6600A] rounded-full ring-2 ring-white"></span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center space-x-2.5 pl-2 border-l border-[#E5E2DC]">
+<div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">
+            ME
+          </div>
+<div class="flex flex-col text-left">
+<span class="text-xs font-semibold text-[#1F2A33] leading-none">María Ejecutivo</span>
+<span class="text-[11px] text-[#7A756D] leading-tight">Front-office</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN WRAPPER -->
+<main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full">
+<!-- SUB-NAV / CONTEXT BAR -->
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-[#E5E2DC]"><div class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase bg-[#FDF1DE] text-[#B5720A] mb-2">PASO: SEGURIDAD Y PERITAJE EN PATIO · PROTOCOLO DE RETORNO</div><h1 class="font-space text-3xl font-bold text-[#1F2A33] tracking-tight">Alcoholímetro de devolución</h1><p class="text-sm text-[#4E4A45] mt-1">Prueba obligatoria de alcoholemia al conductor que entrega la unidad en patio de maniobras previa a la suscripción del acta y checklist 360° (Protocolo Minero &amp; SST-014 / BR-DEV-005).</p></div>
+<!-- STEP BADGE & PAGE TITLE -->
+<div class="mb-6"><div class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase bg-[#FDF1DE] text-[#B5720A] mb-2">PASO: SEGURIDAD Y PERITAJE EN PATIO · PROTOCOLO DE RETORNO</div><h1 class="font-space text-3xl font-bold text-[#1F2A33] tracking-tight">Alcoholímetro de devolución</h1><p class="text-sm text-[#4E4A45] mt-1">Prueba obligatoria de alcoholemia al conductor que entrega la unidad en patio de maniobras previa a la suscripción del acta y checklist 360° (Protocolo Minero &amp; SST-014 / BR-DEV-005).</p></div>
+<!-- CONDUCTOR & UNIDAD SUMMARY CARD -->
+<div class="bg-[#F8F7F4] border border-[#E5E2DC] rounded-xl p-4 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs"><div class="flex items-center space-x-3"><div class="w-10 h-10 rounded-lg bg-[#1F2A33] text-white flex items-center justify-center font-bold text-sm shrink-0">VH</div><div><span class="text-[11px] uppercase tracking-wider text-[#7A756D] font-bold block">Conductor Evaluado</span><span class="font-bold text-[#1F2A33] text-sm block">Víctor Hugo Morales Quicaño</span><span class="text-[#7A756D]">DNI: 44829104 · Brevete A-IIb</span></div></div><div class="border-l border-[#E5E2DC] pl-4"><span class="text-[11px] uppercase tracking-wider text-[#7A756D] font-bold block">Unidad Entregada</span><span class="font-bold text-[#1F2A33] text-sm block">Toyota Hilux 4x4 MT</span><span class="text-[#7A756D]">Placa: <strong class="text-[#1F2A33]">D0Y-704</strong> · Bahía 3 (Patio Recepción)</span></div><div class="border-l border-[#E5E2DC] pl-4"><span class="text-[11px] uppercase tracking-wider text-[#7A756D] font-bold block">Dispositivo Calibrado</span><span class="font-bold text-[#1F2A33] text-sm block">Dräger Alcotest 6820</span><span class="text-[#1E7D4B] font-medium flex items-center space-x-1 mt-0.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span>Calibración vigente (Cert. INACAL #ALC-8812)</span></span></div><div class="border-l border-[#E5E2DC] pl-4"><span class="text-[11px] uppercase tracking-wider text-[#7A756D] font-bold block">Inspector / Testigo de Recepción</span><span class="font-bold text-[#1F2A33] text-sm block">María Ejecutivo</span><span class="text-[#7A756D]">Front-office / Testigo de patio</span></div></div>
+<!-- MAIN INTERACTIVE SECTION -->
+<div class="space-y-6">
+<!-- SECTION TITLE -->
+<div class="flex items-center justify-between">
+<h2 class="font-space text-[20px] font-bold text-[#1F2A33] tracking-tight">Resultado de la prueba</h2>
+<span class="text-xs text-[#7A756D] font-medium bg-[#F8F7F4] px-2.5 py-1 rounded border border-[#E5E2DC]">Selección única obligatoria</span>
+</div>
+<!-- 3 LARGE CARDS OPTIONS -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- OPTION 1: FAVORABLE (Active / Selected state example) -->
+<label class="relative flex flex-col justify-between p-5 rounded-xl border-2 border-[#1E7D4B] bg-[#F3FAF5] cursor-pointer hover:shadow-sm transition-all group">
+<input checked="" class="sr-only" name="resultado_alcoholimetro" type="radio" value="favorable">
+<div>
+<!-- Top badge & icon -->
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-lg bg-[#EBF7EE] border border-[#CDEED5] text-[#1E7D4B] flex items-center justify-center">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-4 h-4 rounded-full bg-[#1E7D4B] flex items-center justify-center text-white text-[10px]">✓</span>
+<span class="text-[11px] font-bold uppercase tracking-wider text-[#1E7D4B]">0.00 g/l</span>
+</div>
+</div>
+<!-- Title -->
+<h3 class="font-space text-lg font-bold text-[#1F2A33] group-hover:text-[#1E7D4B] transition-colors leading-tight">
+              Favorable — puede continuar
+            </h3>
+<!-- Explanation text -->
+<p class="text-xs text-[#4E4A45] mt-2.5 leading-relaxed">Prueba negativa con lectura de 0.00 g/l de alcohol en aire espirado. Habilita el inicio inmediato de la inspección técnica vehicular 360° en patio.</p>
+</div>
+<!-- Bottom check indicator -->
+<div class="mt-4 pt-3 border-t border-[#CDEED5] flex items-center justify-between text-xs text-[#1E7D4B] font-semibold">
+<span class="flex items-center space-x-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Habilitado para continuar</span>
+</span>
+<span class="text-[11px] bg-white px-2 py-0.5 rounded border border-[#CDEED5] font-bold">Seleccionado</span>
+</div>
+</label>
+<!-- OPTION 2: DESFAVORABLE -->
+<label class="relative flex flex-col justify-between p-5 rounded-xl border-2 border-[#C22B2B] bg-white hover:bg-[#FFF9F9] cursor-pointer hover:shadow-sm transition-all group">
+<input class="sr-only" name="resultado_alcoholimetro" type="radio" value="desfavorable">
+<div>
+<!-- Top badge & icon -->
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-lg bg-[#FBE9E9] border border-[#F5C2C2] text-[#C22B2B] flex items-center justify-center">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-[11px] font-bold uppercase tracking-wider text-[#C22B2B] bg-[#FBE9E9] px-2 py-0.5 rounded">Mayor a 0.00 g/l</span>
+</div>
+<!-- Title -->
+<h3 class="font-space text-lg font-bold text-[#1F2A33] group-hover:text-[#C22B2B] transition-colors leading-tight">
+              Desfavorable — no puede continuar normalmente
+            </h3>
+<!-- Explanation text -->
+<p class="text-xs text-[#4E4A45] mt-2.5 leading-relaxed">Detección positiva de alcohol en el aliento. Se bloquea de inmediato la entrega normal de la unidad, aplicando retención preventiva e informe urgente a auditoría corporativa y aseguradora.</p>
+</div>
+<!-- Bottom check indicator -->
+<div class="mt-4 pt-3 border-t border-[#F5C2C2] flex items-center justify-between text-xs text-[#C22B2B] font-semibold">
+<span class="flex items-center space-x-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Bloqueo preventivo de flota</span>
+</span>
+<span class="text-[11px] text-[#7A756D] font-normal">Clic para marcar</span>
+</div>
+</label>
+<!-- OPTION 3: SE NEGÓ -->
+<label class="relative flex flex-col justify-between p-5 rounded-xl border-2 border-[#B5720A] bg-white hover:bg-[#FFFDF9] cursor-pointer hover:shadow-sm transition-all group">
+<input class="sr-only" name="resultado_alcoholimetro" type="radio" value="se_nego">
+<div>
+<!-- Top badge & icon -->
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-lg bg-[#FDF1DE] border border-[#E5C384] text-[#B5720A] flex items-center justify-center">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-[11px] font-bold uppercase tracking-wider text-[#B5720A] bg-[#FDF1DE] px-2 py-0.5 rounded">Incumplimiento SST</span>
+</div>
+<!-- Title -->
+<h3 class="font-space text-lg font-bold text-[#1F2A33] group-hover:text-[#B5720A] transition-colors leading-tight">
+              Se negó a realizar la prueba
+            </h3>
+<!-- Explanation text -->
+<p class="text-xs text-[#4E4A45] mt-2.5 leading-relaxed">El conductor entrega la unidad pero rechaza someterse al test preventivo en patio. Se procede al levantamiento de acta de negativa con constancia policial o testigo notarial de patio.</p>
+</div>
+<!-- Bottom check indicator -->
+<div class="mt-4 pt-3 border-t border-[#E5C384] flex items-center justify-between text-xs text-[#B5720A] font-semibold">
+<span class="flex items-center space-x-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Requiere acta de negativa</span>
+</span>
+<span class="text-[11px] text-[#7A756D] font-normal">Clic para marcar</span>
+</div>
+</label>
+</div>
+<!-- OPERATIONAL DATA: TIME & EVIDENCE -->
+<div class="bg-white border border-[#E5E2DC] rounded-xl p-6 mt-6">
+<h3 class="text-sm font-bold uppercase tracking-wider text-[#7A756D] mb-4">Registro horario y constancia fotográfica</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+<!-- TIME FIELD -->
+<div>
+<label class="block text-xs font-semibold text-[#1F2A33] mb-1.5" for="hora_prueba">
+              Hora exacta de la prueba <span class="text-[#C22B2B]">*</span>
+</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#7A756D]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-10 pr-4 py-2.5 bg-[#F8F7F4] border border-[#E5E2DC] rounded-lg text-sm font-medium text-[#1F2A33] focus:outline-none focus:border-[#1F2A33] focus:bg-white transition-colors" id="hora_prueba" name="hora_prueba" type="time" value="11:15">
+</div>
+<p class="text-[11px] text-[#7A756D] mt-1.5">
+              Hora sincrónica capturada automáticamente del servidor local de Ayacucho (GMT-5).
+            </p>
+</div>
+<!-- EVIDENCE ATTACHMENT SECTION -->
+<div>
+<label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">
+              Evidencia de la prueba (Foto de pantalla / boleta Dräger) <span class="text-[#C22B2B]">*</span>
+</label>
+<div class="flex items-center space-x-3">
+<!-- Evidence upload CTA -->
+<button class="inline-flex items-center space-x-2 px-4 py-2.5 border-2 border-dashed border-[#1F2A33] rounded-lg text-xs font-bold text-[#1F2A33] hover:bg-[#F8F7F4] transition-all bg-white" type="button">
+<svg class="w-4 h-4 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Agregar evidencia</span>
+</button>
+<!-- Attached file chip -->
+<div class="flex-1 flex items-center justify-between px-3 py-2 bg-[#F8F7F4] border border-[#E5E2DC] rounded-lg text-xs">
+<div class="flex items-center space-x-2 truncate">
+<svg class="w-4 h-4 text-[#1E7D4B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-medium text-[#1F2A33] truncate">ticket_drager_000_morales_dev.jpg</span>
+<span class="text-[#7A756D] text-[11px] shrink-0">(1.2 MB)</span>
+</div>
+<button class="text-[#7A756D] hover:text-[#C22B2B] ml-2 text-xs font-bold" title="Eliminar archivo" type="button">✕</button>
+</div>
+</div>
+<p class="text-[11px] text-[#7A756D] mt-1.5">
+              Se exige adjuntar fotografía nítida del visor digital o voucher impreso del sensor para auditoría de entrega.
+            </p>
+</div>
+</div>
+<!-- PROTOCOL COMPLIANCE NOTICE -->
+<div class="mt-6 p-3.5 bg-[#F8F7F4] rounded-lg border border-[#E5E2DC] flex items-start space-x-3 text-xs text-[#4E4A45]"><svg class="w-5 h-5 text-[#C6600A] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><div><span class="font-bold text-[#1F2A33]">Protocolo de Custodia de Retorno (PR-DEV-SST):</span> Tanto el resultado favorable como desfavorable o negativa quedan encriptados en el log del expediente de devolución #DEV-0456 con la firma electrónica del operador de turno. Requisito obligatorio para habilitar el Checklist 360°.</div></div>
+</div>
+</div>
+<!-- BOTTOM ACTIONS BAR -->
+<div class="mt-8 pt-6 border-t border-[#E5E2DC] flex flex-col sm:flex-row items-center justify-between gap-4"><a class="inline-flex items-center space-x-2 text-sm font-medium text-[#4E4A45] hover:text-[#1F2A33] transition-colors" href="#"><svg class="w-4 h-4 text-[#7A756D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span>Regresar a Recepción #DEV-0456</span></a><div class="flex items-center space-x-3 w-full sm:w-auto"><button class="px-5 py-2.5 border border-[#E5E2DC] rounded-lg text-sm font-semibold text-[#4E4A45] hover:bg-[#F8F7F4] transition-colors" type="button">Guardar borrador</button><button class="px-6 py-2.5 bg-[#1F2A33] hover:bg-[#2A3742] text-white rounded-lg text-sm font-semibold transition-all inline-flex items-center space-x-2 shadow-sm" type="button"><span>Continuar al checklist</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div></div>
+</main>
+<!-- CORPORATE FOOTER -->
+<footer class="border-t border-[#E5E2DC] bg-white py-4 mt-8">
+<div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-xs text-[#7A756D] gap-2"><div class="flex items-center space-x-3"><span>VeloxRent © 2025 · Sistema de Gestión Interna</span><span>•</span><span>Protocolo SST-DEV-014 / Devolución y Cierre Contractual</span></div><div class="flex items-center space-x-4"><span>Soporte Front-office: <strong class="text-[#1F2A33]">anexo 103</strong></span><span>•</span><span>Mesa de Patio e Inspección: <strong class="text-[#1F2A33]">anexo 108</strong></span><span>•</span><a class="text-[#C22B2B] hover:underline font-medium" href="#">Cerrar sesión</a></div></div>
+</footer>
+
+
+</body></html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Vehículos disponibles — Ayacucho, 04-07 sep - VeloxRent</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#C6600A',
+              navy: '#1F2A33',
+              dark: '#141E26',
+              bgLight: '#FBFBFA',
+              borderLight: '#EFEDE7',
+              textDark: '#141E26',
+              textMuted: '#4E4A45',
+              success: '#1E7D4B',
+              successBg: '#EBF7EE'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-brand-bgLight text-brand-textDark font-sans min-h-screen flex flex-col antialiased">
+<!-- Header Institucional Superior -->
+<header class="bg-white border-b border-brand-borderLight h-16 px-8 flex items-center justify-between sticky top-0 z-30">
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2">
+<span class="text-2xl font-bold font-heading tracking-tight text-brand-dark">Velox<span class="text-brand-orange">Rent</span></span>
+<span class="text-xs bg-gray-100 text-brand-textMuted px-2 py-0.5 rounded font-medium ml-2">Gestión Interna</span>
+</div>
+<div class="h-4 w-px bg-brand-borderLight"></div>
+<nav class="flex items-center space-x-2 text-sm text-brand-textMuted">
+<span class="hover:text-brand-dark transition-colors cursor-pointer">Consultas</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="hover:text-brand-dark transition-colors cursor-pointer">Bandeja</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-brand-dark font-medium">Vehículos Disponibles</span>
+</nav>
+</div>
+<div class="flex items-center space-x-5">
+<!-- Badge Estado de Conexión -->
+<div class="flex items-center space-x-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-medium border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="">En línea</span>
+</div>
+<!-- Sede Activa -->
+<div class="flex items-center space-x-2 text-xs text-brand-textMuted border border-brand-borderLight px-3 py-1.5 rounded-md bg-stone-50">
+<svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Ayacucho — Sede Central</span>
+</div>
+<!-- Alertas -->
+<button class="relative p-2 text-gray-500 hover:text-brand-dark transition-colors rounded-full hover:bg-gray-100" title="Notificaciones">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-orange rounded-full"></span>
+</button>
+<!-- Perfil Operador -->
+<div class="flex items-center space-x-2.5 pl-2 border-l border-brand-borderLight">
+<div class="w-8 h-8 rounded-full bg-brand-navy text-white flex items-center justify-center font-bold text-xs">
+          ME
+        </div>
+<div class="text-left text-xs leading-tight">
+<div class="font-semibold text-brand-dark">María Ejecutivo</div>
+<div class="text-gray-500">Front-office</div>
+</div>
+</div>
+</div>
+</header><div class="px-8 py-2.5 flex items-center justify-between text-xs text-amber-800" style="background-color: #FDF1DE; border-bottom: 1px solid #F5D6A4;">
+<div class="flex items-center space-x-2.5 font-medium">
+<svg class="w-4 h-4 animate-spin text-brand-orange" fill="none" viewBox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8v8H4z" fill="currentColor"></path>
+</svg>
+<span class="">Esta disponibilidad tiene más de 5 minutos — actualizando...</span>
+</div>
+<div class="flex items-center space-x-1.5 text-amber-800 font-normal">
+<svg class="w-3.5 h-3.5 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Selección en espera para evitar reservas sobre datos obsoletos</span>
+</div>
+</div>
+<!-- Contenedor Principal con Fondo Blanco de Trabajo -->
+<main class="flex-1 w-full max-w-7xl mx-auto px-8 py-8">
+<!-- Encabezado de la Pantalla -->
+<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<div class="flex items-center space-x-3">
+<h1 class="text-2xl font-bold font-heading text-brand-dark">Vehículos disponibles — Ayacucho, 04-07 sep</h1>
+<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Canal Virtual (WhatsApp)
+          </span>
+</div>
+<p class="text-sm text-brand-textMuted mt-1">Mostrando unidades operativas verificadas para entrega en Sede Central Ayacucho (3 días de servicio).</p>
+</div>
+<div class="flex items-center space-x-3">
+<span class="text-xs text-brand-textMuted bg-gray-100 px-3 py-1.5 rounded-md border border-gray-200">
+          Tarifas con IGV y seguro incluidos
+        </span>
+<button class="px-3.5 py-1.5 text-xs font-medium text-brand-dark bg-white border border-brand-borderLight rounded-md hover:bg-gray-50 transition-colors">
+          Modificar fechas
+        </button>
+</div>
+</div>
+<!-- Grid de 3 Columnas (Desktop) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style="opacity: 0.6; pointer-events: none; transition: opacity 0.3s ease;">
+<!-- Tarjeta 1: Toyota Hilux 4x4 MT -->
+<div class="bg-white border border-brand-borderLight rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+<!-- Contenedor Foto con Badge Disponible -->
+<div class="relative w-full h-52 bg-slate-100 overflow-hidden">
+<img alt="Toyota Hilux 4x4 MT" class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1Wm71vbwg34zCGZGPevkNShAMFQAk_6czjeqV-qcnvGQlLluGJ8AHNSdmkmhIzrCBWd6PSJaHfIJgX9sjknmXygdn9FZZ1KzTrNUtgc30bYL4uBRhr2msqG8dj_M_GwH9SiT0_Bj5l5NNtQYAv2c9dL72jKy35Chqg0KdXmrSiAij7oXi-VAmklca0u6BRygK1MDneqQikvdltSHWAJrbvZjJyTxNt7bQCSi1di7ERjWxrfJwSJQ2zX3Us">
+<!-- Badge Disponible Verde -->
+<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs font-semibold text-brand-success flex items-center shadow-sm border border-emerald-100">
+<span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+            Disponible
+          </div>
+<!-- Categoría Flota -->
+<div class="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded">
+            Tracción 4x4
+          </div>
+</div>
+<!-- Contenido de la Tarjeta -->
+<div class="p-5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="text-xs font-semibold text-brand-orange uppercase tracking-wider">Camioneta Pick-Up</span>
+<h3 class="text-lg font-bold font-heading text-brand-dark mt-0.5">Toyota Hilux 4x4 MT</h3>
+</div>
+<div class="text-right">
+<span class="text-[11px] text-gray-500 block">Por día</span>
+<span class="text-xl font-bold font-heading text-brand-dark">S/ 280</span>
+</div>
+</div>
+<!-- Especificaciones Técnicas Breves -->
+<div class="mt-4 grid grid-cols-3 gap-2 text-xs text-brand-textMuted py-2.5 border-y border-brand-borderLight">
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">5 pasajeros</span>
+</div>
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Mecánica</span>
+</div>
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Diésel</span>
+</div>
+</div>
+<div class="mt-2 text-xs text-brand-textMuted flex items-center justify-between">
+<span class="">Placa: <strong class="font-medium text-brand-dark">W3T-819</strong></span>
+<span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px] font-medium">Apta para trocha / minera</span>
+</div>
+</div>
+<!-- Acciones de la Tarjeta -->
+<div class="mt-5 space-y-2">
+<!-- Botón Seleccionar con Borde #1F2A33 -->
+<button disabled="" class="w-full py-2 px-4 rounded border border-gray-200 bg-gray-100 text-gray-400 font-semibold text-sm flex items-center justify-center space-x-1 cursor-not-allowed" title="Disponibilidad desactualizada - actualizando"><span class="">Reservar este vehículo</span><svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<!-- Botón Secundario Modalidad Virtual -->
+<button class="w-full py-1.5 px-3 rounded bg-stone-100 hover:bg-stone-200 text-brand-textMuted text-xs font-medium transition-colors flex items-center justify-center space-x-1.5 border border-stone-200">
+<svg class="w-3.5 h-3.5 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Enviar evidencia (video 360°)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Tarjeta 2: Toyota Fortuner 2.8 AT -->
+<div class="bg-white border border-brand-borderLight rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+<!-- Contenedor Foto con Badge Disponible -->
+<div class="relative w-full h-52 bg-slate-100 overflow-hidden">
+<img alt="Toyota Fortuner 2.8 AT" class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1V6slIWPGGGbILTH-rG2ejvEuTGWI0sx7jX5cvyuM0CiJhic6gkybpDhAgXhcuCkkQ_3_rMd0Tac6dRzPygkULMwT5B-FRlBAYt3lXJIe_7rOfwVFGnzragcDoUTf6K9yZEvAvlhEhdzULV8WY2cFsOq4oY_MJFqlnOOUl21HZf3QOH3RdwDdpYEsVbB2aSy_obUAp-IgGJOVAuIOWzq0ts6RVHh0MdIhHt5HWjW_VE-WOlDtiYHyuZuGE">
+<!-- Badge Disponible Verde -->
+<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs font-semibold text-brand-success flex items-center shadow-sm border border-emerald-100">
+<span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+            Disponible
+          </div>
+<!-- Categoría Flota -->
+<div class="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded">
+            SUV 4x4
+          </div>
+</div>
+<!-- Contenido de la Tarjeta -->
+<div class="p-5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="text-xs font-semibold text-brand-orange uppercase tracking-wider">SUV Ejecutiva</span>
+<h3 class="text-lg font-bold font-heading text-brand-dark mt-0.5">Toyota Fortuner 2.8 AT</h3>
+</div>
+<div class="text-right">
+<span class="text-[11px] text-gray-500 block">Por día</span>
+<span class="text-xl font-bold font-heading text-brand-dark">S/ 350</span>
+</div>
+</div>
+<!-- Especificaciones Técnicas Breves -->
+<div class="mt-4 grid grid-cols-3 gap-2 text-xs text-brand-textMuted py-2.5 border-y border-brand-borderLight">
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">7 pasajeros</span>
+</div>
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Automática</span>
+</div>
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Turbo Diésel</span>
+</div>
+</div>
+<div class="mt-2 text-xs text-brand-textMuted flex items-center justify-between">
+<span class="">Placa: <strong class="font-medium text-brand-dark">AZK-492</strong></span>
+<span class="text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-medium">Asientos de cuero, GPS satelital</span>
+</div>
+</div>
+<!-- Acciones de la Tarjeta -->
+<div class="mt-5 space-y-2">
+<!-- Botón Seleccionar con Borde #1F2A33 -->
+<button disabled="" class="w-full py-2 px-4 rounded border border-gray-200 bg-gray-100 text-gray-400 font-semibold text-sm flex items-center justify-center space-x-1 cursor-not-allowed" title="Disponibilidad desactualizada - actualizando"><span class="">Reservar este vehículo</span><svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<!-- Botón Secundario Modalidad Virtual -->
+<button class="w-full py-1.5 px-3 rounded bg-stone-100 hover:bg-stone-200 text-brand-textMuted text-xs font-medium transition-colors flex items-center justify-center space-x-1.5 border border-stone-200">
+<svg class="w-3.5 h-3.5 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Enviar evidencia (video 360°)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Tarjeta 3: Hyundai Creta 1.6 -->
+<div class="bg-white border border-brand-borderLight rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+<!-- Contenedor Foto con Badge Disponible -->
+<div class="relative w-full h-52 bg-slate-100 overflow-hidden">
+<img alt="Hyundai Creta 1.6" class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1UCV2UtCiQQZKCqeRobu0HrAfEQEP5cJvCNAtVUftpuJDAv_7VgDMQRVSNaRQ6Z0xvMHjRAzlWycTflANJHUMk7DVujebGXnTpQ-2kYDSy3AAADXaiN2_NwW-3MTP0rrGRTINKSLoulOy6CNu21Br38yRdpokAkxuXZlX0yr2R6p-Ymwm8Ng5pay1rI99wyDDFQPV7TWSlRCyJl-2uhLdX1hiX7p5zpBcMOsmlHtRxynqbggQ9ossfz97o">
+<!-- Badge Disponible Verde -->
+<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs font-semibold text-brand-success flex items-center shadow-sm border border-emerald-100">
+<span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+            Disponible
+          </div>
+<!-- Categoría Flota -->
+<div class="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded">
+            Tracción 4x2
+          </div>
+</div>
+<!-- Contenido de la Tarjeta -->
+<div class="p-5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="text-xs font-semibold text-brand-orange uppercase tracking-wider">SUV Urbana</span>
+<h3 class="text-lg font-bold font-heading text-brand-dark mt-0.5">Hyundai Creta 1.6</h3>
+</div>
+<div class="text-right">
+<span class="text-[11px] text-gray-500 block">Por día</span>
+<span class="text-xl font-bold font-heading text-brand-dark">S/ 210</span>
+</div>
+</div>
+<!-- Especificaciones Técnicas Breves -->
+<div class="mt-4 grid grid-cols-3 gap-2 text-xs text-brand-textMuted py-2.5 border-y border-brand-borderLight">
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">5 pasajeros</span>
+</div>
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Mecánica</span>
+</div>
+<div class="flex items-center space-x-1">
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Gasolina</span>
+</div>
+</div>
+<div class="mt-2 text-xs text-brand-textMuted flex items-center justify-between">
+<span class="">Placa: <strong class="font-medium text-brand-dark">BHN-518</strong></span>
+<span class="text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded text-[11px] font-medium">Recomendada para ciudad y carretera asfaltada</span>
+</div>
+</div>
+<!-- Acciones de la Tarjeta -->
+<div class="mt-5 space-y-2">
+<!-- Botón Seleccionar con Borde #1F2A33 -->
+<button disabled="" class="w-full py-2 px-4 rounded border border-gray-200 bg-gray-100 text-gray-400 font-semibold text-sm flex items-center justify-center space-x-1 cursor-not-allowed" title="Disponibilidad desactualizada - actualizando"><span class="">Reservar este vehículo</span><svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<!-- Botón Secundario Modalidad Virtual -->
+<button class="w-full py-1.5 px-3 rounded bg-stone-100 hover:bg-stone-200 text-brand-textMuted text-xs font-medium transition-colors flex items-center justify-center space-x-1.5 border border-stone-200">
+<svg class="w-3.5 h-3.5 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Enviar evidencia (video 360°)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Barra Inferior Informativa de Flota y Disponibilidad -->
+<div class="mt-10 p-4 rounded-lg bg-stone-50 border border-brand-borderLight flex flex-col md:flex-row items-center justify-between text-xs text-brand-textMuted"><div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-brand-orange animate-pulse"></span>
+<span class="">Sincronizando inventario con el sistema de despacho en Ayacucho...</span>
+</div>
+<div class="mt-2 md:mt-0 flex items-center space-x-4">
+<span class="">Última comprobación: <strong>10:41 AM</strong></span>
+<button class="text-brand-orange font-medium hover:underline">Forzar recarga manual</button>
+</div></div>
+</main>
+<!-- Pie de Página Institucional -->
+<footer class="bg-white border-t border-brand-borderLight py-4 px-8 text-xs text-brand-textMuted flex items-center justify-between mt-auto">
+<div class="">
+      VeloxRent © 2025 · Sistema de Gestión Interna
+    </div>
+<div class="flex items-center space-x-6">
+<span class="">Soporte Front-office: anexo 103</span>
+<span class="text-brand-borderLight">|</span>
+<a class="text-red-700 hover:text-red-800 transition-colors" href="#">Cerrar sesión</a>
+</div>
+</footer>
+
+
+
+
+</body></html>

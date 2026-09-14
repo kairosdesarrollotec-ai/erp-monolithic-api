@@ -1,0 +1,292 @@
+schema_version: '1.0'
+generated_note: Generado por bootstrap Claude Code a partir del encabezado real de cada documento en docs/sources/.
+  version/fecha/estado se extrajeron con regex del propio documento, no se inventaron. Si un documento
+  cambia, este manifiesto debe regenerarse via el agente index-maintainer.
+sources:
+- id: BDD-KAIROS-MVP-002-TRANSVERSAL
+  path: docs/sources/bdd/BDD — 00 Transversal.md
+  type: BDD
+  module: Transversal
+  version: '1.18'
+  date: unknown
+  status: draft_pending_review
+  estado_original: Candidato para revisión funcional — ver `BDD-KAIROS-EXECUTIVE-SUMMARY.md` para el estado
+    global
+  sha256: 4ebcdc8f970e1afdfd4bc748aba7b0d7ec4bfdcdeb1ec4b9d902a41ef572afc7
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-CON
+  path: docs/sources/bdd/BDD — 01 Consulta.md
+  type: BDD
+  module: Consulta
+  version: '1.8'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: deed5c50c341495338b6dbc9218f8d5835bfd37568a01757a15f9dd08e4cc41d
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-RES
+  path: docs/sources/bdd/BDD — 02 Reserva.md
+  type: BDD
+  module: Reserva
+  version: '1.9'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: c225d6d59b2793926418b692f001e867d00fd33e1ff2c05e59ed7d8cda7106ad
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-ALQ
+  path: docs/sources/bdd/BDD — 03 Alquiler.md
+  type: BDD
+  module: Alquiler
+  version: '1.7'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: f3ddf5388e14784739711ffd65e65c70ce388dc5fa508e8ac93ec246ec59f837
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-DEV
+  path: docs/sources/bdd/BDD — 04 Devolución.md
+  type: BDD
+  module: Devolución
+  version: '1.9'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: 0804f3000bb130f744320ed3ca97e2d3af751c3599c1f9b465929faf6a0de454
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-REC
+  path: docs/sources/bdd/BDD — 05 Reclutamiento y Selección.md
+  type: BDD
+  module: Reclutamiento y Selección
+  version: '1.7'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: dee619a0164bb298a151a73499d46239c1f19de4b80383acf6277fa92ae86c0d
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-ADP
+  path: docs/sources/bdd/BDD — 06 Administración de Personal.md
+  type: BDD
+  module: Administración de Personal
+  version: '1.9'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: 9730670d7d91d722f9e05a726dbe3a383e81eee9386f43b8b10603dc3e36ea9c
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-TRACEABILITY
+  path: docs/sources/bdd/BDD — 07 Trazabilidad.md
+  type: BDD
+  module: Trazabilidad
+  version: '1.11'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: 7624fd9bfceeaa4328512e461875f62dafc47053d1839eac824bf970f832a2b3
+  authority: business
+  supersedes: null
+- id: BDD-KAIROS-MVP-002-EXECUTIVE-SUMMARY
+  path: docs/sources/bdd/BDD — 08 Resumen ejecutivo.md
+  type: BDD
+  module: Resumen ejecutivo
+  version: '1.19'
+  date: unknown
+  status: pending_review
+  estado_original: unknown
+  sha256: 1afb0204dec658005c5126cce4549f5a29aa98638d9c2c25bbe1c43c7b811e87
+  authority: business
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-TRANSVERSAL
+  path: docs/sources/sdd/SDD — 00 Transversal.md
+  type: SDD
+  module: Transversal
+  version: '3.6'
+  date: 10 de septiembre de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: c02c97dba24ad435c95af54034c20e1e9c520afbde10a5621ec1d34a97b3dc56
+  authority: functional
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-CON
+  path: docs/sources/sdd/SDD — 01 Consulta.md
+  type: SDD
+  module: Consulta
+  version: '2.1'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: 4c1075fc53fd14fe99f4691deac8135298ee158105227dba6c964fdfe6af850b
+  authority: functional
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-RES
+  path: docs/sources/sdd/SDD — 02 Reserva.md
+  type: SDD
+  module: Reserva
+  version: '2.2'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: fa2c9e0f4595aef5738f68436d31848d27101d4fce6155a3d92787d678bf1e84
+  authority: functional
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-ALQ
+  path: docs/sources/sdd/SDD — 03 Alquiler.md
+  type: SDD
+  module: Alquiler
+  version: '2.1'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: e6499df2d4c747e4cf23fc74b91cedbc49c005650439fae8b06594988fb39cbf
+  authority: functional
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-DEV
+  path: docs/sources/sdd/SDD — 04 Devolución.md
+  type: SDD
+  module: Devolución
+  version: '2.2'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: 4693e6f50c5404572ab34d6db4c4ab57e727550648d73dfd73fc00b24d6e6227
+  authority: functional
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-REC
+  path: docs/sources/sdd/SDD — 05 Reclutamiento y Selección.md
+  type: SDD
+  module: Reclutamiento y Selección
+  version: '2.0'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: 0756c61da8e97b692f90170ad7d4830549e9bd10e7cce69f4d29ec678afd5893
+  authority: functional
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-ADP
+  path: docs/sources/sdd/SDD — 06 Administración de Personal.md
+  type: SDD
+  module: Administración de Personal
+  version: '2.1'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: 038f4bc2454b99f3826e83accb9e365c24046ba23a6efd5ccb516792d8c2b2b6
+  authority: functional
+  supersedes: null
+- id: SDD-KAIROS-MVP-002-TRACEABILITY
+  path: docs/sources/sdd/SDD — 07 Trazabilidad.md
+  type: SDD
+  module: Trazabilidad
+  version: '2.1'
+  date: 02 de septiembre de 2026
+  status: draft_pending_review
+  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  sha256: e8c77281a16c3f83281cd02c89816d2288fd76a6c697ea6206078740e8156ef8
+  authority: functional
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-TRANSVERSAL
+  path: docs/sources/tdd/TDD — 00 Transversal.md
+  type: TDD
+  module: Transversal
+  version: '3.4'
+  date: 10 de septiembre de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: a4d01294286579e53c56490b48ae4234fbfa19e917df12c452e6fd06af79f1df
+  authority: technical
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-CON
+  path: docs/sources/tdd/TDD — 01 Consulta.md
+  type: TDD
+  module: Consulta
+  version: '2.0'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: 8af34aef4ffde5bad4c6375385fc5bc0606eee2ad11513b00c0a93c9d11ab0f3
+  authority: technical
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-RES
+  path: docs/sources/tdd/TDD — 02 Reserva.md
+  type: TDD
+  module: Reserva
+  version: '2.2'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: 1bcb1efaa2040a874a7a5c8d87686971254e467a37f82a0bbb07226e51dc1a1b
+  authority: technical
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-ALQ
+  path: docs/sources/tdd/TDD — 03 Alquiler.md
+  type: TDD
+  module: Alquiler
+  version: '2.1'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: 2613c8d423267f8c7fe802b5c0036ec2631ac1463fece220446fc3ed2b8a0acb
+  authority: technical
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-DEV
+  path: docs/sources/tdd/TDD — 04 Devolución.md
+  type: TDD
+  module: Devolución
+  version: '2.1'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: 4f3db9b4e97722e1c30a1d24c95506976f9244c969d11ca0d2efd49cef558917
+  authority: technical
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-REC
+  path: docs/sources/tdd/TDD — 05 Reclutamiento y Selección.md
+  type: TDD
+  module: Reclutamiento y Selección
+  version: '2.0'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: c994dc8d3120332ea1af25d09dc8cb7ce40d9c4cd1f31531cc157792ef7fe0c4
+  authority: technical
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-ADP
+  path: docs/sources/tdd/TDD — 06 Administración de Personal.md
+  type: TDD
+  module: Administración de Personal
+  version: '2.1'
+  date: 31 de agosto de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: e13fbd27ad0b079cac355c4539bf5abf862d025f44c265b74c2aa3ab5d991a9e
+  authority: technical
+  supersedes: null
+- id: TDD-KAIROS-MVP-002-TRACEABILITY
+  path: docs/sources/tdd/TDD — 07 Trazabilidad.md
+  type: TDD
+  module: Trazabilidad
+  version: '2.1'
+  date: 02 de septiembre de 2026
+  status: draft_pending_review
+  estado_original: Completo en contenido, pendiente de revisión formal
+  sha256: e0add45e4601a3181d54c64811acdfd107e4c9e29f047015e20c3876e4243b2c
+  authority: technical
+  supersedes: null
+- id: UX-UI-V3.1-KAIROS
+  path: docs/sources/ux-ui/Especificación UX-UI v3.1 para Prototipado del ERP KAIROS.md
+  type: UX
+  module: transversal-ux
+  version: '3.1'
+  date: 10 de septiembre de 2026
+  status: draft_pending_review
+  estado_original: Candidato consolidado para aprobación de Producto, UX, UI, Tech Lead, Seguridad y QA
+  sha256: a297e50455f8462ea3af34d1b604e9dc2dc476ad78c559b7825182bccc2f7b84
+  authority: ux
+  supersedes: null

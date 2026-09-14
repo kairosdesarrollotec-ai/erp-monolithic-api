@@ -1,0 +1,481 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Daño estético — Devolución #DEV-0456 | VeloxRent</title>
+<!-- Tailwind CSS CDN with forms and container plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Space Grotesk & Public Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- BEGIN: Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              sand: '#F6F4EE',
+              sandBorder: '#E2DED4',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- END: Tailwind Configuration -->
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="custom-styling">
+    .font-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+    .pulse-ring {
+      box-shadow: 0 0 0 0 rgba(198, 96, 10, 0.7);
+      animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+    @keyframes pulse-ring {
+      to {
+        box-shadow: 0 0 0 12px rgba(198, 96, 10, 0);
+      }
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="bg-[#F8F9FA] text-[#1F2A33] font-sans antialiased min-h-screen flex flex-col justify-between">
+<!-- BEGIN: MasterWrapper -->
+<div class="w-full max-w-[1440px] mx-auto bg-white min-h-screen shadow-xl flex flex-col justify-between">
+<!-- BEGIN: HeaderSection -->
+<header class="border-b border-gray-200 bg-white sticky top-0 z-30">
+<!-- Top Utility & Identity Bar -->
+<div class="px-8 py-3.5 flex items-center justify-between border-b border-gray-100">
+<div class="flex items-center space-x-6">
+<!-- Logo VeloxRent -->
+<div class="flex items-center space-x-2">
+<span class="font-display font-bold text-2xl tracking-tight text-brand-navy">Velox<span class="text-brand-orange">Rent</span></span>
+<span class="bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded tracking-wide uppercase border border-gray-200">SST-OPER</span>
+</div>
+<!-- Breadcrumbs Navigation -->
+<nav aria-label="Breadcrumb" class="hidden xl:flex items-center space-x-2 text-xs text-gray-500">
+<span>Gestión Interna</span>
+<i class="w-3.5 h-3.5 text-gray-400" data-lucide="chevron-right"></i>
+<span>Devoluciones</span>
+<i class="w-3.5 h-3.5 text-gray-400" data-lucide="chevron-right"></i>
+<span>Devolución #DEV-0456</span>
+<i class="w-3.5 h-3.5 text-gray-400" data-lucide="chevron-right"></i>
+<span>Evaluación de daño</span>
+<i class="w-3.5 h-3.5 text-gray-400" data-lucide="chevron-right"></i>
+<span class="text-brand-navy font-semibold">Daño estético (Tarifario 9.6.1)</span>
+</nav>
+</div>
+<!-- System Status and User Profile -->
+<div class="flex items-center space-x-6">
+<!-- Status Indicator -->
+<div class="flex items-center space-x-2">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+</span>
+<span class="text-xs font-medium text-gray-600">En línea · Enlace activo</span>
+</div>
+<!-- Branch Info -->
+<div class="hidden sm:flex items-center space-x-1.5 text-xs text-gray-600 border-l border-gray-200 pl-4">
+<i class="w-3.5 h-3.5 text-gray-400" data-lucide="map-pin"></i>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- Notification Bell -->
+<div class="relative cursor-pointer">
+<i class="w-4 h-4 text-gray-500 hover:text-brand-navy transition-colors" data-lucide="bell"></i>
+<span class="absolute -top-1 -right-1 flex h-2 w-2">
+<span class="rounded-full h-2 w-2 bg-brand-orange"></span>
+</span>
+</div>
+<!-- User Badge -->
+<div class="flex items-center space-x-3 border-l border-gray-200 pl-4">
+<div class="w-8 h-8 rounded-full bg-brand-navy text-white flex items-center justify-center text-xs font-bold font-display">
+              ME
+            </div>
+<div class="hidden md:block text-left leading-tight">
+<div class="text-xs font-semibold text-brand-navy">María Ejecutivo</div>
+<div class="text-[11px] text-gray-500">Front-office / Patio</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Expediente Context Bar -->
+<div class="bg-gray-50/80 px-8 py-2.5 flex flex-wrap items-center justify-between gap-y-2 text-xs border-b border-gray-200">
+<div class="flex flex-wrap items-center gap-x-6 gap-y-1">
+<div class="flex items-center space-x-1.5">
+<span class="text-gray-400 font-medium">EXPEDIENTE:</span>
+<span class="font-bold text-brand-navy">#DEV-0456</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="text-gray-400 font-medium">ALQUILER:</span>
+<span class="font-semibold text-gray-800">#ALQ-1187</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="text-gray-400 font-medium">PLACA / UNIDAD:</span>
+<span class="bg-white px-2 py-0.5 border border-gray-200 rounded font-bold text-brand-navy font-mono text-[11px]">Toyota Hilux D0Y-704</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="text-gray-400 font-medium">RETORNO:</span>
+<span class="text-gray-700">07/09/2025 · 11:20 AM</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="text-gray-400 font-medium">CLIENTE:</span>
+<span class="font-semibold text-gray-800">Minera Los Andes S.A.C.</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="text-gray-400 font-medium">CONDUCTOR:</span>
+<span class="text-gray-700">Víctor Hugo Morales Q.</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="text-gray-400 font-medium">PERITO:</span>
+<span class="text-gray-700">Carlos Vega</span>
+</div>
+</div>
+<!-- Back Link -->
+<a class="inline-flex items-center space-x-1 text-xs font-semibold text-brand-orange hover:text-amber-800 transition-colors" href="#">
+<span>← Volver a Evaluación de daño #DEV-0456</span>
+</a>
+</div>
+</header>
+<!-- END: HeaderSection -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 px-8 py-6">
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- BEGIN: LeftColumn (Peritaje & Vehicle Evidence) -->
+<section aria-labelledby="peritaje-heading" class="col-span-12 lg:col-span-5 space-y-5">
+<!-- Card: Photographic Evidence -->
+<div class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+<div class="p-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+<div class="flex items-center space-x-2">
+<i class="w-4 h-4 text-brand-navy" data-lucide="camera"></i>
+<h2 class="text-xs font-bold uppercase tracking-wider text-brand-navy" id="peritaje-heading">Evidencia Fotográfica de Recepción</h2>
+</div>
+<span class="text-[11px] font-mono text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded">Zona 1: Frontal</span>
+</div>
+<!-- Vehicle Visual Container with Markings -->
+<div class="relative bg-gray-950 overflow-hidden group">
+<img alt="Toyota Hilux plata en patio de retorno con raspadura en esquina baja de parachoques delantero" class="w-full h-[320px] object-cover object-center block" src="https://lh3.googleusercontent.com/aida/AEtjO1XQGl7bpkFoomS6fd6551Q_AQkeMlyjGY-fpXiFOYAib4w0cVe-lPk0UtlOBHenIrfH_Pun-feMfbT3eErTl-_GYUFtPu7-hViTyiUYOOukUaBbhsstZJVtPBUSlM4pg6F5uFOYJwkrFjC0Vd6JifOGC4wCQ_v0W_lFQeSZbfqOeKAAEGCYB9eSYfCiRg75Mq89InF-RQNjBZhTGJbM4fmxHRPKlJkdwXCiRtjpbJvvDXkk3UNzJaZ_snI">
+<!-- Odometre and Inspection Badge Overlay -->
+<div class="absolute top-3 left-3 bg-black/75 backdrop-blur-sm text-white px-2.5 py-1 rounded text-[11px] font-mono flex items-center space-x-2 border border-white/20">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span>Toma de peritaje #DEV-01</span>
+<span class="text-gray-400">|</span>
+<span>Odómetro: 038,412 km (+562 km)</span>
+</div>
+<!-- Visual Callout Circle Indicator over lower bumper abrasion -->
+<div class="absolute bottom-16 left-[38%] pointer-events-none flex flex-col items-center">
+<div class="w-12 h-12 rounded-full border-2 border-brand-orange bg-brand-orange/20 pulse-ring flex items-center justify-center">
+<span class="w-3 h-3 rounded-full bg-brand-orange border-2 border-white"></span>
+</div>
+<div class="bg-brand-navy/90 text-white font-mono text-[10px] px-2 py-0.5 rounded shadow mt-1 whitespace-nowrap border border-white/20">
+                  Punto de impacto peritado
+                </div>
+</div>
+<div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm text-gray-800 px-2 py-1 rounded text-[10px] font-semibold border border-gray-200">
+                Lente Peritaje F/2.8 · Ayacucho Yard
+              </div>
+</div>
+<!-- Technical Summary Box -->
+<div class="p-4 bg-white border-t border-gray-100 space-y-3">
+<div class="flex items-start justify-between">
+<div>
+<span class="text-[11px] uppercase tracking-wider text-gray-400 font-bold block">Dictamen Técnico Oficial</span>
+<p class="text-xs font-semibold text-brand-navy mt-0.5">Zona 1: Exterior Frontal</p>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                  Leve · Estético
+                </span>
+</div>
+<p class="text-xs text-gray-600 leading-relaxed bg-gray-50 p-2.5 rounded border border-gray-100">
+                Raspadura y fricción en esquina baja de parachoques delantero plástico. No compromete soporte de chasis, radiador ni sensor de proximidad. Califica íntegramente bajo alcance de reparación estética directa.
+              </p>
+</div>
+</div>
+<!-- Card: Guarantee Deposit Status -->
+<div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
+<i class="w-5 h-5" data-lucide="shield-check"></i>
+</div>
+<div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Fianza de garantía constituida</div>
+<div class="text-sm font-semibold text-gray-800">Contrato Arriendo Minero #ALQ-1187</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-display font-bold text-lg text-emerald-700 font-tabular">S/ 2,500.00</div>
+<span class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-medium border border-emerald-200">Vigente en custodia</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: LeftColumn -->
+<!-- BEGIN: RightColumn (Tariff 9.6.1 Liquidation Core) -->
+<section aria-labelledby="core-title" class="col-span-12 lg:col-span-7 space-y-5">
+<!-- Header and Regulatory Subtitle -->
+<div class="space-y-1.5 border-b border-gray-200 pb-4">
+<div class="flex items-center justify-between">
+<h1 class="font-display font-bold text-[22px] text-brand-navy tracking-tight" id="core-title">
+                Daño estético — Devolución #DEV-0456
+              </h1>
+<span class="inline-flex items-center text-xs font-mono font-semibold bg-gray-100 text-gray-700 px-2.5 py-1 rounded border border-gray-200">
+                BR-DEV-009 / TAB-9.6.1
+              </span>
+</div>
+<p class="text-xs text-gray-600 leading-relaxed">
+              Liquidación por aplicación directa de Tarifario Oficial 9.6.1 (BR-DEV-009). Los montos están estrictamente fijados por tabla tarifaria institucional y no admiten edición manual.
+            </p>
+</div>
+<!-- Informative Standard Banner -->
+<div class="bg-brand-sand border border-brand-sandBorder rounded-md p-3 flex items-start space-x-3">
+<i class="w-4 h-4 text-brand-orange mt-0.5 shrink-0" data-lucide="info"></i>
+<div class="text-xs text-brand-navy leading-relaxed">
+<span class="font-bold">Tarifario 9.6.1 homologado para flota Pick-up 4x4 MT.</span>
+              Valores fijados por gerencia técnica. Sólo lectura. La selección de ítems deduce de forma instantánea el importe sobre la garantía retenida.
+            </div>
+</div>
+<!-- BEGIN: Tariff Items Interactive Table -->
+<div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden" data-purpose="tariff-selector">
+<div class="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between text-xs font-bold text-gray-600 uppercase tracking-wider">
+<span>Concepto de Daño Menor Homologado</span>
+<div class="flex items-center space-x-6">
+<span>Alcance Pericial</span>
+<span class="w-28 text-right">Tarifa Oficial</span>
+</div>
+</div>
+<!-- Items List -->
+<div class="divide-y divide-gray-100 text-xs">
+<!-- Item 1: Parachoques Delantero (CHECKED) -->
+<label class="p-4 flex items-center justify-between bg-amber-50/40 hover:bg-amber-50/60 transition-colors cursor-pointer block border-l-4 border-l-brand-orange">
+<div class="flex items-start space-x-3 max-w-md">
+<input checked="" class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange/50 cursor-pointer" id="item-parachoques" name="tariff-item" type="checkbox">
+<div>
+<span class="font-bold text-brand-navy text-[13px] block">Parachoques delantero — S/ 150</span>
+<span class="text-gray-500 text-[11px] block mt-0.5">
+                      Reparación menor, pulido de abrasión superficial o repintado de arista plástica
+                    </span>
+<span class="inline-flex items-center mt-1 text-[10px] font-semibold text-brand-orange">
+<i class="w-3 h-3 mr-1" data-lucide="check-circle-2"></i> Asignado según dictamen Zona 1
+                    </span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<div class="bg-gray-100 px-3 py-1.5 rounded border border-gray-200 font-mono font-bold text-brand-navy flex items-center space-x-1.5 shadow-inner">
+<i class="w-3 h-3 text-gray-400" data-lucide="lock"></i>
+<span class="font-tabular text-xs">S/ 150.00</span>
+</div>
+</div>
+</label>
+<!-- Item 2: Espejo lateral -->
+<label class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer block">
+<div class="flex items-start space-x-3 max-w-md">
+<input class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange/50 cursor-pointer" id="item-espejo" name="tariff-item" type="checkbox">
+<div>
+<span class="font-semibold text-gray-800 text-[13px] block">Espejo lateral — S/ 80</span>
+<span class="text-gray-500 text-[11px] block mt-0.5">
+                      Carcasa exterior o mica reflectante sin quiebre de motor eléctrico
+                    </span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<div class="bg-gray-100 px-3 py-1.5 rounded border border-gray-200 font-mono font-medium text-gray-600 flex items-center space-x-1.5 opacity-90">
+<i class="w-3 h-3 text-gray-400" data-lucide="lock"></i>
+<span class="font-tabular text-xs">S/ 80.00</span>
+</div>
+</div>
+</label>
+<!-- Item 3: Manija de puerta o moldura -->
+<label class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer block">
+<div class="flex items-start space-x-3 max-w-md">
+<input class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange/50 cursor-pointer" id="item-manija" name="tariff-item" type="checkbox">
+<div>
+<span class="font-semibold text-gray-800 text-[13px] block">Manija de puerta o moldura — S/ 60</span>
+<span class="text-gray-500 text-[11px] block mt-0.5">
+                      Fisura leve en jalador, desgaste profundo en cavidad de manija exterior
+                    </span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<div class="bg-gray-100 px-3 py-1.5 rounded border border-gray-200 font-mono font-medium text-gray-600 flex items-center space-x-1.5 opacity-90">
+<i class="w-3 h-3 text-gray-400" data-lucide="lock"></i>
+<span class="font-tabular text-xs">S/ 60.00</span>
+</div>
+</div>
+</label>
+<!-- Item 4: Neblinero o bisel de faro auxiliar -->
+<label class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer block">
+<div class="flex items-start space-x-3 max-w-md">
+<input class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange/50 cursor-pointer" id="item-neblinero" name="tariff-item" type="checkbox">
+<div>
+<span class="font-semibold text-gray-800 text-[13px] block">Neblinero o bisel de faro auxiliar — S/ 110</span>
+<span class="text-gray-500 text-[11px] block mt-0.5">
+                      Rotura de bisel embellecedor o piquete no pasante en cristal de proyector
+                    </span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<div class="bg-gray-100 px-3 py-1.5 rounded border border-gray-200 font-mono font-medium text-gray-600 flex items-center space-x-1.5 opacity-90">
+<i class="w-3 h-3 text-gray-400" data-lucide="lock"></i>
+<span class="font-tabular text-xs">S/ 110.00</span>
+</div>
+</div>
+</label>
+<!-- Item 5: Emblema frontal o parrilla menor -->
+<label class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer block">
+<div class="flex items-start space-x-3 max-w-md">
+<input class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange/50 cursor-pointer" id="item-emblema" name="tariff-item" type="checkbox">
+<div>
+<span class="font-semibold text-gray-800 text-[13px] block">Emblema frontal o parrilla menor — S/ 95</span>
+<span class="text-gray-500 text-[11px] block mt-0.5">
+                      Desprendimiento de cromo o fractura de pestaña plástica perimetral
+                    </span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<div class="bg-gray-100 px-3 py-1.5 rounded border border-gray-200 font-mono font-medium text-gray-600 flex items-center space-x-1.5 opacity-90">
+<i class="w-3 h-3 text-gray-400" data-lucide="lock"></i>
+<span class="font-tabular text-xs">S/ 95.00</span>
+</div>
+</div>
+</label>
+<!-- Item 6: Guardafango / moldura de paso de rueda -->
+<label class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer block">
+<div class="flex items-start space-x-3 max-w-md">
+<input class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange/50 cursor-pointer" id="item-guardafango" name="tariff-item" type="checkbox">
+<div>
+<span class="font-semibold text-gray-800 text-[13px] block">Guardafango / moldura de paso de rueda — S/ 120</span>
+<span class="text-gray-500 text-[11px] block mt-0.5">
+                      Raspón extendido en moldura texturada o grape desprendido
+                    </span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<div class="bg-gray-100 px-3 py-1.5 rounded border border-gray-200 font-mono font-medium text-gray-600 flex items-center space-x-1.5 opacity-90">
+<i class="w-3 h-3 text-gray-400" data-lucide="lock"></i>
+<span class="font-tabular text-xs">S/ 120.00</span>
+</div>
+</div>
+</label>
+</div>
+</div>
+<!-- END: Tariff Items Interactive Table -->
+<!-- BEGIN: Settlement Calculation Panel -->
+<div class="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-4" data-purpose="liquidation-summary">
+<div class="flex items-center justify-between border-b border-gray-200 pb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-brand-navy flex items-center space-x-2">
+<i class="w-4 h-4 text-brand-orange" data-lucide="calculator"></i>
+<span>Resumen de liquidación por tarifario</span>
+</span>
+<span class="text-[11px] text-gray-500 font-medium">1 concepto seleccionado</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+<!-- Breakdown Breakdown -->
+<div class="space-y-1.5 border-r border-gray-200 pr-4">
+<div class="flex justify-between text-gray-600">
+<span>Ítems seleccionados:</span>
+<span class="font-semibold text-brand-navy">1 concepto ("Parachoques delantero")</span>
+</div>
+<div class="flex justify-between text-gray-600">
+<span>Subtotal ítems tarifario:</span>
+<span class="font-mono font-semibold text-gray-800">S/ 150.00</span>
+</div>
+<div class="flex justify-between text-gray-500">
+<span>I.G.V. (18%):</span>
+<span class="italic font-mono">Incluido según tabla</span>
+</div>
+<div class="flex justify-between text-brand-orange pt-1 border-t border-gray-200 font-semibold">
+<span>Saldo a descontar de garantía:</span>
+<span class="font-mono">S/ 150.00</span>
+</div>
+</div>
+<!-- Guarantee impact & Total Callout -->
+<div class="flex flex-col justify-between pl-2">
+<div class="flex justify-between items-center text-xs">
+<span class="text-gray-600">Remanente a devolver a cliente:</span>
+<span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    S/ 2,350.00
+                  </span>
+</div>
+<div class="bg-white p-3 rounded-lg border border-gray-200 flex items-center justify-between mt-2">
+<div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Total a liquidar</span>
+<span class="text-[10px] text-brand-orange font-semibold bg-brand-sand px-1.5 py-0.5 rounded border border-brand-sandBorder inline-block mt-0.5">
+                      Calculado automáticamente
+                    </span>
+</div>
+<div class="text-right">
+<span class="font-display text-2xl font-bold text-brand-navy font-tabular">S/ 150.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Operational Peritaje Audit Notes -->
+<div class="pt-2 border-t border-gray-200">
+<label class="block text-[11px] font-semibold text-gray-600 mb-1" for="peritaje-note">
+                Nota de auditoría pericial / Acta de recepción
+              </label>
+<input class="w-full bg-white text-xs text-gray-600 rounded border border-gray-200 py-2 px-3 focus:outline-none cursor-default" id="peritaje-note" readonly="" type="text" value="Impacto de fricción leve durante maniobra en campamento minero. Reparación estándar autorizada bajo Tarifario 9.6.1.">
+</div>
+</div>
+<!-- END: Settlement Calculation Panel -->
+<!-- BEGIN: Bottom Action Bar -->
+<div class="flex items-center justify-between pt-2 border-t border-gray-100">
+<button class="px-4 py-2.5 text-xs font-semibold text-gray-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors" type="button">
+              Pausar liquidación
+            </button>
+<div class="flex items-center space-x-3">
+<button class="px-4 py-2.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors" type="button">
+                Descartar cambios
+              </button>
+<button class="px-6 py-2.5 bg-brand-navy hover:bg-black text-white text-xs font-bold rounded shadow-md flex items-center space-x-2 transition-all" type="button">
+<i class="w-4 h-4 text-emerald-400" data-lucide="check-circle"></i>
+<span>Registrar aceptación</span>
+</button>
+</div>
+</div>
+<!-- END: Bottom Action Bar -->
+</section>
+<!-- END: RightColumn -->
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="bg-gray-50 border-t border-gray-200 px-8 py-3.5 mt-6 text-[11px] text-gray-500">
+<div class="flex flex-col md:flex-row items-center justify-between gap-y-2">
+<div class="flex items-center space-x-2">
+<span class="font-semibold text-gray-700">VeloxRent © 2025</span>
+<span>·</span>
+<span>Sistema de Gestión Interna</span>
+<span>·</span>
+<span class="font-mono text-gray-600">Protocolo SST-DEV-015 / Tarifario 9.6.1 Liquidación Estética</span>
+</div>
+<div class="flex items-center space-x-4">
+<span>Mesa de Patio: <strong class="text-gray-700">anexo 108</strong></span>
+<span>·</span>
+<span>Soporte Front-office: <strong class="text-gray-700">anexo 103</strong></span>
+<span>·</span>
+<a class="text-brand-orange hover:underline font-semibold" href="#">Cerrar sesión</a>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+</div>
+<!-- END: MasterWrapper -->
+<!-- BEGIN: Interactive Lucide Icons Script -->
+<script data-purpose="icons-initializer">
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+<!-- END: Interactive Lucide Icons Script -->
+</body></html>

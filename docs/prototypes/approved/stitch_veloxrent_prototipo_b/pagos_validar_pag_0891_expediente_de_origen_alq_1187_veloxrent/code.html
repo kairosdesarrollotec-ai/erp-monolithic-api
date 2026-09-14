@@ -1,0 +1,381 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Pagos — Validar #PAG-0891 (expediente de origen ALQ-1187) - VeloxRent</title>
+<!-- Fonts: Public Sans & Space Grotesk -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#F26522',
+              navy: '#1F2A33',
+              dark: '#1F2A33',
+            },
+            neutral: {
+              card: '#FAF9F5',
+              border: '#E5E2DC',
+              muted: '#4E4A45',
+              disabled: '#A39C90',
+            },
+            status: {
+              green: '#1E7D4B',
+              warningBg: '#FDF1DE',
+              warningText: '#B5720A',
+              danger: '#C22B2B',
+              alertBg: '#FFFDF7',
+              alertBorder: '#EADBB6'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="typography">
+    .font-code {
+      font-family: 'Space Grotesk', monospace;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#1F2A33] font-sans antialiased min-h-screen flex flex-col">
+<!-- BEGIN: TopHeader -->
+<header class="w-full bg-white border-b border-[#E5E2DC] px-6 py-2.5 flex items-center justify-between sticky top-0 z-40">
+<!-- Brand & Breadcrumbs -->
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded bg-[#F26522] flex items-center justify-center text-white font-bold text-lg font-code tracking-tighter shadow-sm">
+          V
+        </div>
+<span class="font-bold text-[#1F2A33] tracking-tight text-lg">VeloxRent</span>
+<span class="text-xs bg-[#FAF9F5] border border-[#E5E2DC] text-[#4E4A45] font-code px-2 py-0.5 rounded font-medium">ERP v3.4</span>
+</div>
+<div class="h-4 w-px bg-[#E5E2DC]"></div>
+<nav aria-label="Breadcrumb" class="hidden md:flex items-center space-x-2 text-xs text-[#4E4A45]">
+<span>Finanzas</span>
+<span class="text-gray-400">›</span>
+<span>Pagos y garantías</span>
+<span class="text-gray-400">›</span>
+<span>Validación financiera</span>
+<span class="text-gray-400">›</span>
+<span class="font-code font-semibold text-[#1F2A33]">#PAG-0891</span>
+</nav>
+</div>
+<!-- Sede, Status, Profile -->
+<div class="flex items-center space-x-5">
+<!-- Status pill -->
+<div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#F0FDF4] border border-[#BBF7D0] rounded-full text-xs font-medium text-[#1E7D4B]">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+<span>En línea</span>
+</div>
+<!-- Sede info -->
+<div class="hidden lg:flex items-center text-xs text-[#4E4A45] border-l border-[#E5E2DC] pl-4">
+<svg class="w-3.5 h-3.5 mr-1 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- User profile -->
+<div class="flex items-center space-x-3 border-l border-[#E5E2DC] pl-4">
+<div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-semibold text-xs tracking-wider">
+          RC
+        </div>
+<div class="hidden sm:block text-left">
+<p class="text-xs font-semibold leading-tight text-[#1F2A33]">Rosa Cárdenas</p>
+<p class="text-[10px] text-[#4E4A45] leading-tight">Analista de Tesorería &amp; Finanzas</p>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: PageTitleBar -->
+<section class="bg-[#FAF9F5] border-b border-[#E5E2DC] px-6 py-4">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<a class="inline-flex items-center text-xs font-semibold text-[#4E4A45] hover:text-[#1F2A33] mb-1.5 transition-colors" href="#">
+<span class="mr-1.5 text-sm leading-none">←</span> Volver a Bandeja de Pagos
+        </a>
+<div class="flex items-center gap-3 flex-wrap">
+<h1 class="text-xl font-bold text-[#1F2A33] tracking-tight">
+            Pagos — Validar <span class="font-code text-brand-orange">#PAG-0891</span> <span class="text-[#4E4A45] font-normal text-base">(expediente de origen <span class="font-code font-semibold text-[#1F2A33]">#ALQ-1187</span>)</span>
+</h1>
+<span class="px-2.5 py-0.5 rounded text-xs font-medium bg-[#FDF1DE] text-[#B5720A] border border-[#FBE3B5]">
+            Pendiente de validación
+          </span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-1">
+          Conciliación financiera y verificación de procedencia de fondos antes de la liberación o confirmación de entrega.
+        </p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-[#4E4A45]">Ref. Interna: <strong class="font-code">FIN-2026-9021</strong></span>
+</div>
+</div>
+</section>
+<!-- END: PageTitleBar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-[1440px] w-full mx-auto px-6 py-6">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- LEFT COLUMN: Voucher Preview & OCR Extraction (5 cols) -->
+<section class="lg:col-span-5 flex flex-col gap-4">
+<!-- Voucher Display Card -->
+<div class="bg-white border border-[#E5E2DC] rounded shadow-sm overflow-hidden flex flex-col">
+<div class="px-4 py-3 border-b border-[#E5E2DC] bg-[#FAF9F5] flex items-center justify-between">
+<h2 class="text-xs font-bold uppercase tracking-wider text-[#1F2A33]">Voucher adjunto por el cliente</h2>
+<div class="flex items-center space-x-1.5">
+<button class="p-1 rounded text-[#4E4A45] hover:bg-white hover:text-[#1F2A33] border border-transparent hover:border-[#E5E2DC]" title="Rotar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1 rounded text-[#4E4A45] hover:bg-white hover:text-[#1F2A33] border border-transparent hover:border-[#E5E2DC]" title="Zoom">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="px-2 py-0.5 rounded text-xs text-[#1F2A33] bg-white border border-[#E5E2DC] hover:bg-gray-50 flex items-center gap-1 font-medium" title="Descargar voucher">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Descargar</span>
+</button>
+</div>
+</div>
+<!-- Image Container with neutral inspection background -->
+<div class="p-4 bg-[#F2F1ED] flex justify-center items-center relative overflow-hidden min-h-[420px]">
+<div class="relative group shadow-md max-w-sm rounded overflow-hidden border border-[#D5D1C8] bg-white">
+<img alt="Realistic photographic document of a Peruvian bank transfer voucher receipt or payment deposit slip printed on thermal paper or official mobile banking transaction screenshot, Banco de Credito BCP voucher with transaction details, amount S/ 2,450.00, sender Juan Perez, timestamp 10/09/2026, reference operation code, clean flat lay lighting on neutral corporate desk" class="w-full h-auto object-contain max-h-[500px] cursor-zoom-in" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOTNAL4A4VGw4jytjYaMabYasElWUMFzIe0FKb5Ln9mcFq8PkPnfo2Ibzoo00Crd7RWqEiEHLgy3RsqQ6uZgPKH_HwaZrVvKDA5m1Jh5AXYDybkUnl7HvDoBUsCTs6ctU9FsdqFp0_hyen0_-_Qj7BRKTVlESEp4Yx1y6MjP2R1n35FOao3qSlFHmzrFx5YG1tT2R6vzSNjjfXoudlqI0_mrrttnG9dKPvQ42AbM7eObClk-a6Xbua">
+<div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 pointer-events-none transition-all"></div>
+</div>
+</div>
+<!-- Voucher metadata -->
+<div class="px-4 py-2 bg-white border-t border-[#E5E2DC] text-[11px] text-[#4E4A45] flex items-center justify-between">
+<span class="truncate font-code">Voucher_BCP_JuanPerez_0891.jpg (2.4 MB)</span>
+<span class="shrink-0 font-code">Subido: 10/09/2026 11:20 AM</span>
+</div>
+</div>
+<!-- OCR / Extracted Data Card -->
+<div class="bg-white border border-[#E5E2DC] rounded p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3 border-b border-[#E5E2DC] pb-2">
+<h3 class="text-xs font-bold uppercase tracking-wider text-[#1F2A33] flex items-center gap-1.5">
+<svg class="w-4 h-4 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              Datos detectados por OCR bancario
+            </h3>
+<span class="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded border border-green-200 font-medium">Lectura 99.4% precisa</span>
+</div>
+<dl class="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs">
+<div>
+<dt class="text-[11px] text-[#4E4A45]">Banco emisor:</dt>
+<dd class="font-medium text-[#1F2A33] flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-blue-700"></span> BCP (Banco de Crédito)
+              </dd>
+</div>
+<div>
+<dt class="text-[11px] text-[#4E4A45]">N° de Operación:</dt>
+<dd class="font-code font-bold text-[#1F2A33]">8945123467</dd>
+</div>
+<div>
+<dt class="text-[11px] text-[#4E4A45]">Titular emisor en voucher:</dt>
+<dd class="font-semibold text-[#1F2A33]">Juan Carlos Pérez Gómez</dd>
+</div>
+<div>
+<dt class="text-[11px] text-[#4E4A45]">Cuenta destino:</dt>
+<dd class="text-[#1F2A33]">VeloxRent S.A.C. (Cta Cte BCP Soles)</dd>
+</div>
+<div class="col-span-2 pt-2 border-t border-dashed border-[#E5E2DC] flex items-center justify-between">
+<span class="text-xs font-semibold text-[#1F2A33]">Monto detectado:</span>
+<span class="font-code font-bold text-base text-[#1F2A33]">S/ 2,450.00</span>
+</div>
+</dl>
+<!-- Automatic Match Pill -->
+<div class="mt-3 bg-[#F0FDF4] border border-[#BBF7D0] p-2.5 rounded flex items-start space-x-2 text-xs text-[#1E7D4B]">
+<svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<div>
+<p class="font-semibold">Conciliación automática preliminar encontrada</p>
+<p class="text-[11px] text-green-800">El movimiento figura registrado en el extracto API BCP del 10/09/2026 a las 14:35 hrs con saldo confirmado.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: Payment Details & Agent Verification (7 cols) -->
+<section class="lg:col-span-7 flex flex-col gap-4">
+<!-- CARD 1: Operation & File Details -->
+<div class="bg-white border border-[#E5E2DC] rounded shadow-sm p-5">
+<div class="flex items-center justify-between border-b border-[#E5E2DC] pb-3 mb-4">
+<h2 class="text-xs font-bold uppercase tracking-wider text-[#1F2A33] flex items-center gap-1.5">
+<svg class="w-4 h-4 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              Datos de la Operación y Expediente
+            </h2>
+<span class="text-xs font-code text-[#4E4A45]">ID Reg: #PAG-0891</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+<div class="p-3 bg-[#FAF9F5] border border-[#E5E2DC] rounded">
+<span class="text-[#4E4A45] block text-[11px] mb-0.5">Expediente de alquiler origen:</span>
+<a class="font-code font-bold text-brand-orange hover:underline inline-flex items-center gap-1 text-sm" href="#">
+                #ALQ-1187
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+<p class="text-[11px] text-[#1F2A33] mt-1 font-medium">Toyota Hilux 4x4 • Placa: D0Y-704</p>
+</div>
+<div class="p-3 bg-[#FAF9F5] border border-[#E5E2DC] rounded">
+<span class="text-[#4E4A45] block text-[11px] mb-0.5">Cliente titular del contrato:</span>
+<p class="font-bold text-sm text-[#1F2A33]">María Quispe Huamán</p>
+<p class="text-[11px] text-[#4E4A45] font-code">DNI: 45920184 • Conductora titular</p>
+</div>
+<div class="p-3 bg-[#FAF9F5] border border-[#E5E2DC] rounded">
+<span class="text-[#4E4A45] block text-[11px] mb-0.5">Monto liquidado a validar:</span>
+<p class="font-code font-bold text-lg text-[#1F2A33]">S/ 2,450.00</p>
+<p class="text-[11px] text-[#4E4A45]">Tarifa de alquiler 7 días + depósito garantía inicial</p>
+</div>
+<div class="p-3 bg-[#FAF9F5] border border-[#E5E2DC] rounded">
+<span class="text-[#4E4A45] block text-[11px] mb-0.5">Medio de pago registrado:</span>
+<div class="flex items-center gap-1.5 text-xs font-semibold text-[#1F2A33]">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                Transferencia por agente externo
+              </div>
+<p class="text-[11px] text-red-600 font-medium mt-0.5">Juan Pérez (no es el titular contratante)</p>
+</div>
+</div>
+<!-- Alert Third-Party Payer -->
+<div class="bg-[#FFFDF7] border-l-4 border-amber-500 border-[#EADBB6] p-3 rounded text-xs">
+<div class="flex items-start gap-2.5">
+<svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div>
+<strong class="font-semibold text-[#1F2A33] block">Aviso de Pago por Tercero (Compliance)</strong>
+<p class="text-[#4E4A45] text-[11.5px] mt-0.5 leading-relaxed">
+                  El emisor de la transferencia bancaria no coincide con el titular del contrato de alquiler (<span class="font-code font-semibold">#ALQ-1187</span>). Aplica protocolo obligatorio de prevención de fraude y lavado de activos (<span class="font-code font-semibold">PR-FIN-008</span>).
+                </p>
+</div>
+</div>
+</div>
+</div>
+<!-- CARD 2: Mandatory Verification Section (Agent & Identity) -->
+<div class="bg-white border-2 border-amber-300 rounded shadow-sm p-5 relative">
+<div class="flex items-center justify-between border-b border-[#E5E2DC] pb-3 mb-4">
+<div class="flex items-center gap-2">
+<span class="p-1.5 bg-amber-100 text-amber-800 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<div>
+<h3 class="text-sm font-bold text-[#1F2A33]">Sección de verificación obligatoria</h3>
+<p class="text-[11px] text-[#4E4A45]">Validación de identidad del tercero depositante</p>
+</div>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Requerido por Auditoría</span>
+</div>
+<!-- Form Fields -->
+<div class="space-y-3.5 text-xs">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div>
+<label class="block font-medium text-[#1F2A33] mb-1">Nombre completo del depositante:</label>
+<input class="w-full bg-[#FAF9F5] border border-[#E5E2DC] rounded px-3 py-1.5 text-xs text-[#1F2A33] font-medium focus:outline-none cursor-default" readonly="" type="text" value="Juan Carlos Pérez Gómez">
+</div>
+<div>
+<label class="block font-medium text-[#1F2A33] mb-1">DNI / Documento del depositante:</label>
+<input class="w-full bg-[#FAF9F5] border border-[#E5E2DC] rounded px-3 py-1.5 text-xs font-code text-[#1F2A33] font-semibold focus:outline-none cursor-default" readonly="" type="text" value="10428916075 (RUC/DNI 09451238)">
+</div>
+</div>
+<div>
+<label class="block font-medium text-[#1F2A33] mb-1">Motivo / Parentesco declarado por el cliente:</label>
+<input class="w-full bg-[#FAF9F5] border border-[#E5E2DC] rounded px-3 py-1.5 text-xs text-[#1F2A33] focus:outline-none cursor-default" readonly="" type="text" value="Familiar directo (Hermano) - Pago autorizado por el cliente">
+</div>
+<!-- Mandatory Checkbox Box -->
+<div class="mt-4 p-3.5 bg-amber-50/60 border border-amber-200 rounded-md">
+<div class="flex items-start space-x-3">
+<input class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange cursor-pointer" id="chk-agent-verified" type="checkbox">
+<label class="cursor-pointer select-none" for="chk-agent-verified">
+<span class="text-xs font-bold text-[#1F2A33] block">Documento del agente verificado</span>
+<span class="text-[11px] text-[#4E4A45] leading-relaxed block mt-0.5">
+                    Confirmo que se adjuntó copia de DNI del tercero o autorización firmada por la titular <strong>María Quispe Huamán</strong> en el expediente digital.
+                  </span>
+</label>
+</div>
+</div>
+<!-- Observations / Notes textarea -->
+<div>
+<label class="block font-medium text-[#4E4A45] mb-1">Observaciones de validación (opcional):</label>
+<textarea class="w-full text-xs rounded border border-[#E5E2DC] focus:border-brand-orange focus:ring-1 focus:ring-brand-orange text-[#1F2A33] p-2" placeholder="Ingrese comentarios sobre la verificación de identidad o notas para tesorería..." rows="2"></textarea>
+</div>
+</div>
+<!-- Action Buttons Area -->
+<div class="mt-6 pt-4 border-t border-[#E5E2DC] flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2 w-full sm:w-auto">
+<!-- Primary CTA (Must be disabled by default) -->
+<button class="w-full sm:w-auto px-6 py-2 rounded text-xs font-bold text-white bg-[#A39C90] cursor-not-allowed shadow-none transition-all flex items-center justify-center gap-2" disabled="" id="btn-validate" title="Marque 'Documento del agente verificado' para habilitar la validación" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                Validar y Convalidar Pago
+              </button>
+<!-- Secondary Button -->
+<button class="w-full sm:w-auto px-4 py-2 rounded text-xs font-bold border border-[#C22B2B] text-[#C22B2B] hover:bg-red-50 transition-colors" type="button">
+                Rechazar comprobante
+              </button>
+</div>
+<!-- Tertiary Action -->
+<button class="text-xs text-[#4E4A45] hover:text-[#1F2A33] underline font-medium" type="button">
+              Solicitar nuevo comprobante al cliente
+            </button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: PolicyBanner -->
+<section class="max-w-[1440px] w-full mx-auto px-6 pb-4">
+<div class="bg-[#FAF9F5] border border-[#E5E2DC] rounded p-3 text-[11px] text-[#4E4A45] flex items-center gap-3">
+<div class="p-1.5 bg-white border border-[#E5E2DC] rounded font-code text-[#1F2A33] font-bold text-[10px] shrink-0">
+        BR-FIN-003 / 007
+      </div>
+<p class="leading-relaxed">
+<strong>Normativa de Cumplimiento:</strong> Todo depósito de tercero no registrado como conductor autorizado requiere verificación de documento de identidad antes de convalidar el pago y habilitar la firma de contrato o entrega de llaves. Cualquier excepción debe ser autorizada por Gerencia de Operaciones.
+      </p>
+</div>
+</section>
+<!-- END: PolicyBanner -->
+<!-- BEGIN: PageFooter -->
+<footer class="mt-auto bg-white border-t border-[#E5E2DC] px-6 py-3 text-xs text-[#4E4A45]">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+<div>
+<p>VeloxRent © 2026 • Sistema de Gestión Comercial y Flotas • Módulo Finanzas / Pagos y Garantías</p>
+</div>
+<div class="flex items-center space-x-3 text-[11px]">
+<span>Mesa Finanzas: <strong class="font-code text-[#1F2A33]">anexo 205</strong></span>
+<span class="text-gray-300">|</span>
+<span>Mesa Front-office: <strong class="font-code text-[#1F2A33]">anexo 103</strong></span>
+<span class="text-gray-300">|</span>
+<span>Soporte TI: <strong class="font-code text-[#1F2A33]">anexo 101</strong></span>
+<span class="text-gray-300">|</span>
+<a class="text-red-700 hover:underline font-medium" href="#">Cerrar sesión</a>
+</div>
+</div>
+</footer>
+<!-- END: PageFooter -->
+<!-- Client-side script for interactivity matching ERP behavior -->
+<script data-purpose="verification-toggle">
+    // Enable/disable Validate button based on mandatory checkbox
+    const chkAgent = document.getElementById('chk-agent-verified');
+    const btnValidate = document.getElementById('btn-validate');
+
+    if (chkAgent && btnValidate) {
+      chkAgent.addEventListener('change', function() {
+        if (this.checked) {
+          btnValidate.disabled = false;
+          btnValidate.classList.remove('bg-[#A39C90]', 'cursor-not-allowed');
+          btnValidate.classList.add('bg-[#1E7D4B]', 'hover:bg-emerald-700', 'cursor-pointer', 'shadow');
+          btnValidate.removeAttribute('title');
+        } else {
+          btnValidate.disabled = true;
+          btnValidate.classList.add('bg-[#A39C90]', 'cursor-not-allowed');
+          btnValidate.classList.remove('bg-[#1E7D4B]', 'hover:bg-emerald-700', 'cursor-pointer', 'shadow');
+          btnValidate.setAttribute('title', "Marque 'Documento del agente verificado' para habilitar la validación");
+        }
+      });
+    }
+  </script>
+</body></html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tablero — Inicio (Gerencia) - VeloxRent</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif']
+          },
+          colors: {
+            brand: '#1F2A33',
+            corporate: '#1F2A33',
+            orangeAccent: '#C6600A',
+            dangerRed: '#C22B2B',
+            lightBg: '#FFFFFF',
+            neutralCard: '#EFEDE7'
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .font-space {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#1F2A33] min-h-screen flex flex-col justify-between antialiased selection:bg-[#1F2A33] selection:text-white">
+<!-- Main Container / Content -->
+<div class="w-full flex-grow flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="w-full border-b border-[#E5E2DC] bg-white px-8 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#1F2A33] flex items-center justify-center text-white font-space font-bold text-base shadow-sm">
+          V
+        </div>
+<span class="font-space font-bold text-[18px] tracking-tight text-[#1F2A33]">
+          VeloxRent
+        </span>
+</div>
+<div class="flex items-center gap-6 text-[13px] text-[#4E4A45]">
+<div class="flex items-center gap-2 bg-[#F6F3ED] px-3 py-1.5 rounded text-[#33302C] font-medium border border-[#E5E2DC]">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+<span class="">Ayacucho — Sede Central</span>
+</div>
+<div class="flex items-center gap-2.5 pl-3 border-l border-[#E5E2DC]">
+<div class="w-8 h-8 rounded-full bg-[#E5E2DC] flex items-center justify-center font-bold text-[12px] text-[#1F2A33]">
+            FG
+          </div>
+<div class="leading-tight">
+<div class="font-semibold text-[#1F2A33] text-[13px]">Fiorella Gerencia</div>
+<div class="text-[11px] text-[#78716A]">Dirección Ejecutiva</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Board Area -->
+<main class="w-full max-w-[960px] mx-auto px-8 pt-12 pb-16 flex-grow flex flex-col">
+<!-- Saludo Fiorella -->
+<div class="mb-10">
+<h1 class="font-space font-bold text-[24px] text-[#1F2A33] tracking-tight mb-1">
+          Hola, Fiorella
+        </h1>
+</div>
+<!-- Tarjeta Principal Prominente (Pendientes de Aprobación) -->
+<div class="bg-white border-2 border-[#1F2A33] rounded-[4px] p-8 shadow-sm mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden">
+<!-- Indicador de acento izquierdo -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#C6600A]"></div>
+<div class="flex flex-col sm:flex-row sm:items-center gap-6 pl-2">
+<!-- Número 3 muy grande en Space Grotesk 40px bold color #C6600A -->
+<div class="flex-shrink-0 w-20 h-20 bg-[#FDF1DE] rounded-[4px] border border-[#F6D8AC] flex items-center justify-center">
+<span class="font-space font-bold text-[40px] text-[#C6600A] leading-none">
+              3
+            </span>
+</div>
+<div class="flex flex-col justify-center"><h2 class="font-space font-bold text-[20px] text-[#1F2A33] tracking-tight mb-2">3 solicitudes esperando tu aprobación</h2><div class="inline-flex items-center gap-2 bg-[#FDF1DE] px-3 py-1.5 rounded-[4px] border border-[#F6D8AC] text-[13px] font-medium" style="color: rgb(158, 76, 8);"><span class="w-1.5 h-1.5 rounded-full" style="background-color: #9E4C08;"></span><span class="">La más urgente: Excepción notarial #ALQ-2291, vence en 4 min</span></div></div>
+</div>
+<!-- Botón Revisar ahora (fondo #1F2A33, texto blanco, esquinas 4px) -->
+<div class="flex-shrink-0 flex items-center">
+<a href="#solicitud-ALQ-2291" class="w-full md:w-auto px-7 py-3.5 bg-[#1F2A33] hover:bg-[#2C3B47] active:bg-[#151D24] text-white font-medium text-[15px] rounded-[4px] transition-colors flex items-center justify-center gap-2 shadow-sm font-sans cursor-pointer"><span class="">Revisar ahora</span><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></a>
+</div>
+</div>
+<!-- Franja de Alerta Condicional (Clientes nuevos marcados en Rojo) -->
+<!-- fondo #FBE9E9, texto #C22B2B -->
+<div class="w-full bg-[#FBE9E9] border border-[#F5C2C2] text-[#C22B2B] rounded-[4px] px-6 py-4 flex items-center justify-between gap-4 shadow-sm mb-8">
+<div class="flex items-center gap-3">
+<div class="flex-shrink-0 w-6 h-6 rounded-full bg-[#C22B2B] text-white flex items-center justify-center">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<span class="font-medium text-[14px]">2 clientes marcados en Rojo esta semana</span>
+</div>
+<a class="text-[13px] font-bold text-[#C22B2B] hover:underline flex items-center gap-1 flex-shrink-0 uppercase tracking-wide" href="#detalle-rojo">
+<span class="">Ver detalle</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+</div><div class="mt-2 px-1 flex items-center gap-2 text-[13px] text-[#4E4A45]"><span class="font-semibold text-[#1F2A33]">Última actividad:</span><span class="">Ayer aprobaste la excepción de Edwin Alanya — su incorporación está programada para mañana</span></div>
+<!-- Subtítulo o desglose mínimo de contexto de gobernanza opcional pero limpio y austero -->
+</main>
+<!-- Footer Corporativo Unificado -->
+<footer class="w-full border-t border-[#E5E2DC] bg-white py-4 px-8 text-[12px] text-[#78716A] flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-[#1F2A33]">VeloxRent ERP</span>
+<span class="">© 2026</span>
+<span class="">·</span>
+<span class="">Punto de Entrada Gerencial</span>
+</div>
+<div class="flex items-center gap-6">
+<span class="">Soporte Dirección: <strong class="text-[#1F2A33] font-medium">anexo 100</strong></span>
+<span class="">·</span>
+<button class="text-[#78716A] hover:text-[#C22B2B] transition-colors flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="">Cerrar sesión</span>
+</button>
+</div>
+</footer>
+</div>
+
+
+</body></html>

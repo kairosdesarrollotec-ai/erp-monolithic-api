@@ -1,0 +1,325 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Búsqueda global — Desplegable - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              sand: '#FCF9F3',
+              border: '#E5E0D8',
+              muted: '#4E4A45',
+              subtle: '#7A756D',
+              danger: '#C22B2B',
+              success: '#1E7D4B',
+              info: '#2166B0',
+              warning: '#B5720A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#FCF9F3] text-[#1F2A33] font-sans antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+
+  <!-- SHELL PERSISTENTE: Topbar -->
+  <header class="bg-white border-b border-[#E5E0D8] px-8 h-16 flex items-center justify-between z-30 relative shadow-sm">
+    <!-- Brand / Logotipo -->
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-[#1F2A33] flex items-center justify-center text-white font-display font-bold text-lg">
+          V
+        </div>
+        <span class="font-display font-bold text-lg tracking-tight text-[#1F2A33]">VeloxRent</span>
+      </div>
+
+      <!-- Separador vertical -->
+      <div class="h-5 w-px bg-[#E5E0D8]"></div>
+
+      <!-- Sede institucional -->
+      <div class="flex items-center gap-2 text-xs font-medium text-[#4E4A45] bg-[#F6F3ED] px-3 py-1.5 rounded border border-[#E5E0D8]">
+        <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+        <span>Ayacucho — Sede Central</span>
+      </div>
+    </div>
+
+    <!-- Menú central simulado sutil -->
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-[#4E4A45]">
+      <a href="#" class="text-[#1F2A33] font-semibold flex items-center gap-1.5">
+        <span>Tablero</span>
+      </a>
+      <a href="#" class="hover:text-[#1F2A33] transition-colors">Consultas</a>
+      <a href="#" class="hover:text-[#1F2A33] transition-colors">Reservas</a>
+      <a href="#" class="hover:text-[#1F2A33] transition-colors">Alquileres</a>
+      <a href="#" class="hover:text-[#1F2A33] transition-colors">Devoluciones</a>
+      <a href="#" class="hover:text-[#1F2A33] transition-colors">Flota</a>
+    </nav>
+
+    <!-- Controles de cabecera: Lupa (Activa), Notificaciones, Perfil -->
+    <div class="flex items-center gap-3 relative">
+      
+      <!-- Botón Lupa (ACTIVO / ENFOCADO con el dropdown desplegado) -->
+      <div class="relative">
+        <button id="searchTriggerBtn" aria-expanded="true" class="w-10 h-10 rounded bg-[#1F2A33] text-white flex items-center justify-center transition-all shadow-sm ring-2 ring-[#C6600A]/30">
+          <!-- SVG Icono Lupa -->
+          <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+
+        <!-- PANEL DESPLEGABLE: Búsqueda Global (480px, fondo blanco, sombra sutil) -->
+        <div class="absolute right-0 top-12 mt-2 w-[480px] bg-white rounded-lg border border-[#E5E0D8] shadow-2xl z-50 overflow-hidden animate-fadeIn">
+          
+          <!-- Campo de búsqueda superior -->
+          <div class="p-3.5 border-b border-[#E5E0D8] bg-white relative">
+            <div class="relative flex items-center">
+              <svg class="w-4 h-4 text-[#4E4A45] absolute left-3.5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input type="text" value="Maria" placeholder="Buscar por nombre, documento, placa o número de expediente..." class="w-full pl-10 pr-10 py-2.5 bg-[#F6F3ED] text-[#1F2A33] text-sm font-sans placeholder-[#7A756D] rounded border border-[#E5E0D8] focus:outline-none focus:border-[#C6600A] focus:bg-white focus:ring-1 focus:ring-[#C6600A] transition-all" autofocus="">
+              <!-- Botón limpiar sutil / ESC shortcut -->
+              <div class="absolute right-3 flex items-center gap-1">
+                <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-semibold text-[#7A756D] bg-white border border-[#E5E0D8] rounded shadow-xs">ESC</kbd>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contenedor de Resultados agrupados -->
+          <div class="max-h-[420px] overflow-y-auto divide-y divide-[#F6F3ED]">
+
+            <!-- GRUPO 1: CLIENTES -->
+            <div class="p-2">
+              <div class="px-3 pt-2.5 pb-1.5 text-[12px] font-bold uppercase tracking-wider text-[#4E4A45] font-sans flex items-center justify-between">
+                <span>CLIENTES</span>
+                <span class="text-[11px] font-normal normal-case text-[#7A756D]">1 coincidencia</span>
+              </div>
+
+              <!-- Fila tocable completa: Cliente -->
+              <a href="#" class="group flex items-center justify-between px-3 py-2.5 rounded hover:bg-[#F6F3ED] transition-colors cursor-pointer block border border-transparent hover:border-[#E5E0D8]">
+                <div class="flex items-center gap-3">
+                  <!-- Avatar o icono identificador -->
+                  <div class="w-8 h-8 rounded bg-[#FCF9F3] border border-[#E5E0D8] group-hover:border-[#C6600A] flex items-center justify-center text-[#1F2A33] font-semibold text-xs transition-colors">
+                    MQ
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors flex items-center gap-2">
+                      <span>María Quispe Huamán</span>
+                    </div>
+                    <div class="text-xs text-[#4E4A45] font-mono mt-0.5 flex items-center gap-1.5">
+                      <span>DNI</span>
+                      <span class="font-medium text-[#1F2A33]">****5910</span>
+                      <span class="text-[#7A756D]">•</span>
+                      <span class="font-sans text-[#7A756D]">Cliente recurrente</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Badge de estado a la derecha -->
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-[#E8F5EC] text-[#1E7D4B] border border-[#C2E7CD]">
+                    Activo
+                  </span>
+                  <!-- Flecha sutil al hover -->
+                  <svg class="w-4 h-4 text-[#7A756D] group-hover:text-[#1F2A33] group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </div>
+              </a>
+            </div>
+
+            <!-- GRUPO 2: ALQUILERES -->
+            <div class="p-2">
+              <div class="px-3 pt-2.5 pb-1.5 text-[12px] font-bold uppercase tracking-wider text-[#4E4A45] font-sans flex items-center justify-between">
+                <span>ALQUILERES</span>
+                <span class="text-[11px] font-normal normal-case text-[#7A756D]">1 coincidencia</span>
+              </div>
+
+              <!-- Fila tocable completa: Alquiler -->
+              <a href="#" class="group flex items-center justify-between px-3 py-2.5 rounded hover:bg-[#F6F3ED] transition-colors cursor-pointer block border border-transparent hover:border-[#E5E0D8]">
+                <div class="flex items-center gap-3">
+                  <!-- Icono de expediente/vehículo -->
+                  <div class="w-8 h-8 rounded bg-[#FCF9F3] border border-[#E5E0D8] group-hover:border-[#C6600A] flex items-center justify-center text-[#4E4A45] transition-colors">
+                    <svg class="w-4 h-4 text-[#1F2A33]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                      <path d="M2 10h20"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors flex items-center gap-1.5">
+                      <span>#ALQ-1187</span>
+                      <span class="text-[#7A756D] font-normal">—</span>
+                      <span class="font-medium text-[#1F2A33]">Toyota Hilux</span>
+                    </div>
+                    <div class="text-xs text-[#4E4A45] mt-0.5 flex items-center gap-2">
+                      <span class="font-mono bg-[#E5E0D8]/40 px-1.5 py-0.2 rounded text-[11px]">Placa D0Y-704</span>
+                      <span class="text-[#7A756D]">•</span>
+                      <span>Sede Ayacucho</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Badge de estado a la derecha -->
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#E8F5EC] text-[#1E7D4B] border border-[#C2E7CD]">
+                    Activo
+                  </span>
+                  <!-- Flecha sutil al hover -->
+                  <svg class="w-4 h-4 text-[#7A756D] group-hover:text-[#1F2A33] group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </div>
+              </a>
+            </div>
+
+          </div>
+
+          <!-- Footer sutil del dropdown con tips de teclado -->
+          <div class="px-4 py-2.5 bg-[#F6F3ED] border-t border-[#E5E0D8] flex items-center justify-between text-[11px] text-[#7A756D]">
+            <div class="flex items-center gap-3">
+              <span>Navegar con <kbd class="px-1 py-0.5 bg-white border border-[#E5E0D8] rounded text-[10px] text-[#1F2A33]">↑</kbd> <kbd class="px-1 py-0.5 bg-white border border-[#E5E0D8] rounded text-[10px] text-[#1F2A33]">↓</kbd></span>
+              <span>Abrir con <kbd class="px-1 py-0.5 bg-white border border-[#E5E0D8] rounded text-[10px] text-[#1F2A33]">ENTER</kbd></span>
+            </div>
+            <a href="#" class="text-[#C6600A] hover:underline font-medium">Ver todos los resultados (2)</a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Botón Notificaciones -->
+      <button class="w-10 h-10 rounded border border-[#E5E0D8] bg-white text-[#4E4A45] hover:text-[#1F2A33] hover:bg-[#F6F3ED] flex items-center justify-center transition-colors relative">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#C22B2B]"></span>
+      </button>
+
+      <!-- Perfil de usuario -->
+      <div class="flex items-center gap-3 pl-2 border-l border-[#E5E0D8]">
+        <div class="w-10 h-10 rounded-full bg-[#EFEDE7] border border-[#E5E0D8] flex items-center justify-center text-[#1F2A33] font-semibold text-xs font-display">
+          MQ
+        </div>
+        <div class="hidden lg:block text-left">
+          <div class="text-xs font-semibold text-[#1F2A33] leading-tight">María Quispe</div>
+          <div class="text-[11px] text-[#7A756D]">Ejecutivo Front-office</div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- TELÓN DE FONDO SUTIL (Backdrop modal sutil para enfatizar el dropdown) -->
+  <div class="fixed inset-0 top-16 bg-[#1F2A33]/15 backdrop-blur-[1px] z-20 pointer-events-none"></div>
+
+  <!-- CONTENIDO DE FONDO DE LA PÁGINA (Tablero operativo contextual debajo) -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-8 relative z-10 opacity-70 filter blur-[0.5px] pointer-events-none select-none">
+    
+    <!-- Encabezado del tablero -->
+    <div class="mb-8">
+      <h1 class="font-display font-bold text-2xl text-[#1F2A33] tracking-tight">Hola, María</h1>
+      <p class="text-sm text-[#4E4A45] mt-1">Turno mañana — Mostrador Ayacucho Central</p>
+    </div>
+
+    <!-- Grid de tarjetas de tablero -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Tarjeta 1 -->
+      <div class="bg-white rounded-lg border border-[#E5E0D8] p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#7A756D]">Entregas para hoy</span>
+          <span class="text-xs font-bold px-2 py-0.5 rounded bg-[#FDF1DE] text-[#B5720A]">3 pendientes</span>
+        </div>
+        <div class="text-3xl font-display font-bold text-[#1F2A33]">3</div>
+        <div class="mt-4 pt-4 border-t border-[#F6F3ED] text-xs text-[#4E4A45] flex items-center justify-between">
+          <span>Próxima: 10:30 AM</span>
+          <span class="font-medium text-[#1F2A33]">Hilux D0Y-704</span>
+        </div>
+      </div>
+
+      <!-- Tarjeta 2 -->
+      <div class="bg-white rounded-lg border border-[#E5E0D8] p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#7A756D]">Devoluciones</span>
+          <span class="text-xs font-bold px-2 py-0.5 rounded bg-[#E8F5EC] text-[#1E7D4B]">2 programadas</span>
+        </div>
+        <div class="text-3xl font-display font-bold text-[#1F2A33]">2</div>
+        <div class="mt-4 pt-4 border-t border-[#F6F3ED] text-xs text-[#4E4A45] flex items-center justify-between">
+          <span>Próxima: 02:00 PM</span>
+          <span class="font-medium text-[#1F2A33]">Fortuner B4X-102</span>
+        </div>
+      </div>
+
+      <!-- Tarjeta 3 -->
+      <div class="bg-white rounded-lg border border-[#E5E0D8] p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#7A756D]">Consultas abiertas</span>
+          <span class="text-xs font-bold px-2 py-0.5 rounded bg-[#E6F0FA] text-[#2166B0]">1 por responder</span>
+        </div>
+        <div class="text-3xl font-display font-bold text-[#1F2A33]">1</div>
+        <div class="mt-4 pt-4 border-t border-[#F6F3ED] text-xs text-[#4E4A45] flex items-center justify-between">
+          <span>#CON-0842</span>
+          <span class="font-medium text-[#1F2A33]">Hace 25 min</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla o lista de tareas del día -->
+    <div class="bg-white rounded-lg border border-[#E5E0D8] overflow-hidden shadow-sm">
+      <div class="px-6 py-4 border-b border-[#E5E0D8] flex items-center justify-between">
+        <h2 class="font-display font-semibold text-base text-[#1F2A33]">Expedientes prioritarios del día</h2>
+        <span class="text-xs text-[#7A756D]">Actualizado automáticamente</span>
+      </div>
+      <div class="divide-y divide-[#F6F3ED] text-sm">
+        <div class="px-6 py-3.5 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-xs text-[#7A756D]">10:30</span>
+            <span class="font-semibold text-[#1F2A33]">#ALQ-1187</span>
+            <span class="text-[#4E4A45]">Toyota Hilux — Víctor Morales</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-xs bg-[#E8F5EC] text-[#1E7D4B] font-medium">Activo</span>
+        </div>
+        <div class="px-6 py-3.5 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-xs text-[#7A756D]">11:15</span>
+            <span class="font-semibold text-[#1F2A33]">#RES-2291</span>
+            <span class="text-[#4E4A45]">Mitsubishi L200 — Consorcio Minero</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-xs bg-[#FDF1DE] text-[#B5720A] font-medium">Por confirmar</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA CORPORATIVO -->
+  <footer class="bg-white border-t border-[#E5E0D8] py-4 px-8 mt-auto z-10">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-[#7A756D] gap-2">
+      <div class="flex items-center gap-2">
+        <span>VeloxRent ERP © 2026</span>
+        <span>•</span>
+        <span>Búsqueda global unificada</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>Soporte Front-office: <strong>anexo 103</strong></span>
+        <span>•</span>
+        <a href="#" class="text-[#4E4A45] hover:text-[#C6600A] transition-colors">Cerrar sesión</a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

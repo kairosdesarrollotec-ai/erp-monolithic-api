@@ -1,0 +1,538 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Ficha — Edwin Alanya Córdoba - VeloxRent</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F4F3EF;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #D5D1C8;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #A39C90;
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-between text-[#1F2A33]">
+<!-- TOP APP BAR / HEADER -->
+<div>
+<header class="border-b border-[#E6E4DF] bg-white sticky top-0 z-30">
+<div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+<!-- Left: Brand Logo & Navigation Breadcrumb -->
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-1.5 cursor-pointer">
+<span class="text-2xl font-black tracking-tight text-[#1F2A33] font-heading">Velox<span class="text-[#C6600A]">Rent</span></span>
+</div>
+<div class="h-5 w-[1px] bg-[#E6E4DF]"></div>
+<!-- Breadcrumbs -->
+<nav class="flex items-center space-x-2 text-[13px] text-[#706B63]">
+<span class="bg-[#F6F5F2] px-2.5 py-1 rounded text-[#4E4A45] font-medium">Recursos Humanos</span>
+<span>›</span>
+<span>Personal</span>
+<span>›</span>
+<span>Reclutamiento y Selección</span>
+<span>›</span>
+<a class="hover:text-[#1F2A33] transition-colors" href="#">Vacantes</a>
+<span>›</span>
+<a class="hover:text-[#1F2A33] transition-colors" href="#">Candidatos</a>
+<span>›</span>
+<span class="font-semibold text-[#1F2A33]">Ficha de Candidato</span>
+</nav>
+</div>
+<!-- Right: Status, Facility, User Info -->
+<div class="flex items-center space-x-4">
+<!-- Live Indicator -->
+<div class="flex items-center space-x-1.5 bg-[#E8F5EE] text-[#1E7D4B] px-3 py-1 rounded-full text-xs font-medium border border-[#D0ECDC]">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B] inline-block animate-pulse"></span>
+<span>En línea</span>
+</div>
+<!-- Branch Location -->
+<div class="flex items-center space-x-1.5 text-xs text-[#4E4A45] bg-[#F6F5F2] border border-[#E6E4DF] px-3 py-1 rounded-md">
+<svg class="w-3.5 h-3.5 text-[#706B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- User Badge -->
+<div class="flex items-center space-x-2.5 pl-2 border-l border-[#E6E4DF]">
+<div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center text-xs font-bold font-heading">
+              RO
+            </div>
+<div class="text-left">
+<div class="text-xs font-bold text-[#1F2A33] leading-none">Rodrigo Ortiz</div>
+<div class="text-[11px] text-[#706B63] mt-0.5 leading-none">Jefe de RR.HH.</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sub-header metadata context bar -->
+<div class="bg-[#FAF9F7] border-t border-[#ECEAE4] px-6 py-2">
+<div class="max-w-[1600px] mx-auto flex items-center justify-between text-xs text-[#4E4A45]">
+<div class="flex items-center space-x-6">
+<a class="inline-flex items-center space-x-1.5 text-[#1F2A33] font-semibold hover:text-[#C6600A] transition-colors" href="#">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Volver a Candidatos</span>
+</a>
+<span class="text-[#D5D1C8]">|</span>
+<div class="flex items-center space-x-2">
+<span class="text-[#706B63]">Requerimiento:</span>
+<span class="font-semibold text-[#1F2A33]">REQ-2025-018</span>
+</div>
+<span class="text-[#D5D1C8]">|</span>
+<div class="flex items-center space-x-2">
+<span class="text-[#706B63]">Vacante:</span>
+<span class="font-semibold text-[#1F2A33]">VAC-2025-015 — Mecánico Especialista 4x4 / Flota Minera</span>
+</div>
+<span class="text-[#D5D1C8]">|</span>
+<div class="flex items-center space-x-2">
+<span class="text-[#706B63]">Etapa actual:</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FDF1DE] text-[#B5720A] border border-[#F6DCB3]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#B5720A] mr-1.5"></span>
+                En Entrevista / Evaluación Técnica
+              </span>
+</div>
+</div>
+<div class="flex items-center space-x-4 text-[11px] text-[#706B63]">
+<span>Empresa: <strong class="text-[#1F2A33] font-medium">VeloxRent Servicios Mineros S.A.C.</strong></span>
+<span>•</span>
+<span>Taller Ayacucho</span>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT AREA (Split View: Left CV Viewer | Right Details & Negotiation) -->
+<main class="max-w-[1600px] mx-auto px-6 py-6">
+<!-- CANDIDATE TITLE BANNER -->
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-5 mb-6 border-b border-[#E6E4DF] gap-4">
+<div class="flex items-start space-x-4">
+<div class="w-14 h-14 rounded-lg bg-[#FAF9F7] border border-[#E6E4DF] flex items-center justify-center text-xl font-bold font-heading text-[#1F2A33] shadow-sm">
+            EA
+          </div>
+<div>
+<div class="flex items-center space-x-3">
+<h1 class="text-2xl font-bold text-[#1F2A33] font-heading tracking-tight">Ficha — Edwin Alanya Córdoba</h1>
+<span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-[#E8F5EE] text-[#1E7D4B] border border-[#D0ECDC]">
+                Postulante activo
+              </span>
+</div>
+<p class="text-sm text-[#706B63] mt-1 flex items-center space-x-4"><span class="flex items-center"><svg class="w-3.5 h-3.5 mr-1 text-[#706B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>Técnico en Mantenimiento de Maquinaria y Camionetas 4x4 — TECSUP</span><span>•</span><span class="inline-flex items-center text-[#706B63] bg-[#F6F5F2] px-2 py-0.5 rounded border border-[#E6E4DF] text-xs"><svg class="w-3.5 h-3.5 mr-1 text-[#B5720A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="font-medium">Datos personales completos: Este dato requiere permiso adicional</span></span><span>•</span><span class="flex items-center"><svg class="w-3.5 h-3.5 mr-1 text-[#706B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>Postulación: Hace 4 días (Bolsa TECSUP)</span></p>
+</div>
+</div>
+<!-- Direct Contact Badges -->
+<div class="flex items-center space-x-3">
+<a class="inline-flex items-center space-x-1.5 px-3 py-2 rounded border border-[#E6E4DF] bg-white text-xs font-semibold text-[#1F2A33] hover:bg-[#FAF9F7] transition-colors shadow-sm" href="tel:+51966842109">
+<svg class="w-3.5 h-3.5 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>+51 966 842 109</span>
+</a>
+<a class="inline-flex items-center space-x-1.5 px-3 py-2 rounded border border-[#E6E4DF] bg-white text-xs font-semibold text-[#1F2A33] hover:bg-[#FAF9F7] transition-colors shadow-sm" href="mailto:edwin.alanya.c@gmail.com">
+<svg class="w-3.5 h-3.5 text-[#2166B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>edwin.alanya.c@gmail.com</span>
+</a>
+</div>
+</div>
+<!-- MAIN GRID: LEFT (CV VIEWER) / RIGHT (PARAMETERS & NEGOTIATION) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN: VISOR DE CV ADJUNTO (5 Cols) -->
+<div class="lg:col-span-5 bg-[#FAF9F7] rounded-lg border border-[#E6E4DF] flex flex-col h-[780px] shadow-sm overflow-hidden">
+<!-- CV Viewer Header / Toolbar -->
+<div class="bg-white px-4 py-3 border-b border-[#E6E4DF] flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-7 h-7 rounded bg-[#FBE9E9] text-[#C22B2B] flex items-center justify-center font-bold text-xs">
+                PDF
+              </div>
+<div>
+<span class="text-xs font-bold text-[#1F2A33] block leading-tight">CV_Edwin_Alanya_2025.pdf</span>
+<span class="text-[11px] text-[#706B63] leading-none">2.4 MB • 2 páginas • Subido vía bolsa TECSUP</span>
+</div>
+</div>
+<!-- Zoom & Action controls -->
+<div class="flex items-center space-x-1">
+<button class="p-1.5 text-[#706B63] hover:text-[#1F2A33] hover:bg-[#F4F3EF] rounded transition-colors" title="Página anterior">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<span class="text-[11px] font-medium text-[#4E4A45] px-1.5">1 / 2</span>
+<button class="p-1.5 text-[#706B63] hover:text-[#1F2A33] hover:bg-[#F4F3EF] rounded transition-colors" title="Página siguiente">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div class="h-4 w-[1px] bg-[#E6E4DF] mx-1"></div>
+<button class="p-1.5 text-[#706B63] hover:text-[#1F2A33] hover:bg-[#F4F3EF] rounded transition-colors" title="Descargar documento">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1.5 text-[#706B63] hover:text-[#1F2A33] hover:bg-[#F4F3EF] rounded transition-colors" title="Ver en pantalla completa">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- CV Embedded Document Render Preview Area -->
+<div class="flex-1 p-4 overflow-y-auto custom-scrollbar bg-[#706B63]/10 flex justify-center">
+<!-- White Page Sheet Simulation -->
+<div class="bg-white w-full max-w-[480px] min-h-[920px] p-8 shadow-md rounded border border-[#E0DED7] text-left text-xs text-[#1F2A33] flex flex-col justify-between">
+<div>
+<!-- CV Top Header -->
+<div class="border-b-2 border-[#1F2A33] pb-4 mb-5">
+<h2 class="text-xl font-bold uppercase tracking-wide font-heading text-[#1F2A33]">Edwin Alanya Córdoba</h2>
+<p class="text-xs font-semibold text-[#C6600A] uppercase tracking-wider mt-0.5">Técnico Mecánico Automotriz &amp; Flota Pesada / 4x4</p>
+<p class="text-[11px] text-[#706B63] mt-1"><span class="inline-flex items-center text-[#706B63] bg-[#F0EEE8] px-1.5 py-0.5 rounded border border-[#E0DED7] text-[10px] mr-1"><svg class="w-3 h-3 text-[#B5720A] mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>Datos personales completos: Este dato requiere permiso adicional</span> • Licencia de Conducir: A-IIb vigente</p>
+</div>
+<!-- CV Section: Perfil Profesional -->
+<div class="mb-5">
+<h3 class="text-xs font-bold uppercase tracking-wider text-[#1F2A33] border-b border-[#ECEAE4] pb-1 mb-2 font-heading">
+                    Perfil Profesional
+                  </h3>
+<p class="text-[11px] text-[#4E4A45] leading-relaxed">
+                    Técnico mecánico titulado de TECSUP con más de 6 años de experiencia en mantenimiento preventivo, correctivo y peritajes mecánicos sobre camionetas 4x4 (Toyota Hilux, Mitsubishi L200, Ford Ranger) en operaciones mineras de altura y talleres de contratistas en la sierra central. Sólido manejo de scanner automotriz multimarca (Launch, Bosch), diagnóstico de fallas de inyección Common Rail, sistemas de frenos ABS/EBD y homologación de componentes de suspensión reforzada para trocha severa.
+                  </p>
+</div>
+<!-- CV Section: Experiencia Laboral -->
+<div class="mb-5">
+<h3 class="text-xs font-bold uppercase tracking-wider text-[#1F2A33] border-b border-[#ECEAE4] pb-1 mb-2 font-heading">
+                    Experiencia Laboral
+                  </h3>
+<!-- Job 1 -->
+<div class="mb-3">
+<div class="flex justify-between items-baseline font-semibold text-[11px]">
+<span class="text-[#1F2A33]">Mecánico de Patio y Mantenimiento de Flota 4x4</span>
+<span class="text-[#706B63] text-[10px]">2022 — Presente</span>
+</div>
+<div class="text-[10px] text-[#C6600A] font-medium">Consorcio Minero Andino — Mina Catalina Huanca, Ayacucho</div>
+<ul class="list-disc list-inside text-[10px] text-[#4E4A45] mt-1 space-y-0.5 leading-relaxed">
+<li>Overhaul de suspensión delantera y posterior en 35 camionetas Toyota Hilux 4x4.</li>
+<li>Diagnóstico con escáner de códigos DTC y calibración de actuadores electrónicos.</li>
+<li>Auxilio mecánico de emergencia en ruta de trocha y rescate en socavón.</li>
+<li>Inspección pericial de entrega y devolución de unidades con check-list fotográfico.</li>
+</ul>
+</div>
+<!-- Job 2 -->
+<div class="mb-2">
+<div class="flex justify-between items-baseline font-semibold text-[11px]">
+<span class="text-[#1F2A33]">Técnico de Servicio Preventivo y Auxilio</span>
+<span class="text-[#706B63] text-[10px]">2019 — 2022</span>
+</div>
+<div class="text-[10px] text-[#706B63] font-medium">Taller Mecánico Central San Cristóbal — Ayacucho</div>
+<ul class="list-disc list-inside text-[10px] text-[#4E4A45] mt-1 space-y-0.5 leading-relaxed">
+<li>Servicios de 5k, 10k, 20k y 40k km para flotas de alquiler y transporte local.</li>
+<li>Purga y cambio de fluidos de transmisión 4x4, transfer y diferenciales autoblocantes.</li>
+</ul>
+</div>
+</div>
+<!-- CV Section: Educación y Certificaciones -->
+<div>
+<h3 class="text-xs font-bold uppercase tracking-wider text-[#1F2A33] border-b border-[#ECEAE4] pb-1 mb-2 font-heading">
+                    Educación &amp; Capacitaciones
+                  </h3>
+<div class="text-[10px] space-y-1 text-[#4E4A45]">
+<div>
+<strong class="text-[#1F2A33]">Técnico Profesional en Mecánica Automotriz</strong> — TECSUP (2016 — 2019)
+                    </div>
+<div>
+<strong class="text-[#1F2A33]">Certificación en Diagnóstico Electrónico Common Rail</strong> — Bosch Training (2021)
+                    </div>
+<div>
+<strong class="text-[#1F2A33]">Seguridad Minera en Taller (DS-024-2016-EM)</strong> — ISEM (Vigente 2024-2025)
+                    </div>
+</div>
+</div>
+</div>
+<!-- CV Footer inside paper -->
+<div class="pt-4 border-t border-[#ECEAE4] flex justify-between items-center text-[9px] text-[#A39C90]">
+<span>Documento verificado digitalmente • TECSUP Bolsa</span>
+<span>Página 1 de 2</span>
+</div>
+</div>
+</div>
+<!-- CV Status Footnote -->
+<div class="p-2.5 bg-white border-t border-[#E6E4DF] text-center text-xs text-[#706B63]">
+<span class="inline-flex items-center text-[#1E7D4B] font-medium">
+<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              Certificados de estudios y antecedentes penales/policiales adjuntos cotejados
+            </span>
+</div>
+</div>
+<!-- RIGHT COLUMN: CANDIDATE CORE FIELDS & NEGOTIATION PANEL (7 Cols) -->
+<div class="lg:col-span-7 space-y-6">
+<!-- SECTION 1: KEY FIELDS (Pretensión salarial & Disponibilidad) -->
+<div class="bg-white p-5 rounded-lg border border-[#E6E4DF] shadow-sm">
+<h2 class="text-sm font-bold text-[#1F2A33] font-heading uppercase tracking-wide mb-4 flex items-center">
+<svg class="w-4 h-4 mr-2 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+              Datos clave de la postulación
+            </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Pretensión salarial -->
+<div class="p-4 rounded-md border border-[#ECEAE4] bg-[#FAF9F7]">
+<label class="block text-xs font-semibold text-[#706B63] uppercase tracking-wider mb-1">
+                  Pretensión salarial
+                </label>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl font-black text-[#1F2A33] font-heading">S/ 3,500.00</span>
+<span class="text-xs font-medium text-[#706B63]">/ mes bruto</span>
+</div>
+<div class="mt-2 flex items-center text-xs text-[#B5720A] bg-[#FDF1DE] px-2.5 py-1 rounded border border-[#F6DCB3]">
+<svg class="w-3.5 h-3.5 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>+S/ 300.00 sobre el presupuesto base de la vacante (S/ 3,200.00).</span>
+</div>
+</div>
+<!-- Disponibilidad -->
+<div class="p-4 rounded-md border border-[#ECEAE4] bg-[#FAF9F7]">
+<label class="block text-xs font-semibold text-[#706B63] uppercase tracking-wider mb-1">
+                  Disponibilidad
+                </label>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl font-bold text-[#1F2A33] font-heading">En 15 días</span>
+<span class="text-xs font-medium text-[#706B63]">(Preaviso de ley)</span>
+</div>
+<div class="mt-2 flex items-center text-xs text-[#1E7D4B] bg-[#E8F5EE] px-2.5 py-1 rounded border border-[#D0ECDC]">
+<svg class="w-3.5 h-3.5 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Compatible con la fecha estimada de ingreso (01/10/2025).</span>
+</div>
+</div>
+</div>
+<!-- Additional quick candidate details -->
+<div class="mt-4 pt-3 border-t border-[#ECEAE4] grid grid-cols-3 gap-3 text-xs">
+<div>
+<span class="text-[#706B63] block">Evaluación práctica en taller:</span>
+<span class="font-semibold text-[#1F2A33]">9.5 / 10 (Aprobado por Jefe Taller)</span>
+</div>
+<div>
+<span class="text-[#706B63] block">Licencia de conducir:</span>
+<span class="font-semibold text-[#1F2A33]">A-IIb (Cero papeletas graves)</span>
+</div>
+<div>
+<span class="text-[#706B63] block">Prueba toxicológica:</span>
+<span class="font-semibold text-[#1E7D4B]">Negativa / Conforme</span>
+</div>
+</div><div class="mt-4 pt-3 border-t border-[#ECEAE4]"><div class="flex items-center justify-between mb-2"><div class="flex items-center space-x-1.5"><svg class="w-3.5 h-3.5 text-[#706B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="text-xs font-bold text-[#1F2A33] font-heading uppercase tracking-wide">Datos personales completos</span></div><span class="text-[10px] font-semibold text-[#706B63] bg-[#F0EEE8] px-2 py-0.5 rounded border border-[#E6E4DF]">Protección de Datos Personales (Ley 29733)</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2.5"><div class="p-2.5 rounded border border-[#ECEAE4] bg-[#FAF9F7] flex flex-col justify-between"><span class="text-[11px] text-[#706B63] font-medium">DNI &amp; Fecha de Nacimiento</span><div class="mt-1.5 inline-flex items-center space-x-1.5 text-xs text-[#706B63] bg-[#F0EEE8] px-2 py-1 rounded border border-[#E0DED7]"><svg class="w-3.5 h-3.5 text-[#B5720A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="font-medium text-[11px]">Este dato requiere permiso adicional</span></div></div><div class="p-2.5 rounded border border-[#ECEAE4] bg-[#FAF9F7] flex flex-col justify-between"><span class="text-[11px] text-[#706B63] font-medium">Dirección exacta de domicilio</span><div class="mt-1.5 inline-flex items-center space-x-1.5 text-xs text-[#706B63] bg-[#F0EEE8] px-2 py-1 rounded border border-[#E0DED7]"><svg class="w-3.5 h-3.5 text-[#B5720A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="font-medium text-[11px]">Este dato requiere permiso adicional</span></div></div><div class="p-2.5 rounded border border-[#ECEAE4] bg-[#FAF9F7] flex flex-col justify-between"><span class="text-[11px] text-[#706B63] font-medium">Datos de contacto familiar / emergencia</span><div class="mt-1.5 inline-flex items-center space-x-1.5 text-xs text-[#706B63] bg-[#F0EEE8] px-2 py-1 rounded border border-[#E0DED7]"><svg class="w-3.5 h-3.5 text-[#B5720A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="font-medium text-[11px]">Este dato requiere permiso adicional</span></div></div><div class="p-2.5 rounded border border-[#ECEAE4] bg-[#FAF9F7] flex flex-col justify-between"><span class="text-[11px] text-[#706B63] font-medium">Estado civil &amp; Cargas familiares</span><div class="mt-1.5 inline-flex items-center space-x-1.5 text-xs text-[#706B63] bg-[#F0EEE8] px-2 py-1 rounded border border-[#E0DED7]"><svg class="w-3.5 h-3.5 text-[#B5720A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="font-medium text-[11px]">Este dato requiere permiso adicional</span></div></div></div></div>
+</div>
+<!-- SECTION 2: NEGOCIACIÓN (Condiciones Ofrecidas vs. Condiciones del Candidato Lado a Lado) -->
+<div class="bg-white p-5 rounded-lg border border-[#E6E4DF] shadow-sm">
+<div class="flex items-center justify-between mb-4 pb-2 border-b border-[#ECEAE4]">
+<div>
+<h2 class="text-base font-bold text-[#1F2A33] font-heading flex items-center">
+<svg class="w-5 h-5 mr-2 text-[#2166B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  Sección Negociación — Comparativa de Condiciones
+                </h2>
+<p class="text-xs text-[#706B63] mt-0.5">
+                  Contraste técnico y económico para definir el acuerdo previo a la emisión de contrato laboral.
+                </p>
+</div>
+<span class="px-2.5 py-1 text-xs font-semibold rounded bg-[#EAF2FB] text-[#2166B0] border border-[#CDE1F5]">
+                Negociación abierta
+              </span>
+</div>
+<!-- SIDE BY SIDE TABLE / COLUMNS -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- LEFT COLUMN: CONDICIONES OFRECIDAS (VeloxRent) -->
+<div class="border-2 border-[#E6E4DF] rounded-lg bg-[#FAF9F7] overflow-hidden flex flex-col justify-between">
+<div>
+<div class="bg-[#1F2A33] text-white px-4 py-2.5 flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#C6600A]"></span>
+<span class="text-xs font-bold font-heading uppercase tracking-wide">Condiciones Ofrecidas (VeloxRent)</span>
+</div>
+<span class="text-[11px] text-[#A39C90]">Tarifario 2025</span>
+</div>
+<div class="p-4 space-y-4 text-xs">
+<!-- Sueldo ofrecido -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Sueldo Base Mensual</span>
+<div class="flex items-baseline space-x-1.5 mt-0.5">
+<span class="text-lg font-bold text-[#1F2A33] font-heading">S/ 3,200.00</span>
+<span class="text-[#706B63] text-[11px]">en planilla régimen general</span>
+</div>
+<span class="text-[11px] text-[#706B63] block mt-1">Gratificaciones (julio/dic) + CTS + Vacaciones 30 días pagadas.</span>
+</div>
+<!-- Horario y régimen -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Horario &amp; Jornada</span>
+<div class="text-xs font-bold text-[#1F2A33] mt-0.5">Lunes a Sábado: 07:30 a 16:30</div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">Taller Central Ayacucho. 48 horas semanales reglamentarias.</span>
+</div>
+<!-- Beneficios y extras -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Alimentación &amp; Viáticos</span>
+<div class="text-xs font-bold text-[#1F2A33] mt-0.5">1 hr refrigerio subvencionado al 100%</div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">Comedor de sede. Viáticos en caso de auxilio técnico en ruta.</span>
+</div>
+<!-- Horas extra y guardia -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Guardias Pasivas &amp; Emergencias</span>
+<div class="text-xs font-bold text-[#1F2A33] mt-0.5">S/ 80.00 por día de retén dominical</div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">Rotativo cada 3 semanas entre los 3 mecánicos del taller.</span>
+</div>
+<!-- SCTR y Seguro -->
+<div>
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Seguro &amp; Coberturas</span>
+<div class="text-xs font-semibold text-[#1E7D4B] mt-0.5">SCTR Salud + Pensión (Riesgo minero nivel IV)</div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">Seguro de Vida Ley desde el día 1 de trabajo.</span>
+</div>
+</div>
+</div>
+<div class="bg-[#F0EEE8] px-4 py-2 text-[11px] text-[#706B63] text-center border-t border-[#ECEAE4]">
+                  Base autorizada por Gerencia de Operaciones
+                </div>
+</div>
+<!-- RIGHT COLUMN: CONDICIONES DEL CANDIDATO (Edwin Alanya) -->
+<div class="border-2 border-[#2166B0]/40 rounded-lg bg-white overflow-hidden flex flex-col justify-between shadow-sm">
+<div>
+<div class="bg-[#2166B0] text-white px-4 py-2.5 flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+<span class="text-xs font-bold font-heading uppercase tracking-wide">Condiciones del Candidato (Solicitud)</span>
+</div>
+<span class="text-[11px] text-white/80">Propuesta postulante</span>
+</div>
+<div class="p-4 space-y-4 text-xs">
+<!-- Sueldo solicitado -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<div class="flex justify-between items-center">
+<span class="text-[#706B63] text-[11px] font-medium uppercase tracking-wider">Pretensión Salarial Solicitada</span>
+<span class="text-[10px] font-bold text-[#C6600A] bg-[#FDF1DE] px-1.5 py-0.5 rounded">Diferencia: +S/ 300</span>
+</div>
+<div class="flex items-baseline space-x-1.5 mt-0.5">
+<span class="text-lg font-bold text-[#2166B0] font-heading">S/ 3,500.00</span>
+<span class="text-[#706B63] text-[11px]">bruto mensual</span>
+</div>
+<p class="text-[11px] text-[#4E4A45] mt-1 italic">
+                        "Sustentado en especialización con escáner Bosch y certificación SCTR minera al día".
+                      </p>
+</div>
+<!-- Horario y régimen solicitado -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Disponibilidad de Horario</span>
+<div class="text-xs font-bold text-[#1E7D4B] mt-0.5 flex items-center">
+<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                        Conforme al 100% con 07:30 a 16:30
+                      </div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">Radica a 15 minutos de la sede central de Ayacucho.</span>
+</div>
+<!-- Solicitud de movilidad / almuerzo -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Alimentación &amp; Traslado</span>
+<div class="text-xs font-bold text-[#1E7D4B] mt-0.5 flex items-center">
+<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                        Acepta comedor subvencionado
+                      </div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">No requiere bono adicional de movilidad urbana.</span>
+</div>
+<!-- Guardias pasivas -->
+<div class="pb-3 border-b border-[#ECEAE4]">
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Guardias y Auxilio en Trocha</span>
+<div class="text-xs font-bold text-[#1F2A33] mt-0.5">Disponibilidad total para guardias y retén</div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">Acepta la tarifa de S/ 80.00 por guardia dominical pasiva.</span>
+</div>
+<!-- Incorporación -->
+<div>
+<span class="text-[#706B63] block text-[11px] font-medium uppercase tracking-wider">Fecha Efectiva de Incorporación</span>
+<div class="text-xs font-bold text-[#1F2A33] mt-0.5">Lunes 15 de octubre de 2025</div>
+<span class="text-[11px] text-[#706B63] block mt-0.5">Requiere 15 días calendario para entrega de cargo previa.</span>
+</div>
+</div>
+</div>
+<div class="bg-[#EAF2FB] px-4 py-2 text-[11px] text-[#2166B0] text-center font-medium border-t border-[#CDE1F5]">
+                  Revisado y validado en entrevista con Jefe de Taller
+                </div>
+</div>
+</div>
+<!-- PROPOSED AGREEMENT COMPROMISE BAR -->
+<div class="mt-4 p-3.5 bg-[#FAF9F7] rounded-md border border-[#E6E4DF] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-full bg-[#E8F5EE] text-[#1E7D4B] flex items-center justify-center font-bold">
+                  ✓
+                </div>
+<div>
+<span class="font-bold text-[#1F2A33] block">Punto de equilibrio sugerido para formalización:</span>
+<span class="text-[#4E4A45]">Fijar sueldo inicial en <strong>S/ 3,350.00</strong> con cláusula de revisión a S/ 3,500.00 al superar los 3 meses de periodo de prueba.</span>
+</div>
+</div>
+<div class="flex items-center space-x-2 text-right">
+<span class="text-[11px] text-[#706B63]">Margen de ajuste presupuestal:</span>
+<span class="font-semibold text-[#1E7D4B] bg-white px-2 py-1 rounded border border-[#D0ECDC]">+4.6% viable</span>
+</div>
+</div>
+</div>
+<!-- ACTION BAR / BOTTOM DECISION AREA -->
+<div class="bg-white p-5 rounded-lg border border-[#E6E4DF] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+<!-- Left action: Descartar enlace -->
+<div>
+<button class="text-xs font-bold text-[#C22B2B] hover:text-[#9E2222] hover:underline transition-colors flex items-center space-x-1.5 px-2 py-1.5">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Descartar candidato</span>
+</button>
+</div>
+<!-- Right actions: Acordar y continuar button -->
+<div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+<a class="px-4 py-2.5 rounded border border-[#A39C90] text-xs font-semibold text-[#4E4A45] hover:bg-[#FAF9F7] transition-colors" href="#">
+                Guardar anotación
+              </a>
+<button class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-2.5 rounded bg-[#1F2A33] hover:bg-[#2C3B47] text-white text-xs font-bold transition-colors shadow-sm">
+<span>Acordar y continuar</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- INSTITUTIONAL FOOTER -->
+<footer class="bg-white border-t border-[#E6E4DF] mt-8 py-4 px-6 text-xs text-[#706B63]">
+<div class="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center space-x-4">
+<span class="font-medium text-[#1F2A33]">VeloxRent © 2025</span>
+<span>•</span>
+<span>Sistema de Gestión Interna</span>
+<span>•</span>
+<span>Protocolo SST-RRHH-001 / Selección de Personal</span>
+</div>
+<div class="flex items-center space-x-6">
+<span>Soporte RR.HH.: <strong class="text-[#1F2A33]">anexo 104</strong></span>
+<span>•</span>
+<span>Mesa de Operaciones: <strong class="text-[#1F2A33]">anexo 101</strong></span>
+<span>•</span>
+<a class="inline-flex items-center text-[#C22B2B] hover:underline font-medium" href="#">
+<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Cerrar sesión</span>
+</a>
+</div>
+</div>
+</footer>
+
+
+</body></html>

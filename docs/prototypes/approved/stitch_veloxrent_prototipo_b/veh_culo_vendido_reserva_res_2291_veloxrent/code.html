@@ -1,0 +1,353 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehículo vendido — Reserva #RES-2291 - VeloxRent</title>
+  <!-- Google Fonts: Space Grotesk & Public Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              orange: '#C6600A',
+              danger: '#C22B2B',
+              warning: '#B5720A',
+              success: '#1E7D4B',
+              bgLight: '#F8F9FA',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1F2A33] font-sans antialiased min-h-screen flex flex-col justify-between">
+
+  <!-- TOPBAR INSTITUCIONAL VELOXRENT -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Izquierda: Brand + Breadcrumbs -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <span class="font-heading text-xl font-bold tracking-tight text-[#1F2A33]">Velox<span class="text-[#C6600A]">Rent</span></span>
+          <span class="text-xs bg-gray-100 text-[#4E4A45] font-medium px-2 py-0.5 rounded border border-gray-200">Gestión Interna</span>
+        </div>
+        <div class="h-4 w-px bg-gray-300"></div>
+        <nav class="flex items-center space-x-2 text-sm text-[#4E4A45]">
+          <span class="hover:text-gray-900 cursor-pointer">Reservas</span>
+          <span>›</span>
+          <span class="hover:text-gray-900 cursor-pointer">Reserva #RES-2291</span>
+          <span>›</span>
+          <span class="text-gray-900 font-semibold">Resolución de conflictos</span>
+        </nav>
+      </div>
+
+      <!-- Derecha: Sede, Estado y Usuario -->
+      <div class="flex items-center space-x-5 text-sm">
+        <div class="flex items-center space-x-2 px-3 py-1 bg-emerald-50 text-[#1E7D4B] rounded-full border border-emerald-200 text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <div class="flex items-center space-x-1.5 text-[#4E4A45] bg-gray-50 border border-gray-200 px-3 py-1 rounded text-xs">
+          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+          <span class="font-medium">Ayacucho — Sede Central</span>
+        </div>
+
+        <button class="relative text-gray-500 hover:text-gray-700 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+          <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+
+        <div class="flex items-center space-x-2.5 pl-2 border-l border-gray-200">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">
+            ME
+          </div>
+          <div class="leading-tight">
+            <div class="text-xs font-bold text-gray-900">María Ejecutivo</div>
+            <div class="text-[11px] text-gray-500">Front-office</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-1">
+
+    <!-- Navegación de retorno y Tag ID -->
+    <div class="flex items-center justify-between mb-5">
+      <a href="#" class="inline-flex items-center text-sm font-medium text-[#4E4A45] hover:text-[#1F2A33] transition-colors group">
+        <svg class="w-4 h-4 mr-1.5 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Volver a Reserva
+      </a>
+      <span class="text-xs font-mono font-medium px-2.5 py-1 bg-gray-100 text-gray-600 rounded border border-gray-200">ID: RES-2291</span>
+    </div>
+
+    <!-- TARJETA PRINCIPAL BLANCA -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 space-y-7">
+
+      <!-- ENCABEZADO DE PANTALLA -->
+      <div>
+        <div class="flex items-center space-x-2.5 mb-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FDF1DE] text-[#B5720A] border border-[#F3E1B9]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#B5720A] mr-1.5"></span>
+            INCIDENCIA OPERATIVA · VENTA DE UNIDAD
+          </span>
+          <span class="text-xs text-gray-400">•</span>
+          <span class="text-xs text-gray-500">Cliente: <strong class="text-gray-800">Minera Los Andes S.A.C.</strong></span>
+        </div>
+        <h1 class="font-heading text-3xl font-bold text-[#1F2A33] tracking-tight">Vehículo vendido — Reserva #RES-2291</h1>
+        <p class="text-sm text-[#4E4A45] mt-1.5 leading-relaxed">
+          La unidad asignada originalmente <strong class="text-gray-900">Toyota Hilux 4x4 MT (Placa D0Y-704)</strong> fue desincorporada y vendida de la flota activa antes del inicio del servicio programado (04 sep — 07 sep 2025).
+        </p>
+      </div>
+
+      <!-- BANNER REQUERIDO: FONDO #FDF1DE, TEXTO "El vehículo reservado fue vendido antes de la fecha pactada" COLOR #B5720A -->
+      <div class="bg-[#FDF1DE] border border-[#F3E1B9] rounded-lg p-4 flex items-start space-x-3.5">
+        <div class="flex-shrink-0 mt-0.5">
+          <svg class="w-5 h-5 text-[#B5720A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-[#B5720A] leading-snug">
+            El vehículo reservado fue vendido antes de la fecha pactada
+          </h2>
+          <p class="text-xs text-[#8A5606] mt-0.5 leading-relaxed">
+            Se requiere registrar la justificación comercial/operativa para la auditoría de flota y presentar una alternativa equivalente sin recargo para mantener la reserva corporativa.
+          </p>
+        </div>
+      </div>
+
+      <!-- CAMPO OBLIGATORIO: MOTIVO DE VENTA (TEXTAREA) -->
+      <div class="bg-gray-50/75 border border-gray-200 rounded-lg p-5">
+        <label for="motivo_venta" class="block text-sm font-bold text-[#1F2A33] mb-1">
+          Motivo de venta <span class="text-[#C22B2B]">*</span>
+          <span class="text-xs font-normal text-gray-500 ml-1.5">(Obligatorio — queda asentado en el expediente de auditoría vehicular BR-FL-014)</span>
+        </label>
+        <div class="relative">
+          <textarea id="motivo_venta" name="motivo_venta" rows="3" required="" placeholder="Ingrese los detalles de la venta de la unidad (ej. Liquidación de flota programada por kilometraje según orden de Directorio O-492, venta directa a cliente minero)..." class="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-[#1F2A33] focus:border-[#1F2A33] outline-none transition-shadow placeholder:text-gray-400">Venta de unidad programada por renovación de flota minera aprobada según Acta de Directorio ACT-2025-08. Traspaso ejecutado antes de la fecha de entrega.</textarea>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-gray-500 mt-2">
+          <span class="flex items-center text-emerald-700">
+            <svg class="w-3.5 h-3.5 mr-1 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Motivo validado (172 caracteres registrados)
+          </span>
+          <span>Obligatorio antes de confirmar acción</span>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: GRID DE ALTERNATIVAS EQUIVALENTES -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-heading text-lg font-bold text-[#1F2A33]">Alternativas equivalentes disponibles</h3>
+            <p class="text-xs text-[#4E4A45]">Selecciona una unidad sustituta para reasignar a la reserva sin sobrecosto comercial</p>
+          </div>
+          <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded">2 unidades listas en Ayacucho</span>
+        </div>
+
+        <!-- GRID DE 2 TARJETAS SELECCIONABLES -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <!-- TARJETA 1: MITSUBISHI L200 (EQUIVALENTE DIRECTA SELECCIONADA POR DEFECTO) -->
+          <div class="relative border-2 border-[#1F2A33] bg-white rounded-xl overflow-hidden shadow-sm flex flex-col justify-between transition-all">
+            <!-- Badge superior seleccionado -->
+            <div class="bg-[#1F2A33] text-white text-xs font-semibold px-4 py-1.5 flex items-center justify-between">
+              <span class="flex items-center">
+                <svg class="w-3.5 h-3.5 mr-1.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                Alternativa recomendada · Seleccionada
+              </span>
+              <span class="text-[11px] uppercase tracking-wider text-gray-300 font-mono">Pick-up 4×4 MT</span>
+            </div>
+
+            <!-- Imagen del vehículo -->
+            <div class="relative h-48 bg-gray-100 overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkAoght2eq2iqA6yrWydi3yTg8EviE4lHvyFUr9NuONBXfZmlMdzYFm5sSqeP4cOUO9zgCTVuLiSDQFn7YH1Q7LOQFxhMaKythgOK4qX1FHW0hQURn6snWMmFH8oqBn3_XLYxYp4Z43aaglkr5Sogwl8z-yM_N5JNtojAKrpBvWeBTKWEY-uONKqNC5-WtBLPcsGq6J7Y93-FsvkLLZV_Ymdqm1fmqNVDaNFTSxFbUbq-rWLcuiRw3" alt="Mitsubishi L200 4x4 MT" class="w-full h-full object-cover object-center">
+              <div class="absolute bottom-2.5 left-3 flex items-center space-x-1.5">
+                <span class="px-2 py-0.5 rounded bg-black/75 text-white text-[11px] font-medium backdrop-blur-sm">Tracción 4×4</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-600 text-white text-[11px] font-medium">Disponible ahora</span>
+              </div>
+            </div>
+
+            <!-- Contenido técnico y tarifa -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between">
+                  <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#1E7D4B]">Equivalente exacta a Hilux</span>
+                    <h4 class="font-heading text-lg font-bold text-gray-900">Mitsubishi L200 · Placa E1A-549</h4>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs text-gray-400 line-through">S/ 310</span>
+                    <div class="text-base font-bold text-[#1F2A33]">S/ 280 <span class="text-xs font-normal text-gray-500">/ día</span></div>
+                  </div>
+                </div>
+
+                <div class="mt-3 p-2.5 bg-emerald-50 rounded text-xs text-[#1E7D4B] font-medium border border-emerald-100 flex items-center">
+                  <svg class="w-4 h-4 mr-1.5 flex-shrink-0 text-[#1E7D4B]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  Tarifa pactada mantenida (Sin recargo adicional al cliente)
+                </div>
+
+                <!-- Especificaciones operativas -->
+                <ul class="mt-4 space-y-2 text-xs text-[#4E4A45]">
+                  <li class="flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></span>
+                    <span><strong>Capacidad:</strong> 5 pasajeros · Doble cabina</span>
+                  </li>
+                  <li class="flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></span>
+                    <span><strong>Transmisión:</strong> Mecánica 6 vel. · Diésel Turbo</span>
+                  </li>
+                  <li class="flex items-center text-[#1E7D4B] font-semibold">
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Apta para trocha y zona minera alta montaña
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Radio selector visual -->
+              <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-semibold text-[#1F2A33]">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="radio" name="vehiculo_alternativa" checked="" class="w-4 h-4 text-[#1F2A33] border-gray-300 focus:ring-[#1F2A33]">
+                  <span>Unidad seleccionada para sustitución</span>
+                </label>
+                <span class="text-xs text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded">Recomendada</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TARJETA 2: TOYOTA FORTUNER (SUV PREMIUM COMPENSADA) -->
+          <div class="border border-gray-200 bg-white rounded-xl overflow-hidden shadow-sm hover:border-gray-400 flex flex-col justify-between transition-all">
+            <!-- Barra superior neutral -->
+            <div class="bg-gray-100 text-[#4E4A45] text-xs font-medium px-4 py-1.5 flex items-center justify-between border-b border-gray-200">
+              <span>Opción SUV Premium (Upgrade sin costo)</span>
+              <span class="text-[11px] uppercase tracking-wider font-mono">SUV 4×4 AT</span>
+            </div>
+
+            <!-- Imagen del vehículo -->
+            <div class="relative h-48 bg-gray-100 overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1V6slIWPGGGbILTH-rG2ejvEuTGWI0sx7jX5cvyuM0CiJhic6gkybpDhAgXhcuCkkQ_3_rMd0Tac6dRzPygkULMwT5B-FRlBAYt3lXJIe_7rOfwVFGnzragcDoUTf6K9yZEvAvlhEhdzULV8WY2cFsOq4oY_MJFqlnOOUl21HZf3QOH3RdwDdpYEsVbB2aSy_obUAp-IgGJOVAuIOWzq0ts6RVHh0MdIhHt5HWjW_VE-WOlDtiYHyuZuGE" alt="Toyota Fortuner SUV" class="w-full h-full object-cover object-center">
+              <div class="absolute bottom-2.5 left-3 flex items-center space-x-1.5">
+                <span class="px-2 py-0.5 rounded bg-black/75 text-white text-[11px] font-medium backdrop-blur-sm">Tracción 4×4</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-600 text-white text-[11px] font-medium">Disponible ahora</span>
+              </div>
+            </div>
+
+            <!-- Contenido técnico y tarifa -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between">
+                  <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#B5720A]">Categoría Superior</span>
+                    <h4 class="font-heading text-lg font-bold text-gray-900">Toyota Fortuner · Placa D2X-810</h4>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs text-gray-400 line-through">S/ 340</span>
+                    <div class="text-base font-bold text-[#1F2A33]">S/ 280 <span class="text-xs font-normal text-gray-500">/ día</span></div>
+                  </div>
+                </div>
+
+                <div class="mt-3 p-2.5 bg-blue-50 rounded text-xs text-[#2166B0] font-medium border border-blue-100 flex items-center">
+                  <svg class="w-4 h-4 mr-1.5 flex-shrink-0 text-[#2166B0]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                  </svg>
+                  Upgrade de cortesía por incidencia VeloxRent
+                </div>
+
+                <!-- Especificaciones operativas -->
+                <ul class="mt-4 space-y-2 text-xs text-[#4E4A45]">
+                  <li class="flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></span>
+                    <span><strong>Capacidad:</strong> 7 pasajeros · Maletero amplio</span>
+                  </li>
+                  <li class="flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></span>
+                    <span><strong>Transmisión:</strong> Automática · Diésel 2.8L</span>
+                  </li>
+                  <li class="flex items-center text-[#1E7D4B] font-semibold">
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Apta para trocha y protocolo minero
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Radio selector visual -->
+              <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-medium text-gray-700">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="radio" name="vehiculo_alternativa" class="w-4 h-4 text-[#1F2A33] border-gray-300 focus:ring-[#1F2A33]">
+                  <span>Seleccionar esta unidad</span>
+                </label>
+                <span class="text-xs text-gray-500">Sede Ayacucho</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BOTONES DE RESOLUCIÓN SOLICITADOS -->
+      <div class="pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- BOTÓN SECUNDARIO: "Cliente no aceptó — cancelar y reembolsar" (borde #C22B2B) -->
+        <button type="button" class="w-full sm:w-auto px-6 py-3 rounded text-sm font-semibold text-[#C22B2B] bg-white border-2 border-[#C22B2B] hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-[#C22B2B]/20 transition-all flex items-center justify-center space-x-2">
+          <svg class="w-4 h-4 text-[#C22B2B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+          <span>Cliente no aceptó — cancelar y reembolsar</span>
+        </button>
+
+        <!-- BOTÓN PRINCIPAL: "Cliente aceptó esta alternativa" (fondo #1F2A33) -->
+        <button type="button" class="w-full sm:w-auto px-8 py-3 rounded text-sm font-semibold text-white bg-[#1F2A33] hover:bg-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A33]/30 transition-all flex items-center justify-center space-x-2">
+          <span>Cliente aceptó esta alternativa</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER INSTITUCIONAL DE GESTIÓN INTERNA -->
+  <footer class="bg-white border-t border-gray-200 mt-10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#4E4A45]">
+      <div>
+        VeloxRent © 2025 · Sistema de Gestión Interna
+      </div>
+      <div class="flex items-center space-x-6 mt-2 sm:mt-0">
+        <span>Soporte Front-office: anexo 103</span>
+        <span class="text-gray-300">|</span>
+        <a href="#" class="text-[#C22B2B] hover:underline font-medium">Cerrar sesión</a>
+      </div>
+    </div>
+  </footer>
+
+
+</body></html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de acceso — VeloxRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              primary: '#C6600A',
+              textMuted: '#4E4A45',
+              border: '#A39C90',
+              error: '#C22B2B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-between font-sans text-[#1F2A33] antialiased select-none">
+  <!-- Minimal Brand Header -->
+  <header class="w-full px-8 py-6">
+    <div class="max-w-7xl mx-auto flex items-center">
+      <span class="font-heading font-bold text-xl tracking-tight text-[#1F2A33]">VeloxRent</span>
+    </div>
+  </header>
+
+  <!-- Centered Access Denied Card / State -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 -mt-10">
+    <div class="w-full max-w-md flex flex-col items-center text-center">
+      
+      <!-- Padlock Icon with X Badge -->
+      <div class="relative mb-6 flex items-center justify-center">
+        <!-- Padlock SVG Outline -->
+        <svg class="w-16 h-16 text-[#1F2A33]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          <circle cx="12" cy="16" r="1"></circle>
+        </svg>
+
+        <!-- "X" Badge overlay -->
+        <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
+          <div class="w-6 h-6 rounded-full bg-[#FBE9E9] border border-[#C22B2B]/20 flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-[#C22B2B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Title: Space Grotesk 20px -->
+      <h1 class="font-heading text-[20px] font-bold text-[#1F2A33] leading-snug tracking-tight mb-2">
+        No tienes acceso a esta sección
+      </h1>
+
+      <!-- Subtitle: Public Sans 14px color #4E4A45 -->
+      <p class="font-sans text-[14px] text-[#4E4A45] leading-normal mb-8 max-w-sm">
+        Si crees que esto es un error, contacta a tu administrador
+      </p>
+
+      <!-- CTA Button: fondo #1F2A33 -->
+      <button type="button" class="w-full max-w-xs h-11 px-6 bg-[#1F2A33] hover:bg-[#2B3844] active:bg-[#151D24] text-white font-sans text-sm font-medium rounded transition-colors duration-150 flex items-center justify-center shadow-sm cursor-pointer">
+        Volver al inicio
+      </button>
+
+    </div>
+  </main>
+
+  <!-- Footer Info / Sede / Soporte -->
+  <footer class="w-full py-4 px-8 text-center text-xs text-[#A39C90]">
+    VeloxRent © 2025 · Sistema de Gestión Interna
+  </footer>
+
+
+</body></html>

@@ -1,0 +1,14 @@
+task_id: KAI-ALQ-009
+scope: frontend
+ux_id: ALQ-09
+source_refs: [BR-ALQ-006, BR-ALQ-010, UC-ALQ-009, TDD-ALQ-009, OPENAPI-ALQ-CHECKLIST]
+visual_refs: [PROTO-ALQ-09-READY-DESKTOP]
+assumptions: []
+open_questions: []
+allowed_paths:
+  - apps/web/src/features/rentals/**
+  - apps/web/tests/visual/ALQ-09/**
+forbidden_paths:
+  - apps/api/**
+contracts_affected: []
+tests_required: [ALQ-09-component, ALQ-09-accessibility, ALQ-09-visual, ALQ-delivery-e2e]

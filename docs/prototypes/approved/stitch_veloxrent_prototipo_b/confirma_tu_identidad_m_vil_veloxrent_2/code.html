@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Confirma tu identidad — Móvil - VeloxRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              accent: '#9E4C08',
+              surface: '#FCF9F3',
+              muted: '#4E4A45',
+              border: '#A39C90',
+              success: '#1E7D4B'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#1F2A33] font-sans antialiased h-full flex flex-col justify-between select-none max-w-[390px] mx-auto min-h-screen">
+
+  <!-- Top Bar / Encabezado móvil (Hoja completa) -->
+  <header class="w-full bg-white border-b border-[#EAE6DF] px-4 py-3.5 flex items-center justify-between shrink-0">
+    <div class="flex items-center">
+      <!-- Botón X para cerrar a la izquierda -->
+      <button type="button" aria-label="Cerrar y regresar" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-[#1F2A33] hover:bg-[#F6F3ED] active:bg-[#ECE8E1] transition-colors">
+        <span class="material-symbols-outlined text-[24px]">close</span>
+      </button>
+    </div>
+    
+    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-[#FCF9F3] border border-[#E8E4DC] rounded-full">
+      <span class="material-symbols-outlined text-[#9E4C08] text-[16px]">lock</span>
+      <span class="text-[11px] font-semibold text-[#4E4A45] tracking-wide uppercase font-heading">Verificación 2FA</span>
+    </div>
+
+    <!-- Espaciador balanceador visual de 40px -->
+    <div class="w-8"></div>
+  </header>
+
+  <!-- Main Content / Formulario OTP -->
+  <main class="flex-1 px-6 pt-7 pb-6 flex flex-col">
+    <!-- Brand badge sutil interno -->
+    <div class="mb-4 flex items-center gap-1.5">
+      <span class="text-[12px] font-bold tracking-wider uppercase text-[#9E4C08] font-heading">VeloxRent ERP</span>
+      <span class="text-[#A39C90] text-[12px]">•</span>
+      <span class="text-[12px] font-medium text-[#4E4A45]">Seguridad de Acceso</span>
+    </div>
+
+    <!-- Título principal -->
+    <h1 class="font-heading text-[22px] font-bold text-[#1F2A33] leading-tight mb-2.5">
+      Confirma tu identidad
+    </h1>
+
+    <!-- Texto explicativo -->
+    <p class="text-[14px] text-[#4E4A45] leading-relaxed mb-8">
+      Esta acción requiere verificación adicional. Ingresa el código de 6 dígitos generado por tu aplicación autenticadora o enviado a tu correo corporativo.
+    </p>
+
+    <!-- Contenedor OTP: 6 casillas de 44px -->
+    <div class="mb-7">
+      <label class="block text-[12px] font-semibold uppercase tracking-wider text-[#4E4A45] mb-3">
+        Código de verificación
+      </label>
+
+      <div class="flex items-center justify-between gap-2">
+        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" value="4" autofocus
+               class="w-[44px] h-[52px] text-center font-heading text-[22px] font-bold text-[#1F2A33] bg-white border-[1.5px] border-[#9E4C08] rounded-[4px] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#9E4C08]/20 transition-all">
+        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" value="8"
+               class="w-[44px] h-[52px] text-center font-heading text-[22px] font-bold text-[#1F2A33] bg-white border-[1.5px] border-[#9E4C08] rounded-[4px] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#9E4C08]/20 transition-all">
+        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" value="" placeholder="·"
+               class="w-[44px] h-[52px] text-center font-heading text-[22px] font-bold text-[#1F2A33] bg-[#FCF9F3] border-[1.5px] border-[#A39C90] rounded-[4px] placeholder-[#A39C90] focus:outline-none focus:border-[#9E4C08] focus:bg-white focus:ring-2 focus:ring-[#9E4C08]/20 transition-all">
+        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" value="" placeholder="·"
+               class="w-[44px] h-[52px] text-center font-heading text-[22px] font-bold text-[#1F2A33] bg-[#FCF9F3] border-[1.5px] border-[#A39C90] rounded-[4px] placeholder-[#A39C90] focus:outline-none focus:border-[#9E4C08] focus:bg-white focus:ring-2 focus:ring-[#9E4C08]/20 transition-all">
+        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" value="" placeholder="·"
+               class="w-[44px] h-[52px] text-center font-heading text-[22px] font-bold text-[#1F2A33] bg-[#FCF9F3] border-[1.5px] border-[#A39C90] rounded-[4px] placeholder-[#A39C90] focus:outline-none focus:border-[#9E4C08] focus:bg-white focus:ring-2 focus:ring-[#9E4C08]/20 transition-all">
+        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" value="" placeholder="·"
+               class="w-[44px] h-[52px] text-center font-heading text-[22px] font-bold text-[#1F2A33] bg-[#FCF9F3] border-[1.5px] border-[#A39C90] rounded-[4px] placeholder-[#A39C90] focus:outline-none focus:border-[#9E4C08] focus:bg-white focus:ring-2 focus:ring-[#9E4C08]/20 transition-all">
+      </div>
+
+      <!-- Temporizador / Reenviar código -->
+      <div class="mt-4 flex items-center justify-between text-[13px]">
+        <span class="text-[#4E4A45] flex items-center gap-1">
+          <span class="inline-block w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          Conexión segura
+        </span>
+        <button type="button" disabled class="font-medium text-[#9E4C08] cursor-not-allowed opacity-85 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">timer</span>
+          Reenviar código (0:45)
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje informativo de seguridad normativa -->
+    <div class="bg-[#F8F6F1] border border-[#EAE6DF] rounded-[4px] p-3.5 flex items-start gap-2.5 mb-6">
+      <span class="material-symbols-outlined text-[#4E4A45] text-[18px] shrink-0 mt-0.5">info</span>
+      <p class="text-[12px] text-[#4E4A45] leading-snug">
+        Protocolo de seguridad operativa. Esta verificación caduca en 60 segundos por normativa interna de VeloxRent ERP.
+      </p>
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Footer / Botón Confirmar fijo abajo -->
+  <footer class="w-full bg-white border-t border-[#EAE6DF] p-4 shrink-0">
+    <button type="button"
+            class="w-full h-[50px] bg-[#1F2A33] text-white font-sans text-[15px] font-semibold rounded-[4px] shadow-sm flex items-center justify-center gap-2 active:bg-[#151c22] transition-colors">
+      <span class="material-symbols-outlined text-[20px]">verified_user</span>
+      Confirmar
+    </button>
+    <div class="mt-2.5 text-center">
+      <button type="button" class="text-[13px] font-medium text-[#4E4A45] hover:text-[#1F2A33] transition-colors py-1">
+        Cancelar y regresar
+      </button>
+    </div>
+  </footer>
+
+</body>
+</html>

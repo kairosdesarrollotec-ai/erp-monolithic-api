@@ -1,0 +1,557 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Devolución #DEV-0456 — Resumen final (expediente de origen ALQ-1187) - VeloxRent</title>
+<!-- Google Fonts: Space Grotesk & Public Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              green: '#1E7D4B',
+              'green-bg': '#E6F5EC',
+              border: '#EFEDE7',
+              muted: '#4E4A45',
+              surface: '#FBFBF9'
+            }
+          },
+          fontFamily: {
+            heading: ['Space Grotesk', 'sans-serif'],
+            sans: ['Public Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Typography & Specific UI Styles -->
+<style data-purpose="base-styling">
+    body {
+      font-family: 'Public Sans', sans-serif;
+      color: #1F2A33;
+      background-color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+    details summary {
+      list-style: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-white text-[#1F2A33]">
+<!-- BEGIN: TopHeader -->
+<header class="border-b border-[#EFEDE7] bg-white text-xs sticky top-0 z-30">
+<!-- Primary Top Bar -->
+<div class="max-w-[1440px] mx-auto px-6 h-14 flex items-center justify-between">
+<!-- Brand & Navigation Breadcrumb -->
+<div class="flex items-center space-x-4">
+<!-- Logo -->
+<div class="flex items-center gap-1 font-heading text-xl font-bold tracking-tight text-[#1F2A33]">
+<span>Velox</span><span class="text-[#C6600A]">Rent</span>
+</div>
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide bg-[#F4F2ED] text-[#4E4A45] border border-[#E5E2DA]">
+          SST-OPER
+        </span>
+<span class="h-4 w-[1px] bg-[#EFEDE7]"></span>
+<!-- Breadcrumb -->
+<nav aria-label="Breadcrumb" class="hidden md:flex items-center space-x-2 text-[#4E4A45]">
+<span class="hover:text-black cursor-pointer">Gestión Interna</span>
+<span>›</span>
+<span class="hover:text-black cursor-pointer">Devoluciones</span>
+<span>›</span>
+<span class="hover:text-black cursor-pointer">Devolución #DEV-0456</span>
+<span>›</span>
+<span class="text-[#1F2A33] font-medium">Cierre financiero (Resumen final)</span>
+</nav>
+</div>
+<!-- Live Status & User Info -->
+<div class="flex items-center space-x-5">
+<!-- Status Indicator -->
+<div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F5EC] text-[#1E7D4B] font-medium text-[11px]">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+<span>En línea · Enlace activo</span>
+</div>
+<!-- Location -->
+<div class="hidden lg:flex items-center gap-1 text-[#4E4A45]">
+<svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- Notifications -->
+<button aria-label="Notificaciones" class="text-[#4E4A45] hover:text-[#1F2A33] relative p-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-[#C6600A]"></span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2 pl-2 border-l border-[#EFEDE7]">
+<div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">
+            ME
+          </div>
+<div class="text-left hidden sm:block">
+<p class="font-semibold text-[#1F2A33] leading-tight">María Ejecutivo</p>
+<p class="text-[10px] text-[#4E4A45]">Front-office / Patio</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Meta Sub-bar -->
+<div class="border-t border-[#EFEDE7] bg-[#FAFAF8] text-[11px] text-[#4E4A45] py-2 px-6">
+<div class="max-w-[1440px] mx-auto flex flex-wrap items-center gap-x-5 gap-y-1">
+<div>
+<span class="text-gray-500 font-medium">EXPEDIENTE:</span>
+<span class="font-semibold text-[#1F2A33]">#DEV-0456</span>
+</div>
+<span class="text-[#EFEDE7] hidden sm:inline">|</span>
+<div>
+<span class="text-gray-500 font-medium">ALQUILER DE ORIGEN:</span>
+<span class="font-semibold text-[#1F2A33]">#ALQ-1187</span>
+</div>
+<span class="text-[#EFEDE7] hidden sm:inline">|</span>
+<div class="flex items-center gap-1.5">
+<span class="text-gray-500 font-medium">PLACA / UNIDAD:</span>
+<span class="px-2 py-0.5 bg-white border border-[#D5D3CC] rounded font-mono font-semibold text-[#1F2A33]">Toyota Hilux D0Y-704</span>
+</div>
+<span class="text-[#EFEDE7] hidden md:inline">|</span>
+<div>
+<span class="text-gray-500 font-medium">RETORNO:</span>
+<span class="font-medium text-[#1F2A33]">07/09/2025 · 11:20 AM</span>
+</div>
+<span class="text-[#EFEDE7] hidden md:inline">|</span>
+<div>
+<span class="text-gray-500 font-medium">CLIENTE:</span>
+<span class="font-bold text-[#1F2A33]">Minera Los Andes S.A.C.</span>
+</div>
+<span class="text-[#EFEDE7] hidden lg:inline">|</span>
+<div>
+<span class="text-gray-500 font-medium">PERITO RESPONSABLE:</span>
+<span class="font-medium text-[#1F2A33]">Carlos Vega (Patio)</span>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContent -->
+<main class="max-w-[1440px] mx-auto w-full px-6 py-6 flex-1">
+<!-- Top Navigation Link -->
+<div class="mb-4">
+<a class="text-xs text-[#4E4A45] hover:text-[#1F2A33] font-semibold inline-flex items-center gap-1.5 transition-colors" href="#">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Volver a Resolución de garantía</span>
+</a>
+</div>
+<!-- Title Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#EFEDE7]">
+<div>
+<div class="flex flex-wrap items-center gap-3">
+<h1 class="text-2xl lg:text-3xl font-heading font-bold text-[#1F2A33] tracking-tight">
+            Devolución #DEV-0456 — Resumen final
+          </h1>
+<span class="text-xs text-[#4E4A45] bg-[#F2F1EC] px-2.5 py-1 rounded font-medium border border-[#E0DED7]">
+            expediente de origen ALQ-1187
+          </span>
+<span class="px-2.5 py-1 rounded text-xs font-semibold bg-[#FFF4EC] text-[#C6600A] border border-[#FCDDC8]">
+            Fase final: Archivo de expediente
+          </span>
+</div>
+<p class="text-xs sm:text-sm text-[#4E4A45] mt-1.5 max-w-4xl">
+          Consolidado integral del expediente pericial, resoluciones fiduciarias, balance de riesgos y trazabilidad para custodia legal y archivo.
+        </p>
+</div>
+<!-- State Indicator Pill -->
+<div class="flex items-center gap-3 self-start md:self-auto bg-[#F9F9F7] p-3 rounded border border-[#EFEDE7]">
+<div class="p-2 rounded bg-white text-[#1E7D4B] shadow-sm">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="text-left">
+<span class="block text-[10px] uppercase font-bold tracking-wider text-gray-500">Estado de Custodia</span>
+<span class="text-xs font-semibold text-[#1F2A33]">Listo para cierre definitivo</span>
+</div>
+</div>
+</div>
+<!-- Collapsible Sections Wrapper -->
+<div class="mt-6 space-y-4">
+<!-- BEGIN: Section 1 - Documentos -->
+<details class="group bg-white rounded-lg border border-[#EFEDE7] overflow-hidden transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)]" open="">
+<summary class="cursor-pointer bg-[#FCFCFA] p-4 sm:px-6 flex items-center justify-between hover:bg-[#F7F7F4] transition-colors select-none">
+<div class="flex items-center gap-3">
+<span class="text-[#4E4A45] group-open:rotate-90 transition-transform duration-200">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-sm sm:text-base font-heading font-bold text-[#1F2A33]">Documentos</h2>
+<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#EFEFEA] text-[#1F2A33]">4 archivados</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">4 documentos contractuales y periciales vinculados</p>
+</div>
+</div>
+<span class="text-xs font-medium text-[#4E4A45] hidden sm:block">PDF homologados</span>
+</summary>
+<div class="p-4 sm:p-6 border-t border-[#EFEDE7] bg-white">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<!-- Document Card 1 -->
+<div class="flex items-center justify-between p-3.5 rounded border border-[#EFEDE7] hover:border-[#D9D7CE] bg-[#FDFDFD] transition">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded bg-[#FFF2F0] text-[#D9381E] flex items-center justify-center font-bold text-xs uppercase border border-[#FADCD9]">
+                  PDF
+                </div>
+<div>
+<h3 class="text-xs font-bold text-[#1F2A33]">Contrato de Arriendo Minero #ALQ-1187</h3>
+<p class="text-[11px] text-[#4E4A45]">2.4 MB · Firmado digitalmente por cliente</p>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Visualizar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Descargar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Document Card 2 -->
+<div class="flex items-center justify-between p-3.5 rounded border border-[#EFEDE7] hover:border-[#D9D7CE] bg-[#FDFDFD] transition">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded bg-[#FFF2F0] text-[#D9381E] flex items-center justify-center font-bold text-xs uppercase border border-[#FADCD9]">
+                  PDF
+                </div>
+<div>
+<h3 class="text-xs font-bold text-[#1F2A33]">Acta de Recepción e Inspección Técnica</h3>
+<p class="text-[11px] text-[#4E4A45]">#ACTA-DEV-0456-2025 · 5.1 MB (fotos integradas)</p>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Visualizar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Descargar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Document Card 3 -->
+<div class="flex items-center justify-between p-3.5 rounded border border-[#EFEDE7] hover:border-[#D9D7CE] bg-[#FDFDFD] transition">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded bg-[#FFF2F0] text-[#D9381E] flex items-center justify-center font-bold text-xs uppercase border border-[#FADCD9]">
+                  PDF
+                </div>
+<div>
+<h3 class="text-xs font-bold text-[#1F2A33]">Dictamen Pericial de Daños — Tarifario 9.6.1</h3>
+<p class="text-[11px] text-[#4E4A45]">1.2 MB · Validado por perito Carlos Vega</p>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Visualizar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Descargar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Document Card 4 -->
+<div class="flex items-center justify-between p-3.5 rounded border border-[#EFEDE7] hover:border-[#D9D7CE] bg-[#FDFDFD] transition">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded bg-[#FFF2F0] text-[#D9381E] flex items-center justify-center font-bold text-xs uppercase border border-[#FADCD9]">
+                  PDF
+                </div>
+<div>
+<h3 class="text-xs font-bold text-[#1F2A33]">Constancia de Liquidación Fiduciaria SHA-256</h3>
+<p class="text-[11px] text-[#4E4A45]">340 KB · Emitida a Minera Los Andes S.A.C.</p>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Visualizar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1.5 rounded hover:bg-[#F2F1EC] text-[#4E4A45]" title="Descargar">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+</details>
+<!-- END: Section 1 - Documentos -->
+<!-- BEGIN: Section 2 - Pagos y Garantia -->
+<details class="group bg-white rounded-lg border border-[#EFEDE7] overflow-hidden transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)]" open="">
+<summary class="cursor-pointer bg-[#FCFCFA] p-4 sm:px-6 flex items-center justify-between hover:bg-[#F7F7F4] transition-colors select-none">
+<div class="flex items-center gap-3">
+<span class="text-[#4E4A45] group-open:rotate-90 transition-transform duration-200">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-sm sm:text-base font-heading font-bold text-[#1F2A33]">Pagos y garantía</h2>
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#E6F5EC] text-[#1E7D4B] border border-[#C5EBCE]">Resuelto</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Garantía liquidada y cargos contractuales saldados</p>
+</div>
+</div>
+<span class="text-xs font-medium text-[#1E7D4B] bg-[#E6F5EC] px-2.5 py-1 rounded hidden sm:block">Conciliado 100%</span>
+</summary>
+<div class="p-4 sm:p-6 border-t border-[#EFEDE7] bg-white">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+<!-- Card: Garantia Constituida -->
+<div class="p-4 rounded-lg bg-[#FAFAF8] border border-[#EFEDE7]">
+<div class="flex items-center justify-between text-xs text-[#4E4A45]">
+<span>Constitución de Garantía</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<p class="text-xl font-heading font-bold text-[#1F2A33] mt-2">S/ 1,000.00</p>
+<p class="text-[11px] text-[#4E4A45] mt-1">Preautorización inicial confirmada al inicio de contrato</p>
+</div>
+<!-- Card: Descuento aplicado -->
+<div class="p-4 rounded-lg bg-[#FFF9F7] border border-[#FEE1D6]">
+<div class="flex items-center justify-between text-xs text-[#C6600A]">
+<span class="font-medium">Descuento aplicado (Tarifario 9.6.1)</span>
+<span class="text-xs font-bold px-1.5 py-0.5 rounded bg-white border border-[#FCDDC8]">Estético Leve</span>
+</div>
+<p class="text-xl font-heading font-bold text-[#C6600A] mt-2">- S/ 150.00</p>
+<p class="text-[11px] text-[#4E4A45] mt-1">Parachoques delantero (Zona 1). Acta firmada conforme</p>
+</div>
+<!-- Card: Saldo Devuelto Liberado -->
+<div class="p-4 rounded-lg bg-[#F3FAF5] border border-[#C5EBCE]">
+<div class="flex items-center justify-between text-xs text-[#1E7D4B]">
+<span class="font-medium">Monto liberado al cliente</span>
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+</div>
+<p class="text-xl font-heading font-bold text-[#1E7D4B] mt-2">S/ 850.00</p>
+<p class="text-[11px] text-[#4E4A45] mt-1">Liberado a Tarjeta Corporativa BCP ···· 8842</p>
+</div>
+</div>
+<!-- Bottom Resolution Confirmation -->
+<div class="mt-4 p-3 rounded bg-[#F9F9F7] border border-[#EFEDE7] flex flex-wrap items-center justify-between gap-3 text-xs">
+<div class="flex items-center gap-2 text-[#1F2A33]">
+<svg class="w-4 h-4 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span><strong>Estado de liquidación:</strong> Completado y conciliado con tesorería central sin observaciones pendientes.</span>
+</div>
+<span class="text-[11px] text-[#4E4A45] font-mono">HASH: 8f4e2b...d891 (SHA-256)</span>
+</div>
+</div>
+</details>
+<!-- END: Section 2 - Pagos y Garantia -->
+<!-- BEGIN: Section 3 - Riesgo -->
+<details class="group bg-white rounded-lg border border-[#EFEDE7] overflow-hidden transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)]" open="">
+<summary class="cursor-pointer bg-[#FCFCFA] p-4 sm:px-6 flex items-center justify-between hover:bg-[#F7F7F4] transition-colors select-none">
+<div class="flex items-center gap-3">
+<span class="text-[#4E4A45] group-open:rotate-90 transition-transform duration-200">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-sm sm:text-base font-heading font-bold text-[#1F2A33]">Riesgo</h2>
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#E6F5EC] text-[#1E7D4B] border border-[#C5EBCE] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span>
+                  Semáforo: Verde (Bajo riesgo)
+                </span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Evaluación de comportamiento y semáforo corporativo</p>
+</div>
+</div>
+<span class="text-xs font-semibold text-[#1F2A33] hidden sm:block">Apto para nuevas órdenes</span>
+</summary>
+<div class="p-4 sm:p-6 border-t border-[#EFEDE7] bg-white">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+<div class="p-3.5 rounded border border-[#EFEDE7] bg-[#FAFAF8]">
+<span class="text-[11px] text-gray-500 uppercase font-semibold">Cliente Corporativo</span>
+<p class="text-xs font-bold text-[#1F2A33] mt-1">Minera Los Andes S.A.C.</p>
+<p class="text-[11px] text-[#4E4A45]">RUC 20491823901</p>
+</div>
+<div class="p-3.5 rounded border border-[#EFEDE7] bg-[#FAFAF8]">
+<span class="text-[11px] text-gray-500 uppercase font-semibold">Score Operativo y Pago</span>
+<p class="text-xs font-bold text-[#1E7D4B] mt-1">100% Cumplimiento</p>
+<p class="text-[11px] text-[#4E4A45]">Sin retrasos ni moras registradas</p>
+</div>
+<div class="p-3.5 rounded border border-[#EFEDE7] bg-[#FAFAF8]">
+<span class="text-[11px] text-gray-500 uppercase font-semibold">Resolución de Daños</span>
+<p class="text-xs font-bold text-[#1F2A33] mt-1">Aceptación Inmediata</p>
+<p class="text-[11px] text-[#4E4A45]">Conformidad de acta sin disputas</p>
+</div>
+<div class="p-3.5 rounded border border-[#EFEDE7] bg-[#FAFAF8]">
+<span class="text-[11px] text-gray-500 uppercase font-semibold">Calificación de Flota</span>
+<p class="text-xs font-bold text-[#1E7D4B] mt-1">Apto sin restricciones</p>
+<p class="text-[11px] text-[#4E4A45]">Habilitado para arriendos futuros</p>
+</div>
+</div>
+</div>
+</details>
+<!-- END: Section 3 - Riesgo -->
+<!-- BEGIN: Section 4 - Auditoria -->
+<details class="group bg-white rounded-lg border border-[#EFEDE7] overflow-hidden transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)]" open="">
+<summary class="cursor-pointer bg-[#FCFCFA] p-4 sm:px-6 flex items-center justify-between hover:bg-[#F7F7F4] transition-colors select-none">
+<div class="flex items-center gap-3">
+<span class="text-[#4E4A45] group-open:rotate-90 transition-transform duration-200">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-sm sm:text-base font-heading font-bold text-[#1F2A33]">Auditoría</h2>
+<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#EFEFEA] text-[#1F2A33]">Trazabilidad completa</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Timeline completo del ciclo de vida del alquiler y devolución</p>
+</div>
+</div>
+<span class="text-xs font-medium text-[#4E4A45] hidden sm:block">6 hitos registrados</span>
+</summary>
+<div class="p-4 sm:p-6 border-t border-[#EFEDE7] bg-white">
+<!-- Chronological Timeline List -->
+<div class="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-[#E5E2DA]">
+<!-- Item 1 -->
+<div class="relative">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-[#1E7D4B] ring-4 ring-white"></span>
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+<h3 class="text-xs font-bold text-[#1F2A33]">Formalización de Alquiler #ALQ-1187 e inspección inicial de entrega</h3>
+<span class="text-[11px] text-[#4E4A45] font-mono">04/09/2025 · 08:30 AM</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Entrega en sede Ayacucho con odómetro registrado y preautorización de fianza (S/ 1,000).</p>
+</div>
+<!-- Item 2 -->
+<div class="relative">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-[#1E7D4B] ring-4 ring-white"></span>
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+<h3 class="text-xs font-bold text-[#1F2A33]">Retorno de unidad Toyota Hilux D0Y-704 en sede Ayacucho</h3>
+<span class="text-[11px] text-[#4E4A45] font-mono">07/09/2025 · 11:20 AM</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Ingreso formal a patio de recepción e inicio de checklist pericial con operador minero.</p>
+</div>
+<!-- Item 3 -->
+<div class="relative">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-[#1E7D4B] ring-4 ring-white"></span>
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+<h3 class="text-xs font-bold text-[#1F2A33]">Peritaje en patio: Clasificación Estético Leve (parachoques)</h3>
+<span class="text-[11px] text-[#4E4A45] font-mono">07/09/2025 · 11:45 AM</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Dictamen de perito Carlos Vega homologado bajo Norma BR-DEV-009 / Tarifario 9.6.1.</p>
+</div>
+<!-- Item 4 -->
+<div class="relative">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-[#1E7D4B] ring-4 ring-white"></span>
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+<h3 class="text-xs font-bold text-[#1F2A33]">Aceptación de liquidación según Tarifario 9.6.1 por S/ 150.00</h3>
+<span class="text-[11px] text-[#4E4A45] font-mono">07/09/2025 · 12:15 PM</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Cliente otorga conformidad digital en tablet de recepción para compensación sobre custodia.</p>
+</div>
+<!-- Item 5 -->
+<div class="relative">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-[#1E7D4B] ring-4 ring-white"></span>
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+<h3 class="text-xs font-bold text-[#1F2A33]">Cierre financiero: Devolución de S/ 850.00 ejecutada exitosamente</h3>
+<span class="text-[11px] text-[#4E4A45] font-mono">07/09/2025 · 02:40 PM</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Abono y liberación procesada a Tarjeta Corporativa BCP terminación 8842.</p>
+</div>
+<!-- Item 6 -->
+<div class="relative">
+<span class="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-[#1E7D4B] ring-4 ring-white"></span>
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+<h3 class="text-xs font-bold text-[#1F2A33]">Validación de cierre por Front-office María Ejecutivo</h3>
+<span class="text-[11px] text-[#4E4A45] font-mono">07/09/2025 · 03:10 PM</span>
+</div>
+<p class="text-xs text-[#4E4A45] mt-0.5">Expediente completo cotejado y habilitado para archivo final en servidor central.</p>
+</div>
+</div>
+</div>
+</details>
+<!-- END: Section 4 - Auditoria -->
+</div>
+<!-- BEGIN: BottomActionBar -->
+<section class="mt-8 mb-4 p-5 rounded-lg border border-[#EFEDE7] bg-[#FAFAF8] flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm" data-purpose="final-action-card">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-[#E6F5EC] text-[#1E7D4B] flex items-center justify-center shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h4 class="text-xs font-bold text-[#1F2A33]">Expediente listo para custodia permanente</h4>
+<p class="text-xs text-[#4E4A45] mt-0.5">Todos los requerimientos normativos, fiduciarios y técnicos han sido satisfechos.</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+<button class="text-xs font-semibold px-4 py-2.5 rounded border border-[#D5D3CC] bg-white text-[#1F2A33] hover:bg-[#F2F1EC] transition inline-flex items-center gap-2" type="button">
+<svg class="w-4 h-4 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Exportar expediente completo (ZIP)</span>
+</button>
+<!-- Primary Enabled Archive Button -->
+<button class="text-xs font-bold px-6 py-2.5 rounded text-white bg-[#1F2A33] hover:bg-[#131B21] transition inline-flex items-center gap-2 shadow-sm" type="button">
+<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Cerrar y archivar</span>
+</button>
+</div>
+</section>
+<!-- END: BottomActionBar -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: StandardFooter -->
+<footer class="border-t border-[#EFEDE7] bg-white text-xs text-[#4E4A45] py-4 px-6 mt-6">
+<div class="max-w-[1440px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-3">
+<!-- System Identity & Protocols -->
+<div class="flex flex-wrap items-center gap-3">
+<span class="font-bold text-[#1F2A33]">VeloxRent © 2025</span>
+<span class="text-gray-300">·</span>
+<span>Sistema de Gestión Interna</span>
+<span class="text-gray-300">·</span>
+<span class="text-[#4E4A45]">Protocolo SST-DEV-015 / Cierre Definitivo de Expediente</span>
+</div>
+<!-- Support Annexes and Exit -->
+<div class="flex flex-wrap items-center gap-4 text-[11px]">
+<div>
+<span class="text-gray-400">Mesa de Patio:</span>
+<span class="font-bold text-[#1F2A33]">anexo 108</span>
+</div>
+<span class="text-gray-300">·</span>
+<div>
+<span class="text-gray-400">Mesa de Operaciones / Flota:</span>
+<span class="font-bold text-[#1F2A33]">anexo 101</span>
+</div>
+<span class="text-gray-300">·</span>
+<div>
+<span class="text-gray-400">Soporte Front-office / Finanzas:</span>
+<span class="font-bold text-[#1F2A33]">anexo 103</span>
+</div>
+<span class="text-gray-300">·</span>
+<a class="text-[#D9381E] hover:underline font-semibold inline-flex items-center gap-1" href="#">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Cerrar sesión</span>
+</a>
+</div>
+</div>
+</footer>
+<!-- END: StandardFooter -->
+</body></html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "secondary-fixed-dim": "#ffb68a",
+          "secondary-container": "#fd8a38",
+          "on-secondary-fixed": "#321300",
+          "on-primary-container": "#86919c",
+          "secondary": "#994700",
+          "surface-container-lowest": "#ffffff",
+          "surface-variant": "#e5e2dc",
+          "on-primary": "#ffffff",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#d8e4f0",
+          "error": "#ba1a1a",
+          "on-secondary-container": "#662d00",
+          "outline": "#74777b",
+          "surface-dim": "#dddad4",
+          "on-surface-variant": "#44474b",
+          "on-surface": "#1c1c18",
+          "inverse-primary": "#bcc8d4",
+          "primary-fixed-dim": "#bcc8d4",
+          "inverse-on-surface": "#f4f0ea",
+          "tertiary-fixed": "#d4e3ff",
+          "on-error-container": "#93000a",
+          "on-primary-fixed": "#121d25",
+          "on-tertiary-fixed-variant": "#004785",
+          "background": "#fcf9f3",
+          "surface-tint": "#54606a",
+          "tertiary-container": "#002951",
+          "on-secondary-fixed-variant": "#743400",
+          "error-container": "#ffdad6",
+          "surface": "#fcf9f3",
+          "on-error": "#ffffff",
+          "outline-variant": "#c4c7cb",
+          "primary-container": "#1f2a33",
+          "surface-container-highest": "#e5e2dc",
+          "surface-container-high": "#ebe8e2",
+          "surface-container-low": "#f6f3ed",
+          "secondary-fixed": "#ffdbc8",
+          "on-primary-fixed-variant": "#3d4852",
+          "inverse-surface": "#31302d",
+          "primary": "#0a161e",
+          "surface-container": "#f1ede7",
+          "on-background": "#1c1c18",
+          "on-tertiary-container": "#5692df",
+          "on-tertiary-fixed": "#001c3a",
+          "surface-bright": "#fcf9f3",
+          "on-tertiary": "#ffffff",
+          "tertiary": "#00142d",
+          "tertiary-fixed-dim": "#a5c8ff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "spacing-2xs": "0.125rem",
+          "margin-desktop": "1.5rem",
+          "gutter-tablet": "0.75rem",
+          "spacing-sm": "0.5rem",
+          "spacing-2xl": "2rem",
+          "gutter-desktop": "1rem",
+          "spacing-xl": "1.5rem",
+          "gutter-mobile": "0.5rem",
+          "margin-mobile": "0.75rem",
+          "margin-tablet": "1rem",
+          "spacing-lg": "1.25rem",
+          "spacing-base": "1rem",
+          "spacing-3xl": "3rem",
+          "spacing-xs": "0.25rem",
+          "spacing-md": "0.75rem"
+        },
+        "fontFamily": {
+          "body-sm": [
+            "Public Sans"
+          ],
+          "label-sm": [
+            "Public Sans"
+          ],
+          "headline-lg": [
+            "Public Sans"
+          ],
+          "headline-sm": [
+            "Public Sans"
+          ],
+          "body-base": [
+            "Public Sans"
+          ],
+          "label-md": [
+            "Public Sans"
+          ],
+          "headline-xl": [
+            "Public Sans"
+          ],
+          "headline-xl-mobile": [
+            "Public Sans"
+          ],
+          "code-operational": [
+            "Space Grotesk"
+          ],
+          "body-lg": [
+            "Public Sans"
+          ],
+          "code-operational-sm": [
+            "Space Grotesk"
+          ]
+        },
+        "fontSize": {
+          "body-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "0.6875rem",
+            {
+              "lineHeight": "0.875rem",
+              "letterSpacing": "0.04em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-sm": [
+            "1.125rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-base": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "0.8125rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "2rem",
+            {
+              "lineHeight": "2.5rem",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "700"
+            }
+          ],
+          "headline-xl-mobile": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "700"
+            }
+          ],
+          "code-operational": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-lg": [
+            "1rem",
+            {
+              "lineHeight": "1.5rem",
+              "fontWeight": "400"
+            }
+          ],
+          "code-operational-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.03em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      }
+    }
+  };</script></head><body class="bg-surface font-body-base text-body-base text-on-surface min-h-screen"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 flex items-center px-spacing-lg gap-spacing-md bg-surface-container"><div class="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-on-secondary font-headline-sm text-headline-sm font-bold shadow-sm">V</div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-primary leading-none">VeloxRent</span><span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant uppercase tracking-wider mt-spacing-2xs">ERP Logística</span></div></div><div class="px-spacing-md pt-spacing-lg pb-spacing-xs"><span class="px-spacing-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Módulos Operativos</span></div><nav class="flex flex-col gap-spacing-2xs px-spacing-sm" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="dashboard-general" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span>Flota y Control</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="gestion-vehicular" href="#"><span class="material-symbols-outlined text-[20px]">directions_car</span>Parque Automotor</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="contratos-alquiler" href="#"><span class="material-symbols-outlined text-[20px]">assignment</span>Contratos &amp; Actas</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="mantenimiento-taller" href="#"><span class="material-symbols-outlined text-[20px]">build</span>Mantenimiento</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="liquidacion-facturacion" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span>Facturación &amp; Tarifas</a></nav><div class="px-spacing-md pt-spacing-lg pb-spacing-xs"><span class="px-spacing-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Sede &amp; Ajustes</span></div><nav class="flex flex-col gap-spacing-2xs px-spacing-sm" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="configuracion-sede" href="#"><span class="material-symbols-outlined text-[20px]">corporate_fare</span>Sedes &amp; Terminales</a><a aria-current="page" class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg transition-colors bg-primary-container text-on-primary font-semibold shadow-sm" data-path="auditoria-sistema" href="#"><span class="material-symbols-outlined text-[20px]">security</span>Auditoría TI</a></nav></div><div class="p-spacing-md bg-surface-container-lowest m-spacing-sm rounded-lg shadow-sm"><div class="flex items-center gap-spacing-sm text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">dns</span><span class="font-code-operational-sm text-code-operational-sm">Cluster: AYAC-SRV-01</span></div><div class="flex items-center justify-between mt-spacing-xs"><span class="font-label-sm text-label-sm text-on-surface-variant">Estado Backend</span><span class="inline-flex items-center px-spacing-xs py-spacing-2xs rounded bg-surface-container font-code-operational-sm text-code-operational-sm text-secondary font-bold">SYNC 99.8%</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-30 flex items-center justify-between px-spacing-xl"><div class="flex items-center gap-spacing-base"><span class="inline-flex items-center px-spacing-sm py-spacing-xs rounded bg-primary-container text-on-primary font-code-operational-sm text-code-operational-sm uppercase tracking-wide">ERP v4.2.1-PROD</span><div class="flex items-center gap-spacing-xs text-on-surface-variant font-body-sm text-body-sm"><span class="hover:text-on-surface cursor-pointer">Sistemas</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="hover:text-on-surface cursor-pointer">Operaciones</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="text-on-surface font-semibold">Panel Principal</span></div></div><div class="flex items-center gap-spacing-lg"><div class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span><span class="font-label-sm text-label-sm font-semibold text-[#1E7D4B] uppercase tracking-wide">Online</span></div><div class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-lg bg-surface-container-high text-on-surface"><span class="material-symbols-outlined text-[18px] text-secondary">location_on</span><span class="font-label-md text-label-md font-semibold">Ayacucho — Sede Central</span></div><div class="h-6 w-px bg-surface-variant"></div><div class="flex items-center gap-spacing-md"><div class="text-right hidden sm:flex flex-col"><span class="font-label-md text-label-md font-bold text-on-surface leading-tight">Gustavo Alarcón</span><span class="font-label-sm text-label-sm text-on-surface-variant">Administrador de Sistemas</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface flex-1 px-spacing-xl py-spacing-xl"><div class="flex flex-col w-full">
+<!-- Stepper de 5 Etapas & Top Autoguardado -->
+<header class="w-full bg-surface-container-lowest rounded-xl shadow-sm px-spacing-xl py-spacing-lg mb-spacing-lg">
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-spacing-md mb-spacing-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-spacing-xs">
+<span class="font-code-operational-sm text-code-operational-sm text-secondary font-bold uppercase tracking-wider">Expediente #ALQ-0430</span>
+<span class="text-outline-variant">•</span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">Reserva #RES-2291</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Protocolo Notarial Activo</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold mt-spacing-2xs">
+          Entrega de Unidad — Etapa 3 de 5: Garantía y Contrato
+        </h1>
+</div>
+<div class="flex items-center gap-spacing-md self-start md:self-auto">
+<div class="inline-flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-full bg-[#EBF5F0] text-[#1E7D4B] shadow-sm">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wide">✓ Guardado</span>
+<span class="font-code-operational-sm text-code-operational-sm text-[#1E7D4B]/80 font-normal">14:38:12</span>
+</div>
+<button class="inline-flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[18px]">history</span>
+          Historial auditoría
+        </button>
+</div>
+</div>
+<!-- Barra de progreso 5 etapas -->
+<div class="relative w-full max-w-5xl mx-auto py-spacing-xs">
+<!-- Líneas de conexión -->
+<div class="absolute top-5 left-8 right-8 h-[3px] bg-surface-container -translate-y-1/2 z-0"></div>
+<div class="absolute top-5 left-8 w-1/2 h-[3px] bg-secondary -translate-y-1/2 z-0 transition-all duration-500"></div>
+<div class="relative z-10 grid grid-cols-5 text-center">
+<!-- Etapa 1: Documentos (Completada) -->
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-[#1E7D4B] text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[20px] font-bold">check</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface mt-spacing-xs">Documentos</span>
+<span class="font-label-sm text-label-sm text-[#1E7D4B]">Completado</span>
+</div>
+<!-- Etapa 2: Validaciones (Completada) -->
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-[#1E7D4B] text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[20px] font-bold">check</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface mt-spacing-xs">Validaciones</span>
+<span class="font-label-sm text-label-sm text-[#1E7D4B]">Alcoholemia OK</span>
+</div>
+<!-- Etapa 3: Garantía y contrato (Activa) -->
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-md ring-4 ring-secondary-fixed">
+<span class="font-code-operational text-code-operational font-bold">03</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-secondary mt-spacing-xs">Garantía / Notaría</span>
+<span class="font-code-operational-sm text-code-operational-sm text-secondary font-semibold uppercase">En progreso</span>
+</div>
+<!-- Etapa 4: Checklist (Pendiente) -->
+<div class="flex flex-col items-center opacity-60">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest text-on-surface-variant flex items-center justify-center shadow-sm border-2 border-outline-variant">
+<span class="font-code-operational text-code-operational font-semibold">04</span>
+</div>
+<span class="font-label-md text-label-md font-medium text-on-surface-variant mt-spacing-xs">Checklist</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Inspección patio</span>
+</div>
+<!-- Etapa 5: Confirmar (Pendiente) -->
+<div class="flex flex-col items-center opacity-60">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest text-on-surface-variant flex items-center justify-center shadow-sm border-2 border-outline-variant">
+<span class="font-code-operational text-code-operational font-semibold">05</span>
+</div>
+<span class="font-label-md text-label-md font-medium text-on-surface-variant mt-spacing-xs">Confirmar</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Firma y entrega</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Banner Resumen Compacto de Vehículo & Alquiler -->
+<section class="w-full bg-surface-container-low rounded-xl shadow-sm p-spacing-lg mb-spacing-lg">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-spacing-md items-center">
+<div class="md:col-span-4 flex items-center gap-spacing-md">
+<div class="w-14 h-14 rounded-lg bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[30px] text-secondary-fixed">airport_shuttle</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-spacing-xs flex-wrap">
+<span class="font-headline-sm text-headline-sm font-bold text-primary truncate">Toyota Hilux 4x4 MT</span>
+<span class="font-code-operational-sm text-code-operational-sm px-spacing-xs py-spacing-2xs bg-primary-container text-on-primary rounded font-bold tracking-wider">DOY-704</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Doble Cabina Turbodiésel 2.8L • Blanco Puro</span>
+</div>
+</div>
+<div class="md:col-span-4 flex flex-col justify-center px-spacing-md">
+<div class="flex items-center gap-spacing-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">badge</span>
+<span class="font-label-sm text-label-sm uppercase font-bold tracking-wide">Conductor Autorizado</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Víctor Hugo Morales Quicaño</span>
+<div class="flex items-center gap-spacing-xs font-code-operational-sm text-code-operational-sm text-on-surface-variant">
+<span>DNI: 44829104</span>
+<span>•</span>
+<span class="font-semibold text-secondary truncate">Minera Los Andes S.A.C.</span>
+</div>
+</div>
+<div class="md:col-span-4 grid grid-cols-2 gap-spacing-sm bg-surface-container-lowest p-spacing-sm rounded-lg shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Garantía Exigible</span>
+<span class="font-headline-sm text-headline-sm font-bold text-secondary font-code-operational">S/ 1,000.00</span>
+<span class="font-body-sm text-body-sm text-[#1E7D4B] flex items-center gap-spacing-2xs">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span> En patio listo
+          </span>
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Oficio Notarial</span>
+<span class="font-label-md text-label-md font-bold text-primary leading-tight">Notaría Ayacucho</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Dr. E. Gómez S.</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Dictamen Notarial Obligatorio (Card Destacada) -->
+<section class="w-full bg-primary-container text-on-primary rounded-xl shadow-md p-spacing-lg mb-spacing-lg relative overflow-hidden">
+<div class="absolute -right-8 -bottom-8 opacity-10 text-on-primary pointer-events-none">
+<span class="material-symbols-outlined text-[160px]">gavel</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-spacing-md relative z-10">
+<div class="flex items-start gap-spacing-base">
+<div class="w-12 h-12 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[26px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<div class="inline-flex items-center gap-spacing-xs self-start px-spacing-sm py-spacing-2xs rounded bg-surface-container-lowest/15 text-secondary-fixed font-code-operational-sm text-code-operational-sm uppercase font-bold tracking-wide mb-spacing-2xs">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+            Protocolo Notarial Activo — Ley de Tránsito y Contratos Rent-a-Car
+          </div>
+<h2 class="font-code-operational text-[18px] leading-snug font-bold text-on-primary">
+            Este vehículo (Toyota Hilux) requiere notaría obligatoria
+          </h2>
+<p class="font-body-base text-body-base text-on-primary-container mt-spacing-2xs">
+            Aplica sin excepción para pick-ups y SUV de alta gama: Hilux, Colorado, Verna y Yaris según Acuerdo Operativo Regional N° 2024-VR-09.
+          </p>
+</div>
+</div>
+<div class="flex flex-col items-start md:items-end flex-shrink-0 bg-surface-container-lowest/10 p-spacing-md rounded-lg">
+<span class="font-label-sm text-label-sm text-on-primary-container uppercase">Tarifa Legalización Notaría</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary font-code-operational">S/ 45.00</span>
+<span class="font-body-sm text-body-sm text-secondary-fixed">Cargado al centro de costos Minera</span>
+</div>
+</div>
+</section>
+<!-- Grid Principal: Visor Legal + Pasarela de Pagos & Biometría -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-spacing-lg mb-spacing-lg">
+<!-- Columna Izquierda: Visor del Contrato (7 Cols) -->
+<div class="lg:col-span-7 flex flex-col bg-surface-container-lowest rounded-xl shadow-sm p-spacing-lg">
+<div class="flex items-center justify-between pb-spacing-md mb-spacing-md bg-surface-container-low -mx-spacing-lg -mt-spacing-lg px-spacing-lg pt-spacing-md rounded-t-xl">
+<div class="flex items-center gap-spacing-sm">
+<span class="material-symbols-outlined text-[20px] text-secondary">description</span>
+<span class="font-label-md text-label-md font-bold text-primary uppercase tracking-wide">Visor de Instrumento Legal</span>
+<span class="font-code-operational-sm text-code-operational-sm px-spacing-xs py-spacing-2xs rounded bg-surface-container text-on-surface-variant">V4.2 Oficial</span>
+</div>
+<div class="flex items-center gap-spacing-xs">
+<button class="p-spacing-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Descargar borrador PDF" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+<button class="p-spacing-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Ver a pantalla completa" type="button">
+<span class="material-symbols-outlined text-[18px]">fullscreen</span>
+</button>
+<button class="p-spacing-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Imprimir borrador notarial" type="button">
+<span class="material-symbols-outlined text-[18px]">print</span>
+</button>
+</div>
+</div>
+<!-- Contenedor del Documento con Scroll Interno -->
+<div class="w-full bg-surface-container-low rounded-lg p-spacing-lg overflow-y-auto max-h-[300px] shadow-inner font-body-sm text-body-sm text-on-surface space-y-spacing-md leading-relaxed">
+<div class="text-center pb-spacing-sm">
+<p class="font-label-sm text-label-sm uppercase font-bold tracking-widest text-on-surface-variant">República del Perú — Registro Notarial de Ayacucho</p>
+<h3 class="font-code-operational text-code-operational font-bold text-primary mt-spacing-2xs">
+            CONTRATO DE ARRENDAMIENTO VEHICULAR CON LEGALIZACIÓN NOTARIAL #CT-2026-0430
+          </h3>
+<p class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">Sede Operativa: Huamanga • Conexión Notaría Gómez</p>
+</div>
+<div>
+<h4 class="font-label-md text-label-md font-bold text-primary">PRIMERA: PARTES INTERVINIENTES</h4>
+<p class="text-on-surface-variant">
+            Conste por el presente documento privado con firmas legalizadas ante Notario Público, de una parte <strong>VELOXRENT PERÚ S.A.C.</strong>, con R.U.C. N° 20608933211, con domicilio en Av. Mariscal Cáceres 1104, Ayacucho, debidamente representada por su apoderado general; y de la otra parte el arrendatario corporativo <strong>MINERA LOS ANDES S.A.C.</strong>, R.U.C. N° 20491029412, representado en este acto por el conductor autorizado <strong>SR. VÍCTOR HUGO MORALES QUICAÑO</strong>, identificado con DNI N° 44829104.
+          </p>
+</div>
+<div>
+<h4 class="font-label-md text-label-md font-bold text-primary">SEGUNDA: OBJETO DEL CONTRATO</h4>
+<p class="text-on-surface-variant">
+            EL ARRENDADOR otorga en arrendamiento a favor de EL ARRENDATARIO el vehículo automotor clase Pick-Up Doble Cabina, Marca TOYOTA, Modelo HILUX 4X4 MT, Año 2024, Placa de Rodaje <strong>DOY-704</strong>, Número de Motor 1GD-893120, en estado operativo verificado en patio de maniobras.
+          </p>
+</div>
+<div>
+<h4 class="font-label-md text-label-md font-bold text-primary">TERCERA: GARANTÍA Y FIANZA PECUNIARIA</h4>
+<p class="text-on-surface-variant">
+            EL ARRENDATARIO constituye en este acto un fondo de garantía dinerario por el importe no redimible transitorio de <strong>S/ 1,000.00 (Un Mil y 00/100 Soles)</strong> para responder ante cualquier daño imputable, deducible de póliza contra todo riesgo, infracciones de la SUTRAN o penalidades de combustible y peajes no regularizados. Dicho importe será devuelto en un plazo máximo de 48 horas hábiles tras la suscripción del acta de recepción conforme (Checklist de Entrada).
+          </p>
+</div>
+<div>
+<h4 class="font-label-md text-label-md font-bold text-primary">CUARTA: PROTOCOLO NOTARIAL Y DECLARACIÓN JURADA DE DESTINO</h4>
+<p class="text-on-surface-variant">
+            En estricto cumplimiento del Decreto Legislativo N° 1215 y las directivas internas de prevención de riesgo en minería y transportes, las partes convienen someter la validez del presente instrumento a la certificación de firmas y autenticación de huella biométrica cotejada ante el Oficio Notarial asignado. El conductor declara bajo juramento que el vehículo transitará únicamente en las rutas autorizadas Huamanga — Valle Minero Los Andes.
+          </p>
+</div>
+</div>
+<!-- Controles de Audio y Conformidad de Políticas -->
+<div class="mt-spacing-md pt-spacing-md bg-surface-container-low rounded-lg p-spacing-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-spacing-sm">
+<div class="flex items-center gap-spacing-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary font-bold">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Grabación de Lectura de Políticas</span>
+<span class="font-code-operational-sm text-code-operational-sm text-[#1E7D4B] font-semibold flex items-center gap-spacing-2xs">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span> Audio verificado — Duración: 01:24 min
+              </span>
+</div>
+</div>
+<div class="flex items-center gap-spacing-xs">
+<button class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+              Escuchar
+            </button>
+<button class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-xs rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+              Regrabar
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Columna Derecha: Firma Digital, Biometría y Liquidación de Pagos (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col gap-spacing-lg">
+<!-- Módulo de Firma & Huella RENIEC -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-spacing-lg">
+<div class="flex items-center justify-between mb-spacing-sm">
+<div class="flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[20px] text-secondary">draw</span>
+<span class="font-label-md text-label-md font-bold text-primary">Pad de Captura Digital y Biometría</span>
+</div>
+<span class="font-code-operational-sm text-code-operational-sm px-spacing-xs py-spacing-2xs rounded bg-[#EBF5F0] text-[#1E7D4B] font-bold">RENIEC Validado</span>
+</div>
+<!-- Área interactiva de firma digitalizada -->
+<div class="relative bg-surface-container-low rounded-lg p-spacing-md shadow-inner">
+<div class="flex items-center justify-between text-on-surface-variant pb-spacing-xs mb-spacing-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Firma del Conductor: Víctor H. Morales</span>
+<button class="font-label-sm text-label-sm text-secondary hover:underline flex items-center gap-spacing-2xs" type="button">
+<span class="material-symbols-outlined text-[14px]">ink_eraser</span> Limpiar
+            </button>
+</div>
+<!-- Lienzo de firma simulada -->
+<div class="h-24 bg-surface-container-lowest rounded flex items-center justify-center relative overflow-hidden">
+<svg class="w-64 h-16 text-primary stroke-current" fill="none" viewBox="0 0 240 60" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 45 C 30 10, 45 15, 60 40 C 70 55, 85 20, 100 35 C 115 50, 130 15, 145 30 C 160 42, 175 38, 195 25 M65 25 L 140 25 M180 30 C 190 20, 205 20, 215 35" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<div class="absolute bottom-2 left-3 font-code-operational-sm text-code-operational-sm text-on-surface-variant/60">
+              HASH-SHA256: 8a4c...d901 • Stylus Pressure: 82%
+            </div>
+</div>
+<!-- Huella Dactilar Biométrica -->
+<div class="mt-spacing-sm pt-spacing-sm bg-surface-container rounded-lg p-spacing-sm flex items-center justify-between">
+<div class="flex items-center gap-spacing-sm">
+<div class="w-8 h-8 rounded-full bg-[#EBF5F0] text-[#1E7D4B] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">fingerprint</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Huella Dactilar Derecha</span>
+<span class="font-code-operational-sm text-code-operational-sm text-[#1E7D4B]">Coincidencia Biométrica 99.4%</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-[#1E7D4B]">task_alt</span>
+</div>
+</div>
+</div>
+<!-- Módulo de Liquidación & Cobro de Garantía -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-spacing-lg flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-spacing-md">
+<div class="flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[20px] text-secondary">payments</span>
+<span class="font-label-md text-label-md font-bold text-primary">Liquidación de Garantía y Alquiler</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sede Ayacucho</span>
+</div>
+<!-- Selector de Pagador -->
+<div class="mb-spacing-md">
+<label class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold block mb-spacing-xs">¿Quién asume el pago?</label>
+<div class="grid grid-cols-2 gap-spacing-sm">
+<button class="flex items-center justify-center gap-spacing-xs px-spacing-sm py-spacing-xs rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+<span class="w-3 h-3 rounded-full bg-outline-variant"></span>
+                Titular Conductor
+              </button>
+<button class="flex items-center justify-center gap-spacing-xs px-spacing-sm py-spacing-xs rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-bold shadow-sm" type="button">
+<span class="w-3 h-3 rounded-full bg-secondary-container"></span>
+                Agente Corporativo
+              </button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-spacing-2xs">
+              Facturado a: <strong>Minera Los Andes S.A.C. (RUC 20491029412)</strong>
+</p>
+</div>
+<!-- Desglose de Importes -->
+<div class="bg-surface-container-low rounded-lg p-spacing-md space-y-spacing-xs mb-spacing-md font-body-sm text-body-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Depósito de Garantía (reembolsable)</span>
+<span class="font-code-operational text-code-operational font-semibold text-on-surface">S/ 1,000.00</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Canon alquiler (3 días operacionales)</span>
+<span class="font-code-operational text-code-operational font-semibold text-on-surface">S/ 840.00</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Gastos Notaría Ayacucho (Protocolo Hilux)</span>
+<span class="font-code-operational text-code-operational font-semibold text-on-surface">S/ 45.00</span>
+</div>
+<div class="pt-spacing-xs mt-spacing-xs bg-surface-container-highest -mx-spacing-md px-spacing-md py-spacing-xs flex items-center justify-between font-bold">
+<span class="font-label-md text-label-md text-primary">Total a Procesar / Retener:</span>
+<span class="font-headline-sm text-headline-sm text-secondary font-code-operational">S/ 1,885.00</span>
+</div>
+</div>
+<!-- Campos de Pago -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm">
+<div>
+<label class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold block mb-spacing-2xs">Medio de Pago</label>
+<select class="w-full h-9 rounded-lg bg-surface-container-lowest text-on-surface font-body-base text-body-base px-spacing-sm shadow-sm focus:outline-none">
+<option selected="">Línea Corporativa / O.C. Verificada</option>
+<option>Tarjeta Crédito / Débito Preautorizada</option>
+<option>Transferencia BCP Directa</option>
+<option>Efectivo en Caja Operativa</option>
+</select>
+</div>
+<div>
+<label class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold block mb-spacing-2xs">N° Operación / Voucher</label>
+<input class="w-full h-9 rounded-lg bg-surface-container-lowest text-on-surface font-code-operational text-code-operational px-spacing-sm shadow-sm focus:outline-none uppercase font-bold" type="text" value="OC-MIN-2026-991">
+</div>
+</div>
+</div>
+<div class="mt-spacing-md pt-spacing-sm flex items-center justify-between text-on-surface-variant font-code-operational-sm text-code-operational-sm">
+<span class="flex items-center gap-spacing-2xs">
+<span class="material-symbols-outlined text-[16px] text-[#1E7D4B]">receipt_long</span>
+            Factura Electrónica F001-0008412
+          </span>
+<span class="text-[#1E7D4B] font-bold">Retención Activa</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Barra de Acciones Inferior Fija / Persistente -->
+<footer class="w-full bg-surface-container-lowest rounded-xl shadow-md p-spacing-md flex flex-col sm:flex-row items-center justify-between gap-spacing-md mb-spacing-lg">
+<button class="w-full sm:w-auto inline-flex items-center justify-center gap-spacing-xs px-spacing-lg py-spacing-sm rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md font-semibold" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      Volver a Etapa 2: Validaciones y alcoholímetro
+    </button>
+<div class="flex items-center gap-spacing-md w-full sm:w-auto justify-end">
+<button class="inline-flex items-center justify-center gap-spacing-xs px-spacing-lg py-spacing-sm rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+        Guardar borrador de etapa
+      </button>
+<button class="inline-flex items-center justify-center gap-spacing-xs px-spacing-xl py-spacing-sm rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-colors font-label-md text-label-md font-bold shadow-md" type="button">
+<span>Formalizar y continuar</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</footer>
+<!-- Pie Informativo de Asistencia y Anexos -->
+<section class="w-full bg-surface-container-low rounded-xl p-spacing-md text-on-surface-variant font-body-sm text-body-sm flex flex-wrap items-center justify-between gap-spacing-md">
+<div class="flex items-center gap-spacing-lg flex-wrap">
+<div class="flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">support_agent</span>
+<span>Soporte Front-Office: <strong class="font-code-operational-sm text-code-operational-sm text-primary">Anexo 103</strong></span>
+</div>
+<div class="flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">garage</span>
+<span>Mesa de Patio Ayacucho: <strong class="font-code-operational-sm text-code-operational-sm text-primary">Anexo 108</strong></span>
+</div>
+<div class="flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">assignment_ind</span>
+<span>Oficial Notarial Gómez: <strong class="font-code-operational-sm text-code-operational-sm text-primary">RPC 966-412-090</strong></span>
+</div>
+</div>
+<div class="flex items-center gap-spacing-xs">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+<span class="font-code-operational-sm text-code-operational-sm">Conectado a Nodo Central Sunarp/Reniec Seguro</span>
+</div>
+</section>
+</div></main><footer class="w-full bg-surface-container-low shadow-[0_-1px_8px_rgba(0,0,0,0.03)] px-spacing-xl py-spacing-md"><div class="flex flex-wrap items-center justify-between gap-spacing-md font-body-sm text-body-sm text-on-surface-variant"><div class="flex items-center gap-spacing-lg"><span class="font-label-md text-label-md text-on-surface font-bold">VeloxRent ERP © 2025</span><span class="hidden md:inline text-outline-variant">|</span><div class="flex items-center gap-spacing-xs"><span class="material-symbols-outlined text-[16px] text-secondary">call</span><span>Mesa TI: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 101</strong></span></div><div class="flex items-center gap-spacing-xs"><span class="material-symbols-outlined text-[16px] text-secondary">security</span><span>Soporte Seguridad: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 102</strong></span></div></div><div class="flex items-center gap-spacing-xl"><span>Módulo Activo: <span class="font-code-operational-sm text-code-operational-sm text-on-surface font-semibold">ADM-AYAC-LOG</span></span><a class="flex items-center gap-spacing-xs text-error hover:text-on-error-container font-label-md text-label-md transition-colors" data-path="iniciar-sesion" href="#"><span class="material-symbols-outlined text-[18px]">logout</span>Cerrar Sesión</a></div></div></footer></div></body></html>

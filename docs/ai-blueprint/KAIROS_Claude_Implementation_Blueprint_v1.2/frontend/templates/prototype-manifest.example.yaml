@@ -1,0 +1,23 @@
+schema_version: "1.0"
+screens:
+  - ux_id: ALQ-09
+    module: alquiler
+    route: /rentals/:rentalId/delivery-checklist
+    ux_spec: docs/ux-ui/alquiler/ALQ-09.md
+    references:
+      - proto_id: PROTO-ALQ-09-READY-DESKTOP
+        file: docs/prototypes/alquiler/ALQ-09/ALQ-09-ready-desktop-v1.0.png
+        media_type: image/png
+        version: "1.0"
+        screen_state: READY
+        viewport: { width: 1440, height: 1024, dpr: 1 }
+        theme: light
+        locale: es-PE
+        timezone: America/Lima
+        status: APPROVED
+        approved_by_role: UX_UI
+        approved_at: "2026-09-10T00:00:00-05:00"
+        sha256: REPLACE_IN_REPOSITORY
+        supersedes: null
+        description: Checklist de entrega con progreso, evidencia y CTA primario.
+        critical_elements: [delivery-progress, evidence-panel, primary-submit]

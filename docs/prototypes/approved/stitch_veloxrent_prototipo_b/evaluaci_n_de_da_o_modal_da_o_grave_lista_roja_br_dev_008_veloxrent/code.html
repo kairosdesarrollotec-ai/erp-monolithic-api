@@ -1,0 +1,596 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>VeloxRent — Evaluación de daño #DEV-0456</title>
+<!-- BEGIN: Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- END: Google Fonts -->
+<!-- BEGIN: Tailwind CSS & Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              orange: '#C6600A',
+              green: '#1E7D4B',
+              'green-bg': '#E7F5EC',
+              red: '#C22B2B',
+              'red-bg': '#FDF2F2',
+              amber: '#B5720A',
+              'amber-bg': '#FEF7EC',
+              gray: '#EFEDE7',
+              muted: '#4E4A45',
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- END: Tailwind CSS & Config -->
+<!-- BEGIN: Base Custom Styles -->
+<style data-purpose="custom-typography">
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1F2A33;
+      background-color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+<style data-purpose="custom-decorations">
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #F1EFEA;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #C4C0B6;
+      border-radius: 3px;
+    }
+  </style>
+<!-- END: Base Custom Styles -->
+</head>
+<body class="bg-white text-slate-800 flex flex-col min-h-screen selection:bg-brand-orange selection:text-white">
+<!-- BEGIN: CorporateHeader -->
+<header class="border-b border-gray-200 bg-white sticky top-0 z-40" data-purpose="main-header">
+<div class="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<!-- Left: Logo, Badge & Breadcrumbs -->
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2.5">
+<span class="font-display font-bold text-2xl tracking-tight text-brand-dark">Velox<span class="text-brand-orange">Rent</span></span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-brand-gray text-brand-dark border border-gray-300 uppercase tracking-wide">
+              SST-OPER
+            </span>
+</div>
+<!-- Divider -->
+<span aria-hidden="true" class="h-6 w-px bg-gray-200"></span>
+<!-- Breadcrumb navigation -->
+<nav aria-label="Breadcrumb" class="hidden md:flex items-center text-xs text-brand-muted font-medium space-x-2">
+<span>Gestión Interna</span>
+<span class="text-gray-400">›</span>
+<span>Devoluciones</span>
+<span class="text-gray-400">›</span>
+<span class="text-brand-dark">Recepción #DEV-0456</span>
+<span class="text-gray-400">›</span>
+<span class="text-brand-orange font-semibold">Evaluación de daño</span>
+</nav>
+</div>
+<!-- Right: Status, Facility & User Profile -->
+<div class="flex items-center space-x-5">
+<!-- Network Status Indicator -->
+<div class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-green-bg text-brand-green border border-green-200">
+<span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
+<span>En línea · Enlace activo</span>
+</div>
+<!-- Branch Location -->
+<div class="hidden lg:flex items-center text-xs font-medium text-brand-muted">
+<svg class="w-3.5 h-3.5 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- Notification Bell -->
+<button class="relative p-1.5 text-brand-muted hover:text-brand-dark rounded-md hover:bg-gray-100 transition-colors" title="Notificaciones operativas" type="button">
+<span class="sr-only">Notificaciones</span>
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1 right-1 block w-2 h-2 bg-brand-orange rounded-full ring-2 ring-white"></span>
+</button>
+<!-- User Profile -->
+<div class="flex items-center space-x-2.5 pl-2 border-l border-gray-200">
+<div class="w-8 h-8 rounded-full bg-brand-dark text-white flex items-center justify-center font-bold text-xs">
+              ME
+            </div>
+<div class="text-left hidden sm:block">
+<p class="text-xs font-semibold text-brand-dark leading-none">María Ejecutivo</p>
+<p class="text-[10px] text-brand-muted font-medium mt-0.5">Front-office / Patio</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: CorporateHeader -->
+<!-- BEGIN: SecondaryStatusBar -->
+<section class="bg-[#FBFBFA] border-b border-gray-200 text-xs py-2.5 px-4 sm:px-6 lg:px-8" data-purpose="secondary-case-bar">
+<div class="max-w-[1560px] mx-auto flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
+<!-- Back Link and File Chips -->
+<div class="flex flex-wrap items-center gap-2">
+<a class="font-semibold text-brand-orange hover:text-[#A34E07] flex items-center mr-2 transition-colors" href="#volver">
+<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Volver a Comparación de evidencia #DEV-0456
+        </a>
+<span class="px-2 py-0.5 bg-white border border-gray-300 rounded font-mono font-medium text-brand-dark">
+          EXPEDIENTE: <strong class="text-brand-dark font-bold">#DEV-0456</strong>
+</span>
+<span class="px-2 py-0.5 bg-white border border-gray-300 rounded font-mono font-medium text-brand-dark">
+          ALQUILER: <strong class="text-brand-dark font-bold">#ALQ-1187</strong>
+</span>
+<span class="px-2 py-0.5 bg-brand-dark text-white rounded font-mono font-bold">
+          PLACA: D0Y-704
+        </span>
+<span class="px-2 py-0.5 bg-white border border-gray-300 rounded text-brand-muted">
+          RETORNO: <strong>07/09/2025 · 11:20 AM</strong>
+</span>
+<span class="px-2 py-0.5 bg-brand-gray border border-gray-300 rounded text-brand-dark">
+          Perito: <strong>Carlos Vega</strong>
+</span>
+</div>
+<!-- Customer & Driver Badges -->
+<div class="flex flex-wrap items-center gap-3 text-brand-muted text-[11px]">
+<div>
+<span class="text-gray-400">Conductor:</span>
+<span class="font-medium text-brand-dark">Víctor Hugo Morales Q.</span>
+<span class="text-gray-400">(DNI 44829104)</span>
+</div>
+<span class="text-gray-300 hidden sm:inline">|</span>
+<div>
+<span class="text-gray-400">Cliente corporativo:</span>
+<span class="font-semibold text-brand-dark">Minera Los Andes S.A.C.</span>
+<span class="text-gray-400 font-mono">(RUC 20491823901)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: SecondaryStatusBar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-[1560px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6" data-purpose="evaluation-container">
+<!-- Title Section -->
+<div class="mb-6">
+<div class="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-brand-amber-bg text-brand-amber border border-amber-300 mb-2">
+<svg class="w-3 h-3 text-brand-amber mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" fill-rule="evenodd"></path>
+</svg>
+        PROTOCOLO DE LIQUIDACIÓN Y PERITAJE SST-DEV-015 · ZONA 1 AFECTADA
+      </div>
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+<div>
+<h1 class="text-2xl sm:text-3xl font-display font-bold text-brand-dark tracking-tight">
+            Evaluación de daño — Devolución #DEV-0456
+          </h1>
+<p class="text-xs sm:text-sm text-brand-muted mt-1">
+            Dictamen técnico de discrepancia pericial para emisión de liquidación de fianza de garantía.
+          </p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="inline-flex items-center px-3 py-1.5 rounded bg-brand-gray border border-gray-300 font-medium text-xs sm:text-sm text-brand-dark shadow-sm">
+<svg class="w-4 h-4 mr-1.5 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Toyota Hilux 4x4 MT 2024 · <strong class="font-bold ml-1 text-brand-orange">D0Y-704</strong>
+</span>
+</div>
+</div>
+</div>
+<!-- 2 Columns Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- BEGIN: LeftColumn (Damaged Zones & Visual Evidence) -->
+<section class="lg:col-span-6 flex flex-col space-y-4" data-purpose="evidence-and-zones">
+<!-- Section Header -->
+<div class="flex items-center justify-between border-b border-gray-200 pb-2.5">
+<div class="flex items-center space-x-2">
+<h2 class="font-display font-bold text-base text-brand-dark">Zonas marcadas con daño</h2>
+<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-brand-red text-white">1 de 5 zonas</span>
+</div>
+<span class="text-xs text-brand-muted font-medium">Recepción: 07/09/2025</span>
+</div>
+<!-- Detail Card for Zone 1 -->
+<div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden" data-purpose="zone-detail-card">
+<!-- Image and Tagged Evidence Container -->
+<div class="relative bg-slate-900 aspect-[16/9] w-full overflow-hidden group">
+<img alt="Peritaje fotográfico de la camioneta Toyota Hilux con raspón en esquina de parachoques delantero" class="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AEtjO1XQGl7bpkFoomS6fd6551Q_AQkeMlyjGY-fpXiFOYAib4w0cVe-lPk0UtlOBHenIrfH_Pun-feMfbT3eErTl-_GYUFtPu7-hViTyiUYOOukUaBbhsstZJVtPBUSlM4pg6F5uFOYJwkrFjC0Vd6JifOGC4wCQ_v0W_lFQeSZbfqOeKAAEGCYB9eSYfCiRg75Mq89InF-RQNjBZhTGJbM4fmxHRPKlJkdwXCiRtjpbJvvDXkk3UNzJaZ_snI">
+<!-- Badges overlay -->
+<div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+<span class="px-2.5 py-1 bg-brand-dark/90 backdrop-blur-sm text-white rounded text-[11px] font-mono font-medium shadow">
+                Toma de peritaje #DEV-01 · Odómetro: 038,412 km (+562 km)
+              </span>
+<span class="px-2.5 py-0.5 bg-brand-orange/95 text-white rounded text-[10px] font-bold uppercase tracking-wider shadow">
+                Punto de impacto / fricción señalado
+              </span>
+</div>
+<!-- Target marker on the scratch point (lower left bumper from camera view) -->
+<div class="absolute bottom-[28%] left-[38%] flex items-center justify-center pointer-events-none">
+<span class="relative flex h-8 w-8">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-8 w-8 bg-red-600/80 border-2 border-white items-center justify-center text-white text-[11px] font-bold">1</span>
+</span>
+</div>
+<!-- Fullscreen / Zoom Button -->
+<button class="absolute bottom-3 right-3 bg-brand-dark/80 hover:bg-brand-dark text-white p-2 rounded shadow transition-colors" title="Ampliar imagen pericial" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Description and Technical Findings -->
+<div class="p-4 sm:p-5 space-y-4">
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="text-xs font-bold uppercase tracking-wider text-brand-orange font-mono">Dictamen pericial de patio</span>
+<span class="text-[11px] text-gray-500">Inspector: C. Vega (#P-402)</span>
+</div>
+<h3 class="text-base font-bold text-brand-dark">
+                Zona 1: Exterior Frontal — Raspadura y fricción en esquina baja de parachoques delantero plástico
+              </h3>
+<p class="text-xs sm:text-sm text-brand-muted mt-1.5 leading-relaxed">
+                Raspón superficial con pérdida de pintura de acabado y leve desgaste del polímero plástico en la arista inferior derecha frontal. Longitud aprox. 15 cm. Sin compromiso estructural, sin fractura de anclajes ni daño al faro neblinero ni sensores de proximidad.
+              </p>
+</div>
+<!-- Comparison Table / Record -->
+<div class="border border-gray-200 rounded-md bg-brand-gray/30 p-3.5 space-y-2">
+<div class="flex items-center justify-between text-xs">
+<span class="font-bold text-brand-dark flex items-center">
+<svg class="w-3.5 h-3.5 mr-1 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  Registro de comparación por acta de salida:
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-brand-red-bg text-brand-red border border-red-200">
+                  Discrepancia confirmada
+                </span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-xs pt-1">
+<div class="bg-white p-2.5 rounded border border-gray-200">
+<div class="text-[10px] uppercase font-bold text-gray-400">Línea base entrega</div>
+<div class="font-semibold text-brand-dark mt-0.5">04/09/2025 · 07:45 AM</div>
+<div class="text-xs text-brand-green font-medium flex items-center mt-1">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                    Conforme (Sin daños en parachoques)
+                  </div>
+</div>
+<div class="bg-white p-2.5 rounded border border-brand-orange/40">
+<div class="text-[10px] uppercase font-bold text-brand-orange">Retorno actual</div>
+<div class="font-semibold text-brand-dark mt-0.5">07/09/2025 · 11:20 AM</div>
+<div class="text-xs text-brand-red font-medium flex items-center mt-1">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                    Nuevo daño registrado (Zona 1)
+                  </div>
+</div>
+</div>
+</div>
+<!-- Other Inspected Zones Status -->
+<div class="pt-1">
+<span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-2">Resto de inspección perimetral</span>
+<div class="grid grid-cols-4 gap-2 text-center text-xs">
+<div class="p-1.5 rounded bg-brand-green-bg/60 border border-green-200">
+<span class="block text-[10px] text-brand-muted">Z2 Lateral Der.</span>
+<span class="font-bold text-brand-green text-[11px]">Limpio</span>
+</div>
+<div class="p-1.5 rounded bg-brand-green-bg/60 border border-green-200">
+<span class="block text-[10px] text-brand-muted">Z3 Posterior</span>
+<span class="font-bold text-brand-green text-[11px]">Limpio</span>
+</div>
+<div class="p-1.5 rounded bg-brand-green-bg/60 border border-green-200">
+<span class="block text-[10px] text-brand-muted">Z4 Lateral Izq.</span>
+<span class="font-bold text-brand-green text-[11px]">Limpio</span>
+</div>
+<div class="p-1.5 rounded bg-brand-green-bg/60 border border-green-200">
+<span class="block text-[10px] text-brand-muted">Z5 Techo / Tolva</span>
+<span class="font-bold text-brand-green text-[11px]">Limpio</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: LeftColumn -->
+<!-- BEGIN: RightColumn (Classification and Severity Form) -->
+<section class="lg:col-span-6 flex flex-col space-y-5" data-purpose="classification-and-severity">
+<!-- Header -->
+<div class="border-b border-gray-200 pb-2.5">
+<h2 class="font-display font-bold text-[20px] text-brand-dark tracking-tight leading-snug">
+            ¿Qué tan grave es?
+          </h2>
+<p class="text-[13px] text-brand-muted mt-0.5">
+            Determina el impacto operativo y contractual para el acta de liquidación de garantía.
+          </p>
+</div>
+<!-- 3 Stacked Severity Cards -->
+<div aria-labelledby="severity-label" class="space-y-3" role="radiogroup">
+<!-- Card 1: LEVE (Selected by Default) -->
+<label class="relative flex flex-col p-4 sm:p-4.5 bg-white border border-gray-200 rounded-lg shadow-xs cursor-pointer hover:border-gray-400 transition-all opacity-85 hover:opacity-100">
+<input class="sr-only" name="severity_level" type="radio" value="leve">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 h-4 rounded-full border border-gray-400 flex items-center justify-center bg-white"></span>
+<span class="font-display font-bold text-base sm:text-lg text-brand-dark">Leve</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-brand-green-bg text-brand-green border border-green-300">
+                  Recomendado por peritaje
+                </span>
+</div>
+<span class="text-xs font-mono font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">NIVEL 1</span>
+</div>
+<p class="text-xs text-brand-muted mt-2.5 leading-relaxed pl-6.5">
+              Afectación superficial de pintura o plástico sin rotura estructural ni deformación de chapa. No compromete la operatividad ni seguridad de la unidad. Reparación rápida o pulido en taller autorizado.
+            </p>
+<div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs pl-6.5">
+<span class="text-brand-muted">Retención estimada:</span>
+<span class="font-medium text-brand-dark font-mono">
+                S/ 250.00 – S/ 400.00 <span class="text-[10px] text-gray-400">(descontable de garantía)</span>
+</span>
+</div>
+</label>
+<!-- Card 2: MODERADO -->
+<label class="relative flex flex-col p-4 sm:p-4.5 bg-white border border-gray-200 rounded-lg shadow-xs cursor-pointer hover:border-gray-400 transition-all opacity-85 hover:opacity-100">
+<input class="sr-only" name="severity_level" type="radio" value="moderado">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 h-4 rounded-full border border-gray-400 flex items-center justify-center bg-white"></span>
+<span class="font-display font-bold text-base sm:text-lg text-brand-dark">Moderado</span>
+</div>
+<span class="text-xs font-mono font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">NIVEL 2</span>
+</div>
+<p class="text-xs text-brand-muted mt-2.5 leading-relaxed pl-6.5">
+              Abolladura visible, raspón profundo que compromete fondo metálico, daño en ópticas secundarias o descuadre menor. Requiere planchado y pintura o recambio de pieza no crítica.
+            </p>
+<div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs pl-6.5">
+<span class="text-brand-muted">Retención estimada:</span>
+<span class="font-medium text-brand-dark font-mono">
+                S/ 800.00 – S/ 1,800.00 <span class="text-[10px] text-gray-400">(taller certificado)</span>
+</span>
+</div>
+</label>
+<!-- Card 3: GRAVE -->
+<label class="relative flex flex-col p-4 sm:p-4.5 bg-brand-red-bg border-2 border-brand-red rounded-lg shadow-sm cursor-pointer transition-all ring-2 ring-brand-red/20">
+<input checked="" class="sr-only" name="severity_level" type="radio" value="grave">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-2.5">
+<span class="w-4 h-4 rounded-full border-2 border-brand-red flex items-center justify-center bg-white">
+<span class="w-2 h-2 rounded-full bg-brand-red"></span>
+</span>
+<div class="flex items-center space-x-1.5">
+<span class="text-brand-red text-base">⚠️</span>
+<span class="font-display font-bold text-base sm:text-lg text-brand-red">Grave</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-brand-red text-white shadow-xs">
+                  Afecta operatividad / Requiere informe pericial
+                </span>
+</div>
+<span class="text-xs font-mono font-bold text-white bg-brand-red px-2 py-0.5 rounded border border-brand-red">NIVEL 3</span>
+</div>
+<p class="text-xs text-brand-muted mt-2.5 leading-relaxed pl-6.5 font-medium">
+              Deformación de chasis, rotura de parachoques con desprendimiento, airbags activados, afectación mecánica, motor o componentes de suspensión. Vehículo queda inoperativo (baja temporal de flota).
+            </p>
+<div class="mt-3 pt-2.5 border-t border-red-200 flex items-center justify-between text-xs pl-6.5">
+<span class="text-brand-muted font-medium">Acción requerida:</span>
+<span class="font-bold text-brand-red text-[11px] bg-white px-2 py-0.5 rounded border border-red-200">
+                Retención total de garantía y activación de póliza de seguro minero RIMAC
+              </span>
+</div>
+</label>
+</div>
+<!-- Damage Type Selector (Segmented pills) -->
+<div class="pt-2">
+<label class="block text-xs font-bold text-brand-dark uppercase tracking-wider mb-2">
+            Tipo de daño <span class="text-brand-red">*</span>
+</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<!-- Estético: Active -->
+<label class="flex items-center p-3 border-2 border-brand-dark rounded-md bg-brand-dark text-white cursor-pointer shadow-sm transition-all">
+<input checked="" class="sr-only" name="damage_type" type="radio" value="estetico">
+<svg class="w-4 h-4 mr-2 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+</svg>
+<div>
+<span class="text-xs font-bold block">Estético</span>
+<span class="text-[11px] text-gray-300 block">Superficial / Carrocería y pintura visible</span>
+</div>
+</label>
+<!-- Técnico: Inactive -->
+<label class="flex items-center p-3 border border-gray-300 rounded-md bg-white text-brand-muted cursor-pointer hover:border-gray-400 transition-all">
+<input class="sr-only" name="damage_type" type="radio" value="tecnico">
+<div class="w-4 h-4 mr-2 rounded-full border border-gray-400 shrink-0"></div>
+<div>
+<span class="text-xs font-bold block text-brand-dark">Técnico</span>
+<span class="text-[11px] text-brand-muted block">Mecánico, eléctrico, tren motriz o sistemas</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Notes / Observations field -->
+<div class="pt-1">
+<div class="flex items-center justify-between mb-1.5">
+<label class="block text-xs font-bold text-brand-dark uppercase tracking-wider" for="peritaje_notes">
+              Notas periciales y observaciones de liquidación
+            </label>
+<span class="text-[11px] text-gray-400">Auditable para liquidación</span>
+</div>
+<div class="relative">
+<textarea class="w-full text-xs text-brand-dark bg-white border border-gray-300 rounded-md p-3 focus:ring-1 focus:ring-brand-dark focus:border-brand-dark font-sans leading-relaxed" id="peritaje_notes" rows="3">Raspadura plástica en parachoques bajo derecho. Se clasifica como Estético Leve según tabla de cobros SST-TAB-2025. Se procede a notificar al cliente corporativo y liquidar el importe correspondiente contra la fianza retenida.</textarea>
+</div>
+<p class="text-[11px] text-gray-400 mt-1 flex items-center">
+<svg class="w-3 h-3 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Este texto figurará en el informe pericial oficial anexo a la factura o acta de conciliación.
+          </p>
+</div>
+</section>
+<!-- END: RightColumn -->
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: BottomActionBar -->
+<aside class="sticky bottom-0 z-30 bg-white border-t border-gray-200 shadow-lg py-3.5 px-4 sm:px-6 lg:px-8" data-purpose="sticky-bottom-bar">
+<div class="max-w-[1560px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+<!-- Left actions -->
+<div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+<button class="inline-flex items-center px-3.5 py-2 text-xs font-medium text-brand-dark bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none transition-colors" type="button">
+<svg class="w-3.5 h-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Revisar otras zonas (2 a 5)
+        </button>
+<button class="inline-flex items-center px-3.5 py-2 text-xs font-medium text-brand-muted hover:text-brand-dark transition-colors" type="button">
+<svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Pausar liquidación
+        </button>
+</div>
+<!-- Right primary action -->
+<div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+<div class="hidden md:block text-right mr-2">
+<span class="block text-[11px] text-gray-400">Total liquidable estimado</span>
+<span class="font-mono font-bold text-brand-dark text-sm">S/ 250.00 – S/ 400.00</span>
+</div>
+<button class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-brand-dark hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-dark" type="button">
+<svg class="w-4 h-4 mr-2 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+          Confirmar clasificación
+        </button>
+</div>
+</div>
+</aside>
+<!-- END: BottomActionBar -->
+<!-- BEGIN: InstitutionalFooter -->
+<footer class="bg-[#F8F8F7] border-t border-gray-200 py-4 px-4 sm:px-6 lg:px-8 text-xs text-brand-muted" data-purpose="institutional-footer">
+<div class="max-w-[1560px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-y-3">
+<!-- System legal and protocol -->
+<div class="flex items-center space-x-2 text-center sm:text-left">
+<span class="font-bold text-brand-dark">VeloxRent © 2025</span>
+<span class="text-gray-300">·</span>
+<span>Sistema de Gestión Interna</span>
+<span class="text-gray-300">·</span>
+<span class="font-mono text-gray-500">Protocolo SST-DEV-015 / Evaluación y Liquidación de Daños</span>
+</div>
+<!-- Internal Support and Logout -->
+<div class="flex items-center space-x-4 text-[11px]">
+<span>Mesa de Patio e Inspección: <strong class="text-brand-dark font-mono">anexo 108</strong></span>
+<span class="text-gray-300">|</span>
+<span>Soporte Front-office: <strong class="text-brand-dark font-mono">anexo 103</strong></span>
+<span class="text-gray-300">|</span>
+<a class="text-brand-red font-semibold hover:underline flex items-center" href="#logout">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Cerrar sesión
+        </a>
+</div>
+</div>
+</footer>
+<!-- END: InstitutionalFooter -->
+<div aria-labelledby="modal-grave-title" aria-modal="true" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto" id="modal-confirmacion-grave" role="dialog">
+<!-- Backdrop oscuro con desenfoque elegante -->
+<div aria-hidden="true" class="fixed inset-0 bg-brand-dark/70 backdrop-blur-sm transition-opacity"></div>
+<!-- Card Contenedora del Modal -->
+<div class="relative bg-white rounded-lg shadow-2xl border border-gray-200 max-w-xl w-full p-6 sm:p-7 text-left overflow-hidden z-10 transition-all">
+<!-- Botón Cerrar (X) superior derecho -->
+<button aria-label="Cerrar modal" class="absolute top-4 right-4 text-gray-400 hover:text-brand-dark p-1.5 rounded-md hover:bg-gray-100 transition-colors focus:outline-none" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Encabezado con ícono de peligro crítico #C22B2B -->
+<div class="flex items-start space-x-3.5 pr-6">
+<div class="shrink-0 w-11 h-11 rounded-full bg-brand-red-bg border border-red-200 flex items-center justify-center text-brand-red">
+<svg class="w-6 h-6 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-lg sm:text-xl font-display font-bold text-brand-dark tracking-tight leading-snug" id="modal-grave-title">
+            ¿Confirmar clasificación Grave?
+          </h3>
+<span class="px-2 py-0.5 text-[10px] font-mono font-bold bg-brand-red text-white rounded uppercase">NIVEL 3</span>
+</div>
+<p class="text-xs text-brand-muted mt-0.5">
+          Expediente: <span class="font-mono font-bold text-brand-dark">#DEV-0456</span> · Unidad: <span class="font-semibold text-brand-dark">Toyota Hilux (D0Y-704)</span>
+</p>
+</div>
+</div>
+<!-- Mensaje destacado obligatorio y verbatim: Alerta crítica BR-DEV-008 -->
+<div class="mt-5 p-4 rounded-md border border-[#F5C6C6] bg-[#FBE9E9] text-[#901D1D]">
+<div class="flex items-start space-x-2.5">
+<span class="text-lg leading-none shrink-0">⚠️</span>
+<div>
+<p class="text-xs sm:text-[13px] font-bold leading-relaxed tracking-tight text-[#901D1D]">
+            Esta clasificación marca al cliente en Rojo automáticamente — sin posibilidad de rehabilitación (BR-DEV-008)
+          </p>
+</div>
+</div>
+</div>
+<!-- Detalle de consecuencias operativas y normativas -->
+<div class="mt-4 space-y-2.5 text-xs text-brand-muted leading-relaxed bg-[#FBFBFA] border border-gray-200 rounded-md p-3.5">
+<p class="font-medium text-brand-dark">
+        Consecuencias operativas y normativas inmediatas:
+      </p>
+<ul class="space-y-1.5 pl-4 list-disc text-gray-700 marker:text-brand-red">
+<li>
+          El cliente corporativo <strong class="font-semibold text-brand-dark">Minera Los Andes S.A.C.</strong> y el conductor <strong class="font-semibold text-brand-dark">Víctor Hugo Morales Q.</strong> pasarán a la <strong class="text-brand-red font-semibold">lista de restricción total de flota</strong>.
+        </li>
+<li>
+<strong class="font-semibold text-brand-dark">Retención total de la fianza de garantía</strong> asociada al alquiler #ALQ-1187.
+        </li>
+<li>
+          Activación forzosa del protocolo de siniestros graves y <strong class="font-semibold text-brand-dark">póliza de seguro minero RIMAC</strong>.
+        </li>
+</ul>
+</div>
+<!-- Checkbox interactivo obligatorio -->
+<div class="mt-5 pt-4 border-t border-gray-200">
+<label class="flex items-center space-x-3 cursor-pointer select-none group" for="check-entendido-consecuencia">
+<input class="w-4 h-4 text-[#C22B2B] border-gray-300 rounded focus:ring-[#C22B2B] cursor-pointer" id="check-entendido-consecuencia" type="checkbox">
+<span class="font-sans text-sm font-medium text-brand-dark group-hover:text-black transition-colors">
+          Entiendo la consecuencia
+        </span>
+</label>
+</div>
+<!-- Botones de Acción -->
+<div class="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3">
+<button class="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-brand-muted hover:text-brand-dark bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none transition-colors" type="button">
+        Cancelar y volver a evaluar
+      </button>
+<button class="w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#C22B2B] hover:bg-[#A32020] rounded-[4px] shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C22B2B] flex items-center justify-center space-x-1.5" type="button">
+<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<span>Confirmar</span>
+</button>
+</div>
+</div>
+</div></body></html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incidencias — Bandeja - VeloxRent</title>
+  <!-- Google Fonts: Public Sans & Space Grotesk -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Public Sans', 'sans-serif'],
+            mono: ['Space Grotesk', 'monospace'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              orange: '#C6600A',
+              orangeHover: '#ad5207',
+            },
+            status: {
+              leve: '#2F6B4F',
+              leveBg: '#EAF5EF',
+              moderada: '#B5720A',
+              moderadaBg: '#FDF1DE',
+              grave: '#C22B2B',
+              graveBg: '#FBE9E9',
+              abiertaText: '#1F2A33',
+              abiertaDot: '#C6600A',
+              abiertaBg: '#FFF7ED',
+              cerradaText: '#78716C',
+              cerradaBg: '#F5F4F0',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white text-[#1F2A33] font-sans min-h-screen flex flex-col antialiased selection:bg-[#FDF1DE] selection:text-[#B5720A]">
+
+  <!-- TOP HEADER CORPORATIVO VELOXRENT -->
+  <header class="border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Marca y Breadcrumb -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded bg-[#C6600A] flex items-center justify-center text-white font-mono font-bold text-lg tracking-tight">
+            V
+          </div>
+          <span class="font-bold text-xl tracking-tight text-[#1F2A33]">VeloxRent</span>
+          <span class="text-xs px-2 py-0.5 rounded font-mono bg-[#F5F4F0] text-[#78716C] border border-[#E5E2DC]">ERP v3.4</span>
+        </div>
+        <div class="h-4 w-px bg-[#E5E2DC]"></div>
+        <nav class="flex items-center space-x-2 text-sm text-[#78716C]">
+          <span class="">Operaciones</span>
+          <span class="">›</span>
+          <span class="font-medium text-[#1F2A33]">Incidencias</span>
+          <span class="">›</span>
+          <span class="text-[#78716C]">Bandeja</span>
+        </nav>
+      </div>
+
+      <!-- Estado en línea, Sede y Perfil de Usuario -->
+      <div class="flex items-center space-x-6 text-sm">
+        <div class="flex items-center space-x-2 bg-[#EAF5EF] text-[#2F6B4F] px-3 py-1 rounded-full text-xs font-medium border border-[#D0EADB]">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span class="">En línea</span>
+        </div>
+        <div class="flex items-center space-x-1.5 text-[#5A5550]">
+          <svg class="w-4 h-4 text-[#78716C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="font-medium text-xs">Ayacucho — Sede Central</span>
+        </div>
+        <div class="flex items-center space-x-3 pl-2 border-l border-[#E5E2DC]">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-mono text-xs font-semibold">
+            RO
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-xs font-semibold leading-tight text-[#1F2A33]">Rodrigo Ortiz</span>
+            <span class="text-[11px] text-[#78716C] leading-tight">Jefe de Operaciones &amp; Flota</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-7">
+
+    <!-- TÍTULO DE SECCIÓN Y CTA PRINCIPAL -->
+    <div class="flex items-center justify-between pb-6 border-b border-[#E5E2DC]">
+      <div>
+        <div class="flex items-center space-x-3">
+          <h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">Incidencias</h1>
+          <span class="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-[#FAF9F5] border border-[#E5E2DC] text-[#78716C]">
+            28 registros en sede
+          </span>
+        </div>
+        <p class="text-sm text-[#78716C] mt-1">
+          Registro, monitoreo operativo y resolución de eventualidades en vehículos, clientes y contratos en curso.
+        </p>
+      </div>
+
+      <!-- BOTÓN "Registrar incidencia" en fondo #C6600A exacto -->
+      <div>
+        <button type="button" class="inline-flex items-center space-x-2 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1" style="background-color: rgb(158, 76, 8);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span class="">Registrar incidencia</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FILTROS Y BÚSQUEDA RÁPIDA -->
+    <div class="mt-5 mb-5 flex flex-wrap items-center justify-between gap-4">
+      <!-- Buscador -->
+      <div class="relative flex-1 min-w-[280px] max-w-md">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+          <svg class="w-4 h-4 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <input type="text" placeholder="Buscar por código (#INC-), placa, expediente o responsable..." class="w-full pl-10 pr-4 py-2 text-sm bg-white border border-[#E5E2DC] rounded focus:outline-none focus:border-[#1F2A33] focus:ring-1 focus:ring-[#1F2A33] text-[#1F2A33] placeholder-[#A39C90]">
+      </div>
+
+      <!-- Pestañas rápidas / Filtro Severidad y Estado -->
+      <div class="flex items-center space-x-2 text-xs font-medium">
+        <span class="text-[#78716C] mr-1">Filtrar:</span>
+        <button class="px-3 py-1.5 rounded bg-[#1F2A33] text-white">Todas (28)</button>
+        <button class="px-3 py-1.5 rounded bg-[#FAF9F5] hover:bg-[#F2EFE9] text-[#5A5550] border border-[#E5E2DC]">Abiertas (9)</button>
+        <button class="px-3 py-1.5 rounded bg-[#FAF9F5] hover:bg-[#F2EFE9] text-[#5A5550] border border-[#E5E2DC]">Grave (3)</button>
+        <button class="px-3 py-1.5 rounded bg-[#FAF9F5] hover:bg-[#F2EFE9] text-[#5A5550] border border-[#E5E2DC]">Moderada (4)</button>
+        <button class="px-3 py-1.5 rounded bg-[#FAF9F5] hover:bg-[#F2EFE9] text-[#5A5550] border border-[#E5E2DC]">Leve (2)</button>
+        <button class="px-3 py-1.5 rounded bg-[#FAF9F5] hover:bg-[#F2EFE9] text-[#78716C] border border-[#E5E2DC]">Cerradas (19)</button>
+      </div>
+    </div>
+
+    <!-- TABLA PRINCIPAL DE INCIDENCIAS -->
+    <div class="border border-[#E5E2DC] rounded bg-white overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm border-collapse">
+          <thead>
+            <tr class="bg-[#FAF9F5] border-b border-[#E5E2DC] text-xs font-bold text-[#5A5550] tracking-wider uppercase">
+              <th class="py-3.5 px-4 font-semibold">Código / Tipo</th>
+              <th class="py-3.5 px-4 font-semibold">Severidad</th>
+              <th class="py-3.5 px-4 font-semibold">Expediente Relacionado</th>
+              <th class="py-3.5 px-4 font-semibold">Estado</th>
+              <th class="py-3.5 px-4 font-semibold">Responsable</th>
+              <th class="py-3.5 px-4 font-semibold text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E5E2DC] text-[13.5px]">
+
+            <!-- FILA 1: Abierta - Grave (Pérdida de llave vinculada a DEV-0456) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-white">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-bold text-[#1F2A33]">#INC-0234</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#FAF9F5] text-[#5A5550] border border-[#E5E2DC] font-medium">Equipamiento / Llaves</span>
+                  </div>
+                  <span class="text-xs text-[#5A5550] mt-1 font-medium">Pérdida de llave original con mando a distancia</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Registrado: Hoy, 09:20 AM</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Grave #C22B2B -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#FBE9E9] text-[#C22B2B] border border-[#F5C2C2]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#C22B2B] mr-1.5"></span>
+                  Grave
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-1.5">
+                    <a href="#" class="font-mono font-bold text-[#2166B0] hover:underline">#ALQ-1187</a>
+                    <span class="text-[11px] font-mono text-[#78716C]">(Devolución #DEV-0456)</span>
+                  </div>
+                  <span class="text-xs text-[#1F2A33] font-medium">Toyota Hilux 4x4 • <span class="font-mono font-semibold">D0Y-704</span></span>
+                  <span class="text-[11px] text-[#78716C]">Cliente: María Quispe Huamán</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Abierta" DESTACADA -->
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#FFF7ED] text-[#C6600A] border border-[#FCD34D]/50 shadow-xs">
+                  <span class="w-2 h-2 rounded-full bg-[#C6600A] mr-2 animate-ping"></span>
+                  <span class="tracking-wide">Abierta</span>
+                </div>
+                <div class="text-[11px] text-[#C22B2B] font-medium mt-1">Bloquea garantía en caja</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#E5E2DC] text-[#1F2A33] flex items-center justify-center font-mono text-xs font-bold">
+                    EA
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Edwin Alanya Córdoba</span>
+                    <span class="text-[11px] text-[#78716C]">Técnico de Patio / Mecánico</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#5A5550] transition shadow-xs">Abrir</button>
+              </td>
+            </tr>
+
+            <!-- FILA 2: Abierta - Moderada (Retraso en devolución / Sin contacto) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-white">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-bold text-[#1F2A33]">#INC-0233</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#FAF9F5] text-[#5A5550] border border-[#E5E2DC] font-medium">Operativa / Tiempo</span>
+                  </div>
+                  <span class="text-xs text-[#5A5550] mt-1 font-medium">Exceso de horario pactado sin aviso previo (+3h)</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Registrado: Hoy, 08:45 AM</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Moderada #B5720A -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold" style="background-color: rgb(253, 241, 222); color: rgb(138, 85, 5); border: 1px solid rgb(246, 220, 173);">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8A5505;"></span>
+                  Moderada
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <a href="#" class="font-mono font-bold text-[#2166B0] hover:underline">#ALQ-1192</a>
+                  <span class="text-xs text-[#1F2A33] font-medium">Chevrolet Colorado 4x4 • <span class="font-mono font-semibold">C3M-901</span></span>
+                  <span class="text-[11px] text-[#78716C]">Cliente: Transportes &amp; Logística E.I.R.L.</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Abierta" DESTACADA -->
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#FFF7ED] text-[#C6600A] border border-[#FCD34D]/50 shadow-xs">
+                  <span class="w-2 h-2 rounded-full bg-[#C6600A] mr-2"></span>
+                  <span class="tracking-wide">Abierta</span>
+                </div>
+                <div class="text-[11px] text-[#78716C] mt-1">Llamada de seguimiento realizada</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#E5E2DC] text-[#1F2A33] flex items-center justify-center font-mono text-xs font-bold">
+                    MF
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-[#1F2A33]">María Fernández</span>
+                    <span class="text-[11px] text-[#78716C]">Ejecutiva Front-office</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#5A5550] transition shadow-xs">Abrir</button>
+              </td>
+            </tr>
+
+            <!-- FILA 3: Abierta - Grave (Fallo telemático / Pérdida señal GPS en ruta minera) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-white">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-bold text-[#1F2A33]">#INC-0232</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#FAF9F5] text-[#5A5550] border border-[#E5E2DC] font-medium">Telemática / GPS</span>
+                  </div>
+                  <span class="text-xs text-[#5A5550] mt-1 font-medium">Pérdida prolongada de señal GPS en ruta Huanta-VRAEM</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Registrado: Ayer, 18:15 PM</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Grave #C22B2B -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#FBE9E9] text-[#C22B2B] border border-[#F5C2C2]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#C22B2B] mr-1.5"></span>
+                  Grave
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <a href="#" class="font-mono font-bold text-[#2166B0] hover:underline">#ALQ-1205</a>
+                  <span class="text-xs text-[#1F2A33] font-medium">Toyota Hilux 4x4 • <span class="font-mono font-semibold">D0Y-704</span></span>
+                  <span class="text-[11px] text-[#78716C]">Cliente: Constructora San Cristóbal S.A.</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Abierta" DESTACADA -->
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#FFF7ED] text-[#C6600A] border border-[#FCD34D]/50 shadow-xs">
+                  <span class="w-2 h-2 rounded-full bg-[#C6600A] mr-2 animate-ping"></span>
+                  <span class="tracking-wide">Abierta</span>
+                </div>
+                <div class="text-[11px] text-[#B5720A] font-medium mt-1">Protocolo BR-ALQ-006 activo</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-mono text-xs font-bold">
+                    RO
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Rodrigo Ortiz</span>
+                    <span class="text-[11px] text-[#78716C]">Jefe de Flota</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#5A5550] transition shadow-xs">Abrir</button>
+              </td>
+            </tr>
+
+            <!-- FILA 4: Abierta - Leve (Neumático bajo de presión al entregar) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-white">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-bold text-[#1F2A33]">#INC-0231</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#FAF9F5] text-[#5A5550] border border-[#E5E2DC] font-medium">Mecánica / Neumáticos</span>
+                  </div>
+                  <span class="text-xs text-[#5A5550] mt-1 font-medium">Baja presión detectada en neumático posterior derecho (24 PSI)</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Registrado: Ayer, 16:30 PM</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Leve #2F6B4F -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#EAF5EF] text-[#2F6B4F] border border-[#D0EADB]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#2F6B4F] mr-1.5"></span>
+                  Leve
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <a href="#" class="font-mono font-bold text-[#2166B0] hover:underline">#RES-2291</a>
+                  <span class="text-xs text-[#1F2A33] font-medium">Toyota Fortuner 4x4 • <span class="font-mono font-semibold">F8T-992</span></span>
+                  <span class="text-[11px] text-[#78716C]">Cliente: Minera Candelaria Andina S.A.C.</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Abierta" DESTACADA -->
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#FFF7ED] text-[#C6600A] border border-[#FCD34D]/50 shadow-xs">
+                  <span class="w-2 h-2 rounded-full bg-[#C6600A] mr-2"></span>
+                  <span class="tracking-wide">Abierta</span>
+                </div>
+                <div class="text-[11px] text-[#78716C] mt-1">Calibrado en patio pendiente</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#E5E2DC] text-[#1F2A33] flex items-center justify-center font-mono text-xs font-bold">
+                    MT
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Marcos Talavera H.</span>
+                    <span class="text-[11px] text-[#78716C]">Mecánico de Patio</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-[#1F2A33] bg-white border border-[#1F2A33] hover:bg-[#FAF9F5] transition">Resolver</button>
+              </td>
+            </tr>
+
+            <!-- FILA 5: Abierta - Moderada (Discrepancia en nivel de combustible al recibir) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-white">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-bold text-[#1F2A33]">#INC-0230</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#FAF9F5] text-[#5A5550] border border-[#E5E2DC] font-medium">Combustible / Entrega</span>
+                  </div>
+                  <span class="text-xs text-[#5A5550] mt-1 font-medium">Retorno con 1/2 tanque (entregado con tanque lleno)</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Registrado: Ayer, 14:10 PM</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Moderada #B5720A -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold" style="background-color: rgb(253, 241, 222); color: rgb(138, 85, 5); border: 1px solid rgb(246, 220, 173);">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8A5505;"></span>
+                  Moderada
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <a href="#" class="font-mono font-bold text-[#2166B0] hover:underline">#DEV-0449</a>
+                  <span class="text-xs text-[#1F2A33] font-medium">Mitsubishi L200 4x4 • <span class="font-mono font-semibold">B6Z-812</span></span>
+                  <span class="text-[11px] text-[#78716C]">Cliente: Transportes del Centro E.I.R.L.</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Abierta" DESTACADA -->
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#FFF7ED] text-[#C6600A] border border-[#FCD34D]/50 shadow-xs">
+                  <span class="w-2 h-2 rounded-full bg-[#C6600A] mr-2"></span>
+                  <span class="tracking-wide">Abierta</span>
+                </div>
+                <div class="text-[11px] text-[#78716C] mt-1">Cargo por reabastecimiento: S/ 140.00</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#E5E2DC] text-[#1F2A33] flex items-center justify-center font-mono text-xs font-bold">
+                    RC
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-[#1F2A33]">Rosa Cárdenas</span>
+                    <span class="text-[11px] text-[#78716C]">Analista de Finanzas</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#5A5550] transition shadow-xs">Abrir</button>
+              </td>
+            </tr>
+
+            <!-- FILA 6: Cerrada - Leve (Raspón menor en parachoques delantero resuelto con acuerdo de cargo) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-[#FAF9F5]/30">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-semibold text-[#78716C]">#INC-0229</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#F5F4F0] text-[#78716C] border border-[#E5E2DC] font-medium">Daño Estético</span>
+                  </div>
+                  <span class="text-xs text-[#78716C] mt-1">Fisura leve en guardafango delantero derecho</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Cerrado: 08/09/2026</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Leve #2F6B4F -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#EAF5EF] text-[#2F6B4F] border border-[#D0EADB] opacity-80">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#2F6B4F] mr-1.5"></span>
+                  Leve
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <a href="#" class="font-mono font-medium text-[#78716C] hover:underline">#DEV-0452</a>
+                  <span class="text-xs text-[#78716C]">Toyota Yaris Sedán • <span class="font-mono">Y1B-890</span></span>
+                  <span class="text-[11px] text-[#A39C90]">Cliente: Rosa Elena Huamán Prado</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Cerrada" ATENUADA -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F5F4F0] text-[#78716C] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#A39C90] mr-1.5"></span>
+                  Cerrada
+                </span>
+                <div class="text-[11px] text-[#78716C] mt-1">Cargo cobrado en caja: S/ 320.00</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5 opacity-80">
+                  <div class="w-7 h-7 rounded-full bg-[#E5E2DC] text-[#78716C] flex items-center justify-center font-mono text-xs">
+                    EA
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-[#5A5550]">Edwin Alanya Córdoba</span>
+                    <span class="text-[11px] text-[#A39C90]">Técnico de Patio</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-[#78716C] bg-white border border-[#E5E2DC] hover:text-[#1F2A33] hover:border-[#78716C] transition">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+            <!-- FILA 7: Cerrada - Moderada (Alcoholímetro desfavorable en entrega derivado y cancelado) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-[#FAF9F5]/30">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-semibold text-[#78716C]">#INC-0228</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#F5F4F0] text-[#78716C] border border-[#E5E2DC] font-medium">Seguridad / SST</span>
+                  </div>
+                  <span class="text-xs text-[#78716C] mt-1">Prueba de alcotest positiva (0.28 g/L) en despacho de mostrador</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Cerrado: 06/09/2026</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Moderada #B5720A -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold opacity-80" style="background-color: rgb(253, 241, 222); color: rgb(138, 85, 5); border: 1px solid rgb(246, 220, 173);">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8A5505;"></span>
+                  Moderada
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <a href="#" class="font-mono font-medium text-[#78716C] hover:underline">#ALQ-1180</a>
+                  <span class="text-xs text-[#78716C]">Toyota Hilux 4x4 • <span class="font-mono">D0Y-704</span></span>
+                  <span class="text-[11px] text-[#A39C90]">Cliente: Carlos Soto Ramos</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Cerrada" ATENUADA -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F5F4F0] text-[#78716C] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#A39C90] mr-1.5"></span>
+                  Cerrada
+                </span>
+                <div class="text-[11px] text-[#78716C] mt-1">Entrega cancelada bajo protocolo SST</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5 opacity-80">
+                  <div class="w-7 h-7 rounded-full bg-[#E5E2DC] text-[#78716C] flex items-center justify-center font-mono text-xs">
+                    MF
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-[#5A5550]">María Fernández</span>
+                    <span class="text-[11px] text-[#A39C90]">Ejecutiva Front-office</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-[#78716C] bg-white border border-[#E5E2DC] hover:text-[#1F2A33] hover:border-[#78716C] transition">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+            <!-- FILA 8: Cerrada - Grave (Daño de embrague por uso severo en trocha) -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors bg-[#FAF9F5]/30">
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono font-semibold text-[#78716C]">#INC-0227</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-[#F5F4F0] text-[#78716C] border border-[#E5E2DC] font-medium">Daño Técnico</span>
+                  </div>
+                  <span class="text-xs text-[#78716C] mt-1">Sobrecalentamiento y desgaste prematuro de disco de embrague</span>
+                  <span class="text-[11px] text-[#A39C90] mt-0.5">Cerrado: 04/09/2026</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Severidad: Grave #C22B2B -->
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-[#FBE9E9] text-[#C22B2B] border border-[#F5C2C2] opacity-80">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#C22B2B] mr-1.5"></span>
+                  Grave
+                </span>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex flex-col">
+                  <a href="#" class="font-mono font-medium text-[#78716C] hover:underline">#DEV-0448</a>
+                  <span class="text-xs text-[#78716C]">Chevrolet Colorado 4x4 • <span class="font-mono">C3M-901</span></span>
+                  <span class="text-[11px] text-[#A39C90]">Cliente: Gustavo Palomino Vilchez</span>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <!-- Estado: "Cerrada" ATENUADA -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F5F4F0] text-[#78716C] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#A39C90] mr-1.5"></span>
+                  Cerrada
+                </span>
+                <div class="text-[11px] text-[#78716C] mt-1">Deducible aplicado contra garantía S/ 1,500</div>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <div class="flex items-center space-x-2.5 opacity-80">
+                  <div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-mono text-xs">
+                    RO
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-[#5A5550]">Rodrigo Ortiz</span>
+                    <span class="text-[11px] text-[#A39C90]">Jefe de Operaciones</span>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 align-middle text-right">
+                <button class="px-3 py-1.5 rounded text-xs font-medium text-[#78716C] bg-white border border-[#E5E2DC] hover:text-[#1F2A33] hover:border-[#78716C] transition">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINACIÓN Y RESUMEN INFERIOR DE TABLA -->
+      <div class="bg-white border-t border-[#E5E2DC] px-4 py-3 flex items-center justify-between text-xs text-[#78716C]">
+        <div class="flex items-center space-x-3">
+          <span class="">Mostrando <strong class="text-[#1F2A33]">1-8</strong> de <strong class="text-[#1F2A33]">28</strong> incidencias</span>
+          <span class="h-3 w-px bg-[#E5E2DC]"></span>
+          <span class="flex items-center text-[#C6600A] font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#C6600A] mr-1.5"></span>
+            5 abiertas requieren atención en sede
+          </span>
+        </div>
+        <div class="flex items-center space-x-1.5">
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-[#FAF9F5] text-[#A39C90] cursor-not-allowed" disabled="">Anterior</button>
+          <button class="px-2.5 py-1 rounded bg-[#1F2A33] text-white font-medium">1</button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] hover:bg-[#FAF9F5] text-[#1F2A33]">2</button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] hover:bg-[#FAF9F5] text-[#1F2A33]">3</button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] hover:bg-[#FAF9F5] text-[#1F2A33]">4</button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] hover:bg-[#FAF9F5] text-[#1F2A33]">Siguiente</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BANNER NORMATIVO / PROTOCOLO OPERATIVO -->
+    <div class="mt-6 border border-[#E5E2DC] bg-[#FAF9F5] rounded p-4 flex items-start space-x-3 text-xs text-[#5A5550]">
+      <svg class="w-4 h-4 text-[#C6600A] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div class=""><span class="font-bold text-[#1F2A33]">Protocolo Operativo de Incidencias (PR-OPE-012):</span> Las incidencias de severidad <strong class="text-[#2F6B4F]">Leve</strong> pueden resolverse directamente desde la bandeja. Las incidencias de severidad <strong class="text-[#B5720A]">Moderada</strong> o <strong class="text-[#C22B2B]">Grave</strong> exigen abrir el expediente completo y auditar evidencias técnicas antes de su cierre. Toda incidencia grave bloquea automáticamente la devolución de fondos o garantías asociadas al expediente.</div>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA CORPORATIVO UNIFICADO VELOXRENT -->
+  <footer class="mt-auto border-t border-[#E5E2DC] bg-white py-3.5 text-xs text-[#78716C]">
+    <div class="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="">VeloxRent © 2026</span>
+        <span class="">•</span>
+        <span class="">Sistema de Gestión Comercial y Flotas</span>
+        <span class="">•</span>
+        <span class="text-[#5A5550] font-medium">Módulo Operaciones / Incidencias</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="">Mesa Operaciones: <strong class="text-[#1F2A33] font-mono">anexo 101</strong></span>
+        <span class="text-[#E5E2DC]">|</span>
+        <span class="">Mesa Flota y Patio: <strong class="text-[#1F2A33] font-mono">anexo 108</strong></span>
+        <span class="text-[#E5E2DC]">|</span>
+        <span class="">Mesa Finanzas: <strong class="text-[#1F2A33] font-mono">anexo 205</strong></span>
+        <span class="text-[#E5E2DC]">|</span>
+        <a href="#" class="text-[#C22B2B] hover:underline flex items-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span class="">Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+
+
+
+
+</body></html>

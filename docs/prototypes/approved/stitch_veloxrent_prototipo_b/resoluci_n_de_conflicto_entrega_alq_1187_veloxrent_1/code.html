@@ -1,0 +1,299 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resolución de conflicto — Entrega #ALQ-1187 - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #ffffff;
+      color: #1f2a33;
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-between text-[#1F2A33]">
+
+  <!-- Header institucional VeloxRent ERP -->
+  <header class="border-b border-[#E5E2DC] bg-[#FCF9F3] px-6 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <!-- Logo / Marca -->
+        <div class="flex items-center gap-2">
+          <span class="bg-[#1F2A33] text-white px-2.5 py-1 text-xs font-bold tracking-wider rounded">VELOXRENT</span>
+          <span class="text-xs text-[#736E67] font-medium">ERP v4.2</span>
+        </div>
+
+        <span class="text-[#D3CFC9]">|</span>
+
+        <!-- Breadcrumb / Contexto -->
+        <div class="flex items-center gap-2 text-xs text-[#524E48]">
+          <span class="text-[#736E67]">Centro de Sincronización</span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-[#A39C90]"></i>
+          <span class="text-[#736E67]">Alquileres</span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-[#A39C90]"></i>
+          <span class="font-semibold text-[#1F2A33]">Resolución de conflictos de datos</span>
+        </div>
+      </div>
+
+      <!-- Estado & Usuario -->
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-2 bg-[#FDF1DE] text-[#B5720A] px-3 py-1 rounded text-xs font-semibold border border-[#E9D5B6]">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>1 conflicto pendiente</span>
+        </div>
+        <div class="text-xs text-[#524E48] flex items-center gap-1.5 border-l border-[#E5E2DC] pl-4">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+          <span class="font-medium">Sede Ayacucho</span>
+          <span class="text-[#A39C90]">•</span>
+          <span class="text-[#1F2A33] font-semibold">E. Alanya (Mecánico / Patio)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Central -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-6 py-8">
+
+    <!-- Barra de navegación contextual hacia atrás -->
+    <div class="mb-6 flex items-center justify-between">
+      <a href="#" class="inline-flex items-center gap-2 text-xs font-semibold text-[#524E48] hover:text-[#1F2A33] transition-colors">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver al Centro de Sincronización</span>
+      </a>
+      <span class="text-xs text-[#736E67]">Registro de auditoría telemática: <code class="bg-[#F6F3ED] px-1.5 py-0.5 rounded font-mono text-[#524E48]">SYNC-ERR-8812</code></span>
+    </div>
+
+    <!-- Título y subtítulo de la pantalla -->
+    <div class="mb-6">
+      <div class="flex items-center gap-2.5 mb-1">
+        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-[#FBE9E9] text-[#C22B2B] border border-[#F2C2C2]">Conflicto detectado</span>
+        <span class="text-xs text-[#736E67]">Proceso de sincronización bidireccional</span>
+      </div>
+      <h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">Resolución de conflicto de evidencia fotográfica</h1>
+      <p class="text-sm text-[#524E48] mt-1">
+        Se encontraron cambios simultáneos para la misma toma en la inspección de entrega. Seleccione qué versión debe prevalecer en el expediente digital oficial antes de continuar.
+      </p>
+    </div>
+
+    <!-- TARJETA DE CONFLICTO (borde 2px #B5720A, fondo blanco) -->
+    <section class="bg-white border-2 border-[#B5720A] rounded-lg shadow-sm overflow-hidden mb-6">
+      <!-- Encabezado de la tarjeta -->
+      <div class="bg-[#FCF9F3] border-b border-[#EADFCF] px-6 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-md bg-[#FDF1DE] border border-[#E9D5B6] flex items-center justify-center text-[#B5720A]">
+            <i class="fa-solid fa-code-compare text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-[#1F2A33]">Conflicto en zona Interior — Entrega #ALQ-1187</h2>
+            <p class="text-xs text-[#736E67]">Unidad: <span class="font-semibold text-[#1F2A33]">Toyota Hilux D0Y-704</span> • Toma 02 de 06: <span class="font-medium text-[#1F2A33]">Consola central y palanca de cambios</span></p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-[#FFF9ED] text-[#B5720A] border border-[#ECD1A5]">
+            <i class="fa-regular fa-clock"></i>
+            Divergencia horaria: 4 min
+          </span>
+        </div>
+      </div>
+
+      <!-- Cuerpo comparativo: 2 Columnas -->
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- COLUMNA 1: Tu versión (este dispositivo) -->
+          <div class="border-2 border-[#D9D3C7] rounded-lg p-4 bg-[#FCF9F3] flex flex-col justify-between relative hover:border-[#1F2A33] transition-colors">
+            <div class="absolute -top-3 left-4 bg-[#1F2A33] text-white text-[11px] font-bold px-2.5 py-0.5 rounded tracking-wide shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-mobile-screen"></i>
+              Tu versión (este dispositivo)
+            </div>
+
+            <div class="mt-2">
+              <!-- Miniatura fotográfica -->
+              <div class="relative w-full h-56 bg-[#1F2A33] rounded-md overflow-hidden border border-[#D3CFC9] mb-3.5 group">
+                <img src="https://lh3.googleusercontent.com/aida/AEtjO1WvQPPBqX5yWAY_mX5Fb3bIBYE1ttFwDCVFdG1DOAVnZWk4FtXZrKHInKye1ECilUK9Ht9w0AV1dqpl1DZkwBTfYGTGl7DVTL9CnoTGY35lYcNJhrZexvjrEmSF0VEsuLGwBwPpJz3zA_hQKQaJi2VQ2QqYG9iyiqBCskIW743JG15-rTOJSBxXug6Zs38QwF8XB_06NlE3OAGX1Lzrpq9qKVljooABzbxd2NlIw3eYwI-DcAJ0kmvcag" alt="Captura local dispositivo - Consola y tablero" class="w-full h-full object-cover">
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="bg-[#1F2A33]/85 backdrop-blur-sm text-white text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+                    <i class="fa-solid fa-floppy-disk text-[#A39C90]"></i> Caché local
+                  </span>
+                </div>
+                <div class="absolute bottom-2.5 right-2.5">
+                  <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded font-mono">
+                    2.8 MB • 1080p
+                  </span>
+                </div>
+              </div>
+
+              <!-- Metadatos de la captura -->
+              <div class="space-y-2 bg-white p-3 rounded border border-[#E5E2DC] text-xs">
+                <div class="flex items-center justify-between pb-1.5 border-b border-[#F0ECE1]">
+                  <span class="text-[#736E67] font-medium">Capturado por:</span>
+                  <span class="font-semibold text-[#1F2A33] flex items-center gap-1">
+                    <i class="fa-regular fa-user text-[#736E67]"></i>
+                    Edwin Alanya (Mecánico de Patio)
+                  </span>
+                </div>
+                <div class="flex items-center justify-between pb-1.5 border-b border-[#F0ECE1]">
+                  <span class="text-[#736E67] font-medium">Fecha y hora de captura:</span>
+                  <span class="font-semibold text-[#1F2A33] font-mono">Hoy, 10:53:02 AM</span>
+                </div>
+                <div class="flex items-center justify-between pb-1.5 border-b border-[#F0ECE1]">
+                  <span class="text-[#736E67] font-medium">Dispositivo origen:</span>
+                  <span class="text-[#1F2A33]">Tablet Samsung Tab Active4 (Local)</span>
+                </div>
+                <div class="flex items-start justify-between pt-0.5">
+                  <span class="text-[#736E67] font-medium">Observación técnica:</span>
+                  <span class="text-[#1F2A33] font-medium text-right max-w-[200px]">Encuadre frontal directo con ángulo cerrado a palanca 4x4.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estado de sincronización local -->
+            <div class="mt-4 pt-3 border-t border-[#E5E2DC] flex items-center justify-between text-xs text-[#736E67]">
+              <span class="flex items-center gap-1 text-[#B5720A] font-semibold">
+                <i class="fa-solid fa-circle-dot text-[9px]"></i> Guardado localmente sin confirmar
+              </span>
+              <span class="font-mono text-[11px] text-[#A39C90]">Hash: 8a9f...10b</span>
+            </div>
+          </div>
+
+          <!-- COLUMNA 2: Versión del servidor -->
+          <div class="border-2 border-[#D9D3C7] rounded-lg p-4 bg-[#FCF9F3] flex flex-col justify-between relative hover:border-[#1F2A33] transition-colors">
+            <div class="absolute -top-3 left-4 bg-[#2166B0] text-white text-[11px] font-bold px-2.5 py-0.5 rounded tracking-wide shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-cloud"></i>
+              Versión del servidor
+            </div>
+
+            <div class="mt-2">
+              <!-- Miniatura fotográfica -->
+              <div class="relative w-full h-56 bg-[#1F2A33] rounded-md overflow-hidden border border-[#D3CFC9] mb-3.5 group">
+                <img src="https://lh3.googleusercontent.com/aida/AEtjO1UIYH1Iz9n3dnbF6DQqIwe2j6UYcHZwlMF0h12RymHKs5JI7mWBNEMLZK2h1MO74yeysOc45xd7cJLQQiSM-8gkwbwIuD0FpIxt89wi7_2nYW58vRr00VzGmEOiFd4lM50ZX8U2qrihL9u1aJjpBRcrjYEkhnglyTgY6fWNBEnvAGPG11Kk9UNTOYBF-4e2pPuwk3nNiX_WRmXcktPk2vJrGbbNbdMn6sNDo7O4zz4OKf5iUzQKDh7It4I" alt="Captura recibida en servidor - Consola central con checklist" class="w-full h-full object-cover">
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="bg-[#2166B0]/90 backdrop-blur-sm text-white text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+                    <i class="fa-solid fa-check-double"></i> Confirmado en servidor
+                  </span>
+                </div>
+                <div class="absolute bottom-2.5 right-2.5">
+                  <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded font-mono">
+                    3.1 MB • 1080p
+                  </span>
+                </div>
+              </div>
+
+              <!-- Metadatos de la captura -->
+              <div class="space-y-2 bg-white p-3 rounded border border-[#E5E2DC] text-xs">
+                <div class="flex items-center justify-between pb-1.5 border-b border-[#F0ECE1]">
+                  <span class="text-[#736E67] font-medium">Capturado por:</span>
+                  <span class="font-semibold text-[#1F2A33] flex items-center gap-1">
+                    <i class="fa-regular fa-user text-[#736E67]"></i>
+                    M. Ejecutivo (Front-office / Patio)
+                  </span>
+                </div>
+                <div class="flex items-center justify-between pb-1.5 border-b border-[#F0ECE1]">
+                  <span class="text-[#736E67] font-medium">Fecha y hora de subida:</span>
+                  <span class="font-semibold text-[#1F2A33] font-mono">Hoy, 10:49:18 AM</span>
+                </div>
+                <div class="flex items-center justify-between pb-1.5 border-b border-[#F0ECE1]">
+                  <span class="text-[#736E67] font-medium">Dispositivo origen:</span>
+                  <span class="text-[#1F2A33]">Terminal Sede Central Ayacucho</span>
+                </div>
+                <div class="flex items-start justify-between pt-0.5">
+                  <span class="text-[#736E67] font-medium">Observación técnica:</span>
+                  <span class="text-[#1F2A33] font-medium text-right max-w-[200px]">Incluye tabla de soporte con hoja física de checklist visible.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estado de sincronización en la nube -->
+            <div class="mt-4 pt-3 border-t border-[#E5E2DC] flex items-center justify-between text-xs text-[#736E67]">
+              <span class="flex items-center gap-1 text-[#1E7D4B] font-semibold">
+                <i class="fa-solid fa-check text-[10px]"></i> Alojado en nube de VeloxRent
+              </span>
+              <span class="font-mono text-[11px] text-[#A39C90]">Hash: 44e1...c2a</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Nota informativa sobre compatibilidad de combinación -->
+        <div class="mt-5 p-3.5 rounded-md bg-[#F6F3ED] border border-[#E5E2DC] flex items-start gap-3">
+          <i class="fa-solid fa-circle-info text-[#2166B0] text-sm mt-0.5"></i>
+          <div class="text-xs text-[#524E48] leading-relaxed">
+            <strong class="text-[#1F2A33]">Criterio de combinación:</strong> Las fotos corresponden a ángulos complementarios de la misma zona técnica (consola central sin accesorios vs. con hoja de verificación). Si elige <strong>"Combinar"</strong>, se registrará una como toma principal y la otra como anexo fotográfico secundario en el expediente #ALQ-1187 sin pérdida de datos.
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Acciones de Resolución: 3 Botones (ninguno preseleccionado) -->
+      <div class="bg-[#FAF7F2] border-t border-[#EADFCF] px-6 py-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="text-xs text-[#736E67] font-medium flex items-center gap-1.5">
+            <i class="fa-regular fa-hand-pointer text-[#A39C90]"></i>
+            <span>Seleccione una acción para resolver la inconsistencia:</span>
+          </div>
+
+          <!-- Los 3 botones requeridos: ninguno con estilos preseleccionados/activos por defecto -->
+          <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+            <!-- Botón 1: Conservar la mía -->
+            <button type="button" class="flex-1 sm:flex-initial px-4 py-2.5 rounded text-xs font-semibold bg-white border border-[#1F2A33] text-[#1F2A33] hover:bg-[#1F2A33] hover:text-white transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              Conservar la mía
+            </button>
+
+            <!-- Botón 2: Conservar del servidor -->
+            <button type="button" class="flex-1 sm:flex-initial px-4 py-2.5 rounded text-xs font-semibold bg-white border border-[#2166B0] text-[#2166B0] hover:bg-[#2166B0] hover:text-white transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+              Conservar del servidor
+            </button>
+
+            <!-- Botón 3: Combinar (si no chocan entre sí) -->
+            <button type="button" class="flex-1 sm:flex-initial px-4 py-2.5 rounded text-xs font-semibold bg-white border border-[#1E7D4B] text-[#1E7D4B] hover:bg-[#1E7D4B] hover:text-white transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-code-merge"></i>
+              Combinar (ambas fotos)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resumen de impacto de la resolución -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-[#524E48]">
+      <div class="p-3 bg-[#FCF9F3] border border-[#E5E2DC] rounded">
+        <span class="font-bold text-[#1F2A33] block mb-0.5">1. Al "Conservar la mía"</span>
+        La foto de este dispositivo reemplaza la del servidor y se marcará para subida inmediata prioritaria.
+      </div>
+      <div class="p-3 bg-[#FCF9F3] border border-[#E5E2DC] rounded">
+        <span class="font-bold text-[#1F2A33] block mb-0.5">2. Al "Conservar del servidor"</span>
+        Se descarta la copia local y se descarga la versión autorizada en la base central sin afectar la auditoría.
+      </div>
+      <div class="p-3 bg-[#FCF9F3] border border-[#E5E2DC] rounded">
+        <span class="font-bold text-[#1F2A33] block mb-0.5">3. Al "Combinar"</span>
+        Ambas capturas se integran en el acta FIV con sellos de tiempo independientes para soporte pericial.
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Pie institucional VeloxRent ERP -->
+  <footer class="border-t border-[#E5E2DC] bg-[#FCF9F3] px-6 py-3 text-xs text-[#736E67]">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-4">
+        <span>VeloxRent ERP © 2026</span>
+        <span>•</span>
+        <span>Mesa de Patio &amp; Inspección: <strong>Anexo 108</strong></span>
+        <span>•</span>
+        <span>Soporte TI &amp; Telemática: <strong>Anexo 101</strong></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-[#524E48]">ID de sesión: <code class="font-mono text-[#1F2A33]">USR-ALANYA-AYAC</code></span>
+        <span>•</span>
+        <a href="#" class="text-[#C22B2B] hover:underline font-medium">Cerrar sesión</a>
+      </div>
+    </div>
+  </footer>
+
+
+</body></html>

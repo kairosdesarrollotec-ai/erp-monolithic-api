@@ -1,0 +1,699 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrega — Etapa 4 de 5: Checklist y evidencias (Revisión Ejecutivo) - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              dark: '#161F26',
+              accent: '#C6600A',
+              accentLight: '#FDF1DE',
+              green: '#1E7D4B',
+              greenLight: '#E8F5EC',
+              amber: '#B5720A',
+              danger: '#C22B2B',
+              dangerLight: '#FBE9E9',
+              slate: '#4E4A45',
+              border: '#E3DFD7',
+              borderDark: '#A39C90',
+              surface: '#FCF9F3',
+              surfaceDim: '#F3EFE6',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F3EFE6;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #A39C90;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="bg-white text-brand-navy min-h-screen flex flex-col antialiased selection:bg-brand-accent selection:text-white">
+
+  <!-- Top Global Header -->
+  <header class="h-14 border-b border-brand-border bg-white px-6 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2">
+        <span class="bg-brand-navy text-white font-display font-bold text-sm px-2 py-1 rounded">VR</span>
+        <span class="font-display font-bold text-base tracking-tight text-brand-navy">VeloxRent</span>
+        <span class="text-xs bg-slate-100 text-brand-slate px-1.5 py-0.5 rounded font-medium ml-1">ERP V4.2</span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-1 text-xs font-medium text-brand-slate">
+        <span class="text-slate-400">Sistemas</span>
+        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+        <span class="text-slate-400">Alquileres</span>
+        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+        <span class="text-brand-navy font-semibold">Nuevo Alquiler</span>
+        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+        <span class="bg-brand-accentLight text-brand-accent px-2 py-0.5 rounded font-semibold text-[11px]">Exp. #ALQ-0430</span>
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-4 text-xs">
+      <div class="flex items-center gap-2 px-2.5 py-1 bg-brand-greenLight text-brand-green rounded border border-green-200">
+        <span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
+        <span class="font-semibold text-[11px]">SINCRONIZADO</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-brand-slate bg-brand-surfaceDim px-2.5 py-1 rounded border border-brand-border">
+        <i class="fa-solid fa-location-dot text-brand-accent"></i>
+        <span class="">Ayacucho — Sede Central</span>
+      </div>
+      <div class="h-4 w-px bg-brand-border"></div>
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-full bg-brand-navy text-white flex items-center justify-center font-bold text-xs">
+          ME
+        </div>
+        <div class="leading-tight text-left">
+          <p class="font-semibold text-brand-navy text-xs">María Ejecutivo</p>
+          <p class="text-[10px] text-brand-slate">Front-office &amp; Despacho</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sub-Header Breadcrumb & Actions Bar -->
+  <div class="bg-brand-surface border-b border-brand-border px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-brand-slate mb-0.5 font-medium">
+          <span class="uppercase tracking-wider text-[11px] font-bold text-brand-accent">Etapa 4 de 5</span>
+          <span class="">•</span>
+          <span class="">Expediente: <strong class="text-brand-navy">#ALQ-0430</strong></span>
+          <span class="">•</span>
+          <span class="">Reserva: <strong class="text-brand-navy">#RES-2291</strong></span>
+          <span class="">•</span>
+          <span class="">Unidad: <strong class="text-brand-navy">Toyota Hilux (D0Y-704)</strong></span>
+        </div>
+        <h1 class="text-xl font-display font-bold text-brand-navy flex items-center gap-2.5">Entrega — Etapa 4 de 5 — Revisión
+          <span class="text-xs font-sans font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <i class="fa-solid fa-eye text-[10px]"></i> Modo solo lectura (Ejecutivo)
+          </span></h1>
+      </div>
+    </div>
+
+    <!-- Stepper Mini Overview -->
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded border border-brand-border text-xs shadow-sm">
+        <span class="text-brand-slate font-medium">Fotos cargadas:</span>
+        <span class="font-bold text-brand-navy">35 / 35</span>
+        <span class="bg-brand-greenLight text-brand-green font-bold text-[10px] px-1.5 py-0.5 rounded ml-1">100% COMPLETADO</span>
+      </div>
+
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded border border-brand-border text-xs shadow-sm"><i class="fa-solid fa-user-check text-brand-green"></i>
+        <span class="text-brand-slate">Inspector de patio:</span>
+        <span class="font-bold text-brand-navy">E. Alanya - Mecánico Patio</span>
+        <span class="text-[10px] text-slate-400">10:56 AM</span></div>
+    </div>
+  </div>
+
+  <!-- Stepper 5 Stages Progress Tracker -->
+  <div class="bg-white border-b border-brand-border px-8 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between relative">
+      <!-- Step 1 -->
+      <div class="flex items-center gap-2.5 z-10 bg-white pr-3">
+        <div class="w-7 h-7 rounded-full bg-brand-green text-white flex items-center justify-center text-xs font-bold">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="text-left">
+          <p class="text-xs font-bold text-brand-navy">1. Cliente y doc.</p>
+          <p class="text-[11px] text-brand-green font-medium">Validado</p>
+        </div>
+      </div>
+      <div class="flex-1 h-0.5 bg-brand-green mx-2"></div>
+
+      <!-- Step 2 -->
+      <div class="flex items-center gap-2.5 z-10 bg-white px-3">
+        <div class="w-7 h-7 rounded-full bg-brand-green text-white flex items-center justify-center text-xs font-bold">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="text-left">
+          <p class="text-xs font-bold text-brand-navy">2. Validaciones</p>
+          <p class="text-[11px] text-brand-green font-medium">0.00 g/L • OK</p>
+        </div>
+      </div>
+      <div class="flex-1 h-0.5 bg-brand-green mx-2"></div>
+
+      <!-- Step 3 -->
+      <div class="flex items-center gap-2.5 z-10 bg-white px-3">
+        <div class="w-7 h-7 rounded-full bg-brand-green text-white flex items-center justify-center text-xs font-bold">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="text-left">
+          <p class="text-xs font-bold text-brand-navy">3. Garantía y contrato</p>
+          <p class="text-[11px] text-brand-green font-medium">Fianza S/ 1,000</p>
+        </div>
+      </div>
+      <div class="flex-1 h-0.5 bg-brand-accent mx-2"></div>
+
+      <!-- Step 4 (ACTIVE) -->
+      <div class="flex items-center gap-2.5 z-10 bg-white px-3 ring-2 ring-brand-accent ring-offset-2 rounded-lg py-1">
+        <div class="w-7 h-7 rounded-full bg-brand-accent text-white flex items-center justify-center text-xs font-bold font-display shadow-sm">
+          04
+        </div>
+        <div class="text-left">
+          <p class="text-xs font-bold text-brand-accent">4. Checklist y evidencias</p>
+          <p class="text-[11px] text-brand-slate font-medium">Revisión de fotos</p>
+        </div>
+      </div>
+      <div class="flex-1 h-0.5 bg-brand-border mx-2"></div>
+
+      <!-- Step 5 -->
+      <div class="flex items-center gap-2.5 z-10 bg-white pl-3 opacity-60">
+        <div class="w-7 h-7 rounded-full border-2 border-brand-borderDark text-brand-slate flex items-center justify-center text-xs font-bold font-display">
+          05
+        </div>
+        <div class="text-left">
+          <p class="text-xs font-bold text-brand-slate">5. Confirmación final</p>
+          <p class="text-[11px] text-slate-400">Firma y entrega</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Work Area -->
+  <main class="flex-1 px-8 py-6 max-w-7xl w-full mx-auto space-y-6">
+
+    <!-- Information / Verification Banner -->
+    <div class="bg-brand-surface border border-brand-border rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="flex items-start gap-3.5">
+        <div class="w-9 h-9 rounded-lg bg-amber-100 text-brand-amber flex items-center justify-center shrink-0 mt-0.5 text-base">
+          <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold text-brand-navy">Verificación de Evidencias Capturadas por Patio</h2>
+            <span class="bg-green-100 text-brand-green text-[11px] font-semibold px-2 py-0.5 rounded border border-green-200">
+              Protocolo FIV/FCKE Completo
+            </span>
+          </div>
+          <p class="text-xs text-brand-slate mt-0.5">
+            Revise con atención las evidencias fotográficas registradas en campo antes de emitir el acta final. Haga clic en la lupa de cualquier toma para examinar los detalles en alta resolución.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+        <div class="text-right text-xs">
+          <span class="text-slate-400 block text-[11px]">Hash Criptográfico de Bloque:</span>
+          <code class="text-[11px] font-mono text-brand-navy font-semibold bg-white px-2 py-0.5 rounded border border-brand-border">SHA256: 9b2d...f41a</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 HORIZONTAL TABS (Simultaneous overview of all 5 inspection zones) -->
+    <div class="bg-white border border-brand-border rounded-xl shadow-sm overflow-hidden">
+      
+      <!-- Zone Tabs Navigation -->
+      <div class="flex border-b border-brand-border bg-brand-surfaceDim overflow-x-auto custom-scrollbar">
+        <!-- Tab 1: Exterior -->
+        <button class="flex-1 min-w-[200px] px-5 py-3.5 text-left border-r border-brand-border hover:bg-brand-surface transition-colors flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-brand-green text-white text-[11px] font-bold flex items-center justify-center">
+              <i class="fa-solid fa-check text-[10px]"></i>
+            </span>
+            <div>
+              <p class="text-xs font-bold text-brand-navy">Zona 1: Exterior</p>
+              <p class="text-[11px] text-brand-slate">Carrocería y lunas</p>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold bg-white text-brand-green border border-green-200 px-2 py-0.5 rounded-full">
+            8 / 8
+          </span>
+        </button>
+
+        <!-- Tab 2: Interior (ACTIVE SELECTED) -->
+        <button class="flex-1 min-w-[220px] px-5 py-3.5 text-left bg-white border-r border-brand-border border-b-2 border-b-brand-accent relative flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-brand-accent text-white text-[11px] font-bold flex items-center justify-center font-display">
+              02
+            </span>
+            <div>
+              <p class="text-xs font-bold text-brand-accent">Zona 2: Interior (Cabina)</p>
+              <p class="text-[11px] text-brand-slate font-medium">Tablero, tapicería, mandos</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] font-bold bg-brand-accentLight text-brand-accent border border-amber-200 px-2 py-0.5 rounded-full">
+              6 / 6 fotos
+            </span>
+          </div>
+        </button>
+
+        <!-- Tab 3: Maletero y Tolva -->
+        <button class="flex-1 min-w-[200px] px-5 py-3.5 text-left border-r border-brand-border hover:bg-brand-surface transition-colors flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-brand-green text-white text-[11px] font-bold flex items-center justify-center">
+              <i class="fa-solid fa-check text-[10px]"></i>
+            </span>
+            <div>
+              <p class="text-xs font-bold text-brand-navy">Zona 3: Tolva y Carga</p>
+              <p class="text-[11px] text-brand-slate">Platón y compuerta</p>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold bg-white text-brand-green border border-green-200 px-2 py-0.5 rounded-full">
+            7 / 7
+          </span>
+        </button>
+
+        <!-- Tab 4: Mecánica y Bajos -->
+        <button class="flex-1 min-w-[200px] px-5 py-3.5 text-left border-r border-brand-border hover:bg-brand-surface transition-colors flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-brand-green text-white text-[11px] font-bold flex items-center justify-center">
+              <i class="fa-solid fa-check text-[10px]"></i>
+            </span>
+            <div>
+              <p class="text-xs font-bold text-brand-navy">Zona 4: Mecánica / Bajos</p>
+              <p class="text-[11px] text-brand-slate">Motor, neumáticos, suspensión</p>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold bg-white text-brand-green border border-green-200 px-2 py-0.5 rounded-full">
+            8 / 8
+          </span>
+        </button>
+
+        <!-- Tab 5: Equipamiento FCKE -->
+        <button class="flex-1 min-w-[200px] px-5 py-3.5 text-left hover:bg-brand-surface transition-colors flex items-center justify-between group"><div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-brand-green text-white text-[11px] font-bold flex items-center justify-center">
+              <i class="fa-solid fa-check text-[10px]"></i>
+            </span>
+            <div>
+              <p class="text-xs font-bold text-brand-navy">Zona 5: Equipamiento y Accesorios</p>
+              <p class="text-[11px] text-brand-slate">Kits, gata, repuesto, SOAT</p>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold bg-white text-brand-green border border-green-200 px-2.5 py-0.5 rounded-full">
+            6 / 6
+          </span></button>
+      </div>
+
+      <!-- Active Zone Content Area -->
+      <div class="p-6">
+        
+        <!-- Zone Sub-Header & Metadata -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-brand-border">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-display font-bold text-brand-navy">Zona Activa: Interior (Cabina) — 6 Evidencias Registradas</h3>
+              <span class="bg-brand-greenLight text-brand-green text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                <i class="fa-solid fa-circle-check text-[11px]"></i> Validado por Auditoría Técnica
+              </span>
+            </div>
+            <p class="text-xs text-brand-slate mt-1">
+              Inspeccionado en fosa de patio • Odómetro: <strong>038,412 km</strong> • Nivel Combustible: <strong>100% (Tanque Lleno)</strong> • Sin olores ni manchas.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs">
+            <button class="px-3 py-1.5 bg-white border border-brand-border rounded text-brand-navy font-semibold hover:bg-brand-surface flex items-center gap-1.5 transition-colors shadow-sm">
+              <i class="fa-solid fa-file-pdf text-red-600"></i> Exportar Hoja FIV
+            </button>
+            <button class="px-3 py-1.5 bg-white border border-brand-border rounded text-brand-navy font-semibold hover:bg-brand-surface flex items-center gap-1.5 transition-colors shadow-sm">
+              <i class="fa-solid fa-sliders text-brand-slate"></i> Comparar con Entrega Previa
+            </button>
+          </div>
+        </div>
+
+        <!-- READ-ONLY PHOTO GRID (6 Items of Zone 2) -->
+        <!-- Non-interactive camera, only read-only inspect view with zoom button -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
+
+          <!-- Photo Card 01 -->
+          <div class="border border-brand-border rounded-lg overflow-hidden bg-white shadow-sm flex flex-col group hover:border-brand-borderDark transition-all">
+            <div class="relative bg-slate-900 aspect-[4/3] overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1WvQPPBqX5yWAY_mX5Fb3bIBYE1ttFwDCVFdG1DOAVnZWk4FtXZrKHInKye1ECilUK9Ht9w0AV1dqpl1DZkwBTfYGTGl7DVTL9CnoTGY35lYcNJhrZexvjrEmSF0VEsuLGwBwPpJz3zA_hQKQaJi2VQ2QqYG9iyiqBCskIW743JG15-rTOJSBxXug6Zs38QwF8XB_06NlE3OAGX1Lzrpq9qKVljooABzbxd2NlIw3eYwI-DcAJ0kmvcag" alt="Tablero y panel frontal Toyota Hilux" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300">
+              
+              <!-- Badges Over Image -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                <span class="bg-brand-green text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                  ✓ LISTA
+                </span>
+                <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded">
+                  01 / 06
+                </span>
+              </div>
+
+              <!-- Inspection Zoom Trigger (Read-only magnifying tool) -->
+              <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-brand-navy text-white flex items-center justify-center text-xs transition-colors backdrop-blur-sm shadow" title="Ampliar foto en alta resolución">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </button>
+
+              <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] text-white/90 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+                <span class="">GPS &amp; Odómetro Validado</span>
+                <span class="font-mono">10:52:14</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex-1 flex flex-col justify-between bg-white">
+              <div>
+                <h4 class="text-xs font-bold text-brand-navy">Tablero y panel frontal</h4>
+                <p class="text-[11px] text-brand-slate mt-0.5">Tacómetro, pantalla multimedia táctil y testigos sin alertas encendidas.</p>
+              </div>
+              <div class="pt-3 mt-3 border-t border-brand-border flex items-center justify-between text-[10px] text-brand-slate font-medium">
+                <span class="">Cámara: Dispositivo Patio 01</span>
+                <span class="text-brand-green font-semibold">Conforme</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photo Card 02 -->
+          <div class="border border-brand-border rounded-lg overflow-hidden bg-white shadow-sm flex flex-col group hover:border-brand-borderDark transition-all">
+            <div class="relative bg-slate-900 aspect-[4/3] overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1UIYH1Iz9n3dnbF6DQqIwe2j6UYcHZwlMF0h12RymHKs5JI7mWBNEMLZK2h1MO74yeysOc45xd7cJLQQiSM-8gkwbwIuD0FpIxt89wi7_2nYW58vRr00VzGmEOiFd4lM50ZX8U2qrihL9u1aJjpBRcrjYEkhnglyTgY6fWNBEnvAGPG11Kk9UNTOYBF-4e2pPuwk3nNiX_WRmXcktPk2vJrGbbNbdMn6sNDo7O4zz4OKf5iUzQKDh7It4I" alt="Consola central y palanca Toyota Hilux" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300">
+              
+              <!-- Badges Over Image -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                <span class="bg-brand-green text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                  ✓ LISTA
+                </span>
+                <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded">
+                  02 / 06
+                </span>
+              </div>
+
+              <!-- Inspection Zoom Trigger -->
+              <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-brand-navy text-white flex items-center justify-center text-xs transition-colors backdrop-blur-sm shadow" title="Ampliar foto en alta resolución">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </button>
+
+              <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] text-white/90 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+                <span class="">Transmisión Mecánica 4x4</span>
+                <span class="font-mono">10:53:02</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex-1 flex flex-col justify-between bg-white">
+              <div>
+                <h4 class="text-xs font-bold text-brand-navy">Consola central y palanca</h4>
+                <p class="text-[11px] text-brand-slate mt-0.5">Fuelle de cambios íntegro, freno de mano y selector 4x4 H2-H4-L4 operativo.</p>
+              </div>
+              <div class="pt-3 mt-3 border-t border-brand-border flex items-center justify-between text-[10px] text-brand-slate font-medium">
+                <span class="">Cámara: Dispositivo Patio 01</span>
+                <span class="text-brand-green font-semibold">Conforme</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photo Card 03 (Asientos posteriores) -->
+          <div class="border border-brand-border rounded-lg overflow-hidden bg-white shadow-sm flex flex-col group hover:border-brand-borderDark transition-all">
+            <div class="relative bg-slate-800 aspect-[4/3] overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1UIYH1Iz9n3dnbF6DQqIwe2j6UYcHZwlMF0h12RymHKs5JI7mWBNEMLZK2h1MO74yeysOc45xd7cJLQQiSM-8gkwbwIuD0FpIxt89wi7_2nYW58vRr00VzGmEOiFd4lM50ZX8U2qrihL9u1aJjpBRcrjYEkhnglyTgY6fWNBEnvAGPG11Kk9UNTOYBF-4e2pPuwk3nNiX_WRmXcktPk2vJrGbbNbdMn6sNDo7O4zz4OKf5iUzQKDh7It4I" alt="Asientos posteriores y tapicería" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300 filter contrast-105">
+              
+              <!-- Badges Over Image -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                <span class="bg-brand-green text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                  ✓ LISTA
+                </span>
+                <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded">
+                  03 / 06
+                </span>
+              </div>
+
+              <!-- Inspection Zoom Trigger -->
+              <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-brand-navy text-white flex items-center justify-center text-xs transition-colors backdrop-blur-sm shadow" title="Ampliar foto en alta resolución">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </button>
+
+              <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] text-white/90 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+                <span class="">Tapicería y Cinturones (3)</span>
+                <span class="font-mono">10:53:48</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex-1 flex flex-col justify-between bg-white">
+              <div>
+                <h4 class="text-xs font-bold text-brand-navy">Asientos posteriores y anclajes</h4>
+                <p class="text-[11px] text-brand-slate mt-0.5">3 cinturones de 3 puntos operativos, cabeceras completas y tapizado sin roturas.</p>
+              </div>
+              <div class="pt-3 mt-3 border-t border-brand-border flex items-center justify-between text-[10px] text-brand-slate font-medium">
+                <span class="">Cámara: Dispositivo Patio 01</span>
+                <span class="text-brand-green font-semibold">Conforme</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photo Card 04 (Techo y parasoles) -->
+          <div class="border border-brand-border rounded-lg overflow-hidden bg-white shadow-sm flex flex-col group hover:border-brand-borderDark transition-all">
+            <div class="relative bg-slate-900 aspect-[4/3] overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1WvQPPBqX5yWAY_mX5Fb3bIBYE1ttFwDCVFdG1DOAVnZWk4FtXZrKHInKye1ECilUK9Ht9w0AV1dqpl1DZkwBTfYGTGl7DVTL9CnoTGY35lYcNJhrZexvjrEmSF0VEsuLGwBwPpJz3zA_hQKQaJi2VQ2QqYG9iyiqBCskIW743JG15-rTOJSBxXug6Zs38QwF8XB_06NlE3OAGX1Lzrpq9qKVljooABzbxd2NlIw3eYwI-DcAJ0kmvcag" alt="Techo, parasoles y espejo retrovisor" class="w-full h-full object-cover object-top group-hover:scale-102 transition-transform duration-300">
+              
+              <!-- Badges Over Image -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                <span class="bg-brand-green text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                  ✓ LISTA
+                </span>
+                <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded">
+                  04 / 06
+                </span>
+              </div>
+
+              <!-- Inspection Zoom Trigger -->
+              <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-brand-navy text-white flex items-center justify-center text-xs transition-colors backdrop-blur-sm shadow" title="Ampliar foto en alta resolución">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </button>
+
+              <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] text-white/90 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+                <span class="">Espejo central y luces domo</span>
+                <span class="font-mono">10:54:19</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex-1 flex flex-col justify-between bg-white">
+              <div>
+                <h4 class="text-xs font-bold text-brand-navy">Techo y parasoles</h4>
+                <p class="text-[11px] text-brand-slate mt-0.5">Tapizado de techo limpio sin manchas de humedad, parasoles con espejos sanos.</p>
+              </div>
+              <div class="pt-3 mt-3 border-t border-brand-border flex items-center justify-between text-[10px] text-brand-slate font-medium">
+                <span class="">Cámara: Dispositivo Patio 01</span>
+                <span class="text-brand-green font-semibold">Conforme</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photo Card 05 (Guantera y documentos a bordo) -->
+          <div class="border border-brand-border rounded-lg overflow-hidden bg-white shadow-sm flex flex-col group hover:border-brand-borderDark transition-all">
+            <div class="relative bg-slate-800 aspect-[4/3] overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1UIYH1Iz9n3dnbF6DQqIwe2j6UYcHZwlMF0h12RymHKs5JI7mWBNEMLZK2h1MO74yeysOc45xd7cJLQQiSM-8gkwbwIuD0FpIxt89wi7_2nYW58vRr00VzGmEOiFd4lM50ZX8U2qrihL9u1aJjpBRcrjYEkhnglyTgY6fWNBEnvAGPG11Kk9UNTOYBF-4e2pPuwk3nNiX_WRmXcktPk2vJrGbbNbdMn6sNDo7O4zz4OKf5iUzQKDh7It4I" alt="Guantera con documentos oficiales SOAT y tarjeta" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300 filter brightness-95">
+              
+              <!-- Badges Over Image -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                <span class="bg-brand-green text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                  ✓ LISTA
+                </span>
+                <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded">
+                  05 / 06
+                </span>
+              </div>
+
+              <!-- Inspection Zoom Trigger -->
+              <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-brand-navy text-white flex items-center justify-center text-xs transition-colors backdrop-blur-sm shadow" title="Ampliar foto en alta resolución">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </button>
+
+              <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] text-white/90 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+                <span class="">Manual SOAT Físico &amp; Póliza</span>
+                <span class="font-mono">10:55:04</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex-1 flex flex-col justify-between bg-white">
+              <div>
+                <h4 class="text-xs font-bold text-brand-navy">Guantera y documentos de cabina</h4>
+                <p class="text-[11px] text-brand-slate mt-0.5">Certificado SOAT físico vigente, Tarjeta de Propiedad y manual del conductor verificados.</p>
+              </div>
+              <div class="pt-3 mt-3 border-t border-brand-border flex items-center justify-between text-[10px] text-brand-slate font-medium">
+                <span class="">Cámara: Dispositivo Patio 01</span>
+                <span class="text-brand-green font-semibold">Conforme</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photo Card 06 (Pedales y alfombrillas) -->
+          <div class="border border-brand-border rounded-lg overflow-hidden bg-white shadow-sm flex flex-col group hover:border-brand-borderDark transition-all">
+            <div class="relative bg-slate-900 aspect-[4/3] overflow-hidden">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1WvQPPBqX5yWAY_mX5Fb3bIBYE1ttFwDCVFdG1DOAVnZWk4FtXZrKHInKye1ECilUK9Ht9w0AV1dqpl1DZkwBTfYGTGl7DVTL9CnoTGY35lYcNJhrZexvjrEmSF0VEsuLGwBwPpJz3zA_hQKQaJi2VQ2QqYG9iyiqBCskIW743JG15-rTOJSBxXug6Zs38QwF8XB_06NlE3OAGX1Lzrpq9qKVljooABzbxd2NlIw3eYwI-DcAJ0kmvcag" alt="Pedales y piso de jebe conductor" class="w-full h-full object-cover object-bottom group-hover:scale-102 transition-transform duration-300">
+              
+              <!-- Badges Over Image -->
+              <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                <span class="bg-brand-green text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                  ✓ LISTA
+                </span>
+                <span class="bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded">
+                  06 / 06
+                </span>
+              </div>
+
+              <!-- Inspection Zoom Trigger -->
+              <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-brand-navy text-white flex items-center justify-center text-xs transition-colors backdrop-blur-sm shadow" title="Ampliar foto en alta resolución">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </button>
+
+              <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] text-white/90 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">
+                <span class="">Alfombrillas de jebe originales</span>
+                <span class="font-mono">10:55:38</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex-1 flex flex-col justify-between bg-white">
+              <div>
+                <h4 class="text-xs font-bold text-brand-navy">Pedales y alfombrillas</h4>
+                <p class="text-[11px] text-brand-slate mt-0.5">Gomas antideslizantes de pedales con agarre óptimo, piso limpio sin desgaste anómalo.</p>
+              </div>
+              <div class="pt-3 mt-3 border-t border-brand-border flex items-center justify-between text-[10px] text-brand-slate font-medium">
+                <span class="">Cámara: Dispositivo Patio 01</span>
+                <span class="text-brand-green font-semibold">Conforme</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Additional Preview Strip from other zones for Quick Verification -->
+        <div class="mt-8 pt-6 border-t border-brand-border">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-bold text-brand-navy uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-images text-brand-accent"></i> Vistas Rápidas de Otras Zonas Concluidas
+            </h4>
+            <span class="text-[11px] text-brand-slate">Inspección integral Toyota Hilux (D0Y-704)</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <!-- Zona 1 Thumb -->
+            <div class="flex items-center gap-3 p-2.5 rounded-lg border border-brand-border bg-brand-surface hover:bg-white transition-colors cursor-pointer">
+              <img src="https://lh3.googleusercontent.com/aida/AEtjO1XInwInu2q76PqTv0lkefHM5j2_fHISLy1a9WD--3ADxM3p4O5AVyZGVtj-oJ8HlSAb--psMdtuih88X6jMcFBRUhNgKGk7lnVKzkgyFpfc59LMtmYAeHCt1bioIjA9OtSWs7lek48LzDKGjG3MqEETQXfxsNq12ColOyWnTZDxs4mUFkzGAI0sstXDs4yNMOBpWWpSwYNgrnJ5Tb3UvqLILsx9iihoelqzhTnwDvUX2HmSQGNEWnnq9EA" alt="Exterior Frontal" class="w-12 h-12 rounded object-cover border border-brand-border shrink-0">
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-brand-navy truncate">Zona 1: Frontal</p>
+                <p class="text-[10px] text-brand-green font-semibold">8 fotos • OK</p>
+              </div>
+            </div>
+
+            <!-- Zona 3 Thumb -->
+            <div class="flex items-center gap-3 p-2.5 rounded-lg border border-brand-border bg-brand-surface hover:bg-white transition-colors cursor-pointer">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0JyJ6iqMH2NytLSEecsXHD8AWY-NJxlevsIjwnTUXzNOw7y760a_MHqSPpZ8cgvU-GXj0jFmwdoFCoN7BLdLxVDABDtrY97AEFhDxEwQcaY99vPvok0gBbj3t-T4i7YJU0LKSgvttAexqIsvHDdVLGs-mACzuUH3BmesmLnzKRdwIKIJpGqfAHTiR2i82GAE4snwHKTeZtvB03scmSc-iljU3xlGcMKwVcmfVL_f6SrpggTRk9tuF" alt="Tolva Posterior" class="w-12 h-12 rounded object-cover border border-brand-border shrink-0">
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-brand-navy truncate">Zona 3: Tolva</p>
+                <p class="text-[10px] text-brand-green font-semibold">7 fotos • OK</p>
+              </div>
+            </div>
+
+            <!-- Zona 4 Thumb -->
+            <div class="flex items-center gap-3 p-2.5 rounded-lg border border-brand-border bg-brand-surface hover:bg-white transition-colors cursor-pointer">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuATMjPjN8DJ5ufsz-apBO1IqFHgvc_d0yMNQ-ACvJ6zY3s1UeKlByrrU1SXX-ZiO5-N54qg1Mj87HZsyTe5o9Zp82bjMT7Llz5tvMR-GVrIRET6Wml5WpOpPJrbGH724L480PW9DKwxg_KhbhGndO6wv7mGPd6sE5Q6w9sUAF5yV0LWgCaZb7QLRBri1clwYP4OgeghqWW0o2Z83NGBcFLDks9S37y4g84xLvKd9HTrcBL2-fDqGyA_" alt="Bajos y Neumáticos" class="w-12 h-12 rounded object-cover border border-brand-border shrink-0">
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-brand-navy truncate">Zona 4: Mecánica</p>
+                <p class="text-[10px] text-brand-green font-semibold">8 fotos • OK</p>
+              </div>
+            </div>
+
+            <!-- Zona 5 FCKE Summary -->
+            <div class="flex items-center gap-3 p-2.5 rounded-lg border border-brand-border bg-brand-surface hover:bg-white transition-colors cursor-pointer">
+              <div class="w-12 h-12 rounded bg-brand-navy text-white flex items-center justify-center shrink-0 text-sm">
+                <i class="fa-solid fa-toolbox"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-brand-navy truncate">Zona 5: Equipos</p>
+                <p class="text-[10px] text-brand-green font-semibold">12/12 ítems • OK</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Executive Audit Checklist Affirmation Box -->
+    <div class="bg-white border border-brand-border rounded-xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="auditCheck" checked="" class="w-4 h-4 rounded border-brand-borderDark text-brand-navy focus:ring-brand-accent focus:ring-offset-0 cursor-pointer">
+        <label for="auditCheck" class="text-xs text-brand-navy cursor-pointer">
+          <span class="font-bold block">He revisado visualmente las 35 fotografías de las 5 zonas y el inventario de equipamiento</span>
+          <span class="text-brand-slate text-[11px]">Doy conformidad para proceder a la Etapa 5 (Firma del acta digital y entrega efectiva de las llaves al cliente Víctor Hugo Morales Q.).</span>
+        </label>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <button class="px-4 py-2 border border-brand-danger text-brand-danger rounded text-xs font-bold hover:bg-red-50 transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation text-xs"></i> Reportar Observación a Patio
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Sticky Bottom Navigation Footer (Consistent with 5-stage flow) -->
+  <footer class="sticky bottom-0 bg-white border-t border-brand-border px-8 py-3.5 mt-auto shadow-lg z-30">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Back to Stage 3 -->
+      <a href="#" class="inline-flex items-center gap-2 text-xs font-bold text-brand-slate hover:text-brand-navy py-2 px-3 rounded hover:bg-brand-surface transition-colors">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span class="">Volver a Etapa 3: Garantía y contrato</span>
+      </a>
+
+      <div class="flex items-center gap-4">
+        <!-- Secondary Action -->
+        <button class="px-4 py-2 bg-white border border-brand-border rounded text-xs font-semibold text-brand-slate hover:text-brand-navy hover:bg-brand-surface transition-colors">
+          <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> Historial de modificaciones
+        </button>
+
+        <!-- Primary Action CTA -->
+        <button class="px-6 py-2.5 bg-brand-navy text-white rounded text-xs font-bold hover:bg-brand-dark transition-all flex items-center gap-2 shadow-md hover:shadow-lg">
+          <span class="">Continuar a Etapa 5: Firma y entrega</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Corporate Bottom Legal & Support Bar -->
+  <aside class="bg-brand-surface text-brand-slate text-[11px] py-2 px-8 border-t border-brand-border">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <span class=""><strong>VeloxRent ERP</strong> © 2026</span>
+        <span class="">•</span>
+        <span class="">Soporte Patio Huamanga: <strong>Anexo 108</strong></span>
+        <span class="">•</span>
+        <span class="">Mesa Front-Office: <strong>Anexo 103</strong></span>
+      </div>
+      <div class="flex items-center gap-3 text-slate-400">
+        <span class="">Sesión: maría.ejecutivo@veloxrent.pe</span>
+        <span class="">•</span>
+        <a href="#" class="text-brand-slate hover:underline">Manual Operativo FIV</a>
+      </div>
+    </div>
+  </aside>
+
+
+
+
+
+</body></html>

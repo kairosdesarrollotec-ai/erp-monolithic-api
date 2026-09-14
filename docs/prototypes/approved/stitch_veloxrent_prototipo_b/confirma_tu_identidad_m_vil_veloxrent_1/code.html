@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Confirma tu identidad — Móvil - VeloxRent</title>
+  <!-- Google Fonts: Space Grotesk & Public Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..900;1,300..900&family=Space+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              orangeDark: '#9E4C08',
+              grayBorder: '#A39C90',
+              grayMuted: '#4E4A45',
+              grayLight: '#EFEDE7',
+              grayWarm: '#F6F4EE',
+              danger: '#C22B2B',
+              success: '#1E7D4B'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Ocultar flechas en inputs de número */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#1F2A33] font-sans antialiased h-full flex flex-col justify-between selection:bg-orange-100 selection:text-orange-900">
+  
+  <!-- Contenedor Principal Móvil (390px centrado en viewport con hoja completa) -->
+  <div class="w-full max-w-[390px] mx-auto min-h-screen bg-white flex flex-col justify-between shadow-none relative">
+    
+    <!-- Barra Superior Delgada (Top Bar fija/superior) -->
+    <header class="w-full h-14 border-b border-[#EFEDE7] flex items-center justify-between px-4 sticky top-0 bg-white z-10">
+      <button type="button" aria-label="Cerrar" class="w-10 h-10 flex items-center justify-center -ml-2 text-[#1F2A33] hover:bg-[#F6F4EE] rounded-full active:scale-95 transition-all">
+        <!-- Ícono X para cerrar a la izquierda -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#1F2A33]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Identificador de seguridad discreto en cabecera -->
+      <div class="flex items-center gap-1.5 text-xs font-medium text-[#4E4A45] uppercase tracking-wider">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#C6600A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <span>Verificación 2FA</span>
+      </div>
+
+      <!-- Espaciador balanceador a la derecha -->
+      <div class="w-8"></div>
+    </header>
+
+    <!-- Contenido Central de la Hoja Completa -->
+    <main class="flex-1 px-6 pt-6 pb-6 flex flex-col justify-start">
+      
+      <!-- Bloque de Título y Explicación -->
+      <div class="mb-8">
+        <h1 class="font-heading font-bold text-[24px] leading-tight text-[#1F2A33] tracking-tight mb-2.5">
+          Confirma tu identidad
+        </h1>
+        <p class="text-[15px] leading-relaxed text-[#4E4A45]">
+          Esta acción requiere verificación adicional. Ingresa el código de 6 dígitos generado por tu aplicación autenticadora.
+        </p>
+      </div>
+
+      <!-- Formulario de Código de Verificación -->
+      <div class="w-full mb-8">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-xs font-medium text-[#4E4A45] uppercase tracking-wider">
+            Código de seguridad
+          </label>
+          <span class="inline-flex items-center text-xs font-medium text-[#1E7D4B] gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+            Sincronizado
+          </span>
+        </div>
+
+        <!-- 6 casillas independientes de código (44px min cada una, touch target ideal) -->
+        <div class="grid grid-cols-6 gap-2 w-full max-w-[342px] mx-auto" id="otp-container">
+          <input 
+            type="text" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="1" 
+            autofocus
+            class="otp-digit w-[46px] h-[52px] text-center font-heading font-semibold text-[22px] text-[#1F2A33] bg-white border border-[#A39C90] rounded-[4px] focus:border-[#C6600A] focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+            aria-label="Dígito 1"
+          />
+          <input 
+            type="text" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="1" 
+            class="otp-digit w-[46px] h-[52px] text-center font-heading font-semibold text-[22px] text-[#1F2A33] bg-white border border-[#A39C90] rounded-[4px] focus:border-[#C6600A] focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+            aria-label="Dígito 2"
+          />
+          <input 
+            type="text" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="1" 
+            class="otp-digit w-[46px] h-[52px] text-center font-heading font-semibold text-[22px] text-[#1F2A33] bg-white border border-[#A39C90] rounded-[4px] focus:border-[#C6600A] focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+            aria-label="Dígito 3"
+          />
+          <input 
+            type="text" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="1" 
+            class="otp-digit w-[46px] h-[52px] text-center font-heading font-semibold text-[22px] text-[#1F2A33] bg-white border border-[#A39C90] rounded-[4px] focus:border-[#C6600A] focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+            aria-label="Dígito 4"
+          />
+          <input 
+            type="text" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="1" 
+            class="otp-digit w-[46px] h-[52px] text-center font-heading font-semibold text-[22px] text-[#1F2A33] bg-white border border-[#A39C90] rounded-[4px] focus:border-[#C6600A] focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+            aria-label="Dígito 5"
+          />
+          <input 
+            type="text" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="1" 
+            class="otp-digit w-[46px] h-[52px] text-center font-heading font-semibold text-[22px] text-[#1F2A33] bg-white border border-[#A39C90] rounded-[4px] focus:border-[#C6600A] focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+            aria-label="Dígito 6"
+          />
+        </div>
+
+        <!-- Indicador o temporizador de reenvío / validez -->
+        <div class="mt-4 text-center">
+          <p class="text-[13px] text-[#4E4A45]">
+            ¿No recibes el código? <button type="button" class="text-[#9E4C08] font-medium hover:underline focus:outline-none">Reenviar código (0:45)</button>
+          </p>
+        </div>
+      </div>
+
+      <!-- Tarjeta informativa de contexto de seguridad -->
+      <div class="bg-[#F6F4EE] border border-[#EFEDE7] rounded-[4px] p-3.5 flex items-start gap-2.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#C6600A] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="text-xs text-[#4E4A45] leading-snug">
+          Protocolo de seguridad operativa. Esta verificación caduca en 60 segundos por normatividad interna de VeloxRent ERP.
+        </p>
+      </div>
+
+    </main>
+
+    <!-- Zona Inferior Fija (Sticky Bottom Bar con CTA principal ancho completo) -->
+    <footer class="w-full p-4 bg-white border-t border-[#EFEDE7] sticky bottom-0 z-10 pb-6">
+      <button 
+        type="button" 
+        id="btn-confirmar"
+        class="w-full h-[52px] bg-[#1F2A33] hover:bg-[#2A3742] active:bg-[#141C22] text-white font-heading font-medium text-[15px] tracking-wide rounded-[4px] flex items-center justify-center gap-2 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1F2A33]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <span>Confirmar</span>
+      </button>
+      <div class="mt-2 text-center">
+        <button type="button" class="text-xs text-[#4E4A45] hover:text-[#1F2A33] py-1 font-medium transition-colors">
+          Cancelar y regresar
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Script interactivo de auto-avance para las 6 casillas OTP en móvil -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = Array.from(document.querySelectorAll('.otp-digit'));
+      
+      inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          const val = e.target.value;
+          if (val.length > 0) {
+            // Dejar solo el último dígito ingresado
+            e.target.value = val.slice(-1);
+            // Avanzar al siguiente
+            if (index < inputs.length - 1) {
+              inputs[index + 1].focus();
+            }
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value) {
+            // Retroceder al anterior
+            if (index > 0) {
+              inputs[index - 1].focus();
+            }
+          }
+        });
+
+        // Manejar pegado de código completo (ej: 123456)
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+          if (/^\d+$/.test(pasteData)) {
+            const digits = pasteData.slice(0, 6).split('');
+            digits.forEach((digit, i) => {
+              if (inputs[i]) {
+                inputs[i].value = digit;
+              }
+            });
+            const nextIdx = Math.min(digits.length, inputs.length - 1);
+            inputs[nextIdx].focus();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

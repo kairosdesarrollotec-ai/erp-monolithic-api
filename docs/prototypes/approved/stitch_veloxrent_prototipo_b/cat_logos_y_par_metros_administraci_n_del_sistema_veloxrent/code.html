@@ -1,0 +1,486 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogos y parámetros — Administración del sistema - VeloxRent</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              accent: '#B5720A',
+              red: '#C22B2B',
+              green: '#1E7D4B',
+              dark: '#1F2A33',
+            },
+            surface: {
+              DEFAULT: '#FFFFFF',
+              light: '#F8F7F4',
+              border: '#E5E2DC',
+              muted: '#706E6B',
+              heading: '#1A1918',
+            }
+          },
+          borderRadius: {
+            DEFAULT: '4px',
+            sm: '2px',
+            md: '4px',
+            lg: '6px',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1A1918;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono-code {
+      font-family: 'Space Grotesk', monospace;
+    }
+  </style>
+</head>
+<body class="bg-white text-surface-heading min-h-screen flex flex-col justify-between text-[14px]">
+
+  <!-- TOP HEADER / CORPORATE BAR -->
+  <header class="border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+    <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Logo + Breadcrumbs -->
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 bg-[#C6600A] rounded flex items-center justify-center text-white font-bold font-mono-code text-xl tracking-tight shadow-sm">
+            V
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold text-lg leading-tight tracking-tight text-[#1F2A33]">VeloxRent</span>
+            <span class="text-[10px] text-[#706E6B] font-mono-code font-semibold tracking-wider">ERP v3.4</span>
+          </div>
+        </div>
+
+        <div class="h-5 w-[1px] bg-[#E5E2DC]"></div>
+
+        <nav class="flex items-center space-x-2 text-[13px] text-[#706E6B]">
+          <span class="hover:text-[#1F2A33] transition-colors">Administración del sistema</span>
+          <span class="text-[#A39C90]">›</span>
+          <span class="text-[#1F2A33] font-semibold">Catálogos y parámetros</span>
+        </nav>
+      </div>
+
+      <!-- System status + Location + User Profile -->
+      <div class="flex items-center space-x-5">
+        <!-- Online Pill -->
+        <div class="flex items-center space-x-2 bg-[#E8F5EC] text-[#1E7D4B] px-2.5 py-1 rounded-full text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <!-- Headquarters -->
+        <div class="flex items-center space-x-1.5 text-xs text-[#4E4A45] bg-[#F8F7F4] border border-[#E5E2DC] px-3 py-1 rounded">
+          <svg class="w-3.5 h-3.5 text-[#706E6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span>Ayacucho — Sede Central</span>
+        </div>
+
+        <!-- User profile -->
+        <div class="flex items-center space-x-3 pl-2 border-l border-[#E5E2DC]">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs font-mono-code">
+            GA
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-xs font-bold text-[#1F2A33] leading-tight">Gustavo Alarcón</span>
+            <span class="text-[11px] text-[#706E6B] leading-tight">Administrador de Sistemas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-grow max-w-[1440px] w-full mx-auto px-6 py-7">
+    
+    <!-- PAGE TITLE BAR -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-[#E5E2DC] gap-4">
+      <div>
+        <div class="flex items-center space-x-3">
+          <h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">Catálogos y parámetros</h1>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#F8F7F4] text-[#706E6B] border border-[#E5E2DC]">
+            Módulo Configuración Global
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-mono-code font-semibold bg-[#EFF6FF] text-[#2166B0] border border-[#BFDBFE]">
+            POL-SYS-014 / PARAMS
+          </span>
+        </div>
+        <p class="text-[13px] text-[#706E6B] mt-1">
+          Ajuste de parámetros operacionales, políticas tarifarias de reserva y control de plantillas contractuales legales de VeloxRent.
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center space-x-3">
+        <button type="button" class="inline-flex items-center px-3.5 py-2 border border-[#E5E2DC] rounded text-xs font-semibold text-[#4E4A45] bg-white hover:bg-[#F8F7F4] transition-colors">
+          <svg class="w-3.5 h-3.5 mr-2 text-[#706E6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Historial de auditoría RIO
+        </button>
+        <button type="button" class="inline-flex items-center px-3.5 py-2 border border-[#E5E2DC] rounded text-xs font-semibold text-[#4E4A45] bg-white hover:bg-[#F8F7F4] transition-colors">
+          <svg class="w-3.5 h-3.5 mr-2 text-[#706E6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          Exportar parámetros (.json)
+        </button>
+      </div>
+    </div>
+
+    <!-- NOTICE BANNER: PARAMS GOVERNANCE -->
+    <div class="mt-6 bg-[#FDF1DE] border border-[#F6D296] rounded p-4 flex items-start space-x-3 text-xs text-[#B5720A]">
+      <svg class="w-4 h-4 text-[#B5720A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div class="leading-relaxed">
+        <span class="font-bold">Protocolo de Gobernanza de Parámetros (BR-SYS-007):</span> Toda modificación a los montos de garantía o plantillas legales queda registrada con hash criptográfico en la auditoría RIO. Modificaciones sobre reservas aplican exclusivamente a nuevas reservas emitidas con posterioridad a la confirmación de cambio.
+      </div>
+    </div>
+
+    <!-- GRID LAYOUT -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- LEFT COLUMN: MONTO DE RESERVA & PARÁMETROS OPERATIVOS (5 cols) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- SECTION 1: MONTO DE RESERVA -->
+        <div class="bg-white border border-[#E5E2DC] rounded shadow-sm">
+          <!-- Card Header -->
+          <div class="p-5 border-b border-[#E5E2DC] flex items-center justify-between bg-[#FCFCFB]">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-7 h-7 rounded bg-[#E8F0FE] text-[#2166B0] flex items-center justify-center font-bold">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-sm font-bold text-[#1F2A33]">Monto de reserva</h2>
+                <span class="text-[11px] text-[#706E6B] font-mono-code">REGLA BR-RES-001</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 bg-[#E8F5EC] text-[#1E7D4B] rounded text-[11px] font-semibold">
+              Activo en producción
+            </span>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-6 space-y-5">
+            <p class="text-xs text-[#4E4A45] leading-relaxed">
+              Monto estándar obligatorio que abona el cliente para formalizar una reserva provisional de vehículo en mostrador garita o web.
+            </p>
+
+            <!-- Value Display & Change Component -->
+            <div class="p-4 bg-[#F8F7F4] border border-[#E5E2DC] rounded space-y-3">
+              <div class="text-[11px] font-semibold text-[#706E6B] uppercase tracking-wider font-mono-code">
+                Valor configurado actual
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-baseline space-x-2">
+                  <span class="text-3xl font-bold font-mono-code text-[#1F2A33]">S/ 300</span>
+                  <span class="text-xs text-[#706E6B]">PEN / reserva</span>
+                </div>
+
+                <!-- Botón Cambiar que abre confirmación -->
+                <button type="button" class="inline-flex items-center px-4 py-2 bg-[#1F2A33] hover:bg-[#2B3B48] text-white text-xs font-semibold rounded shadow-sm transition-colors">
+                  <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                  </svg>
+                  Cambiar
+                </button>
+              </div>
+
+              <div class="pt-2 border-t border-[#E5E2DC] flex items-center justify-between text-[11px] text-[#706E6B]">
+                <span>Último cambio: <strong>01/08/2026</strong></span>
+                <span>Autor: <strong>Gustavo Alarcón</strong></span>
+              </div>
+            </div>
+
+            <!-- Simulated Input Field with Details -->
+            <div class="space-y-2">
+              <label class="block text-xs font-medium text-[#4E4A45]">
+                Parámetro en base de datos
+              </label>
+              <div class="flex rounded border border-[#E5E2DC] bg-[#FFFFFF] overflow-hidden focus-within:border-[#1F2A33]">
+                <span class="inline-flex items-center px-3 bg-[#F8F7F4] text-[#706E6B] text-xs font-mono-code border-r border-[#E5E2DC]">
+                  CONFIG_RESERVA_AMOUNT_PEN
+                </span>
+                <input type="text" readonly="" value="300.00" class="w-full px-3 py-2 text-xs font-mono-code font-bold text-[#1F2A33] bg-white focus:outline-none">
+              </div>
+              <span class="text-[11px] text-[#706E6B]">
+                Afecta directamente la validación de vouchers OCR en Finanzas (#PAG-0891).
+              </span>
+            </div>
+
+            <!-- Warning notice within Card -->
+            <div class="bg-[#FFFBEB] border border-[#FDE68A] p-3 rounded text-[11px] text-[#92400E] flex items-start space-x-2">
+              <svg class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-[#B5720A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+              <span>El botón <strong>Cambiar</strong> solicita confirmación con justificación obligatoria y no impacta reservas confirmadas previas.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADDITIONAL OPERATIONAL REFERENCE CARD -->
+        <div class="bg-white border border-[#E5E2DC] rounded p-5 space-y-3">
+          <h3 class="text-xs font-bold text-[#1F2A33] uppercase tracking-wider font-mono-code">
+            Parámetros Relacionados (Solo Consulta)
+          </h3>
+          <ul class="text-xs divide-y divide-[#E5E2DC]">
+            <li class="py-2.5 flex items-center justify-between">
+              <span class="text-[#4E4A45]">Tolerancia de devolución en garita</span>
+              <span class="font-mono-code font-semibold text-[#1F2A33]">59 minutos</span>
+            </li>
+            <li class="py-2.5 flex items-center justify-between">
+              <span class="text-[#4E4A45]">Cargo por paralización técnica (24h)</span>
+              <span class="font-mono-code font-semibold text-[#1F2A33]">S/ 250.00 / día</span>
+            </li>
+            <li class="py-2.5 flex items-center justify-between">
+              <span class="text-[#4E4A45]">Retención de garantía estándar</span>
+              <span class="font-mono-code font-semibold text-[#1F2A33]">US$ 1,200.00</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: PLANTILLAS DE CONTRATO (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- SECTION 2: PLANTILLAS DE CONTRATO -->
+        <div class="bg-white border border-[#E5E2DC] rounded shadow-sm">
+          
+          <!-- Card Header -->
+          <div class="p-5 border-b border-[#E5E2DC] flex flex-col sm:flex-row sm:items-center justify-between bg-[#FCFCFB] gap-3">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-7 h-7 rounded bg-[#FDF1DE] text-[#B5720A] flex items-center justify-center font-bold">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-sm font-bold text-[#1F2A33]">Plantillas de contrato</h2>
+                <span class="text-[11px] text-[#706E6B] font-mono-code">MÓDULO LEGAL Y NOTARIAL</span>
+              </div>
+            </div>
+
+            <!-- Upload new template CTA -->
+            <button type="button" class="inline-flex items-center px-3 py-1.5 bg-[#C6600A] hover:bg-[#A85108] text-white text-xs font-semibold rounded shadow-sm transition-colors">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Subir nueva versión
+            </button>
+          </div>
+
+          <!-- EXPLICIT CONSEQUENCE WARNING BOX -->
+          <div class="m-5 p-3.5 bg-[#FEF2F2] border border-[#F87171] rounded flex items-start space-x-3 text-xs text-[#991B1B]">
+            <svg class="w-4 h-4 text-[#C22B2B] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div class="leading-relaxed">
+              <strong class="font-bold text-[#C22B2B]">Aviso explícito de consecuencia normativa:</strong> Solo puede existir <strong>una única plantilla con estado «Vigente»</strong> a la vez. Activar una plantilla nueva <strong>desactivará automáticamente</strong> la versión vigente actual, archivándola en el histórico inmutable de auditoría legal de VeloxRent.
+            </div>
+          </div>
+
+          <!-- LIST OF TEMPLATES -->
+          <div class="px-5 pb-5 space-y-3">
+            
+            <!-- TEMPLATE 1: VIGENTE (Active) -->
+            <div class="border-2 border-[#1E7D4B] bg-[#F7FBF8] rounded p-4 relative shadow-sm">
+              <div class="flex items-start justify-between">
+                <div class="space-y-1.5">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-bold text-sm text-[#1F2A33]">Contrato Marco de Arrendamiento Vehicular v4.2</span>
+                    <!-- Badge Verde: VIGENTE -->
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-[#E8F5EC] text-[#1E7D4B] border border-[#A7F3D0]">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] mr-1.5"></span>
+                      Vigente
+                    </span>
+                  </div>
+                  <p class="text-xs text-[#4E4A45]">
+                    Plantilla oficial con cláusula de allanamiento futuro notarial, retención de garantía y cláusula penal de paralización.
+                  </p>
+                  <div class="flex items-center space-x-4 text-[11px] text-[#706E6B] font-mono-code pt-1">
+                    <span>Código: <strong>LEG-TPL-2026-04</strong></span>
+                    <span>Aprobado por: <strong>Asesoría Legal / Notaría Ramos</strong></span>
+                    <span>Desde: <strong>15/07/2026</strong></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2 flex-shrink-0 ml-4">
+                  <button type="button" class="px-2.5 py-1.5 text-xs text-[#1F2A33] border border-[#E5E2DC] rounded hover:bg-white bg-white font-medium">
+                    Descargar .docx
+                  </button>
+                  <span class="inline-flex items-center px-3 py-1.5 bg-[#E8F5EC] text-[#1E7D4B] text-xs font-bold rounded cursor-default">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    En uso
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TEMPLATE 2: ARCHIVADA (Candidate to activate) -->
+            <div class="border border-[#E5E2DC] bg-white hover:bg-[#FCFCFB] rounded p-4 transition-colors">
+              <div class="flex items-start justify-between">
+                <div class="space-y-1.5">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-sm text-[#1F2A33]">Contrato de Arrendamiento Vehicular Estándar v4.1</span>
+                    <!-- Badge Archivada -->
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#F8F7F4] text-[#706E6B] border border-[#E5E2DC]">
+                      Archivada
+                    </span>
+                  </div>
+                  <p class="text-xs text-[#706E6B]">
+                    Versión previa con redacción general de garantía en dólares y depósito en cuenta recaudadora BCP.
+                  </p>
+                  <div class="flex items-center space-x-4 text-[11px] text-[#706E6B] font-mono-code pt-1">
+                    <span>Código: <strong>LEG-TPL-2026-02</strong></span>
+                    <span>Vigencia: <strong>01/01/2026 – 14/07/2026</strong></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2 flex-shrink-0 ml-4">
+                  <button type="button" class="px-2.5 py-1.5 text-xs text-[#706E6B] border border-[#E5E2DC] rounded hover:bg-[#F8F7F4] font-medium">
+                    Ver
+                  </button>
+                  <button type="button" class="px-3 py-1.5 bg-white border border-[#1F2A33] text-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-xs font-semibold rounded transition-colors" title="Activar esta versión desactivará la actual v4.2">
+                    Activar como vigente
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TEMPLATE 3: ARCHIVADA -->
+            <div class="border border-[#E5E2DC] bg-white hover:bg-[#FCFCFB] rounded p-4 transition-colors">
+              <div class="flex items-start justify-between">
+                <div class="space-y-1.5">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-sm text-[#1F2A33]">Contrato de Alquiler Flota Corporativa Minera v3.9</span>
+                    <!-- Badge Archivada -->
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#F8F7F4] text-[#706E6B] border border-[#E5E2DC]">
+                      Archivada
+                    </span>
+                  </div>
+                  <p class="text-xs text-[#706E6B]">
+                    Modelo contractual con cláusulas especiales de socavón, GPS de alta frecuencia y seguro todo riesgo Rímac.
+                  </p>
+                  <div class="flex items-center space-x-4 text-[11px] text-[#706E6B] font-mono-code pt-1">
+                    <span>Código: <strong>LEG-TPL-2025-08</strong></span>
+                    <span>Vigencia: <strong>15/09/2025 – 31/12/2025</strong></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2 flex-shrink-0 ml-4">
+                  <button type="button" class="px-2.5 py-1.5 text-xs text-[#706E6B] border border-[#E5E2DC] rounded hover:bg-[#F8F7F4] font-medium">
+                    Ver
+                  </button>
+                  <button type="button" class="px-3 py-1.5 bg-white border border-[#1F2A33] text-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-xs font-semibold rounded transition-colors" title="Activar esta versión desactivará la actual v4.2">
+                    Activar como vigente
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TEMPLATE 4: ARCHIVADA (Legacy) -->
+            <div class="border border-[#E5E2DC] bg-white hover:bg-[#FCFCFB] rounded p-4 transition-colors opacity-80">
+              <div class="flex items-start justify-between">
+                <div class="space-y-1.5">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-sm text-[#4E4A45]">Contrato Marco Inicial de Arrendamiento v3.0 (Histórico)</span>
+                    <!-- Badge Archivada -->
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#F8F7F4] text-[#706E6B] border border-[#E5E2DC]">
+                      Archivada
+                    </span>
+                  </div>
+                  <p class="text-xs text-[#706E6B]">
+                    Contrato legado anterior a la homologación notarial de Ayacucho Central.
+                  </p>
+                  <div class="flex items-center space-x-4 text-[11px] text-[#706E6B] font-mono-code pt-1">
+                    <span>Código: <strong>LEG-TPL-2024-01</strong></span>
+                    <span>Vigencia: <strong>Año 2024 - 2025</strong></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2 flex-shrink-0 ml-4">
+                  <button type="button" class="px-2.5 py-1.5 text-xs text-[#706E6B] border border-[#E5E2DC] rounded hover:bg-[#F8F7F4] font-medium">
+                    Ver
+                  </button>
+                  <button type="button" class="px-3 py-1.5 bg-white border border-[#A39C90] text-[#706E6B] hover:border-[#1F2A33] hover:text-[#1F2A33] text-xs font-medium rounded transition-colors">
+                    Activar como vigente
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom bar in templates -->
+          <div class="p-4 border-t border-[#E5E2DC] bg-[#F8F7F4] flex items-center justify-between text-xs text-[#706E6B]">
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>1 plantilla activa en producción · 3 archivadas en repositorio</span>
+            </div>
+            <span class="font-mono-code text-[11px]">Control de versiones: Git/RIO legal sync</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-[#E5E2DC] bg-white py-4 mt-12">
+    <div class="max-w-[1440px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#706E6B] gap-2">
+      <div class="flex items-center space-x-4">
+        <span class="font-medium text-[#1F2A33]">VeloxRent © 2026</span>
+        <span>•</span>
+        <span>Sistema de Gestión Comercial y Flotas</span>
+        <span>•</span>
+        <span>Módulo Administración / Catálogos y parámetros</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <span>Mesa TI / Accesos: <strong class="text-[#1F2A33] font-mono-code">anexo 101</strong></span>
+        <span>Soporte Seguridad: <strong class="text-[#1F2A33] font-mono-code">anexo 102</strong></span>
+        <a href="#" class="text-[#C22B2B] hover:underline flex items-center space-x-1 font-medium">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

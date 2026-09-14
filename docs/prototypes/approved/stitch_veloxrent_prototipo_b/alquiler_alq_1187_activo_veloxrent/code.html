@@ -1,0 +1,471 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alquiler #ALQ-1187 — Activo - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #F4F3EF;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #D5D1C8;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #A39C90;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-white text-[#1F2A33]">
+
+  <!-- Cabecera Superior Corporativa -->
+  <header class="w-full border-b border-[#E5E3DC] bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Marca y Navegación / Breadcrumbs -->
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl font-bold tracking-tight text-[#C6600A]">Velox</span><span class="text-xl font-bold tracking-tight text-[#1F2A33]">Rent</span>
+        </div>
+        <div class="h-5 w-px bg-[#E5E3DC]"></div>
+        <nav class="flex items-center space-x-2 text-xs font-medium text-[#4E4A45]">
+          <span class="hover:text-[#1F2A33] cursor-pointer">Gestión Interna</span>
+          <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          <span class="hover:text-[#1F2A33] cursor-pointer">Alquileres</span>
+          <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          <span class="text-[#1F2A33] font-semibold">Expediente activo</span>
+        </nav>
+      </div>
+
+      <!-- Indicadores de Contexto y Usuario -->
+      <div class="flex items-center space-x-4">
+        <!-- Indicador de Red / Sincronización -->
+        <div class="flex items-center space-x-2 px-2.5 py-1 bg-[#EBF5EE] border border-[#CDE5D4] rounded-full text-xs font-medium text-[#1E7D4B]">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <!-- Selector de Sede -->
+        <div class="flex items-center space-x-2 px-3 py-1 bg-[#F4F3EF] border border-[#E5E3DC] rounded text-xs text-[#1F2A33] font-medium">
+          <svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          <span>Ayacucho — Sede Central</span>
+        </div>
+
+        <!-- Notificaciones -->
+        <button class="relative p-1.5 text-[#4E4A45] hover:text-[#1F2A33] rounded hover:bg-[#F4F3EF]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+          <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#C6600A]"></span>
+        </button>
+
+        <!-- Perfil Usuario -->
+        <div class="flex items-center space-x-2.5 pl-2 border-l border-[#E5E3DC]">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center text-xs font-semibold">
+            ME
+          </div>
+          <div class="text-left leading-tight hidden sm:block">
+            <div class="text-xs font-semibold text-[#1F2A33]">María Ejecutivo</div>
+            <div class="text-[11px] text-[#4E4A45]">Front-office</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Central -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-6 flex-1">
+
+    <!-- Barra de Estado y Trazabilidad Superior -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-[#E5E3DC]">
+      <div class="flex items-center space-x-3">
+        <a href="#" class="inline-flex items-center text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33]">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Volver a Alquileres
+        </a>
+        <span class="text-[#D5D1C8]">|</span>
+        <div class="flex items-center space-x-2">
+          <h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">Alquiler #ALQ-1187 — Activo</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EBF5EE] text-[#1E7D4B] border border-[#CDE5D4] flex items-center">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] mr-1.5"></span>
+            Activo en curso
+          </span>
+        </div>
+      </div>
+
+      <!-- Trazabilidad Documental -->
+      <div class="flex items-center space-x-3 text-xs text-[#4E4A45]">
+        <span>Origen: <strong class="text-[#1F2A33] font-semibold">Reserva #RES-2291</strong></span>
+        <span class="text-[#D5D1C8]">•</span>
+        <span>Contrato: <strong class="text-[#1F2A33] font-semibold">CON-AYAC-2025-0430</strong></span>
+        <span class="text-[#D5D1C8]">•</span>
+        <span class="inline-flex items-center text-[#1E7D4B] font-medium bg-[#EBF5EE] px-2 py-0.5 rounded border border-[#CDE5D4]">
+          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          Entrega completada hoy 10:48 AM
+        </span>
+      </div>
+    </div>
+
+    <!-- Botonera Principal de Acciones (3 botones solicitados + accesos rápidos) -->
+    <div class="flex flex-wrap items-center justify-between gap-3 p-4 mb-6 bg-[#FBFBFA] border border-[#E5E3DC] rounded">
+      <div class="flex items-center space-x-2 text-xs text-[#4E4A45]">
+        <svg class="w-4 h-4 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Tiempo transcurrido del servicio: <strong class="text-[#1F2A33]">5 horas 12 min</strong> · Retorno programado en <strong class="text-[#1F2A33]">2 días, 18 horas</strong></span>
+      </div>
+
+      <!-- Grupo de 3 Botones Solicitados -->
+      <div class="flex items-center space-x-3">
+        <!-- Botón Solicitar ampliación (borde #A39C90) -->
+        <button class="px-4 py-2 text-xs font-semibold text-[#1F2A33] bg-white border border-[#A39C90] rounded hover:bg-[#F4F3EF] transition-colors shadow-sm flex items-center">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          Solicitar ampliación
+        </button>
+
+        <!-- Botón Registrar incidencia (borde #A39C90) -->
+        <button class="px-4 py-2 text-xs font-semibold text-[#C22B2B] bg-white border border-[#A39C90] rounded hover:bg-[#FDF2F2] transition-colors shadow-sm flex items-center">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-[#C22B2B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          Registrar incidencia
+        </button>
+
+        <!-- Botón Iniciar devolución (fondo #1F2A33) -->
+        <button class="px-4 py-2 text-xs font-semibold text-white bg-[#1F2A33] hover:bg-[#2C3B47] rounded transition-colors shadow-sm flex items-center">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+          Iniciar devolución
+        </button>
+      </div>
+    </div>
+
+    <!-- Grilla Principal: 2 Columnas -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Columna Izquierda: Resumen y Telemetría GPS (7 columnas) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- 1. Tarjeta Resumen: Cliente, Vehículo, Periodo -->
+        <div class="border border-[#E5E3DC] rounded p-5 bg-white shadow-sm">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#E5E3DC]">
+            <h2 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wider flex items-center">
+              <svg class="w-4 h-4 mr-2 text-[#C6600A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              Ficha Resumen del Alquiler
+            </h2>
+            <span class="text-xs text-[#4E4A45]">Expediente auditado: <strong>#ALQ-1187</strong></span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <!-- Cliente -->
+            <div class="bg-[#FBFBFA] p-3.5 rounded border border-[#E5E3DC]">
+              <div class="text-[11px] font-semibold text-[#4E4A45] uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span>Cliente Corporativo</span>
+                <span class="px-1.5 py-0.2 rounded text-[10px] bg-[#EBF5EE] text-[#1E7D4B] font-bold">RUC Verificado</span>
+              </div>
+              <div class="text-sm font-bold text-[#1F2A33] leading-tight">Minera Los Andes S.A.C.</div>
+              <div class="text-xs text-[#4E4A45] mt-1">RUC: 20491823901</div>
+              <div class="text-[11px] text-[#4E4A45] mt-2 pt-2 border-t border-[#E5E3DC]">
+                <div><strong>Conductor:</strong> Víctor Hugo Morales Q.</div>
+                <div class="text-[#4E4A45]">DNI: 44829104 · Brevete: A-IIb</div>
+              </div>
+            </div>
+
+            <!-- Vehículo -->
+            <div class="bg-[#FBFBFA] p-3.5 rounded border border-[#E5E3DC]">
+              <div class="text-[11px] font-semibold text-[#4E4A45] uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span>Vehículo Asignado</span>
+                <span class="px-1.5 py-0.2 rounded text-[10px] bg-[#EBF3FB] text-[#2166B0] font-bold">Equipado 4x4</span>
+              </div>
+              <div class="text-sm font-bold text-[#1F2A33] leading-tight">Toyota Hilux 4x4 MT</div>
+              <div class="text-xs text-[#4E4A45] mt-1">Placa: <strong class="text-[#1F2A33] font-mono bg-white px-1 py-0.5 border border-[#D5D1C8] rounded">D0Y-704</strong></div>
+              <div class="text-[11px] text-[#4E4A45] mt-2 pt-2 border-t border-[#E5E3DC]">
+                <div><strong>Odómetro entrega:</strong> 38,412 km</div>
+                <div><strong>Tanque inicial:</strong> 100% (8/8)</div>
+              </div>
+            </div>
+
+            <!-- Periodo -->
+            <div class="bg-[#FBFBFA] p-3.5 rounded border border-[#E5E3DC]">
+              <div class="text-[11px] font-semibold text-[#4E4A45] uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span>Periodo del Alquiler</span>
+                <span class="px-1.5 py-0.2 rounded text-[10px] bg-[#FDF1DE] text-[#B5720A] font-bold">3 Días</span>
+              </div>
+              <div class="text-xs font-semibold text-[#1F2A33]">04 sep 2025, 10:48 AM</div>
+              <div class="text-[11px] text-[#4E4A45]">hasta:</div>
+              <div class="text-xs font-bold text-[#C6600A]">07 sep 2025, 11:00 AM</div>
+              <div class="text-[11px] text-[#4E4A45] mt-2 pt-2 border-t border-[#E5E3DC]">
+                <div><strong>Sede devolución:</strong> Ayacucho Central</div>
+                <div><strong>Tolerancia:</strong> 59 minutos sin mora</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Mapa con Posición GPS (Placeholder de Mapa) -->
+        <div class="border border-[#E5E3DC] rounded p-5 bg-white shadow-sm">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#E5E3DC]">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+              <h2 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wider">Monitoreo Telemático &amp; Posición GPS en Tiempo Real</h2>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-[#4E4A45]">Actualizado hace 2 minutos (16:00:22)</span>
+              <button class="p-1 text-[#4E4A45] hover:text-[#1F2A33] hover:bg-[#F4F3EF] rounded" title="Refrescar posición">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenedor del Mapa (SVG Vectorial Estilizado / Canvas Telemático) -->
+          <div class="relative w-full h-72 bg-[#EAE8E1] rounded overflow-hidden border border-[#D5D1C8]">
+            <!-- Fondo Cartográfico Simulado con curvas y cuadrícula de relieve -->
+            <svg class="w-full h-full object-cover opacity-80" viewBox="0 0 800 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Rejilla y fondos topográficos -->
+              <rect width="800" height="360" fill="#E8E5DC"></rect>
+              <!-- Curvas de relieve topográfico andino -->
+              <path d="M-20 80 C 120 40, 240 120, 420 70 C 600 20, 720 90, 820 60" stroke="#DCD8CB" stroke-width="2" fill="none"></path>
+              <path d="M-20 160 C 140 130, 280 210, 460 150 C 640 90, 740 180, 820 140" stroke="#DCD8CB" stroke-width="2" fill="none"></path>
+              <path d="M-20 250 C 160 210, 310 300, 510 230 C 680 160, 750 260, 820 220" stroke="#DCD8CB" stroke-width="2" fill="none"></path>
+              <path d="M-20 330 C 180 290, 340 370, 560 310 C 700 250, 760 340, 820 300" stroke="#DCD8CB" stroke-width="2" fill="none"></path>
+
+              <!-- Carreteras principales (Ruta 26B / Ayacucho - Chiara - Minera Catalina) -->
+              <path d="M 80 290 Q 180 240 290 190 T 490 145 T 710 80" stroke="#C4BFB1" stroke-width="8" stroke-linecap="round" fill="none"></path>
+              <path d="M 80 290 Q 180 240 290 190 T 490 145 T 710 80" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" fill="none"></path>
+              
+              <!-- Ruta autorizada (resaltada en azul punteado) -->
+              <path d="M 120 270 Q 200 230 310 185 T 465 152" stroke="#2166B0" stroke-width="3" stroke-dasharray="6,4" fill="none"></path>
+
+              <!-- Trocha secundaria minera (conforme a BR-CON-005) -->
+              <path d="M 465 152 Q 530 140 600 125 T 690 95" stroke="#C6600A" stroke-width="3" stroke-dasharray="4,4" fill="none"></path>
+
+              <!-- Puntos de Referencia / Nodos -->
+              <!-- Punto Inicial: Sede Ayacucho -->
+              <circle cx="120" cy="270" r="6" fill="#1F2A33" stroke="#FFFFFF" stroke-width="2"></circle>
+              <text x="135" y="274" font-family="'Public Sans', sans-serif" font-size="11" font-weight="600" fill="#1F2A33">Sede Ayacucho (Salida 10:48)</text>
+
+              <!-- Punto Destino: Campamento Minero Catalina -->
+              <circle cx="690" cy="95" r="6" fill="#C6600A" stroke="#FFFFFF" stroke-width="2"></circle>
+              <text x="590" y="80" font-family="'Public Sans', sans-serif" font-size="11" font-weight="600" fill="#C6600A">U.M. Catalina (Destino)</text>
+
+              <!-- Punto GPS Actual de la Hilux D0Y-704 -->
+              <g transform="translate(465, 152)">
+                <!-- Pulso de radar telemático -->
+                <circle cx="0" cy="0" r="22" fill="#1E7D4B" opacity="0.18">
+                  <animate attributeName="r" values="12;28;12" dur="3s" repeatCount="indefinite"></animate>
+                  <animate attributeName="opacity" values="0.25;0.05;0.25" dur="3s" repeatCount="indefinite"></animate>
+                </circle>
+                <circle cx="0" cy="0" r="10" fill="#1E7D4B" stroke="#FFFFFF" stroke-width="2.5"></circle>
+                <!-- Flecha de dirección vehicular -->
+                <polygon points="0,-4 3,3 0,1 -3,3" fill="#FFFFFF"></polygon>
+              </g>
+            </svg>
+
+            <!-- Tarjeta Flotante sobre el Mapa con Datos de Telemetría -->
+            <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm border border-[#D5D1C8] p-3 rounded shadow-md text-xs w-64">
+              <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#E5E3DC]">
+                <span class="font-bold text-[#1F2A33] flex items-center">
+                  <svg class="w-3.5 h-3.5 mr-1 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  Toyota Hilux D0Y-704
+                </span>
+                <span class="text-[10px] font-bold text-[#1E7D4B] bg-[#EBF5EE] px-1.5 py-0.5 rounded">En Movimiento</span>
+              </div>
+              <div class="space-y-1 text-[11px] text-[#4E4A45]">
+                <div class="flex justify-between">
+                  <span>Coordenadas:</span>
+                  <span class="font-mono text-[#1F2A33] font-medium">-13.2418, -74.1802</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Velocidad actual:</span>
+                  <span class="font-bold text-[#1F2A33]">54 km/h <span class="text-[10px] text-[#1E7D4B] font-normal">(Límite: 60)</span></span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Ubicación estimada:</span>
+                  <span class="text-[#1F2A33] font-medium">Tramo Chiara - Yanamilla</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Satélites GPS:</span>
+                  <span class="text-[#1F2A33]">12 satélites (Señal óptima)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Leyenda en la esquina inferior derecha del mapa -->
+            <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded border border-[#D5D1C8] text-[11px] flex items-center space-x-3 text-[#4E4A45]">
+              <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-[#1E7D4B] mr-1.5"></span> Unidad D0Y-704</span>
+              <span class="flex items-center"><span class="w-2.5 h-0.5 bg-[#2166B0] mr-1.5"></span> Ruta autorizada</span>
+              <span class="flex items-center"><span class="w-2.5 h-0.5 bg-[#C6600A] mr-1.5"></span> Trocha minera</span>
+            </div>
+          </div>
+
+          <!-- Barra de Parámetros Mecánicos Telemáticos -->
+          <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div class="p-2.5 bg-[#FBFBFA] border border-[#E5E3DC] rounded">
+              <span class="text-[10px] text-[#4E4A45] uppercase tracking-wider block">Nivel Combustible</span>
+              <span class="text-sm font-bold text-[#1F2A33]">92% <span class="text-xs font-normal text-[#4E4A45]">(7/8)</span></span>
+            </div>
+            <div class="p-2.5 bg-[#FBFBFA] border border-[#E5E3DC] rounded">
+              <span class="text-[10px] text-[#4E4A45] uppercase tracking-wider block">Odómetro Actual</span>
+              <span class="text-sm font-bold text-[#1F2A33]">38,476 km</span>
+              <span class="text-[10px] text-[#1E7D4B] block">+64 km recorridos</span>
+            </div>
+            <div class="p-2.5 bg-[#FBFBFA] border border-[#E5E3DC] rounded">
+              <span class="text-[10px] text-[#4E4A45] uppercase tracking-wider block">Sensor 4x4</span>
+              <span class="text-sm font-bold text-[#2166B0]">H4 Acoplada</span>
+            </div>
+            <div class="p-2.5 bg-[#FBFBFA] border border-[#E5E3DC] rounded">
+              <span class="text-[10px] text-[#4E4A45] uppercase tracking-wider block">Batería &amp; Sistema</span>
+              <span class="text-sm font-bold text-[#1E7D4B]">14.1 V (Normal)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Columna Derecha: Garantía y Lista de Incidencias (5 columnas) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- 3. Sección de Garantía: Monto y Estado -->
+        <div class="border border-[#E5E3DC] rounded p-5 bg-white shadow-sm">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#E5E3DC]">
+            <h2 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wider flex items-center">
+              <svg class="w-4 h-4 mr-2 text-[#2166B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              Garantía Patrimonial
+            </h2>
+            <span class="px-2 py-0.5 rounded text-xs font-semibold bg-[#EBF3FB] text-[#2166B0] border border-[#CCE0F5] flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#2166B0] mr-1.5"></span>
+              Bloqueada / Retenida
+            </span>
+          </div>
+
+          <!-- Cuadro de Monto y Estatus -->
+          <div class="bg-[#FBFBFA] border border-[#E5E3DC] rounded p-4 mb-4">
+            <div class="flex items-baseline justify-between">
+              <div>
+                <span class="text-xs text-[#4E4A45] uppercase tracking-wider block">Monto en Retención POS</span>
+                <div class="text-2xl font-bold text-[#1F2A33] tracking-tight">USD $1,000.00</div>
+                <div class="text-xs text-[#4E4A45] mt-0.5">Equiv. aprox.: S/ 3,800.00 (T.C. 3.80)</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[11px] font-medium text-[#1E7D4B] bg-[#EBF5EE] px-2 py-1 rounded border border-[#CDE5D4] inline-block">
+                  Voucher Aprobado
+                </span>
+                <div class="text-[10px] text-[#4E4A45] mt-1 font-mono">AUT-POS-99210-VISA</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detalles de Auditoría de Pago -->
+          <div class="space-y-2.5 text-xs text-[#4E4A45] bg-white border border-[#E5E3DC] rounded p-3">
+            <div class="flex justify-between pb-2 border-b border-[#E5E3DC]">
+              <span>Medio de garantía:</span>
+              <strong class="text-[#1F2A33]">Tarjeta de crédito Corporativa POS</strong>
+            </div>
+            <div class="flex justify-between pb-2 border-b border-[#E5E3DC]">
+              <span>Pagador / Agente externo:</span>
+              <strong class="text-[#1F2A33]">Minera Los Andes S.A.C.</strong>
+            </div>
+            <div class="flex justify-between pb-2 border-b border-[#E5E3DC]">
+              <span>Verificación de tercero (BR-ALQ-011):</span>
+              <span class="text-[#1E7D4B] font-semibold flex items-center">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Conforme (Valerie Cárdenas)
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span>Condición de liberación:</span>
+              <span class="text-[#1F2A33]">Inspección técnica 360° en devolución sin daños</span>
+            </div>
+          </div>
+
+          <!-- Nota Operativa de Liberación -->
+          <p class="text-[11px] text-[#4E4A45] mt-3 leading-relaxed flex items-start">
+            <svg class="w-3.5 h-3.5 text-[#B5720A] mr-1.5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>El desbloqueo de la preautorización se gestiona automáticamente dentro de las 24 horas posteriores a la firma digital del acta de devolución vehicular.</span>
+          </p>
+        </div>
+
+        <!-- 4. Lista de Incidencias Registradas (si hay) -->
+        <div class="border border-[#E5E3DC] rounded p-5 bg-white shadow-sm">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#E5E3DC]">
+            <div class="flex items-center space-x-2">
+              <h2 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wider flex items-center">
+                <svg class="w-4 h-4 mr-2 text-[#C22B2B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Incidencias y Eventos Registrados
+              </h2>
+              <span class="w-5 h-5 rounded-full bg-[#FDF1DE] text-[#B5720A] text-xs font-bold flex items-center justify-center">
+                1
+              </span>
+            </div>
+            <button class="text-xs text-[#C6600A] font-semibold hover:underline flex items-center">
+              + Nueva incidencia
+            </button>
+          </div>
+
+          <!-- Lista de Incidencias -->
+          <div class="space-y-3">
+            <!-- Incidencia 1: Registrada durante despacho / excepción técnica -->
+            <div class="p-3.5 bg-[#FDF8F0] border-l-4 border-l-[#B5720A] border border-[#E5E3DC] rounded">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-bold text-[#1F2A33]">Excepción de tiempo técnico en patio (&lt; 30 min)</span>
+                    <span class="px-2 py-0.2 rounded text-[10px] bg-[#FDF1DE] text-[#B5720A] font-bold">Resuelta / Auditada</span>
+                  </div>
+                  <div class="text-[11px] text-[#4E4A45] mt-1">
+                    Código: <strong class="text-[#1F2A33]">INC-2025-0142</strong> · Registrado hoy a las 10:46 AM por <em>Carlos Vega (Supervisor patio)</em>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-[#4E4A45] mt-2 bg-white/70 p-2 rounded border border-[#E5E3DC]/60 leading-relaxed">
+                "Inspección paralela con 2 técnicos en patio (Carlos Vega en exterior/motor y M. Huamán en cabina/kit FCKE). Se capturaron las 35 fotos reglamentarias con 100% de nitidez en 22 min 14 seg. Excepción de tiempo autorizada conforme a norma PAT-MIN-004."
+              </p>
+              <div class="flex items-center justify-between text-[11px] text-[#4E4A45] mt-2 pt-2 border-t border-[#E5E3DC]/60">
+                <span>Impacto en fianza/garantía: <strong>Ninguno</strong></span>
+                <a href="#" class="text-[#2166B0] hover:underline font-medium">Ver acta digital #ALQ-1187 →</a>
+              </div>
+            </div>
+
+            <!-- Estado de Rutas y Alertas Telemáticas -->
+            <div class="p-3 bg-[#FBFBFA] border border-[#E5E3DC] rounded text-xs flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <svg class="w-4 h-4 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-[#4E4A45]">Sin alertas de velocidad ni salida de geocerca en curso.</span>
+              </div>
+              <span class="text-[11px] text-[#1E7D4B] font-semibold">Telemática OK</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Pie de Página Institucional Unificado -->
+  <footer class="w-full border-t border-[#E5E3DC] bg-white py-3 mt-8">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#4E4A45] gap-2">
+      <div class="flex items-center space-x-4">
+        <span>VeloxRent © 2025 · Sistema de Gestión Interna</span>
+        <span class="text-[#D5D1C8]">•</span>
+        <span>Módulo de Control de Flota y Alquileres Activos</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span>Soporte Front-office: <strong class="text-[#1F2A33]">anexo 103</strong></span>
+        <span class="text-[#D5D1C8]">•</span>
+        <span>Mesa de Operaciones y Flota: <strong class="text-[#1F2A33]">anexo 108</strong></span>
+        <span class="text-[#D5D1C8]">•</span>
+        <a href="#" class="text-[#C22B2B] hover:underline font-medium">Cerrar sesión</a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

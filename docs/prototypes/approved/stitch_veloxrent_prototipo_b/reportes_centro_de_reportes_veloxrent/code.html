@@ -1,0 +1,509 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes — VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .font-mono-num {
+      font-family: 'Space Grotesk', monospace, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-between text-[#1F2A33]">
+
+  <!-- Top Navigation Header -->
+  <header class="w-full border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+    <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Left: Brand & Breadcrumbs -->
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded bg-[#C6600A] flex items-center justify-center text-white font-bold text-lg tracking-tight">
+            V
+          </div>
+          <span class="font-bold text-xl tracking-tight text-[#1F2A33]">VeloxRent</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#E5E2DC] text-[#78716C] font-mono-num font-medium">ERP v3.4</span>
+        </div>
+
+        <div class="h-5 w-px bg-[#E5E2DC]"></div>
+
+        <nav class="flex items-center space-x-2 text-sm text-[#78716C]">
+          <span>Reportes</span>
+          <span>›</span>
+          <span class="text-[#1F2A33] font-medium">Centro de Reportes</span>
+        </nav>
+      </div>
+
+      <!-- Right: Status, Branch & User Session -->
+      <div class="flex items-center space-x-5">
+        <!-- Online Status -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#E8F5EC] text-[#1E7D4B] text-xs font-medium border border-[#D1EBD9]">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <!-- Sede Actual -->
+        <div class="flex items-center space-x-1.5 text-xs text-[#4E4A45] bg-[#FAF9F5] px-3 py-1.5 rounded border border-[#E5E2DC]">
+          <svg class="w-3.5 h-3.5 text-[#78716C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="font-medium">Ayacucho — Sede Central</span>
+        </div>
+
+        <!-- User Profile Pill -->
+        <div class="flex items-center space-x-3 pl-2">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white text-xs font-bold flex items-center justify-center">
+            RC
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-xs font-semibold text-[#1F2A33] leading-tight">Rosa Cárdenas</span>
+            <span class="text-[11px] text-[#78716C] leading-tight">Analista de Tesorería &amp; Finanzas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Body -->
+  <main class="max-w-[1440px] mx-auto px-6 py-8 flex-1 w-full">
+
+    <!-- Page Title & Scope Filter Bar -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between pb-6 border-b border-[#E5E2DC] gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">Reportes</h1>
+          <span class="text-xs font-medium px-2.5 py-1 rounded bg-[#FAF9F5] border border-[#E5E2DC] text-[#4E4A45]">
+            Área: <strong class="text-[#1F2A33]">Finanzas &amp; Tesorería</strong>
+          </span>
+        </div>
+        <p class="text-sm text-[#78716C] mt-1">
+          Informes normativos, balances de caja, auditoría de garantías y estados operacionales consolidados.
+        </p>
+      </div>
+
+      <!-- Controls & Multi-company condition notice -->
+      <div class="flex items-center gap-3">
+        <!-- Multi-company filter simulation notice / status (Hidden when single-company without permission) -->
+        <!-- User has single enterprise access (VeloxRent Perú S.A.C.), so enterprise switcher is restricted and replaced by badge context -->
+        <div class="flex items-center gap-2 bg-[#FAF9F5] border border-[#E5E2DC] px-3 py-2 rounded text-xs text-[#4E4A45]">
+          <svg class="w-4 h-4 text-[#78716C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+          <div>
+            <span class="text-[#78716C]">Empresa fija:</span>
+            <span class="font-semibold text-[#1F2A33] ml-1">VeloxRent Perú S.A.C.</span>
+          </div>
+          <span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#E8F5EC] text-[#1E7D4B] border border-[#D1EBD9]">Sede Asignada</span>
+        </div>
+
+        <!-- Period selector -->
+        <div class="flex items-center space-x-2 bg-white border border-[#E5E2DC] px-3 py-1.5 rounded shadow-sm">
+          <svg class="w-4 h-4 text-[#78716C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span class="text-xs text-[#78716C]">Periodo:</span>
+          <select class="text-xs font-medium text-[#1F2A33] bg-transparent focus:outline-none cursor-pointer">
+            <option>Septiembre 2026 (Mes en curso)</option>
+            <option>Agosto 2026</option>
+            <option>Julio 2026</option>
+            <option>Año fiscal 2026</option>
+          </select>
+        </div>
+
+        <button class="px-3.5 py-2 text-xs font-medium text-[#1F2A33] bg-[#FAF9F5] border border-[#E5E2DC] rounded hover:bg-[#F3F1EC] transition-colors flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Actualizar datos</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Security & Role Scoping Notification Banner -->
+    <div class="mt-4 p-3.5 rounded bg-[#FAF9F5] border border-[#E5E2DC] flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2.5">
+        <div class="w-5 h-5 rounded-full bg-[#1F2A33] text-white flex items-center justify-center shrink-0">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <span class="font-semibold text-[#1F2A33]">Alcance por rol y permisos:</span>
+          <span class="text-[#4E4A45] ml-1">
+            Visualizando catálogo de reportes habilitados para <strong>Tesorería &amp; Finanzas</strong>. El filtro multiempresa permanece oculto al estar limitado a <strong>VeloxRent Perú S.A.C.</strong> conforme a la directiva de seguridad interna.
+          </span>
+        </div>
+      </div>
+      <span class="text-[#78716C] font-mono-num text-[11px] shrink-0">Permiso: REP-FIN-01</span>
+    </div>
+
+    <!-- Quick Filter Tabs by Report Category -->
+    <div class="mt-6 flex items-center justify-between">
+      <div class="flex items-center space-x-2 border-b border-[#E5E2DC] w-full pb-px">
+        <button class="px-4 py-2 text-xs font-semibold text-[#1F2A33] border-b-2 border-[#1F2A33] bg-transparent">
+          Todos los reportes del rol (6)
+        </button>
+        <button class="px-4 py-2 text-xs font-medium text-[#78716C] hover:text-[#1F2A33] transition-colors">
+          Cobranzas y Facturación (2)
+        </button>
+        <button class="px-4 py-2 text-xs font-medium text-[#78716C] hover:text-[#1F2A33] transition-colors">
+          Garantías y Retenciones (2)
+        </button>
+        <button class="px-4 py-2 text-xs font-medium text-[#78716C] hover:text-[#1F2A33] transition-colors">
+          Penalidades y Liquidación (2)
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid of Available Report Cards for Current Role -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <!-- Card 1: Pagos del Mes -->
+      <div class="bg-white border border-[#E5E2DC] rounded p-5 hover:border-[#1F2A33] hover:shadow-sm transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded bg-[#EEF4FB] text-[#2166B0] flex items-center justify-center font-bold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#E8F5EC] text-[#1E7D4B] border border-[#D1EBD9]">
+              Actualizado hoy
+            </span>
+          </div>
+
+          <h3 class="text-base font-bold text-[#1F2A33] mt-3 group-hover:text-[#C6600A] transition-colors">
+            Pagos del mes
+          </h3>
+          <p class="text-xs text-[#78716C] mt-1.5 leading-relaxed">
+            Consolidado de ingresos por alquileres, transferencias BCP conciliadas, pagos POS convalidaciones de terceros y cobranzas pendientes.
+          </p>
+
+          <!-- Metrics preview in card -->
+          <div class="mt-4 pt-3 border-t border-[#F0ECE1] grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Total recaudado:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">S/ 148,250.00</span>
+            </div>
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Operaciones:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">84 transacciones</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+          <span class="text-[11px] text-[#78716C]">Código: REP-FIN-001</span>
+          <div class="flex items-center space-x-2">
+            <button class="px-2.5 py-1.5 text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] bg-[#FAF9F5] border border-[#E5E2DC] rounded hover:bg-[#F3F1EC]">
+              Excel (.xlsx)
+            </button>
+            <button class="px-3 py-1.5 text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#2A3945] rounded flex items-center gap-1">
+              <span>Generar</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Garantías pendientes -->
+      <div class="bg-white border border-[#E5E2DC] rounded p-5 hover:border-[#1F2A33] hover:shadow-sm transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded bg-[#F5F0FB] text-[#683AB7] flex items-center justify-center font-bold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+            </div>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#FDF1DE] text-[#B5720A] border border-[#F5DFB8]">
+              3 por liberar
+            </span>
+          </div>
+
+          <h3 class="text-base font-bold text-[#1F2A33] mt-3 group-hover:text-[#C6600A] transition-colors">
+            Garantías pendientes
+          </h3>
+          <p class="text-xs text-[#78716C] mt-1.5 leading-relaxed">
+            Monitoreo del saldo retenido por devoluciones, cartas fianza BBVA, vouchers POS y retenciones preventivas con plazo de 24h.
+          </p>
+
+          <!-- Metrics preview in card -->
+          <div class="mt-4 pt-3 border-t border-[#F0ECE1] grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[11px] text-[#78716C] block">En custodia:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">US$ 18,400.00</span>
+            </div>
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Bloqueadas:</span>
+              <span class="font-bold text-[#C22B2B] font-mono-num text-sm">1 (#INC-0234)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+          <span class="text-[11px] text-[#78716C]">Código: REP-FIN-002</span>
+          <div class="flex items-center space-x-2">
+            <button class="px-2.5 py-1.5 text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] bg-[#FAF9F5] border border-[#E5E2DC] rounded hover:bg-[#F3F1EC]">
+              PDF
+            </button>
+            <button class="px-3 py-1.5 text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#2A3945] rounded flex items-center gap-1">
+              <span>Generar</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Liquidación de Daños y Deducciones -->
+      <div class="bg-white border border-[#E5E2DC] rounded p-5 hover:border-[#1F2A33] hover:shadow-sm transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded bg-[#FDF0EC] text-[#C6600A] flex items-center justify-center font-bold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path>
+              </svg>
+            </div>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#FAF9F5] text-[#4E4A45] border border-[#E5E2DC]">
+              Taller &amp; Reposición
+            </span>
+          </div>
+
+          <h3 class="text-base font-bold text-[#1F2A33] mt-3 group-hover:text-[#C6600A] transition-colors">
+            Liquidación de daños y cargos
+          </h3>
+          <p class="text-xs text-[#78716C] mt-1.5 leading-relaxed">
+            Detalle de deducciones ejecutadas a clientes por reposición de llaves, cargos por paralización técnica (24h) y franquicias de taller.
+          </p>
+
+          <!-- Metrics preview in card -->
+          <div class="mt-4 pt-3 border-t border-[#F0ECE1] grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Deducciones mes:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">S/ 4,820.00</span>
+            </div>
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Expedientes:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">5 liquidados</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+          <span class="text-[11px] text-[#78716C]">Código: REP-FIN-003</span>
+          <div class="flex items-center space-x-2">
+            <button class="px-2.5 py-1.5 text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] bg-[#FAF9F5] border border-[#E5E2DC] rounded hover:bg-[#F3F1EC]">
+              Excel
+            </button>
+            <button class="px-3 py-1.5 text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#2A3945] rounded flex items-center gap-1">
+              <span>Generar</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Conciliación Bancaria y Comprobantes de Terceros -->
+      <div class="bg-white border border-[#E5E2DC] rounded p-5 hover:border-[#1F2A33] hover:shadow-sm transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded bg-[#FAF9F5] border border-[#E5E2DC] text-[#1F2A33] flex items-center justify-center font-bold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+              </svg>
+            </div>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#FAF9F5] text-[#78716C] border border-[#E5E2DC]">
+              Auditoría BCP
+            </span>
+          </div>
+
+          <h3 class="text-base font-bold text-[#1F2A33] mt-3 group-hover:text-[#C6600A] transition-colors">
+            Conciliación de depósitos externos
+          </h3>
+          <p class="text-xs text-[#78716C] mt-1.5 leading-relaxed">
+            Reporte de trazabilidad y sustentos validados bajo norma de cumplimiento (PR-FIN-008 / PR-FIN-003) para depósitos efectuados por terceros.
+          </p>
+
+          <div class="mt-4 pt-3 border-t border-[#F0ECE1] grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Verificados OCR:</span>
+              <span class="font-bold text-[#1E7D4B] font-mono-num text-sm">99.4% precisión</span>
+            </div>
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Convalidados:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">18 comprobantes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+          <span class="text-[11px] text-[#78716C]">Código: REP-FIN-004</span>
+          <div class="flex items-center space-x-2">
+            <button class="px-2.5 py-1.5 text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] bg-[#FAF9F5] border border-[#E5E2DC] rounded hover:bg-[#F3F1EC]">
+              PDF
+            </button>
+            <button class="px-3 py-1.5 text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#2A3945] rounded flex items-center gap-1">
+              <span>Generar</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Rendición Diaria de Caja de Sede -->
+      <div class="bg-white border border-[#E5E2DC] rounded p-5 hover:border-[#1F2A33] hover:shadow-sm transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded bg-[#EAF7F0] text-[#2F6B4F] flex items-center justify-center font-bold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+              </svg>
+            </div>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#E8F5EC] text-[#1E7D4B] border border-[#D1EBD9]">
+              Cierre diario
+            </span>
+          </div>
+
+          <h3 class="text-base font-bold text-[#1F2A33] mt-3 group-hover:text-[#C6600A] transition-colors">
+            Arqueo y cierre de caja chica
+          </h3>
+          <p class="text-xs text-[#78716C] mt-1.5 leading-relaxed">
+            Control de efectivo en ventanilla de Ayacucho Central, reintegros de combustible, gastos menores de garita y balance de cierre diario.
+          </p>
+
+          <div class="mt-4 pt-3 border-t border-[#F0ECE1] grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Fondo fijo:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">S/ 2,500.00</span>
+            </div>
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Saldo actual:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">S/ 1,890.50</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+          <span class="text-[11px] text-[#78716C]">Código: REP-FIN-005</span>
+          <div class="flex items-center space-x-2">
+            <button class="px-2.5 py-1.5 text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] bg-[#FAF9F5] border border-[#E5E2DC] rounded hover:bg-[#F3F1EC]">
+              Excel
+            </button>
+            <button class="px-3 py-1.5 text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#2A3945] rounded flex items-center gap-1">
+              <span>Generar</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 6: Cobranza Corporativa & Facturas por Vencer -->
+      <div class="bg-white border border-[#E5E2DC] rounded p-5 hover:border-[#1F2A33] hover:shadow-sm transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded bg-[#FAF9F5] text-[#1F2A33] border border-[#E5E2DC] flex items-center justify-center font-bold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+              </svg>
+            </div>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#FAF9F5] text-[#78716C] border border-[#E5E2DC]">
+              Crédito 30 días
+            </span>
+          </div>
+
+          <h3 class="text-base font-bold text-[#1F2A33] mt-3 group-hover:text-[#C6600A] transition-colors">
+            Cuentas por cobrar corporativas
+          </h3>
+          <p class="text-xs text-[#78716C] mt-1.5 leading-relaxed">
+            Seguimiento a contratos de clientes corporativos (Minera Candelaria Andina, Transportes del Centro) con órdenes de compra y facturación a crédito.
+          </p>
+
+          <div class="mt-4 pt-3 border-t border-[#F0ECE1] grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Cartera vigente:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">S/ 62,300.00</span>
+            </div>
+            <div>
+              <span class="text-[11px] text-[#78716C] block">Clientes:</span>
+              <span class="font-bold text-[#1F2A33] font-mono-num text-sm">6 cuentas</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+          <span class="text-[11px] text-[#78716C]">Código: REP-FIN-006</span>
+          <div class="flex items-center space-x-2">
+            <button class="px-2.5 py-1.5 text-xs font-medium text-[#4E4A45] hover:text-[#1F2A33] bg-[#FAF9F5] border border-[#E5E2DC] rounded hover:bg-[#F3F1EC]">
+              Excel
+            </button>
+            <button class="px-3 py-1.5 text-xs font-medium text-white bg-[#1F2A33] hover:bg-[#2A3945] rounded flex items-center gap-1">
+              <span>Generar</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Reference Box: Role-based catalog explanation -->
+    <div class="mt-8 p-4 bg-[#FAF9F5] border border-[#E5E2DC] rounded">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-[#78716C] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+        <div class="text-xs text-[#4E4A45] leading-relaxed">
+          <strong class="text-[#1F2A33]">Regla de visualización según rol operativo y seguridad:</strong>
+          Cada usuario accede únicamente al inventario de reportes de su área de gestión (ej. <em>Finanzas: Pagos del mes, Garantías pendientes</em>; <em>RR.HH.: Rotación de personal, Asistencia consolidada</em>; <em>Operaciones: Disponibilidad de flota e incidencias</em>). El selector multiempresa se encuentra inactivo y oculto por directiva de aislamiento de datos al no poseer permiso global multi-entidad.
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Corporate Unified Footer -->
+  <footer class="w-full border-t border-[#E5E2DC] bg-white py-3.5 mt-8">
+    <div class="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-xs text-[#78716C] gap-2">
+      <div class="flex items-center space-x-4">
+        <span class="font-medium text-[#1F2A33]">VeloxRent © 2026</span>
+        <span>•</span>
+        <span>Sistema de Gestión Comercial y Flotas</span>
+        <span>•</span>
+        <span>Módulo Reportes / Centro de Reportes</span>
+      </div>
+
+      <div class="flex items-center space-x-6">
+        <span>Mesa Finanzas: <strong class="text-[#1F2A33] font-mono-num">anexo 205</strong></span>
+        <span>Soporte TI: <strong class="text-[#1F2A33] font-mono-num">anexo 101</strong></span>
+        <a href="#" class="text-[#C22B2B] hover:underline flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

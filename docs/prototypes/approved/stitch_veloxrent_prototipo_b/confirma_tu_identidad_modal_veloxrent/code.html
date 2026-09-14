@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirma tu identidad - VeloxRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              border: '#A39C90',
+              muted: '#4E4A45',
+            }
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'sans-serif'],
+            body: ['"Public Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #F8F9FA;
+      margin: 0;
+      padding: 0;
+    }
+    .digit-box {
+      width: 44px;
+      height: 48px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1F2A33;
+      border: 1.5px solid #A39C90;
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      background: #FFFFFF;
+    }
+    .digit-box:focus {
+      border-color: #C6600A;
+      box-shadow: 0 0 0 2px rgba(198, 96, 10, 0.15);
+    }
+  </style>
+</head>
+<body class="min-h-screen relative flex items-center justify-center bg-slate-100 antialiased selection:bg-orange-100 selection:text-orange-900">
+
+  <!-- Background Base App Mockup (Behind Overlay) to give natural authentic enterprise context -->
+  <div class="fixed inset-0 flex flex-col pointer-events-none filter blur-[1px] opacity-40 select-none">
+    <!-- Mock Top Nav -->
+    <header class="h-14 border-b border-gray-200 bg-white px-8 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <span class="font-['Space_Grotesk'] text-xl font-bold text-[#1F2A33]">VeloxRent</span>
+        <div class="h-4 w-px bg-gray-300"></div>
+        <div class="flex gap-4 text-xs font-medium text-gray-500">
+          <span class="text-gray-900">Vehículos</span>
+          <span class="">Contratos</span>
+          <span class="">Clientes</span>
+          <span class="">Liquidaciones</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-full bg-slate-200"></div>
+      </div>
+    </header>
+    <!-- Mock Main Dashboard View -->
+    <main class="flex-1 p-8 max-w-6xl mx-auto w-full">
+      <div class="h-8 w-64 bg-gray-300 rounded mb-6"></div>
+      <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="h-28 bg-white border border-gray-200 rounded"></div>
+        <div class="h-28 bg-white border border-gray-200 rounded"></div>
+        <div class="h-28 bg-white border border-gray-200 rounded"></div>
+      </div>
+      <div class="h-72 bg-white border border-gray-200 rounded"></div>
+    </main>
+  </div>
+
+  <!-- Backdrop Overlay (40% opacity) -->
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-[0.5px] z-40 transition-opacity"></div>
+
+  <!-- Centered Modal Container -->
+  <div class="relative z-50 w-full flex items-center justify-center p-4">
+    <div class="bg-white rounded-[6px] shadow-2xl w-[380px] p-6 relative box-border border border-neutral-100 animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Close Button "X" in top right -->
+      <button type="button" aria-label="Cerrar modal" class="absolute top-5 right-5 text-[#4E4A45] hover:text-[#1F2A33] transition-colors p-1 rounded hover:bg-gray-100 cursor-pointer flex items-center justify-center"><svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="13" y2="13"></line><line x1="13" y1="3" x2="3" y2="13"></line></svg></button>
+
+      <!-- Modal Content Header -->
+      <div class="pr-6">
+        <h2 class="font-['Space_Grotesk'] text-[18px] font-bold text-[#1F2A33] leading-snug tracking-tight m-0">
+          Confirma tu identidad
+        </h2>
+        <p class="font-['Public_Sans'] text-[14px] text-[#4E4A45] mt-1.5 mb-0 leading-normal">
+          Esta acción requiere verificación adicional
+        </p>
+      </div>
+
+      <!-- Code Input Section -->
+      <div class="mt-6">
+        <div class="flex items-center justify-between gap-1.5" id="otp-container">
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" class="digit-box" autofocus="" aria-label="Dígito 1">
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" class="digit-box" aria-label="Dígito 2">
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" class="digit-box" aria-label="Dígito 3">
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" class="digit-box" aria-label="Dígito 4">
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" class="digit-box" aria-label="Dígito 5">
+          <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" class="digit-box" aria-label="Dígito 6">
+        </div>
+      </div>
+
+      <!-- Primary Action Button -->
+      <div class="mt-6">
+        <button type="button" class="w-full bg-[#1F2A33] hover:bg-[#2A3742] active:bg-[#151D24] text-white font-['Public_Sans'] text-[14px] font-medium py-3 px-4 rounded-[4px] transition-colors duration-150 text-center cursor-pointer shadow-sm">
+          Confirmar
+        </button>
+      </div>
+
+      <!-- Resend Code Timer (Disabled) -->
+      <div class="mt-4 text-center">
+        <span class="inline-block text-[13px] font-medium text-[#9E4C08] opacity-80 cursor-not-allowed select-none font-['Public_Sans']">Reenviar código (0:45)</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Interactive script for smooth typing and countdown behavior -->
+  <script>
+    const inputs = document.querySelectorAll('.digit-box');
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        e.target.value = val;
+        if (val && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+        const digits = pasteData.replace(/\D/g, '').slice(0, 6).split('');
+        digits.forEach((d, i) => {
+          if (inputs[i]) inputs[i].value = d;
+        });
+        if (digits.length > 0) {
+          const nextIndex = Math.min(digits.length, inputs.length - 1);
+          inputs[nextIndex].focus();
+        }
+      });
+    });
+  </script>
+
+
+
+
+</body></html>

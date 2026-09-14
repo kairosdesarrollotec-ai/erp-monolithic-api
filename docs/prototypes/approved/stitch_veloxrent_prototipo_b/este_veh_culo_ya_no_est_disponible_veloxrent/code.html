@@ -1,0 +1,357 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Este vehículo ya no está disponible — VeloxRent</title>
+<!-- Google Fonts: Space Grotesk & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#C6600A',
+              dark: '#1F2A33',
+              gray: '#4E4A45',
+              bg: '#F6F5F2',
+              green: '#1E7D4B',
+              'banner-bg': '#FDF1DE',
+              'banner-border': '#F8D8A0',
+              'banner-text': '#B5720A',
+            }
+          },
+          fontFamily: {
+            heading: ['Space Grotesk', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="base-styling">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F6F5F2;
+      color: #1F2A33;
+    }
+    .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 antialiased">
+<!-- BEGIN: TopNavigationBar -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+<div class="max-w-[1240px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+<!-- Brand & Internal Tag -->
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2.5">
+<a class="text-xl font-bold tracking-tight font-heading flex items-center" href="#">
+<span class="text-[#1F2A33]">Velox</span><span class="text-[#C6600A]">Rent</span>
+</a>
+<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+            Gestión Interna
+          </span>
+</div>
+<div class="h-4 w-px bg-gray-300"></div>
+<!-- Breadcrumbs -->
+<nav aria-label="Breadcrumb" class="hidden md:flex items-center space-x-2 text-xs text-gray-500">
+<a class="hover:text-gray-800" href="#">Reservas</a>
+<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<a class="hover:text-gray-800" href="#">Reserva #RES-2291</a>
+<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-medium text-gray-900">Resolución de conflictos</span>
+</nav>
+</div>
+<!-- Right Header Indicators -->
+<div class="flex items-center space-x-4">
+<!-- Live Status -->
+<div class="hidden lg:flex items-center space-x-1.5 bg-emerald-50 text-[#1E7D4B] text-xs px-2.5 py-1 rounded-full border border-emerald-100 font-medium">
+<span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+<span>En línea</span>
+</div>
+<!-- Branch Indicator -->
+<div class="hidden sm:flex items-center space-x-1.5 text-xs text-gray-600 bg-gray-100/80 px-2.5 py-1 rounded border border-gray-200">
+<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- Notifications Bell -->
+<button aria-label="Notificaciones" class="relative p-1 text-gray-500 hover:text-gray-700 transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+</button>
+<!-- User Profile -->
+<div class="flex items-center space-x-2.5 pl-2 border-l border-gray-200">
+<div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white text-xs font-semibold flex items-center justify-center tracking-wider">
+            ME
+          </div>
+<div class="text-left hidden md:block">
+<div class="text-xs font-semibold text-gray-900 leading-tight">María Ejecutivo</div>
+<div class="text-[11px] text-gray-500 leading-tight">Front-office</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopNavigationBar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-[1140px] w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+<!-- Secondary Navigation / Context Header -->
+<div class="flex items-center justify-between mb-4">
+<a class="inline-flex items-center space-x-2 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors" href="#">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Volver a Reserva</span>
+</a>
+<span class="text-xs font-mono font-medium text-gray-500 bg-white border border-gray-200 px-2.5 py-1 rounded">
+        ID: RES-2291
+      </span>
+</div>
+<!-- Main Card Container -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8 space-y-6">
+<!-- Section Title & Explanation -->
+<div class="space-y-1.5">
+<div class="inline-flex items-center space-x-2">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+<span class="text-xs font-bold uppercase tracking-wider text-amber-700">Conflicto de asignación</span>
+</div>
+<h1 class="text-2xl sm:text-[28px] leading-tight font-bold font-heading text-[#1F2A33]">
+          Este vehículo ya no está disponible
+        </h1>
+<p class="text-sm text-gray-600 leading-relaxed max-w-3xl">
+          La unidad <span class="font-semibold text-gray-900">Toyota Hilux (D0Y-704)</span> fue asignada de forma definitiva tras completarse los requisitos concurrentes de otra reserva prioritaria.
+        </p>
+</div>
+<!-- BEGIN: ConflictNoticeBanner -->
+<section class="bg-[#FDF1DE] border border-[#F8D8A0] rounded-lg p-4 sm:p-5 flex items-start space-x-3.5" data-purpose="notice-banner">
+<div class="flex-shrink-0 mt-0.5 text-[#B5720A]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="space-y-1">
+<h2 class="text-sm sm:text-base font-semibold text-[#B5720A]">
+            Otro cliente completó sus requisitos antes — te ofrecemos estas alternativas equivalentes
+          </h2>
+<p class="text-xs text-amber-900/80">
+            Las siguientes unidades se encuentran disponibles de inmediato en Sede Ayacucho para el periodo solicitado (04 sep — 07 sep 2025).
+          </p>
+</div>
+</section>
+<!-- END: ConflictNoticeBanner -->
+<!-- BEGIN: AlternativesGrid -->
+<section class="pt-2" data-purpose="vehicle-alternatives-grid">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+<!-- Card 1: Toyota Fortuner -->
+<article class="border border-gray-200 rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow bg-white relative">
+<div>
+<!-- Vehicle Image Area -->
+<div class="relative h-44 bg-gray-100 overflow-hidden">
+<img alt="Toyota Fortuner 4x4 AT" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1V6slIWPGGGbILTH-rG2ejvEuTGWI0sx7jX5cvyuM0CiJhic6gkybpDhAgXhcuCkkQ_3_rMd0Tac6dRzPygkULMwT5B-FRlBAYt3lXJIe_7rOfwVFGnzragcDoUTf6K9yZEvAvlhEhdzULV8WY2cFsOq4oY_MJFqlnOOUl21HZf3QOH3RdwDdpYEsVbB2aSy_obUAp-IgGJOVAuIOWzq0ts6RVHh0MdIhHt5HWjW_VE-WOlDtiYHyuZuGE">
+<span class="absolute top-2.5 left-2.5 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-600 text-white shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+<span>Disponible ahora</span>
+</span>
+<span class="absolute bottom-2.5 left-2.5 text-[11px] bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded">
+                  Tracción 4x4
+                </span>
+</div>
+<!-- Content Body -->
+<div class="p-4 space-y-3">
+<div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-gray-500">SUV Premium 4x4</div>
+<h3 class="text-base font-bold text-gray-900 font-heading leading-snug">Toyota Fortuner · D2X-810</h3>
+</div>
+<!-- Price and Upgrade Guarantee -->
+<div class="bg-gray-50 border border-gray-200/80 rounded-lg p-2.5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-gray-500">Tarifa regular: <span class="line-through">S/ 310</span></span>
+<span class="text-sm font-bold text-[#1F2A33]">S/ 280 <span class="text-[11px] font-normal text-gray-500">/ día</span></span>
+</div>
+<div class="mt-1 text-[11px] font-medium text-[#1E7D4B] flex items-center space-x-1">
+<svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path></svg>
+<span>Mantenemos tarifa acordada sin costo adicional</span>
+</div>
+</div>
+<!-- Specs -->
+<ul class="text-xs text-gray-600 space-y-1.5 pt-1">
+<li class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+<span><strong>Capacidad:</strong> 7 pasajeros</span>
+</li>
+<li class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+<span><strong>Transmisión:</strong> Automática · Diésel Turbo</span>
+</li>
+<li class="flex items-center space-x-2 text-emerald-700 font-medium">
+<svg class="w-3.5 h-3.5 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+<span>Apta para trocha y mina</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Action Button -->
+<div class="p-4 pt-0">
+<button class="w-full bg-[#1F2A33] hover:bg-black text-white text-xs font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center space-x-1.5 shadow-sm">
+<span>Elegir esta</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Card 2: Hyundai Creta -->
+<article class="border border-gray-200 rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow bg-white relative">
+<div>
+<!-- Vehicle Image Area -->
+<div class="relative h-44 bg-gray-100 overflow-hidden">
+<img alt="Hyundai Creta 1.5 MT" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1UCV2UtCiQQZKCqeRobu0HrAfEQEP5cJvCNAtVUftpuJDAv_7VgDMQRVSNaRQ6Z0xvMHjRAzlWycTflANJHUMk7DVujebGXnTpQ-2kYDSy3AAADXaiN2_NwW-3MTP0rrGRTINKSLoulOy6CNu21Br38yRdpokAkxuXZlX0yr2R6p-Ymwm8Ng5pay1rI99wyDDFQPV7TWSlRCyJl-2uhLdX1hiX7p5zpBcMOsmlHtRxynqbggQ9ossfz97o">
+<span class="absolute top-2.5 left-2.5 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-600 text-white shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+<span>Disponible ahora</span>
+</span>
+<span class="absolute bottom-2.5 left-2.5 text-[11px] bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded">
+                  Tracción 4x2
+                </span>
+</div>
+<!-- Content Body -->
+<div class="p-4 space-y-3">
+<div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-gray-500">SUV Compacta</div>
+<h3 class="text-base font-bold text-gray-900 font-heading leading-snug">Hyundai Creta 1.5 · B7F-412</h3>
+</div>
+<!-- Price and Refund Notice -->
+<div class="bg-gray-50 border border-gray-200/80 rounded-lg p-2.5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-gray-500">Tarifa diaria:</span>
+<span class="text-sm font-bold text-[#1F2A33]">S/ 250 <span class="text-[11px] font-normal text-gray-500">/ día</span></span>
+</div>
+<div class="mt-1 text-[11px] font-medium text-blue-700 flex items-center space-x-1">
+<svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" fill-rule="evenodd"></path></svg>
+<span>Reembolso de saldo a favor: S/ 30 / día</span>
+</div>
+</div>
+<!-- Specs -->
+<ul class="text-xs text-gray-600 space-y-1.5 pt-1">
+<li class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+<span><strong>Capacidad:</strong> 5 pasajeros</span>
+</li>
+<li class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+<span><strong>Transmisión:</strong> Mecánica 6 vel. · Gasolina</span>
+</li>
+<li class="flex items-center space-x-2 text-gray-700">
+<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Urbana / carretera asfaltada</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Action Button -->
+<div class="p-4 pt-0">
+<button class="w-full bg-[#1F2A33] hover:bg-black text-white text-xs font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center space-x-1.5 shadow-sm">
+<span>Elegir esta</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+<!-- Card 3: Mitsubishi L200 (Direct Equivalent) -->
+<article class="border-2 border-emerald-600/30 rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow bg-white relative">
+<div>
+<!-- Vehicle Image Area -->
+<div class="relative h-44 bg-slate-900 overflow-hidden flex items-center justify-center">
+<div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-800 to-slate-700 flex items-center justify-center text-slate-300">
+<div class="text-center px-4">
+<svg class="w-10 h-10 mx-auto text-slate-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 17a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4zM4 11h16M4 11l2-6h12l2 6M4 11v6a1 1 0 001 1h1m12 0h1a1 1 0 001-1v-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+<span class="text-xs font-medium text-slate-200">Mitsubishi L200 4x4 MT</span>
+</div>
+</div>
+<span class="absolute top-2.5 left-2.5 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-600 text-white shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+<span>Disponible ahora</span>
+</span>
+<span class="absolute top-2.5 right-2.5 text-[10px] font-bold bg-[#1F2A33] text-white px-2 py-0.5 rounded border border-gray-600 uppercase">
+                  Equivalente directa
+                </span>
+<span class="absolute bottom-2.5 left-2.5 text-[11px] bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded">
+                  Tracción 4x4
+                </span>
+</div>
+<!-- Content Body -->
+<div class="p-4 space-y-3">
+<div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Pick-Up Equivalente Hilux</div>
+<h3 class="text-base font-bold text-gray-900 font-heading leading-snug">Mitsubishi L200 · E1A-549</h3>
+</div>
+<!-- Price -->
+<div class="bg-gray-50 border border-gray-200/80 rounded-lg p-2.5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-gray-500">Tarifa diaria:</span>
+<span class="text-sm font-bold text-[#1F2A33]">S/ 280 <span class="text-[11px] font-normal text-gray-500">/ día</span></span>
+</div>
+<div class="mt-1 text-[11px] font-medium text-gray-600 flex items-center space-x-1">
+<span>Misma categoría y condiciones contractuales</span>
+</div>
+</div>
+<!-- Specs -->
+<ul class="text-xs text-gray-600 space-y-1.5 pt-1">
+<li class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+<span><strong>Capacidad:</strong> 5 pasajeros</span>
+</li>
+<li class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+<span><strong>Transmisión:</strong> Mecánica 6 vel. · Diésel 4x4</span>
+</li>
+<li class="flex items-center space-x-2 text-emerald-700 font-medium">
+<svg class="w-3.5 h-3.5 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+<span>Apta para mina y trocha</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Action Button -->
+<div class="p-4 pt-0">
+<button class="w-full bg-[#1F2A33] hover:bg-black text-white text-xs font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center space-x-1.5 shadow-sm">
+<span>Elegir esta</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</article>
+</div>
+</section>
+<!-- END: AlternativesGrid -->
+<!-- BEGIN: RefundSection -->
+<!-- Deliberately less prominent section to favor retention -->
+<section class="pt-6 border-t border-gray-100 flex flex-col items-center text-center space-y-1.5" data-purpose="refund-fallback">
+<a class="inline-flex items-center space-x-1.5 text-xs text-[#4E4A45] hover:text-gray-900 hover:underline transition-all" href="#">
+<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Prefiero el reembolso</span>
+</a>
+<p class="text-[11px] text-gray-400 max-w-md">
+          Se procesará la devolución íntegra del depósito de S/ 300.00 a la cuenta de origen en 24h hábiles.
+        </p>
+</section>
+<!-- END: RefundSection -->
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: InstitutionalFooter -->
+<footer class="bg-white border-t border-gray-200 mt-10 py-3.5 text-xs text-gray-500">
+<div class="max-w-[1240px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+<div>
+        VeloxRent © 2025 · Sistema de Gestión Interna
+      </div>
+<div class="flex items-center space-x-4">
+<span>Soporte Front-office: anexo 103</span>
+<span class="text-gray-300">|</span>
+<a class="text-red-600 hover:text-red-700 font-medium" href="#">Cerrar sesión</a>
+</div>
+</div>
+</footer>
+<!-- END: InstitutionalFooter -->
+</body></html>

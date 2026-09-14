@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultas — Bandeja (Móvil) - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              primary: '#1F2A33',
+              accent: '#9E4C08',
+              accentHover: '#873F05',
+              surface: '#FCF9F3',
+              border: '#EFEDE7',
+              muted: '#706E6B',
+              text: '#1F2A33',
+              textSecondary: '#4E4A45',
+            },
+            status: {
+              open: '#2166B0',
+              converted: '#1E7D4B',
+              closed: '#EFEDE7',
+              closedText: '#4E4A45'
+            }
+          },
+          borderRadius: {
+            brand: '4px'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #F6F3ED;
+      color: #1F2A33;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-space {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    /* Mobile screen container */
+    .mobile-frame {
+      width: 390px;
+      min-height: 844px;
+      margin: 0 auto;
+      background-color: #FFFFFF;
+      position: relative;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body class="bg-[#F0EEE9] min-h-screen py-6 flex justify-center items-center">
+
+  <!-- Mobile Frame (390px) -->
+  <div class="mobile-frame rounded-[12px] overflow-hidden border border-[#E5E0D8]">
+    
+    <!-- Top System Header Bar -->
+    <header class="bg-[#1F2A33] text-white px-4 py-3 border-b border-[#2C3B47] flex items-center justify-between sticky top-0 z-20">
+      <div class="flex items-center space-x-2">
+        <div class="w-6 h-6 rounded bg-[#9E4C08] flex items-center justify-center font-bold text-xs text-white font-space">
+          V
+        </div>
+        <div>
+          <span class="font-space font-semibold text-sm tracking-tight text-white">VeloxRent</span>
+          <span class="text-[10px] text-[#A39C90] ml-1.5 font-normal">Ayacucho</span>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2.5">
+        <div class="flex items-center space-x-1 text-[11px] text-[#2FBE73] bg-[#142029] px-2 py-0.5 rounded">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#2FBE73] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+        <button class="w-8 h-8 rounded flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10" aria-label="Menú">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Title & Quick Counter -->
+    <div class="px-4 pt-4 pb-2 bg-white flex items-baseline justify-between">
+      <div>
+        <h1 class="font-space text-[22px] font-bold text-[#1F2A33] leading-tight">Consultas</h1>
+        <p class="text-xs text-[#706E6B] mt-0.5">Bandeja de atención en mostrador</p>
+      </div>
+      <span class="text-xs font-medium px-2 py-0.5 bg-[#F6F3ED] text-[#4E4A45] rounded-full border border-[#EFEDE7]">
+        4 activas
+      </span>
+    </div>
+
+    <!-- Search & Filter Header (Sticky below bar) -->
+    <div class="px-4 py-2.5 bg-white border-b border-[#EFEDE7] sticky top-[49px] z-10">
+      <div class="flex items-center space-x-2">
+        <!-- Simple Search Bar -->
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-[#706E6B]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            placeholder="Buscar por cliente, RUC o DNI..." 
+            class="w-full pl-8 pr-3 py-2 text-[13px] bg-[#FAF9F5] border border-[#EFEDE7] rounded-[4px] focus:outline-none focus:border-[#1F2A33] focus:bg-white text-[#1F2A33] placeholder-[#A39C90]"
+          >
+        </div>
+
+        <!-- Filter Button (Funnel Icon) triggers bottom sheet -->
+        <button 
+          type="button" 
+          class="h-[38px] px-3 bg-[#FAF9F5] hover:bg-[#F0EEE9] border border-[#EFEDE7] text-[#1F2A33] rounded-[4px] flex items-center justify-center space-x-1.5 transition active:scale-[0.98]"
+          title="Filtrar consultas"
+        >
+          <svg class="w-4 h-4 text-[#4E4A45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+          </svg>
+          <span class="text-xs font-medium text-[#4E4A45]">Filtrar</span>
+        </button>
+      </div>
+
+      <!-- Active filter pills / indicators -->
+      <div class="flex items-center space-x-1.5 mt-2 overflow-x-auto pb-0.5 no-scrollbar text-[11px]">
+        <span class="bg-[#1F2A33] text-white px-2 py-0.5 rounded-[4px] whitespace-nowrap font-medium">Todas</span>
+        <span class="bg-[#FAF9F5] text-[#4E4A45] border border-[#EFEDE7] px-2 py-0.5 rounded-[4px] whitespace-nowrap">Abiertas (2)</span>
+        <span class="bg-[#FAF9F5] text-[#4E4A45] border border-[#EFEDE7] px-2 py-0.5 rounded-[4px] whitespace-nowrap">Convertidas (1)</span>
+        <span class="bg-[#FAF9F5] text-[#4E4A45] border border-[#EFEDE7] px-2 py-0.5 rounded-[4px] whitespace-nowrap">Cerradas (1)</span>
+      </div>
+    </div>
+
+    <!-- Main List: Cards (Each card is fully clickable >=44x44px) -->
+    <main class="flex-1 bg-white px-4 py-3 space-y-2.5 overflow-y-auto pb-24">
+      
+      <!-- Card 1: CON-0842 (Abierta) -->
+      <article class="bg-[#FFFFFF] border border-[#EFEDE7] rounded-[4px] p-3.5 hover:border-[#1F2A33] active:bg-[#FAF9F5] transition cursor-pointer shadow-sm relative group">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="flex items-center space-x-1.5 mb-1">
+              <span class="text-[11px] font-mono text-[#706E6B] font-medium">#CON-0842</span>
+              <span class="text-[10px] text-[#A39C90]">•</span>
+              <!-- Relative date -->
+              <span class="text-[11px] text-[#706E6B]">Hace 20 min</span>
+            </div>
+            <!-- Client Name in Space Grotesk 16px -->
+            <h2 class="font-space text-[16px] font-bold text-[#1F2A33] leading-snug group-hover:text-[#9E4C08] transition-colors">
+              María Quispe Huamán
+            </h2>
+            <p class="text-[12px] text-[#4E4A45] mt-0.5">DNI 44829103 · Huamanga</p>
+          </div>
+
+          <!-- Status Badge: Abierta (#2166B0) -->
+          <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-semibold bg-[#2166B0]/10 text-[#2166B0] border border-[#2166B0]/20 whitespace-nowrap">
+            Abierta
+          </span>
+        </div>
+
+        <!-- Meta row: Canal & Details -->
+        <div class="mt-2.5 pt-2.5 border-t border-[#F0EEE9] flex items-center justify-between text-xs text-[#4E4A45]">
+          <!-- Channel with Icon (Presencial) -->
+          <div class="flex items-center space-x-1.5">
+            <span class="w-5 h-5 rounded bg-[#FAF9F5] border border-[#EFEDE7] flex items-center justify-center text-[#9E4C08]">
+              <!-- User/desk icon -->
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </span>
+            <span class="font-medium text-[#1F2A33]">Presencial</span>
+            <span class="text-[#A39C90]">·</span>
+            <span class="text-[11px] text-[#706E6B]">Toyota Hilux 4x4</span>
+          </div>
+
+          <!-- Subtle chevron indicating clickable -->
+          <div class="text-[#A39C90] group-hover:text-[#1F2A33] transition-transform group-hover:translate-x-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: CON-0841 (Abierta) -->
+      <article class="bg-[#FFFFFF] border border-[#EFEDE7] rounded-[4px] p-3.5 hover:border-[#1F2A33] active:bg-[#FAF9F5] transition cursor-pointer shadow-sm relative group">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="flex items-center space-x-1.5 mb-1">
+              <span class="text-[11px] font-mono text-[#706E6B] font-medium">#CON-0841</span>
+              <span class="text-[10px] text-[#A39C90]">•</span>
+              <!-- Relative date -->
+              <span class="text-[11px] text-[#706E6B]">Hace 1 hora</span>
+            </div>
+            <!-- Client Name in Space Grotesk 16px -->
+            <h2 class="font-space text-[16px] font-bold text-[#1F2A33] leading-snug group-hover:text-[#9E4C08] transition-colors">
+              Consorcio Vial Los Andes S.A.C.
+            </h2>
+            <p class="text-[12px] text-[#4E4A45] mt-0.5">RUC 20601849201 · Mina Catalina</p>
+          </div>
+
+          <!-- Status Badge: Abierta (#2166B0) -->
+          <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-semibold bg-[#2166B0]/10 text-[#2166B0] border border-[#2166B0]/20 whitespace-nowrap">
+            Abierta
+          </span>
+        </div>
+
+        <!-- Meta row: Canal & Details -->
+        <div class="mt-2.5 pt-2.5 border-t border-[#F0EEE9] flex items-center justify-between text-xs text-[#4E4A45]">
+          <!-- Channel with Icon (Virtual) -->
+          <div class="flex items-center space-x-1.5">
+            <span class="w-5 h-5 rounded bg-[#FAF9F5] border border-[#EFEDE7] flex items-center justify-center text-[#2166B0]">
+              <!-- Phone/globe icon -->
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+              </svg>
+            </span>
+            <span class="font-medium text-[#1F2A33]">Virtual (WhatsApp)</span>
+            <span class="text-[#A39C90]">·</span>
+            <span class="text-[11px] text-[#706E6B]">2 Pickups 4x4</span>
+          </div>
+
+          <div class="text-[#A39C90] group-hover:text-[#1F2A33] transition-transform group-hover:translate-x-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3: CON-0839 (Convertida) -->
+      <article class="bg-[#FFFFFF] border border-[#EFEDE7] rounded-[4px] p-3.5 hover:border-[#1F2A33] active:bg-[#FAF9F5] transition cursor-pointer shadow-sm relative group">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="flex items-center space-x-1.5 mb-1">
+              <span class="text-[11px] font-mono text-[#706E6B] font-medium">#CON-0839</span>
+              <span class="text-[10px] text-[#A39C90]">•</span>
+              <!-- Relative date -->
+              <span class="text-[11px] text-[#706E6B]">Hoy, 09:15</span>
+            </div>
+            <!-- Client Name in Space Grotesk 16px -->
+            <h2 class="font-space text-[16px] font-bold text-[#1F2A33] leading-snug group-hover:text-[#9E4C08] transition-colors">
+              Carlos Mendoza Ramos
+            </h2>
+            <p class="text-[12px] text-[#4E4A45] mt-0.5">DNI 10293847 · Ayacucho</p>
+          </div>
+
+          <!-- Status Badge: Convertida (#1E7D4B) -->
+          <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-semibold bg-[#1E7D4B]/10 text-[#1E7D4B] border border-[#1E7D4B]/20 whitespace-nowrap">
+            Convertida
+          </span>
+        </div>
+
+        <!-- Meta row: Canal & Details -->
+        <div class="mt-2.5 pt-2.5 border-t border-[#F0EEE9] flex items-center justify-between text-xs text-[#4E4A45]">
+          <!-- Channel with Icon (Presencial) -->
+          <div class="flex items-center space-x-1.5">
+            <span class="w-5 h-5 rounded bg-[#FAF9F5] border border-[#EFEDE7] flex items-center justify-center text-[#9E4C08]">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </span>
+            <span class="font-medium text-[#1F2A33]">Presencial</span>
+            <span class="text-[#A39C90]">·</span>
+            <span class="text-[11px] text-[#1E7D4B] font-medium">Reserva #RES-2290</span>
+          </div>
+
+          <div class="text-[#A39C90] group-hover:text-[#1F2A33] transition-transform group-hover:translate-x-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 4: CON-0836 (Cerrada) -->
+      <article class="bg-[#FAFAFA] border border-[#EFEDE7] rounded-[4px] p-3.5 hover:border-[#A39C90] active:bg-[#F5F5F5] transition cursor-pointer relative group">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="flex items-center space-x-1.5 mb-1">
+              <span class="text-[11px] font-mono text-[#A39C90] font-medium">#CON-0836</span>
+              <span class="text-[10px] text-[#A39C90]">•</span>
+              <!-- Relative date -->
+              <span class="text-[11px] text-[#706E6B]">Ayer, 17:40</span>
+            </div>
+            <!-- Client Name in Space Grotesk 16px -->
+            <h2 class="font-space text-[16px] font-semibold text-[#4E4A45] leading-snug">
+              Constructora Huanta E.I.R.L.
+            </h2>
+            <p class="text-[12px] text-[#706E6B] mt-0.5">RUC 20491823910 · Huanta</p>
+          </div>
+
+          <!-- Status Badge: Cerrada (neutro #EFEDE7) -->
+          <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-medium bg-[#EFEDE7] text-[#4E4A45] border border-[#E5E2DC] whitespace-nowrap">
+            Cerrada
+          </span>
+        </div>
+
+        <!-- Meta row: Canal & Details -->
+        <div class="mt-2.5 pt-2.5 border-t border-[#EFEDE7] flex items-center justify-between text-xs text-[#706E6B]">
+          <!-- Channel with Icon (Virtual) -->
+          <div class="flex items-center space-x-1.5">
+            <span class="w-5 h-5 rounded bg-[#F0EEE9] border border-[#EFEDE7] flex items-center justify-center text-[#706E6B]">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+              </svg>
+            </span>
+            <span class="text-[#4E4A45]">Virtual</span>
+            <span class="text-[#A39C90]">·</span>
+            <span class="text-[11px] text-[#706E6B]">Sin stock Hilux</span>
+          </div>
+
+          <div class="text-[#A39C90]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <!-- Bottom padding info text -->
+      <div class="text-center pt-2 pb-1 text-[11px] text-[#A39C90]">
+        Mostrando 4 de 4 consultas registradas hoy
+      </div>
+
+    </main>
+
+    <!-- Bottom Action CTA (Fixed Bottom, Full Width, #9E4C08) -->
+    <div class="sticky bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-sm border-t border-[#EFEDE7] z-20">
+      <button 
+        type="button" 
+        class="w-full h-[48px] bg-[#9E4C08] hover:bg-[#873F05] active:bg-[#733504] text-white font-medium text-[14px] rounded-[4px] flex items-center justify-center space-x-2 transition shadow-sm active:scale-[0.99]"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span class="tracking-wide">Nueva Consulta</span>
+      </button>
+    </div>
+
+  </div>
+
+</body>
+</html>

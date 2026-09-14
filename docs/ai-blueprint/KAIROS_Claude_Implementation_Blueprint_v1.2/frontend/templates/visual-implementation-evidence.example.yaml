@@ -1,0 +1,18 @@
+schema_version: "1.0"
+task_id: KAI-ALQ-009
+ux_id: ALQ-09
+proto_id: PROTO-ALQ-09-READY-DESKTOP
+baseline: docs/prototypes/alquiler/ALQ-09/ALQ-09-ready-desktop-v1.0.png
+implementation_route: /rentals/fixture-rental/delivery-checklist
+actual: artifacts/visual/ALQ-09/ready-desktop/actual.png
+diff: artifacts/visual/ALQ-09/ready-desktop/diff.png
+difference_percent: 0.84
+semantic_checks:
+  structure: PASS
+  hierarchy: PASS
+  primary_cta: PASS
+  design_system: PASS
+accessibility: PASS
+critical_differences: []
+approved_deviations: []
+result: PASS

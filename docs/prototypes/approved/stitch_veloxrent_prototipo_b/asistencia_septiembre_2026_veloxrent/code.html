@@ -1,0 +1,864 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Asistencia — Septiembre 2026 - VeloxRent</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            velox: {
+              orange: '#C6600A',
+              dark: '#1F2A33',
+              border: '#E5E2DC',
+              bgLight: '#F8F7F5',
+              green: '#1E7D4B',
+              greenLight: '#E6F5EC',
+              amber: '#B5720A',
+              amberLight: '#FDF1DE',
+              red: '#C22B2B',
+              redLight: '#FBE9E9',
+              muted: '#6B7280'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace']
+          },
+          borderRadius: {
+            corporate: '4px'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Scrollbar & Utility Styles -->
+<style data-purpose="table-layout">
+    /* Matrix Table Layout & Sticky Column styles */
+    .sticky-col-1 {
+      position: sticky;
+      left: 0;
+      z-index: 20;
+      background-color: inherit;
+    }
+    .sticky-col-2 {
+      position: sticky;
+      left: 240px;
+      z-index: 20;
+      background-color: inherit;
+    }
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    /* Thin horizontal scrollbar for dense schedule */
+    .attendance-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .attendance-scroll::-webkit-scrollbar-track {
+      background: #F1EFEA;
+    }
+    .attendance-scroll::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    .attendance-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="bg-[#F8F7F5] text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+<!-- BEGIN: MainHeader -->
+<header class="bg-white border-b border-velox-border px-6 py-2.5 flex items-center justify-between text-xs" data-purpose="top-navigation">
+<!-- Brand & Breadcrumbs -->
+<div class="flex items-center space-x-4">
+<a class="flex items-center text-xl font-bold tracking-tight select-none" href="#">
+<span class="text-velox-orange">Velox</span><span class="text-velox-dark">Rent</span>
+</a>
+<div class="h-4 w-px bg-slate-300"></div>
+<nav aria-label="Breadcrumb">
+<ol class="flex items-center space-x-2 text-slate-500 font-normal">
+<li>Recursos Humanos</li>
+<li class="text-slate-300">›</li>
+<li>Personal</li>
+<li class="text-slate-300">›</li>
+<li class="text-slate-900 font-semibold">Asistencia</li>
+</ol>
+</nav>
+</div>
+<!-- Institutional Status & User Badge -->
+<div class="flex items-center space-x-5">
+<!-- Network Connectivity Badge -->
+<div class="flex items-center space-x-1.5 bg-emerald-50 px-2.5 py-1 rounded-corporate border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+<span class="text-emerald-800 font-medium">En línea</span>
+</div>
+<!-- Campus Location -->
+<div class="flex items-center space-x-1.5 text-slate-600">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- User Information -->
+<div class="flex items-center space-x-2 pl-2 border-l border-slate-200">
+<div class="w-7 h-7 rounded-full bg-velox-dark text-white font-mono font-semibold flex items-center justify-center text-xs shadow-sm">
+          RO
+        </div>
+<div class="flex flex-col text-left">
+<span class="font-semibold text-slate-800 leading-tight">Rodrigo Ortiz</span>
+<span class="text-[10px] text-slate-500 font-medium leading-none">Jefe de RR.HH.</span>
+</div>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: SubStatusBar -->
+<section class="bg-white border-b border-velox-border px-6 py-2 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-y-2" data-purpose="operational-metrics">
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2">
+<span class="font-medium text-slate-500">Periodo activo:</span>
+<span class="font-semibold text-slate-900 font-mono">Septiembre 2026</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="font-medium text-slate-500">Colaboradores monitoreados:</span>
+<span class="font-semibold text-slate-800">24 registros</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+<span class="font-medium text-slate-500">Asistencia promedio:</span>
+<span class="font-semibold text-emerald-700 font-mono">96.4%</span>
+</div>
+</div>
+<div class="text-slate-500">
+<span class="font-medium text-slate-600">Ámbito de control:</span> Sede Central, Talleres y Rutas Mineras Ayacucho
+    </div>
+</section>
+<!-- END: SubStatusBar -->
+<!-- BEGIN: MainContent -->
+<main class="max-w-[1720px] w-full mx-auto px-6 py-5 flex-1 space-y-4">
+<!-- Page Title & Primary Actions Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<div class="flex items-center space-x-3">
+<h1 class="text-2xl font-bold text-slate-900 tracking-tight">Asistencia</h1>
+<!-- Month Switcher Component -->
+<div class="flex items-center bg-white border border-velox-border rounded-corporate shadow-sm px-2 py-0.5 space-x-2">
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded" title="Mes anterior">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<span class="font-mono text-xs font-semibold text-slate-800 px-1">Septiembre 2026</span>
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded" title="Mes siguiente">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<span class="text-xs bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-corporate font-medium">Planilla en curso</span>
+</div>
+<p class="text-xs text-slate-500 mt-1">Control biométrico mensual de jornada, registro de tardanzas, faltas y justificaciones normativas de la plantilla activa.</p>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center space-x-3 shrink-0">
+<!-- Secondary Action: Importar Marcaciones -->
+<button class="inline-flex items-center justify-center space-x-2 px-3.5 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100 rounded-corporate text-xs font-medium shadow-sm transition-colors" type="button">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Importar marcaciones</span>
+<span class="text-[10px] text-slate-400 font-mono ml-1">.DAT / ZKTeco</span>
+</button>
+<!-- Primary Action: Registrar manualmente -->
+<button class="inline-flex items-center justify-center space-x-2 px-4 py-2 bg-velox-dark hover:bg-slate-800 text-white rounded-corporate text-xs font-semibold shadow-sm transition-colors" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Registrar manualmente</span>
+</button>
+</div>
+</div>
+<!-- BEGIN: FilterBar -->
+<div class="bg-white border border-velox-border rounded-corporate p-3.5 shadow-sm space-y-3" data-purpose="filtering-and-legend">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+<!-- Search Input -->
+<div class="md:col-span-4 relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="block w-full pl-9 pr-3 py-1.5 text-xs rounded-corporate border border-slate-300 focus:ring-1 focus:ring-slate-800 focus:border-slate-800 placeholder-slate-400" placeholder="Buscar por colaborador, DNI o cargo..." type="text">
+</div>
+<!-- Filter Area -->
+<div class="md:col-span-3">
+<select class="block w-full py-1.5 px-2.5 text-xs rounded-corporate border border-slate-300 focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-700">
+<option value="">Todas las áreas operativas</option>
+<option value="taller">Mantenimiento y Taller Central</option>
+<option value="campo">Campo / Inspección Técnica 4x4</option>
+<option value="comercial">Operaciones y Despacho</option>
+<option value="gps">Tecnología y Telemática IoT</option>
+<option value="finanzas">Finanzas y Tesorería</option>
+</select>
+</div>
+<!-- Filter Sede -->
+<div class="md:col-span-2">
+<select class="block w-full py-1.5 px-2.5 text-xs rounded-corporate border border-slate-300 focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-700">
+<option value="">Todas las sedes</option>
+<option value="ayacucho">Ayacucho — Sede Central</option>
+<option value="taller">Taller Mecánico Central</option>
+<option value="lima">Lima Corporativo (Híbrido)</option>
+</select>
+</div>
+<!-- Filter Status -->
+<div class="md:col-span-2">
+<select class="block w-full py-1.5 px-2.5 text-xs rounded-corporate border border-slate-300 focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-700">
+<option value="">Incidencias: Todas</option>
+<option value="tardanzas">Con tardanzas registradas</option>
+<option value="faltas">Con faltas injustificadas</option>
+<option value="perfecta">Asistencia 100% puntual</option>
+</select>
+</div>
+<!-- Reset Button -->
+<div class="md:col-span-1 text-right">
+<button class="text-xs text-velox-orange hover:text-amber-800 font-medium" type="button">Restablecer</button>
+</div>
+</div>
+<!-- Legend bar & visual conventions -->
+<div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+<div class="flex items-center space-x-4">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Convenciones:</span>
+<!-- Puntual -->
+<div class="flex items-center space-x-1.5">
+<span class="w-4 h-4 flex items-center justify-center rounded bg-velox-greenLight text-velox-green text-[10px] font-bold">✓</span>
+<span class="text-slate-700">Presente / Puntual</span>
+</div>
+<!-- Tardanza -->
+<div class="flex items-center space-x-1.5">
+<span class="w-4 h-4 flex items-center justify-center rounded bg-velox-amberLight text-velox-amber text-[10px] font-bold">◷</span>
+<span class="text-slate-700">Tardanza (&gt;5 min)</span>
+</div>
+<!-- Falta -->
+<div class="flex items-center space-x-1.5">
+<span class="w-4 h-4 flex items-center justify-center rounded bg-velox-redLight text-velox-red text-[10px] font-bold">✕</span>
+<span class="text-slate-700">Falta</span>
+</div>
+<!-- Justificada -->
+<div class="flex items-center space-x-1.5">
+<span class="w-4 h-4 flex items-center justify-center rounded bg-blue-50 text-blue-700 text-[10px] font-bold">J</span>
+<span class="text-slate-700">Descanso médico / Justif.</span>
+</div>
+<!-- Domingo / Descanso -->
+<div class="flex items-center space-x-1.5">
+<span class="w-4 h-4 flex items-center justify-center rounded bg-slate-100 text-slate-400 text-[10px] font-bold">D</span>
+<span class="text-slate-700">Descanso semanal</span>
+</div>
+</div>
+<div class="text-[11px] text-slate-400 font-mono">
+          Régimen ordinario: Lun-Sáb (48 hrs) · Tolerancia ingreso: 10 min
+        </div>
+</div>
+</div>
+<!-- END: FilterBar -->
+<!-- BEGIN: AttendanceCalendarMatrix -->
+<div class="bg-white border border-velox-border rounded-corporate shadow-sm overflow-hidden" data-purpose="biometric-matrix-container">
+<div class="attendance-scroll overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<!-- Calendar Days Header (Septiembre 2026: 30 días, Sept 01 es Martes) -->
+<thead>
+<tr class="bg-[#F8F7F5] border-b border-velox-border text-[11px] font-semibold text-slate-600 select-none">
+<!-- Sticky Col 1: Colaborador -->
+<th class="sticky-col-1 bg-[#F8F7F5] py-2.5 px-3 min-w-[240px] border-r border-velox-border">
+                COLABORADOR
+              </th>
+<!-- Sticky Col 2: Área -->
+<th class="sticky-col-2 bg-[#F8F7F5] py-2.5 px-3 min-w-[180px] border-r border-velox-border">
+                ÁREA / SEDE
+              </th>
+<!-- Días del 01 al 30 de Septiembre 2026 -->
+<!-- 01 Ma, 02 Mi, 03 Ju, 04 Vi, 05 Sa, 06 Do... -->
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M01</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M02</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">J03</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">V04</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">S05</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200 bg-slate-100 text-slate-400 font-bold">D06</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">L07</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M08</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M09</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">J10</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">V11</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">S12</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200 bg-slate-100 text-slate-400 font-bold">D13</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">L14</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M15</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M16</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">J17</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">V18</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">S19</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200 bg-slate-100 text-slate-400 font-bold">D20</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">L21</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M22</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M23</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">J24</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">V25</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">S26</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200 bg-slate-100 text-slate-400 font-bold">D27</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">L28</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-slate-200">M29</th>
+<th class="p-1 text-center font-mono min-w-[30px] border-r border-velox-border">M30</th>
+<!-- Totales Resumen -->
+<th class="py-2.5 px-2 text-center text-emerald-800 bg-emerald-50/50 min-w-[40px] border-r border-slate-200" title="Días Asistidos">PRES</th>
+<th class="py-2.5 px-2 text-center text-amber-800 bg-amber-50/50 min-w-[40px] border-r border-slate-200" title="Tardanzas">TARD</th>
+<th class="py-2.5 px-2 text-center text-rose-800 bg-rose-50/50 min-w-[40px] border-r border-slate-200" title="Faltas">FALT</th>
+<th class="py-2.5 px-2 text-center min-w-[65px] border-r border-slate-200" title="Porcentaje de Asistencia Efectiva">% CUMP</th>
+<th class="py-2.5 px-3 text-center min-w-[90px]">ACCIONES</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 bg-white font-normal text-slate-700">
+<!-- Fila 1: Edwin Alanya Córdoba -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    EA
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">Edwin Alanya Córdoba</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 47829103</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Mantenimiento y Taller</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+<span>Taller Central Ayacucho</span>
+</div>
+</td>
+<!-- Días Edwin: 1 Tardanza en día 04 -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold bg-amber-50 text-amber-600 cursor-help" title="Tardanza: +14m (08:14)">◷</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">26</td>
+<td class="p-1 text-center font-mono font-semibold text-amber-700 border-r border-slate-100 bg-amber-50/20">1</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-bold text-emerald-700 border-r border-slate-100">98.5%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+<!-- Fila 2: Víctor Hugo Morales Quispe -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    VM
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">Víctor Hugo Morales Quispe</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 41908234</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Campo / Inspección Técnica</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Ruta Minera Ayacucho</span>
+</div>
+</td>
+<!-- Días Víctor: Asistencia 100% puntual -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">26</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-bold text-emerald-700 border-r border-slate-100">100%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+<!-- Fila 3: Marcos Talavera Hinostroza -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    MT
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">Marcos Talavera Hinostroza</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 28391024</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Mantenimiento y Taller</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+<span>Jefe de Taller Central</span>
+</div>
+</td>
+<!-- Días Marcos: 1 falta justificada con descanso médico día 16 -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold bg-blue-50 text-blue-700 cursor-help" title="Descanso Médico Certificado EsSalud">J</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">25</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-bold text-blue-700 border-r border-slate-100">100%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+<!-- Fila 4: María Quispe Mendoza -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    MQ
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">María Quispe Mendoza</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 46102938</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Operaciones Comerciales</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+<span>Sede Central Ayacucho</span>
+</div>
+</td>
+<!-- Días María: 1 Tardanza leve día 10 -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold bg-amber-50 text-amber-600 cursor-help" title="Tardanza: +8m (08:08)">◷</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">26</td>
+<td class="p-1 text-center font-mono font-semibold text-amber-700 border-r border-slate-100 bg-amber-50/20">1</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-bold text-emerald-700 border-r border-slate-100">99.1%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+<!-- Fila 5: Carlos Mendoza Huamán -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    CM
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">Carlos Mendoza Huamán</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 45192834</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Tecnología y Telemática</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+<span>Lima Corporativo (Híbrido)</span>
+</div>
+</td>
+<!-- Días Carlos: 100% puntual -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">26</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-bold text-emerald-700 border-r border-slate-100">100%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+<!-- Fila 6: Rosa Huamán Prado -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    RH
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">Rosa Huamán Prado</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 43819201</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Finanzas y Tesorería</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+<span>Sede Central Ayacucho</span>
+</div>
+</td>
+<!-- Días Rosa: 1 Falta injustificada día 21 -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold bg-rose-100 text-rose-700 cursor-help" title="Falta injustificada (Sin registro biométrico)">✕</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">25</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-semibold text-rose-700 border-r border-slate-100 bg-rose-50/30">1</td>
+<td class="p-1 text-center font-mono font-bold text-rose-700 border-r border-slate-100">96.1%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+<!-- Fila 7: Walter Quispe Cárdenas -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    WQ
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">Walter Quispe Cárdenas</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 42109485</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Mantenimiento y Taller</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+<span>Mecánico Auxilio Minero</span>
+</div>
+</td>
+<!-- Días Walter: 2 tardanzas leves -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold bg-amber-50 text-amber-600 cursor-help" title="Tardanza: +18m (08:18)">◷</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold bg-amber-50 text-amber-600 cursor-help" title="Tardanza: +11m (08:11)">◷</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">26</td>
+<td class="p-1 text-center font-mono font-semibold text-amber-700 border-r border-slate-100 bg-amber-50/20">2</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-bold text-emerald-700 border-r border-slate-100">97.2%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+<!-- Fila 8: Jorge Luis Bendezú -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="sticky-col-1 bg-white py-2 px-3 border-r border-velox-border">
+<div class="flex items-center space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-semibold text-xs font-mono shrink-0">
+                    JB
+                  </div>
+<div class="truncate">
+<p class="font-semibold text-slate-900 leading-tight">Jorge Luis Bendezú</p>
+<p class="text-[11px] text-slate-500 font-mono">DNI: 30491823</p>
+</div>
+</div>
+</td>
+<td class="sticky-col-2 bg-white py-2 px-3 border-r border-velox-border text-[11px]">
+<p class="font-medium text-slate-800">Operaciones y Flota</p>
+<div class="flex items-center space-x-1 text-slate-500 text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+<span>Supervisor Patio Maquinaria</span>
+</div>
+</td>
+<!-- Días Jorge: 100% puntual -->
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] bg-slate-100 text-slate-400 font-bold">D</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-slate-100 text-[11px] font-bold text-velox-green">✓</td>
+<td class="p-1 text-center border-r border-velox-border text-[11px] font-bold text-velox-green">✓</td>
+<!-- Resumen -->
+<td class="p-1 text-center font-mono font-semibold text-slate-800 border-r border-slate-100 bg-emerald-50/20">26</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono text-slate-400 border-r border-slate-100">0</td>
+<td class="p-1 text-center font-mono font-bold text-emerald-700 border-r border-slate-100">100%</td>
+<td class="py-1 px-2 text-center">
+<button class="text-[11px] font-medium text-slate-600 hover:text-velox-dark hover:underline">Detalle</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination and Record Counter Footer -->
+<div class="px-5 py-3 border-t border-velox-border flex items-center justify-between text-xs text-slate-500 bg-white">
+<div>
+          Mostrando <span class="font-semibold text-slate-800">8</span> de <span class="font-semibold text-slate-800">24</span> colaboradores registrados
+        </div>
+<div class="flex items-center space-x-1">
+<button class="px-3 py-1 border border-slate-300 rounded text-slate-400 cursor-not-allowed text-xs font-medium">Anterior</button>
+<button class="px-3 py-1 bg-velox-orange text-white rounded font-medium text-xs">1</button>
+<button class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-50 text-slate-700 text-xs font-medium">2</button>
+<button class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-50 text-slate-700 text-xs font-medium">3</button>
+<button class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-50 text-slate-700 text-xs font-medium">Siguiente</button>
+</div>
+</div>
+</div>
+<!-- END: AttendanceCalendarMatrix -->
+<!-- BEGIN: AuditNote -->
+<aside class="bg-blue-50/60 border border-blue-200/80 rounded-corporate p-4 text-xs text-blue-900 flex items-start space-x-3" data-purpose="compliance-callout">
+<div class="text-blue-600 mt-0.5 shrink-0">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<div class="space-y-1">
+<p class="font-bold">Protocolo de Control Biométrico y Auditoría de Marcaciones (PR-RRHH-005):</p>
+<p class="text-blue-800/90 leading-relaxed">
+          Las marcaciones se sincronizan automáticamente desde los terminales ZKTeco de Sede Central y Taller cada 60 minutos. Toda regularización manual requiere la justificación correspondiente debidamente firmada por la Jefatura de Área o informe de descanso médico validado por EsSalud para evitar deducciones de planilla legal.
+        </p>
+</div>
+</aside>
+<!-- END: AuditNote -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="bg-white border-t border-velox-border px-6 py-3 text-[11px] text-slate-500 mt-6" data-purpose="institutional-footer">
+<div class="max-w-[1720px] mx-auto flex flex-col md:flex-row items-center justify-between gap-y-2">
+<div class="flex flex-wrap items-center space-x-2">
+<span class="font-semibold text-slate-700">VeloxRent © 2025</span>
+<span class="text-slate-300">·</span>
+<span>Sistema de Gestión Interna</span>
+<span class="text-slate-300">·</span>
+<span class="text-slate-400">Protocolo SST-RRHH-001 / Control de Asistencia y Biometría</span>
+</div>
+<div class="flex items-center space-x-4">
+<span>Soporte RR.HH.: <strong class="text-slate-700 font-mono">anexo 104</strong></span>
+<span class="text-slate-300">·</span>
+<span>Mesa de Operaciones: <strong class="text-slate-700 font-mono">anexo 101</strong></span>
+<span class="text-slate-300">·</span>
+<a class="text-velox-orange hover:text-amber-800 font-medium inline-flex items-center space-x-1" href="#logout">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Cerrar sesión</span>
+</a>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
+</body></html>

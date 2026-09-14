@@ -1,0 +1,929 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "secondary-fixed-dim": "#ffb68a",
+          "secondary-container": "#fd8a38",
+          "on-secondary-fixed": "#321300",
+          "on-primary-container": "#86919c",
+          "secondary": "#994700",
+          "surface-container-lowest": "#ffffff",
+          "surface-variant": "#e5e2dc",
+          "on-primary": "#ffffff",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#d8e4f0",
+          "error": "#ba1a1a",
+          "on-secondary-container": "#662d00",
+          "outline": "#74777b",
+          "surface-dim": "#dddad4",
+          "on-surface-variant": "#44474b",
+          "on-surface": "#1c1c18",
+          "inverse-primary": "#bcc8d4",
+          "primary-fixed-dim": "#bcc8d4",
+          "inverse-on-surface": "#f4f0ea",
+          "tertiary-fixed": "#d4e3ff",
+          "on-error-container": "#93000a",
+          "on-primary-fixed": "#121d25",
+          "on-tertiary-fixed-variant": "#004785",
+          "background": "#fcf9f3",
+          "surface-tint": "#54606a",
+          "tertiary-container": "#002951",
+          "on-secondary-fixed-variant": "#743400",
+          "error-container": "#ffdad6",
+          "surface": "#fcf9f3",
+          "on-error": "#ffffff",
+          "outline-variant": "#c4c7cb",
+          "primary-container": "#1f2a33",
+          "surface-container-highest": "#e5e2dc",
+          "surface-container-high": "#ebe8e2",
+          "surface-container-low": "#f6f3ed",
+          "secondary-fixed": "#ffdbc8",
+          "on-primary-fixed-variant": "#3d4852",
+          "inverse-surface": "#31302d",
+          "primary": "#0a161e",
+          "surface-container": "#f1ede7",
+          "on-background": "#1c1c18",
+          "on-tertiary-container": "#5692df",
+          "on-tertiary-fixed": "#001c3a",
+          "surface-bright": "#fcf9f3",
+          "on-tertiary": "#ffffff",
+          "tertiary": "#00142d",
+          "tertiary-fixed-dim": "#a5c8ff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "spacing-2xs": "0.125rem",
+          "margin-desktop": "1.5rem",
+          "gutter-tablet": "0.75rem",
+          "spacing-sm": "0.5rem",
+          "spacing-2xl": "2rem",
+          "gutter-desktop": "1rem",
+          "spacing-xl": "1.5rem",
+          "gutter-mobile": "0.5rem",
+          "margin-mobile": "0.75rem",
+          "margin-tablet": "1rem",
+          "spacing-lg": "1.25rem",
+          "spacing-base": "1rem",
+          "spacing-3xl": "3rem",
+          "spacing-xs": "0.25rem",
+          "spacing-md": "0.75rem"
+        },
+        "fontFamily": {
+          "body-sm": [
+            "Public Sans"
+          ],
+          "label-sm": [
+            "Public Sans"
+          ],
+          "headline-lg": [
+            "Public Sans"
+          ],
+          "headline-sm": [
+            "Public Sans"
+          ],
+          "body-base": [
+            "Public Sans"
+          ],
+          "label-md": [
+            "Public Sans"
+          ],
+          "headline-xl": [
+            "Public Sans"
+          ],
+          "headline-xl-mobile": [
+            "Public Sans"
+          ],
+          "code-operational": [
+            "Space Grotesk"
+          ],
+          "body-lg": [
+            "Public Sans"
+          ],
+          "code-operational-sm": [
+            "Space Grotesk"
+          ]
+        },
+        "fontSize": {
+          "body-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "0.6875rem",
+            {
+              "lineHeight": "0.875rem",
+              "letterSpacing": "0.04em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-sm": [
+            "1.125rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-base": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "0.8125rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "2rem",
+            {
+              "lineHeight": "2.5rem",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "700"
+            }
+          ],
+          "headline-xl-mobile": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "700"
+            }
+          ],
+          "code-operational": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-lg": [
+            "1rem",
+            {
+              "lineHeight": "1.5rem",
+              "fontWeight": "400"
+            }
+          ],
+          "code-operational-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.03em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      }
+    }
+  };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-base text-body-base text-on-surface min-h-screen"><div class="flex flex-col min-h-screen"><main class="w-full bg-surface flex-1"><div class="flex flex-col w-full max-w-[390px] mx-auto pb-24 text-on-surface">
+<!-- Mobile Top Bar for VeloxRent Logistics -->
+<div class="w-full bg-surface-container-lowest shadow-sm rounded-lg p-spacing-sm flex flex-col gap-spacing-xs mb-spacing-md"><div class="flex items-center justify-between"><button class="inline-flex items-center gap-spacing-xs text-primary font-label-md text-label-md py-spacing-xs px-spacing-sm rounded hover:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">arrow_back</span><span class="">Volver</span></button><div class="inline-flex items-center gap-spacing-xs bg-surface-container-low px-spacing-sm py-spacing-2xs rounded-full"><span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span><span class="font-code-operational-sm text-code-operational-sm font-semibold text-[#1E7D4B] uppercase tracking-wide">● EN LÍNEA</span></div></div><div class="flex flex-col px-spacing-xs mt-spacing-2xs"><h1 class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight leading-tight">Recepción de Devolución</h1><p class="font-label-sm text-label-sm text-on-surface-variant mt-spacing-2xs">Inspección técnica de recepción pericial • <span class="font-code-operational-sm font-bold text-secondary">#DEV-0456</span> / <span class="font-code-operational-sm font-bold text-on-surface-variant">#ALQ-1187</span></p></div><div class="mt-spacing-xs bg-surface-container-low p-spacing-xs rounded-lg flex items-start gap-spacing-xs text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-secondary shrink-0 mt-0.5">directions_car</span><div class="flex flex-col"><span class="font-label-sm text-label-sm font-bold text-primary leading-tight">Toyota Hilux 4x4 MT | Placa DOY-704</span><span class="font-body-sm text-[10px] text-on-surface-variant">Sede Ayacucho - Patio Central | Titular: Víctor Hugo Morales Q. (Minera Los Andes S.A.C.)</span></div></div></div>
+<!-- Vehicle & Driver Context Card -->
+
+<!-- Mandatory Synchronization Status Banner -->
+<div class="w-full bg-[#EAF2FC] rounded-lg p-spacing-md shadow-sm mb-spacing-md"><div class="flex items-center justify-between mb-spacing-xs"><div class="flex items-center gap-spacing-xs"><span class="material-symbols-outlined text-[20px] text-[#2166B0] animate-spin">cloud_sync</span><span class="font-label-md text-[13px] font-semibold text-[#2166B0]">Sincronizando 23 de 35 fotos...</span></div><span class="font-code-operational-sm text-code-operational-sm font-bold text-[#2166B0] bg-[#D8E6F8] px-spacing-xs py-0.5 rounded">65%</span></div><div class="w-full h-1 bg-[#D8E6F8] rounded-full overflow-hidden mb-spacing-xs"><div class="h-full bg-[#2166B0] rounded-full w-[65.7%]"></div></div><div class="flex items-start gap-spacing-xs text-[#2166B0]"><span class="material-symbols-outlined text-[14px] mt-0.5 shrink-0">cloud_upload</span><p class="font-body-sm text-[10px] text-[#2166B0] leading-snug">Guardado localmente en IndexedDB. Transmitiendo lote telemático cifrado... (12 pendientes de confirmación en servidor)</p></div></div>
+<!-- Technical Section Header -->
+<div class="flex items-center justify-between px-spacing-xs mb-spacing-xs">
+<div class="flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">photo_camera</span>
+<h2 class="font-label-md text-label-md font-bold uppercase tracking-wider text-primary">Protocolo Pericial Fotográfico</h2>
+</div>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">35 Tomas Requeridas</span>
+</div>
+<!-- 35-Photo Technical Inspection Grid (2-columns adjusted to 390px) -->
+<div class="grid grid-cols-2 gap-spacing-xs">
+<!-- 01 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical inspection photograph of front panoramic view of a white Toyota Hilux mining truck parked in fleet maintenance yard, outdoor bright daylight, crisp corporate logistics documentation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtsieaEsf7ULBpz2j5wXf1k052UK8Yrhzp2W7rpHY_TkaDC6Ybstt3JxQBYroX9kXXAqOibey4Y62ToY0T6WJgxoLVVg969MUkpIOUin34m5AwDnGeOgUEt6xgpqyJ0LGF9KkuVpLTc2uoTNzTy0AGG2fSqt-OfI-MQ_mloISQV271QFA097H7f4xTxUpbjkVjHNcgdnhJWrg6UNUEtrfOA4zUD-7wcx6HeqgtdyCa1I-AvaIkXBrX">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">01</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Frontal panorámica</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:15:10 AM</span>
+</div>
+</div>
+<!-- 02 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Close-up inspection photo of clean left headlight lens and assembly of Toyota Hilux 4x4, logistics audit condition, technical peritaje detail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6nZGhiS-qK087RRxNcCr3OeaAXPdOPja3g8a7ztznu4gRZTJi7zp0baT87QRs8IEiNJPSAewrPcnCZlSEwJx2cYVBvWgVhMYeqNXAFtGVBBVxa2t0iUNJtlS2nLG5SAPhshfLNBfbcsehyi49y65YrxxRQTtYribixEvUvXYDjXFI89Jr7fx8edTbv7kahPnaxyQIsXz3e9CNMqqfXwbNEQJ0qR_viA8sB-wwg8iwDFoyKmP8E3G1">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">02</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Faro izquierdo</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:15:42 AM</span>
+</div>
+</div>
+<!-- 03 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical inspection close-up photo of right headlight lens and bezel on Toyota Hilux, clean state in automotive depot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJABBLjCJjsgm8_NNCv2yUv9Ow5IlLkz5nOXPsl_psc97r-LS3FZxfXGunusc0pwHGc7um-4ArJXnBfaWRbXwAYW3o2oRxM9ECEMLcYJsPZMiwIWD0dFX5XvA8whS6OJfqTJrASNAMqPsKg2j58rwSEQU7ZCxgN-Ihyb4AfUamDJWhw5omn4gOQF0pH3G8KS8sP4wIYMHWgFZxAtzWjKx1exsrYOcK242qzsY8NWSiaQaZWX2OPxYh">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">03</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Faro derecho</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:16:04 AM</span>
+</div>
+</div>
+<!-- 04 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="High-resolution audit photo of front engine hood and chrome radiator grille of modern Toyota Hilux truck, spotless condition" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCDm2e9QiGRQvH3eZQeY62_pAivnNy_MJWOMDmUVUiopQGNoK6tHSCR590qEnuS1Tdh90jKOzxtrdXuuDgqq5BjDn3I75MHHDufgGrLn8DkQn4DyJBQz0COrxRNgAqdlKVCKzUSPM4_x0-08jg_2tpqMgcrC7qQt9YK7mwgiZv9VprI9AtmJTn4xQxYehXOBMx6yPCDPQl0ePgsP8qbY2-lT2aj1Lt0wTT8aYIRXaedgTA7QkZ4Qp5">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">04</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Capó y parrilla</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:16:35 AM</span>
+</div>
+</div>
+<!-- 05 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Inspection angled shot of entire front automotive windshield glass showing no cracks or stone chips, bright industrial morning reflection" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEW5lkeYLbfj2zdrgihGk3rhuXYA-pKuK72SifDlQUM8vKopdTR_g2AaA3j60oJ0HUAF5kAkMkSiRT13905eSOCDJymSgTsj3yQHBo4w3gMogxl6x-5wlmN9j6NOnBXSqHEyrS9r5UDZ_moPFM7mQQ7lQQn3AOUjM2mfSVoJslSpSEGoTEljLyVDjsfXqVTFbonU9YMUl7Ga8JapB0MSGb_xUxGwSI1QEm3aO0WJuBoYUADd9YbiDB">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">05</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Parabrisas frontal</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:17:12 AM</span>
+</div>
+</div>
+<!-- 06 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical macro photography of illuminated vehicle digital odometer cluster reading exactly 038,412 km on dark dashboard instrument gauge" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_0r2pF_3extplbMnrYz19QuZHvYXm2CQ61bQ1BtkbhBQ0ssbXMNVo_6kbrmHmzq9PIuOnMMl-pOkOAOIoFZuXC1H0D_XII3L2cc6VhjOVmzrS-L8LrE9atOriQNA7VqtU8yY2Zti_AQuQvlguTGC9zrd3NvpwC3bTKP_guHlbuy-ZYPseQnR6RDW4aQvkcRa6xD5xHctsPHZMQ5QQFkLfj29X2cYbfQm_wAk0uV15WahQn_ABFCL8">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">06</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Odómetro (038,412 km)</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:17:50 AM</span>
+</div>
+</div>
+<!-- 07 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Automotive dashboard fuel level gauge display showing 100 percent needle full tank reading on Toyota Hilux dial" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxAy4t2KhOPV3S3l6xWrpDYx87U46I_2ILu-NFMIyWAA2IXLwRJ9N38AgFTjGSGUevdhIV9UOJMtwlBSDmdZXI2xWAXyUMiq4AGsRXdn49dpTqq_-A-EVLKVKeHbIbfb2q6cpJJwTH5cgmd4tNkgbHV2c_Fr7fIIe234eQ-b5akNLTGNoIUKONQtl544mxHd2k_Y8bCbXETs1MhGGhLbvhzHzll8b_b_431hQVh4OoHml0MhJiK9Zg">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">07</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Combustible 100% (Lleno)</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:18:22 AM</span>
+</div>
+</div>
+<!-- 08 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Interior cabin inspection photo of front bucket seats with clean heavy-duty mine-spec canvas protective covers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaoZtCaN60U70DcHc7xlfmm9Ddw4HZ2X2h_7zeSHY67jVjoxdl8ftPpz-vh2TBvLheUHv7uocOpJvCQRYBKuD8nyCXDOS7_jQ190v78RcbufMwHl0qDNB1FP6CEy4HbvQi0x_Q6u5Uwk0rB7ga_i_p3Ge_2DkQowPXHB3_wouMEP8oBoe39eiufYJVWUyg8cEUgg3VZxKlwXEapvwKHuWrhsAwVp0Raca0xpco_DVDxj9RkqVodjUW">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">08</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Asientos delant.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:18:59 AM</span>
+</div>
+</div>
+<!-- 09 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Inspection view of center console entertainment screen, gear shifter and air conditioning controls inside Toyota Hilux" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAC6fCBt8pdeJt71aJZ7zXN2L__OeVDNsF_1DY2cnbmQVbV3O_QCzlrS9A--no6PtRgoXkryepTb__sR5MHV2LCKg4neW6UH9iXo67HLRIgNrXPPw_3nunqhv3bewlKbouRidQAPBErUdwG-oQ1vMPJEir86s3__6HodXY-Z4JpyX7bYGRRYDogz3QB4DKH_eFsrNJCQfJyPe8skqY0oEBPwBRfceQwDbR83SaRTERP4XpCZ2D7Iop_">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">09</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Consola &amp; pantalla</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:19:30 AM</span>
+</div>
+</div>
+<!-- 10 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Automotive footwell inspection showing accelerator brake clutch pedals and clean rubber floor mat lining" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsPDTeOVJU3Z6m_kjRmgCpvUYJsRPDrIDt5zsZIVKWAUreZz_n2vE5rnB2cTndWquSu9oifj1gQonoGBCIgRXUFHVo0cKJ-br83_FpjatHBdHLNymPheljkQxlpk6uburocd_g9MZMVJs41USjoiaK5yWENbTWbLUqdrN9LT1-7C5gqBmal8sgdAEz6RsRkGjWbOM82b-xgXdeFjKyruYmZjrobJdjLriHpoHiWhgEVBQbewJ2Cv87">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">10</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Pedales &amp; alfombra</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:20:05 AM</span>
+</div>
+</div>
+<!-- 11 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Rear bench passenger seats showing three-point safety seatbelts clipped and certified for mining logistics operations" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-dnjVn-nG8oUvzvBCq4VC3bxqhLJ-ZpZKMtBSAmF6EU8ZtzeAP_q3M2OP8FI5L1wC0O3wHOmV8ZrbfEEWOwxKM4T7Jii5B85oDQ9eSEcGVKUjGNJvjGKv-Z8Hfkj7CKrnYKNl6jtGsEIbSUNowKaRF2bSleEP6K9cl_mMhPzrmYHMYk7xEwzm25If-QuQXzvjy1UvyvHzKZMoKa-YykI13FWCnO2ySIbPpfY2jrgeTRRvI7NUz1Pr">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">11</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Cinturones post.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:20:38 AM</span>
+</div>
+</div>
+<!-- 12 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Inspection view of external heavy-duty black tubular roll cage safety bar mounted over cabin roof of 4x4 pickup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpD927JButREO-NC5BC_CmSDpq-O56vdHaMnERnIhyPrbZJG3oq32I9zINRc_N4Towt9j1Z0Z3rZg1zT7sTQyxzhwRGxuGixG30O3EHwm_T0KGIjXig86FWYJmOYroEB8BRi-RtshhvBt48z9eW7RNSM8L7luaTybw49W4Rjgf-rr3QAoO8iSL-L1HnPBlIrWYyQOnW9nxuJJ6wkZl92-QLKLP2Hi2x7t1aSeC-gJEPyrFrkVIfJ">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">12</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Techo &amp; antivuelco</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:21:10 AM</span>
+</div>
+</div>
+<!-- 13 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Inspection photo of open cargo bed cargo liner and rear drop-down tailgate of pickup truck in good state" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzxFsNGxPrVsTlvTjLdxFmxzV3i6PNoZ_4t6Jfrrs_gYdHuH4JOKUbhAv5_cXV3TzjzFaq8cOsaA0rrlE11k8N_svdJ3KOSLZGtwpLL1UTcIyBtolv2LayfxPNhhhDwmJ9Cm3_w96JCmaJLM4BBOOb5MT9bIcyzdkm_F0uktYJGf8FFXKVM0v9YwL_Z08FWwY-PTBqxhat1HzryqIpnl_L493-KMRsySiDv-alcZwCYaZDnCLNkGHc">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">13</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Tolva &amp; compuerta</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:21:45 AM</span>
+</div>
+</div>
+<!-- 14 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical wheel inspection of front right all-terrain tire with visible tire tread depth gauge measurement" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7tEiu8753jjFnMMo-_mLDJbnnXJZkm4C5q7SG4d0RLo2NPmToiG4tD9h2V1zbZTBAWeGEd-oy-GbRnJMjG9lZ5eCI14iNilmy7S3OJCom-cyBgRWUJwLEv98BuG60-m4L8nLovyO8sXZEKfD3BpU04RbpK8HehyWaO4zER4m7ogPiZgYUbazMX7J-fcMHZ-FMgsXl8ZtQjiknu4mOM94zjzwk1gT5ihFNiPKGdkyv9_UXvPEnzrZw">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">14</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Llanta delant. der.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:22:15 AM</span>
+</div>
+</div>
+<!-- 15 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Tire peritaje check of front left alloy wheel rim and deep rubber grooves in enterprise rental depot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKjOqPg-uY6zSgZeUvTBvOZlpCJJIiwZ7jyHJsxteMk5woNDwM894BXcUPD0ZVyPnOXy_rEiFfzh2FR5J6yw61W0lQxFqHnvzkHulzZAyo_7_O-PVEqa7GEFLFsAqIAK7pq2GvYP-8Qn5qZ3tvyt7pItjXvYBszRTRUy9F6UPthXBMFWdbKL_sAtON3GET1Ix3ZNz_IbLVbRcSLzWgV_R_YxvCMSdnZ2rOrBrgMosZQyquvBjDGbqR">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">15</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Llanta delant. izq.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:22:42 AM</span>
+</div>
+</div>
+<!-- 16 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical wheel inspection closeup of rear right offroad truck tire and mudguard flare on Toyota Hilux" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLu7l3N1m1NOVdA7jqlCFERB30NP3LX2oP9apFhYsEx1IOtnDy3PImKkgE5Vd-umwxEITrdE4ubL4HB7zwwWPMZGdKoudwpBbxCbYo2T4eYoq7jco9xqNDZx6uPxhdTsWgxogyV-fnsM6SdRjq0Z27Zd1lcOdWa4D9HsucZrUlc0bPV9cbG0kQohkl1tqztQnW2u3-xPzRsH5PZCIn8tj8-xLHv_XesHVzsr7yPt_CIKJCpjbsNueu">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">16</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Llanta trasera der.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:23:18 AM</span>
+</div>
+</div>
+<!-- 17 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Fleet technician photo of rear left wheel lug nuts and tire integrity verification, clean technical angle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSO8k_D60JtgstlHl0lSeKeFHU2IVQIDBx74JSawytpHenu5wsW9PLg5OXcfABN4lrCNlsp25cJFddYlyLpnJoJcbgJDvV6crqg4iz6SXhGmw-cSNynZ-GDikYsv1vRimQsClIskBkSej5l5ffn7YA5EwlaHWzBJMId392yNWXTOBuMTUW2KTfyJfpuux9n9-n9JS55AmjMBmNQrNdzuNraFBFuJML9yVvN3biOPiIa90yFlVsXem9">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">17</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Llanta trasera izq.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:23:45 AM</span>
+</div>
+</div>
+<!-- 18 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Underbody technical check of securely mounted spare tire underneath pickup chassis with chain lock in place" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7aOfcM7BLWJxgP6z5u801fkJPnljUK94820J2x9DAR8HBjYLoF0Dbrz9whaqlavc4C_LR8ULAS7hNH8qasgWsdCjsW3JhL8tKra-ZDW7dXHBBgItR427XGfuPP7_7t-rRf4n0_i0TL5YRCiDK3qtaWSoL5fK4ZvhZYxJafnL65MJzcBHt6ZwTh-6P6NvXS1CG9HOpwQExm_NIJzXvE6FCm436bpTn-xPhJO9feI0hVmfHjlAJhMKQ">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">18</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Llanta de repuesto</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:24:10 AM</span>
+</div>
+</div>
+<!-- 19 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Inspection shot of rear steel step bumper and tow hitch receiver on white mining truck, clean paint" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPgsp8zdSrANFenlVvWz-H8nB6dUWggw2TvMcFGpMeuSuJUHMOE1FB6PDHh0FNAPGZS-YJsZzOYy-2PjakSGIzGVN0J7UYkThlOtSa632u-xV3w8WCOY-8fMSs8sWOvSO5I0JTnIhk8cZUpCLh3S7jKXIuz_TLVsPkMiKTcQ5Kt_OfInm5E2dl4OYFKJVwwKd2SeK0tT5v5VWqrzNgSOd4tDvvnmrHTXi_OPvj134hsIftudjHQcrm">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">19</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Parachoques post.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:24:40 AM</span>
+</div>
+</div>
+<!-- 20 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Close up photography of both rear tail lights and turn indicator lenses unbroken and operational" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXOw167OCtdOX-rFtcJCYJ_5MlEJ_C9NfLzdHj6zIazGFseRlPvrHltLrzqAzze7upGBB4b8z8lkB1yxEYQaEJYWcJ8u58rbDHk5vBb9tRBCYENBXRFIDH1I3yzTX0peKNuGagEN_lrXhbhbqN_wPvuEXhp59tE_EbYj14PDPHeUdocB4adZdi0rIyBqHWj2R0r_AjtEjDs0lET9hwHBHQQi8WDsdju2pCIqTLXXqXS5tbYDOTayXZ">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">20</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Luces posteriores</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:25:05 AM</span>
+</div>
+</div>
+<!-- 21 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Under-vehicle chassis inspection displaying structural frame rails, drive shaft and differential without oil leaks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-TDk4bcjDguzpVZYa2C5G0Qwys8kDCI0KUPMe9g0QCq_5zif_9AeYbvUtG5G8IcwJDTnaTBl7IbYEVE_DUsz7M4XJ06yxYMJeRiMpPMhYZe4E437d-aIdAJuCHBbcVnC2ghXxF-i8cKTHSwJP7-y6CeqqThtA-ue0E0NjpmmAxM1YmbjlKkTUtYJpZ1zx3gDTKSiavaOVGjFzAUbpreCPgAt3IcMLndxDGzLteLp2SOvMhwHmQ5iW">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">21</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Chasis inferior</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:25:32 AM</span>
+</div>
+</div>
+<!-- 22 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Engine compartment overview photo showing clean diesel motor block, fluid reservoirs, and dipstick check in warehouse" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLaPEzgRZcHtsSpBZKYcK8JJyGsPlsASkCOfxELRah_ORG3Eq56mv1Pl83GIs43evRAals8hQZUZUdQkOg234sQ5z4_99Y1ZN7gYROwTDq7lz2eH2ULmiHHAV9V7L1moDh6eMgSIIcZMLORsXhBTVWDGANKJFmHksLdpgVzGoYNdkUzFU1ll4ZvzDwRDIM8PVvCftubPFcudGX7G2Bnqe0SzPkcKrRavkUzYAoDWFSmoUcpfv6lYRX">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">22</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Vano motor &amp; aceite</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:26:00 AM</span>
+</div>
+</div>
+<!-- 23 (LAST SYNCED TO SERVER) -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical inspection close-up of 12V heavy-duty automotive battery terminals with protective terminal covers and test seal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdQrpX10sPJ8Mwr-hQWmv_XzYrF30XMIoKErXfLyEm34lA_t-armm7Ax0BqMOpWf5fxlC9UAj-mPFChebNZZ4d_bGEFzL_EN7M4ZyWrqRLMPMs-KPal1sgixKPWtClrX6ewQFDENhoUdvPH15HasFIunOykkKdqxWnBZK0tTQiyPsdRhmIVDLb4SYQp0c9vhO36TccYSxMK15uoN_QWtkrIPNrw_fxh8-2PKdpkiXszaKPQCufgtEA">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">23</span>
+<span class="font-code-operational-sm text-[10px] text-[#2166B0] font-semibold">✓ Servidor</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Batería y bornes</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:26:28 AM</span>
+</div>
+</div>
+<!-- 24 (QUEUED SYNC 1/12) -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Audit view of emergency mechanical bottle jack and vehicle wheel lug wrench kit in protective branded pouch" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6zg2ZaM0uo6eMf0wcpElDGycWxy1C1rMVbBRit5JtBkN-6UUxTtSjGAPmJH6uf1aaoFR5GA7vusKW3brVyrWRo3QTdHRkj8idFWp6OJyXbocZNSuEgoekzWtBeyhC2xoROSC4Cc3dGPfgOQigsbhcvsgeP0F0MnMUHIhniRme7_TPfZ0QuozqJ_rkciv6njTpnfhIV907YcrBChJuOqKKbfLbwAtC5z37ZJG5mAuiYQcxVr2ojyRD">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">24</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Kit herramientas/gata</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:26:50 AM</span>
+</div>
+</div>
+<!-- 25 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical inspection of safety reflective warning triangles and red certified fire extinguisher with current inspection tag" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoRoqbtfqUDSm1RvDhNGBXU6xEgBesQxnffE0Rlvnu3h0RreJPCzyEIXnouivxVufQvPl4BQISvnsLNSN1H9nUiYcWQpuSFnT2Imw-iSOK41c-MxrTbMoUsU5mXiXw_b-U2miTnv6WTOX1Vko1JMz-0HaB2R-A-Sqqke3YQ8zBZl4d7trcYxhZUW82n8bK_WuJEQw2w_K682oC-HLfQA_CTkKh4y_hm4VgEEV5nI9-DvROPnVNI5fx">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">25</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Triángulos &amp; extintor</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:27:10 AM</span>
+</div>
+</div>
+<!-- 26 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Mining regulatory medical first aid emergency kit case sealed according to industrial mining standards in Peru" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd1uUwogywdh2pH2jGYzOVGiLKo-AF3JP-BMv6Z5z2ITWSUv_RuVNVxkEKBPyKqUNw4BvEKHM1rALgeidvN6CyOMQr7zIwzummNcQdXTKqcVYa_nB2yTjQiRpZWw-EeFaLcaafptcWE4xTGQwbDk7iZH2BIRW6QyMhLyKxGiiUShhsOhNtETybHwc2YmZcPurpPVCkYOJKIfAQIkdcEXyDY3zSabQmZ7_wozp43DR6sL6F5z8p_NhN">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">26</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Botiquín minero</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:27:25 AM</span>
+</div>
+</div>
+<!-- 27 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="High-visibility illuminated safety whip flag mounted upright on truck roll bar, mining depot background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZ8UN0zghZnTepy4YbIRk6PiMHTOBCQVUXKsmpZupYJnq5Aj8IBS6QBhZ1106I1DZkTtJcHDCqnvMN-jMolA2iDBcUbRuyqQ70N3ybBGpGovAs8tKCX-nNUOdDR8e8m9xc8qlFkB5MPiDyXakCJRmLd8-18KCAqjBdru8q_qRHbaXBfPGLlOh6Yp_zwmQs1HURGXUVa0hX2YBy_fhcbAvwQm0y1MJN1Qyj-56DnZlygBCmC-rpaMbc">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">27</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Pértiga de seguridad</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:27:38 AM</span>
+</div>
+</div>
+<!-- 28 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Roof mounted amber strobe warning beacon light turned on, peritaje audit inspection photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZYYnqW0eTHa-1vkDN_ulpnN9IX3w7-HP14O4fZmhPxiPvrXxe5giAXArAqER3Tfct5NNVX119GeIYiUjrbap3UC-WFMBRQFcH2RygV6FqL2WT64d3xesJIpLm8M_1w6s_iaoMvahU_KzNzsnVxEThOxzWvLsMZB3IHsHaNsm66PauagN_fdgEsdBP30IKjAr7JQzlBG5VxUHs_Cg-E_pHDQEcFAaW0IjZB7KuPwG_SaX9yP3iwv7R">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">28</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Circulina estrobosc.</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:27:49 AM</span>
+</div>
+</div>
+<!-- 29 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Rear undercarriage heavy-duty white noise backup reverse alarm horn inspection" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKulJpHPMsiglffaSGkx2L-WvnuR7q_YW28fMBAirITq2NpL6ygvPq1oCpAc8RxVZQCu_s-MXKM03ptFpdLS3ds_nF5-z9uExfp71pdB870LXCsvQ9vUnYuFDaXhbrLwZ-ulTsLaDG_0pUAKUyxrlT8SmRNOGVnZQiql0F619FXdiOuijkkBploKCFx73kae3xgBS28Dk2V0lpw1nwj5YYSnIc9lQOUVVDvAgrvZsquuyxuwqNg3oQ">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">29</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Alarma de retroceso</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:27:58 AM</span>
+</div>
+</div>
+<!-- 30 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Cabin mounted two-way Motorola VHF radio communication transceiver handset and mic unit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5tBXRIxfnlsGgAGEUB_gw8J1kPQ_H90H6ilxZ3V8yk7eEOcSfq2E6CpLKtCUmwbF1FF8a-rjHBkPf1RisVTv_1rlPDHleMxY61DnPYRtK6SnOthM02jBBUYgb1QUIjuXWF6ZG6e-ADnIUIF9yxL0gCjEl4z9NYokHDExWB6HwwUkSLpQQwgndMACVtNdZZb4haUrQz-0wwRW_nG02nhZFr6p7OcVsBg9MXptdPg1wDChGEEsLLJOs">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">30</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Radio base VHF</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:28:09 AM</span>
+</div>
+</div>
+<!-- 31 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Glove compartment vehicle documentation binder with SOAT insurance policy and Peruvian circulation card" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzBBf-zUit8bVTtl0eWX_crEh0n7Jxq6vUKXQTO0ZNafPHiaqs5t4KJpDxyLAE-ki-xhTjrCKzERTJN8h_nKrR6DcP9_5x5lwWvbycGcAEqXicgVb1KaOsP6J1ChiE8EnlNKxsbpGTSwlCJm_7_5pO21LpVfl3nH__Rpv2R1mlKDUnZi0wSA0AT9H4a4vt2XnIlE9VnJFPkt7G316Qk0zRH_rTc_KvOQ3ZNDULZeuk3UnSn-bUxhXm">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">31</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Documentos vehículo</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:28:18 AM</span>
+</div>
+</div>
+<!-- 32 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Technical inspection of master vehicle ignition key with remote control transmitter and spare backup key tag" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMmOwqdrSSQilJbqIjFpZb5vh5065ME6B5y1OG3Hz8_iruhiDcJyhi4RP8FeVpn371XykxGfqb9RmYlw1x9MAJ5s9i_uVAztU6ej5mQQjs1kdm8Rx16bZ92y8H6JWeGmZHL5kTDvImwphDb9LBV9iVxA-XnmzRtWJIU7n9-Bb1_Ii6XDNMt7hbv7jZPpoaUr3Vm7InYE9x5imVQ9Vv2pBIjRV_zYu705XteSEpza8adpVpt2NtdDRG">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">32</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Llave duplicada/remoto</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:28:28 AM</span>
+</div>
+</div>
+<!-- 33 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Pair of heavy duty yellow polyurethane wheel chocks positioned inside truck bed storage" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaGFjJviq_WNJbF6W0JC1O6MYBCZeFpUxjHzGzZZJO5hy8lVmBXD1Rd99OyU_lorMzssBBhwA1igpWQt2rr3zwA8Nmd5IcJP6BQTXgecdoev5vWldQxC8jurI2ayp1o1Q6r2lqUUvZI1Fnr79uCjLpSJfULh6UZWL5nHWgG9xf4dpBBiqEEPiEYbPZ_M6BoDCoTTjAoFQKD4JsOd1mfRZ5w6leUwex-Y6SyyJiMOO0xh3LbdYnRrKA">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">33</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Cuñas de seguridad</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:28:39 AM</span>
+</div>
+</div>
+<!-- 34 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Close up photograph of tamper evident numbered security seal intact on vehicle equipment box" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrSpj6nVD0Als_SbrtdCFEwItRgBflpWl8KPBjoA5Oe7vr9V6oys-Vhi6oHxaYkJdaovu04VzzXy7X8s9Z7JVvi_Lqxp4xlvD_pDQB5cMXHyngPXksH3TBogzFKaxcyNLKIK5q_xoGRrlWfBQMecQxPRJ85SXZS6WlfZTo0MNeCkqVZnVV0Zta6iyGvz1Igtl3KfWhLJlDbEqqbH51lj_Ec_HTlubBjc_r8MyRIXUNdJA8PmmIvfhx">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">34</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Cintillo y precinto</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:28:48 AM</span>
+</div>
+</div>
+<!-- 35 -->
+<div class="bg-surface-container-lowest rounded-lg p-spacing-xs shadow-sm flex flex-col justify-between opacity-95">
+<div class="relative w-full h-24 rounded bg-surface-container overflow-hidden mb-spacing-xs">
+<img class="w-full h-full object-cover" data-alt="Wide perspective three-quarter angle peritaje photograph capturing entire white Toyota Hilux truck in clean vehicle return hangar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw5i8hM4C_9yEv92l3foyQ5sLz06izku1C2nT8p8J8wDL9Vm4LRxgxnsvNINMk-d-h9JK5F77R2eCiUnCmyGwsFehsXFqT1WuP5F0e1z0gD28jxu0vlhcmFXgE_shzPl1ijGdQqN1MEkYNN-uKqnHA52QtM3-JdzrpwV_660Yc3GJM8QlegZHGFfCqDbuI_YPIjEEMEWCphw4Jo9_WyvstO-SsGn1dMm4GwnUk8COISVKrXRS9nzNN">
+<div class="absolute top-1 left-1 bg-[#2F6B4F] text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded font-bold">
+          ✓ Local #2F6B4F
+        </div>
+<div class="absolute bottom-1 right-1 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-[10px] px-1 py-0.5 rounded">
+          GPS OK
+        </div>
+</div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-secondary">35</span>
+<span class="font-code-operational-sm text-[10px] text-[#C6600A] font-semibold">⏳ En cola</span>
+</div>
+<p class="font-label-sm text-label-sm font-semibold text-primary truncate">Vista peritaje 360°</p>
+<span class="font-code-operational-sm text-[10px] text-on-surface-variant block">11:29:00 AM</span>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Action Dock -->
+<div class="fixed bottom-0 left-0 right-0 z-50 bg-surface-container-lowest shadow-[0_-4px_12px_rgba(0,0,0,0.06)] px-spacing-md pt-spacing-sm pb-spacing-md"><div class="max-w-[390px] mx-auto flex flex-col gap-spacing-xs"><div class="flex items-center justify-between"><span class="font-body-sm text-body-sm text-on-surface-variant inline-flex items-center gap-spacing-xs"><span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>Esperando confirmación del servidor (12 pendientes de subida)...</span><span class="font-code-operational-sm text-code-operational-sm text-secondary font-bold">23/35</span></div><button class="w-full h-10 rounded bg-[#D1D5DB] text-on-surface-variant/70 font-label-md text-label-md font-bold cursor-not-allowed flex items-center justify-center gap-spacing-xs transition-none shadow-none opacity-80" disabled="" type="button"><span class="material-symbols-outlined text-[18px]">lock_clock</span><span class="">Continuar a Resultado</span></button></div></div>
+</div></main></div>
+
+</body></html>

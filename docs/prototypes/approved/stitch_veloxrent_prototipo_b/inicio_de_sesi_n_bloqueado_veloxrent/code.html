@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Inicio de sesión - VeloxRent</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            space: ['"Space Grotesk"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              accent: '#C6600A',
+              border: '#A39C90',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 24px;
+      font-family: 'Inter', sans-serif;
+    }
+    .login-card {
+      width: 380px;
+      max-width: 100%;
+    }
+    .input-field {
+      border: 1.5px solid #A39C90;
+      border-radius: 2px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: #1F2A33;
+      box-shadow: 0 0 0 1px #1F2A33;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#1F2A33]">
+<!-- Tarjeta de inicio de sesión de 380px de ancho -->
+<main class="login-card mx-auto flex flex-col">
+<!-- Encabezado / Branding -->
+<div class="mb-8">
+<div class="font-space font-bold text-[22px] leading-tight text-[#1F2A33] tracking-tight">
+        VeloxRent
+      </div>
+</div>
+<!-- Formulario -->
+<div class="flex flex-col items-center text-center mt-2">
+<!-- Lock Icon -->
+<div class="mb-5 flex items-center justify-center">
+<svg aria-hidden="true" class="w-10 h-10 text-[#1F2A33]" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+<rect height="11" rx="2" ry="2" width="18" x="3" y="11"></rect>
+<path d="M7 11V7a5 5 0 0110 0v4"></path>
+</svg>
+</div>
+<!-- Title -->
+<h1 class="font-space font-bold text-[18px] leading-snug text-[#1F2A33] mb-2">
+    Tu cuenta está bloqueada
+  </h1>
+<!-- Description -->
+<p class="text-[14px] text-[#4E4A45] leading-relaxed mb-6 font-normal">
+    Contacta a tu administrador para reactivarla
+  </p>
+<!-- Return Link -->
+<div>
+<a class="text-[14px] font-medium text-[#C6600A] hover:underline transition-colors focus:outline-none focus:ring-1 focus:ring-[#C6600A] rounded-sm py-0.5" href="#">
+      Volver
+    </a>
+</div>
+</div>
+</main>
+<script>
+    // Interacción simple para alternar mostrar/ocultar contraseña
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const eyeOffIcon = document.getElementById('eyeOffIcon');
+
+    if (toggleBtn && passwordInput) {
+      toggleBtn.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        if (eyeIcon && eyeOffIcon) {
+          eyeIcon.classList.toggle('hidden', isPassword);
+          eyeOffIcon.classList.toggle('hidden', !isPassword);
+        }
+      });
+    }
+  </script>
+
+</body></html>

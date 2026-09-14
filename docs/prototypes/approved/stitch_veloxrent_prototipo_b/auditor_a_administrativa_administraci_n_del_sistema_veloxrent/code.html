@@ -1,0 +1,660 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auditoría administrativa — Administración del sistema - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              orangeHover: '#AD5206',
+              surface: '#FFFFFF',
+              surfaceDim: '#F6F3ED',
+              border: '#E5E2DC',
+              textPrimary: '#1F2A33',
+              textMuted: '#6B665E',
+              danger: '#C22B2B',
+              success: '#1E7D4B',
+              warning: '#B5720A',
+              info: '#2166B0',
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .font-code {
+      font-family: 'Space Grotesk', monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-white text-[#1F2A33]">
+
+  <!-- Top Global Header -->
+  <header class="h-16 border-b border-[#E5E2DC] bg-white px-8 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded bg-[#C6600A] flex items-center justify-center text-white font-bold font-code text-lg">
+          V
+        </div>
+        <div>
+          <span class="font-bold text-lg text-[#1F2A33] tracking-tight">VeloxRent</span>
+          <span class="ml-2 text-xs font-code text-[#6B665E] bg-[#F6F3ED] px-1.5 py-0.5 rounded border border-[#E5E2DC]">ERP v3.4</span>
+        </div>
+      </div>
+      <div class="h-5 w-px bg-[#E5E2DC]"></div>
+      <nav class="flex items-center space-x-2 text-sm">
+        <span class="text-[#6B665E]">Administración del sistema</span>
+        <span class="text-[#6B665E]">›</span>
+        <span class="font-semibold text-[#1F2A33]">Auditoría</span>
+      </nav>
+    </div>
+
+    <div class="flex items-center space-x-5 text-sm">
+      <!-- Status Badge -->
+      <div class="flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2.5 py-1 rounded-full text-xs font-medium border border-[#C2E7CE]">
+        <span class="w-2 h-2 rounded-full bg-[#1E7D4B] inline-block animate-pulse"></span>
+        <span>En línea</span>
+      </div>
+
+      <!-- Sede -->
+      <div class="flex items-center space-x-1.5 text-[#6B665E] bg-[#F6F3ED] px-3 py-1 rounded border border-[#E5E2DC] text-xs font-medium">
+        <svg class="w-3.5 h-3.5 text-[#6B665E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        <span>Ayacucho — Sede Central</span>
+      </div>
+
+      <!-- User Info -->
+      <div class="flex items-center space-x-2.5 pl-2 border-l border-[#E5E2DC]">
+        <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center text-xs font-bold font-code">
+          GA
+        </div>
+        <div class="text-left leading-tight">
+          <div class="font-semibold text-xs text-[#1F2A33]">Gustavo Alarcón</div>
+          <div class="text-[11px] text-[#6B665E]">Administrador de Sistemas</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 px-8 py-7 max-w-[1440px] w-full mx-auto">
+    
+    <!-- Title & Metadata Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between pb-6 border-b border-[#E5E2DC] gap-4">
+      <div>
+        <div class="flex items-center space-x-3">
+          <h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">Auditoría administrativa</h1>
+          <span class="text-xs font-code font-semibold px-2.5 py-0.5 rounded bg-[#F6F3ED] text-[#6B665E] border border-[#E5E2DC]">
+            Módulo Fiscalización &amp; Trazabilidad
+          </span>
+          <span class="text-xs font-code font-semibold px-2.5 py-0.5 rounded bg-[#EFF6FF] text-[#2166B0] border border-[#BFDBFE]">
+            REG-AUD-009 / INMUTABLE
+          </span>
+        </div>
+        <p class="text-sm text-[#6B665E] mt-1.5">
+          Bitácora inmutable de modificaciones operativas, transacciones de seguridad RBAC, configuración de parámetros y eventos de administración del ERP.
+        </p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button type="button" class="inline-flex items-center space-x-2 px-3.5 py-2 text-xs font-medium text-[#1F2A33] bg-[#F6F3ED] hover:bg-[#EAE6DE] border border-[#E5E2DC] rounded transition-colors" onclick="location.reload()">
+          <svg class="w-4 h-4 text-[#6B665E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Actualizar registro</span>
+        </button>
+        <button type="button" class="inline-flex items-center space-x-2 px-3.5 py-2 text-xs font-medium text-[#1F2A33] bg-[#F6F3ED] hover:bg-[#EAE6DE] border border-[#E5E2DC] rounded transition-colors">
+          <svg class="w-4 h-4 text-[#6B665E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          <span>Exportar bitácora (.csv)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Security & Immutability Notice Banner -->
+    <div class="mt-5 p-4 rounded bg-[#FFFBEB] border border-[#FDE68A] flex items-start space-x-3">
+      <svg class="w-5 h-5 text-[#B5720A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <div class="text-xs text-[#78350F] leading-relaxed">
+        <span class="font-bold">Protocolo de Integridad y no repudio (POL-SEC-012 / RIO Audit):</span> Todos los eventos registrados en esta pantalla son de <span class="font-semibold text-[#1F2A33]">solo lectura e inmutables</span>. No se permite edición, corrección ni eliminación de filas. Cada registro cuenta con sello de tiempo sincronizado por NTP corporativo y hash criptográfico asociado al DNI del actor.
+      </div>
+    </div>
+
+    <!-- Filters Section (Actor, Fecha, Tipo de cambio) -->
+    <div class="mt-6 bg-[#FFFFFF] border border-[#E5E2DC] rounded-lg p-5">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F0ECE4] mb-4">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-[#6B665E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+          </svg>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#6B665E]">Criterios de filtrado</span>
+        </div>
+        <button type="button" class="text-xs text-[#2166B0] hover:underline font-medium">
+          Limpiar filtros
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Filter 1: Actor -->
+        <div>
+          <label class="block text-xs font-semibold text-[#1F2A33] mb-1.5" for="filter-actor">
+            Actor (Usuario / Administrador)
+          </label>
+          <div class="relative">
+            <select id="filter-actor" class="w-full bg-white border border-[#E5E2DC] rounded px-3 py-2 text-xs text-[#1F2A33] focus:outline-none focus:border-[#1F2A33] appearance-none pr-8">
+              <option value="">Todos los actores (24 usuarios)</option>
+              <option value="gustavo" selected="">Gustavo Alarcón (TI / Administrador)</option>
+              <option value="fiorella">Fiorella Olivos Miranda (RR.HH.)</option>
+              <option value="rosa">Rosa Cárdenas Pineda (Finanzas &amp; Tesorería)</option>
+              <option value="rodrigo">Rodrigo Ortiz Salvatierra (Flota &amp; Operaciones)</option>
+              <option value="maria">María Fernández Ramos (Front-office)</option>
+              <option value="sistema">SISTEMA_CRON (Daemon Automatizado)</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#6B665E]">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-[11px] text-[#6B665E] mt-1">Filtre por nombre de funcionario, rol o proceso interno.</p>
+        </div>
+
+        <!-- Filter 2: Fecha -->
+        <div>
+          <label class="block text-xs font-semibold text-[#1F2A33] mb-1.5" for="filter-date">
+            Rango de fecha
+          </label>
+          <div class="relative">
+            <select id="filter-date" class="w-full bg-white border border-[#E5E2DC] rounded px-3 py-2 text-xs text-[#1F2A33] focus:outline-none focus:border-[#1F2A33] appearance-none pr-8">
+              <option value="today">Hoy (12 de septiembre de 2026)</option>
+              <option value="7days" selected="">Últimos 7 días (05/09/2026 – 12/09/2026)</option>
+              <option value="month">Este mes (Septiembre 2026)</option>
+              <option value="quarter">Tercer Trimestre Q3 2026</option>
+              <option value="custom">Rango personalizado...</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#6B665E]">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-[11px] text-[#6B665E] mt-1">Sincronizado con huso horario de Perú (PET / UTC-5).</p>
+        </div>
+
+        <!-- Filter 3: Tipo de cambio -->
+        <div>
+          <label class="block text-xs font-semibold text-[#1F2A33] mb-1.5" for="filter-type">
+            Tipo de cambio
+          </label>
+          <div class="relative">
+            <select id="filter-type" class="w-full bg-white border border-[#E5E2DC] rounded px-3 py-2 text-xs text-[#1F2A33] focus:outline-none focus:border-[#1F2A33] appearance-none pr-8">
+              <option value="" selected="">Todos los tipos de cambio</option>
+              <option value="param">Parámetros del sistema &amp; Tarifas</option>
+              <option value="rbac">Roles y Privilegios RBAC / SoD</option>
+              <option value="legal">Plantillas de contrato &amp; Versiones</option>
+              <option value="user">Aprovisionamiento y Estados de cuenta</option>
+              <option value="auth">Enrolamiento MFA y Llaves TOTP</option>
+              <option value="fleet">Activación técnica de flota &amp; GPS</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#6B665E]">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-[11px] text-[#6B665E] mt-1">Clasificación según impacto funcional y auditoría.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filter Counter & Table Meta -->
+    <div class="mt-6 flex items-center justify-between text-xs text-[#6B665E]">
+      <div class="flex items-center space-x-2">
+        <span class="font-semibold text-[#1F2A33]">8 eventos encontrados</span>
+        <span>•</span>
+        <span>Mostrando registros inmutables auditados en base de datos</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+        <span>Modo estricto de auditoría: Columna de acciones inhabilitada</span>
+      </div>
+    </div>
+
+    <!-- Audit Table (Strictly 5 columns requested: Actor, Fecha/hora, Campo modificado, Valor anterior, Valor nuevo — No actions column) -->
+    <div class="mt-3 bg-white border border-[#E5E2DC] rounded-lg overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#F6F3ED] border-b border-[#E5E2DC] text-[11px] font-bold text-[#6B665E] uppercase tracking-wider">
+              <th scope="col" class="py-3 px-5 w-60">Actor</th>
+              <th scope="col" class="py-3 px-5 w-52">Fecha / Hora</th>
+              <th scope="col" class="py-3 px-5 w-72">Campo modificado</th>
+              <th scope="col" class="py-3 px-5">Valor anterior</th>
+              <th scope="col" class="py-3 px-5">Valor nuevo</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E5E2DC] text-xs">
+            
+            <!-- Row 1: Parameter Change -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    GA
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">Gustavo Alarcón</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">DNI: 40981245 • Admin TI</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">12/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">09:14:22 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">CONFIG_RESERVA_AMOUNT_PEN</div>
+                <div class="text-[11px] text-[#6B665E]">Módulo: Parámetros del sistema (BR-RES-001)</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#F6F3ED] text-[#6B665E] border border-[#E5E2DC] font-code">
+                  Catálogos / Tarifa base
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#FBE9E9] text-[#C22B2B] px-2 py-1 rounded font-code font-medium border border-[#F8B4B4]">
+                  <span class="line-through">S/ 250.00</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Monto de reserva anterior</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2 py-1 rounded font-code font-bold border border-[#C2E7CE]">
+                  <span>S/ 300.00</span>
+                </div>
+                <div class="text-[10px] text-[#1E7D4B] font-medium mt-1">✓ Autorizado con MFA (TR-03)</div>
+              </td>
+            </tr>
+
+            <!-- Row 2: Contract Template Activation -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors bg-[#FAFAF9]">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    GA
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">Gustavo Alarcón</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">DNI: 40981245 • Admin TI</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">11/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">17:42:08 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">CONTRACT_TEMPLATE_VIGENTE_ID</div>
+                <div class="text-[11px] text-[#6B665E]">Módulo: Plantillas de contrato legal</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#EFF6FF] text-[#2166B0] border border-[#BFDBFE] font-code">
+                  Gobernanza Notarial
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#FBE9E9] text-[#C22B2B] px-2 py-1 rounded font-code font-medium border border-[#F8B4B4]">
+                  <span class="line-through">LEG-TPL-2026-02 (v4.1)</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Pasa a estado "Archivada"</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2 py-1 rounded font-code font-bold border border-[#C2E7CE]">
+                  <span>LEG-TPL-2026-04 (v4.2)</span>
+                </div>
+                <div class="text-[10px] text-[#1E7D4B] font-medium mt-1">✓ Notaría Ramos homologada</div>
+              </td>
+            </tr>
+
+            <!-- Row 3: User Provisioning Status -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#B5720A] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    FO
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">Fiorella Olivos Miranda</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">DNI: 43290112 • Jefa RR.HH.</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">11/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">11:20:15 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">USER_PERMISSIONS_ASSIGNED</div>
+                <div class="text-[11px] text-[#6B665E]">Usuario: Jorge Rivas Mendoza (DNI: 46890123)</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#FDF1DE] text-[#B5720A] border border-[#FDE68A] font-code">
+                  Aprovisionamiento BR-ADM-004
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#FDF1DE] text-[#B5720A] px-2 py-1 rounded font-code font-medium border border-[#FDE68A]">
+                  <span>NULL (Cuenta recién creada)</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Badge: Sin permisos asignados</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#EFF6FF] text-[#2166B0] px-2 py-1 rounded font-code font-medium border border-[#BFDBFE]">
+                  <span>ROLE_FRONT_OFFICE_AYACUCHO</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Pendiente activación MFA (2FA)</div>
+              </td>
+            </tr>
+
+            <!-- Row 4: RBAC Privileges Modification -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors bg-[#FAFAF9]">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    GA
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">Gustavo Alarcón</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">DNI: 40981245 • Admin TI</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">10/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">15:05:40 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">RBAC_RULE_EXPORT_FINANZAS</div>
+                <div class="text-[11px] text-[#6B665E]">Matriz de control de acceso (POL-SEC-009)</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#F6F3ED] text-[#6B665E] border border-[#E5E2DC] font-code">
+                  Segregación SoD validada
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#F6F3ED] text-[#6B665E] px-2 py-1 rounded font-code border border-[#E5E2DC]">
+                  <span>EXPORT_REPORT = FALSE</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Bloqueado a Analista de Tesorería</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2 py-1 rounded font-code font-bold border border-[#C2E7CE]">
+                  <span>EXPORT_REPORT = TRUE</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Habilita descarga CSV conciliado</div>
+              </td>
+            </tr>
+
+            <!-- Row 5: User MFA State Enrollment -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#1E7D4B] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    RC
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">Rosa Cárdenas Pineda</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">DNI: 41209384 • Tesorería</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">09/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">08:45:11 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">AUTH_MFA_STATUS_ENROLLED</div>
+                <div class="text-[11px] text-[#6B665E]">Autenticación de doble factor (TR-02 / TR-03)</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#E8F5EC] text-[#1E7D4B] border border-[#C2E7CE] font-code">
+                  TOTP 6 dígitos verificado
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#FDF1DE] text-[#B5720A] px-2 py-1 rounded font-code font-medium border border-[#FDE68A]">
+                  <span>STATUS = PENDING</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Clave temporal de activación</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2 py-1 rounded font-code font-bold border border-[#C2E7CE]">
+                  <span>STATUS = ENROLLED</span>
+                </div>
+                <div class="text-[10px] text-[#1E7D4B] font-medium mt-1">✓ Llave TOTP vinculada</div>
+              </td>
+            </tr>
+
+            <!-- Row 6: Fleet Technical Threshold -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors bg-[#FAFAF9]">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#2166B0] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    RO
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">Rodrigo Ortiz Salvatierra</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">DNI: 40981245 • Flota &amp; Op.</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">08/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">14:18:30 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">GARITA_RETURN_TOLERANCE_MIN</div>
+                <div class="text-[11px] text-[#6B665E]">Parámetro operativo: Tolerancia garita Ayacucho</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#F6F3ED] text-[#6B665E] border border-[#E5E2DC] font-code">
+                  Tolerancia retorno garita
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#FBE9E9] text-[#C22B2B] px-2 py-1 rounded font-code font-medium border border-[#F8B4B4]">
+                  <span class="line-through">45 minutos</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Límite garita previa</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2 py-1 rounded font-code font-bold border border-[#C2E7CE]">
+                  <span>59 minutos</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Aprobado según directiva garita</div>
+              </td>
+            </tr>
+
+            <!-- Row 7: Technical Stoppage Fee -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    GA
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">Gustavo Alarcón</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">DNI: 40981245 • Admin TI</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">07/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">10:33:19 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">FEE_TECHNICAL_STOPPAGE_DAILY_PEN</div>
+                <div class="text-[11px] text-[#6B665E]">Cargo por paralización técnica 24h taller</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#F6F3ED] text-[#6B665E] border border-[#E5E2DC] font-code">
+                  Liquidación de daños
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#FBE9E9] text-[#C22B2B] px-2 py-1 rounded font-code font-medium border border-[#F8B4B4]">
+                  <span class="line-through">S/ 220.00 / día</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Tarifa taller 2025</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2 py-1 rounded font-code font-bold border border-[#C2E7CE]">
+                  <span>S/ 250.00 / día</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Actualización tarifaria Motrix</div>
+              </td>
+            </tr>
+
+            <!-- Row 8: Automated System Synchronization Daemon -->
+            <tr class="hover:bg-[#FCFBF8] transition-colors bg-[#FAFAF9]">
+              <td class="py-3.5 px-5 align-top">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-full bg-[#6B665E] text-white flex items-center justify-center font-code font-bold text-[10px] flex-shrink-0">
+                    SC
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33]">SISTEMA_CRON</div>
+                    <div class="text-[11px] text-[#6B665E] font-code">PROCESO_LOCAL • Daemon Sync</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-code font-semibold text-[#1F2A33]">06/09/2026</div>
+                <div class="text-[11px] text-[#6B665E] font-code">02:00:00 (PET)</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="font-semibold text-[#1F2A33]">SYSTEM_AUDIT_LOG_HASH_ROTATE</div>
+                <div class="text-[11px] text-[#6B665E]">Cierre diario de bloque de auditoría RIO</div>
+                <span class="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-[#EFF6FF] text-[#2166B0] border border-[#BFDBFE] font-code">
+                  Hash SHA-256 inmutable
+                </span>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#F6F3ED] text-[#6B665E] px-2 py-1 rounded font-code text-[11px] border border-[#E5E2DC]">
+                  <span>HASH_PREV_7f2b9a...</span>
+                </div>
+                <div class="text-[10px] text-[#6B665E] mt-1">Bloque día 05/09 cerrado</div>
+              </td>
+              <td class="py-3.5 px-5 align-top">
+                <div class="inline-flex items-center space-x-1.5 bg-[#E8F5EC] text-[#1E7D4B] px-2 py-1 rounded font-code text-[11px] font-bold border border-[#C2E7CE]">
+                  <span>HASH_NEW_4e1a08...</span>
+                </div>
+                <div class="text-[10px] text-[#1E7D4B] font-medium mt-1">✓ Cadena RIO sellada con éxito</div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination bar (No Action Column) -->
+      <div class="py-3 px-5 bg-[#F6F3ED] border-t border-[#E5E2DC] flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-[#6B665E] gap-2">
+        <div>
+          Mostrando <span class="font-semibold text-[#1F2A33]">1-8</span> de <span class="font-semibold text-[#1F2A33]">8</span> eventos registrados
+        </div>
+        <div class="flex items-center space-x-1">
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-white text-[#6B665E] cursor-not-allowed opacity-60" disabled="">
+            Anterior
+          </button>
+          <button class="px-2.5 py-1 rounded border border-[#1F2A33] bg-[#1F2A33] text-white font-semibold font-code">
+            1
+          </button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-white text-[#6B665E] cursor-not-allowed opacity-60" disabled="">
+            Siguiente
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supplementary Compliance Footnote Cards -->
+    <div class="mt-7 grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="p-4 bg-white border border-[#E5E2DC] rounded-lg">
+        <div class="flex items-center space-x-2 text-[#1F2A33] font-semibold text-xs mb-1">
+          <svg class="w-4 h-4 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+          <span>Cadena de custodia criptográfica</span>
+        </div>
+        <p class="text-[11px] text-[#6B665E] leading-relaxed">
+          Cada modificación crea un hash encadenado al registro anterior. No existe función ni comando de base de datos para truncar o reescribir eventos pasados.
+        </p>
+      </div>
+
+      <div class="p-4 bg-white border border-[#E5E2DC] rounded-lg">
+        <div class="flex items-center space-x-2 text-[#1F2A33] font-semibold text-xs mb-1">
+          <svg class="w-4 h-4 text-[#2166B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Retención legal inmutable (10 años)</span>
+        </div>
+        <p class="text-[11px] text-[#6B665E] leading-relaxed">
+          De acuerdo a la directiva de gobernanza SOX / RIO y normativas peruanas, las bitácoras administrativas se retienen sin depuración durante 10 ejercicios fiscales.
+        </p>
+      </div>
+
+      <div class="p-4 bg-white border border-[#E5E2DC] rounded-lg">
+        <div class="flex items-center space-x-2 text-[#1F2A33] font-semibold text-xs mb-1">
+          <svg class="w-4 h-4 text-[#B5720A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Segregación de funciones (SoD)</span>
+        </div>
+        <p class="text-[11px] text-[#6B665E] leading-relaxed">
+          Los administradores de sistemas y auditores pueden consultar y exportar la bitácora, pero carecen de atribuciones para alterar el log maestro.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="mt-auto border-t border-[#E5E2DC] bg-white py-3.5 px-8 text-xs text-[#6B665E]">
+    <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <span class="font-semibold text-[#1F2A33]">VeloxRent © 2026</span>
+        <span>•</span>
+        <span>Sistema de Gestión Comercial y Flotas</span>
+        <span>•</span>
+        <span>Módulo Administración / Auditoría administrativa</span>
+      </div>
+
+      <div class="flex items-center space-x-6 text-xs">
+        <div class="flex items-center space-x-1">
+          <span>Mesa TI / Accesos:</span>
+          <span class="font-semibold text-[#1F2A33] font-code">anexo 101</span>
+        </div>
+        <div class="flex items-center space-x-1">
+          <span>Soporte Seguridad:</span>
+          <span class="font-semibold text-[#1F2A33] font-code">anexo 102</span>
+        </div>
+        <a href="#" class="text-[#C22B2B] hover:underline font-medium flex items-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

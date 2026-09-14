@@ -1,0 +1,505 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clientes — Bandeja - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .font-mono-num {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-white text-[#1F2A33]">
+
+  <!-- Top Global Navigation Bar -->
+  <header class="border-b border-[#E5E2DC] bg-[#FFFFFF] px-8 py-3.5 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-tight text-[#1F2A33] flex items-center">
+          <span class="text-[#C6600A]">Velox</span>Rent
+        </span>
+        <span class="text-xs bg-[#FAF9F5] text-[#78716C] px-2 py-0.5 rounded border border-[#E5E2DC] font-mono-num font-medium">ERP v3.4</span>
+      </div>
+
+      <div class="h-4 w-px bg-[#E5E2DC]"></div>
+
+      <!-- Breadcrumbs -->
+      <nav class="flex items-center space-x-2 text-sm text-[#78716C]">
+        <span class="hover:text-[#1F2A33] transition-colors cursor-pointer">Comercial</span>
+        <span>›</span>
+        <span class="hover:text-[#1F2A33] transition-colors cursor-pointer">Clientes</span>
+        <span>›</span>
+        <span class="font-semibold text-[#1F2A33]">Bandeja</span>
+      </nav>
+    </div>
+
+    <div class="flex items-center space-x-6">
+      <!-- Status Badge -->
+      <div class="flex items-center space-x-1.5 bg-[#F0FDF4] px-2.5 py-1 rounded-full border border-[#BBF7D0]">
+        <span class="w-2 h-2 rounded-full bg-[#1E7D4B] inline-block"></span>
+        <span class="text-xs font-medium text-[#1E7D4B]">En línea</span>
+      </div>
+
+      <!-- Sede info -->
+      <div class="flex items-center space-x-1.5 text-xs text-[#78716C]">
+        <svg class="w-4 h-4 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        <span class="font-medium text-[#1F2A33]">Ayacucho — Sede Central</span>
+      </div>
+
+      <div class="h-4 w-px bg-[#E5E2DC]"></div>
+
+      <!-- User Profile -->
+      <div class="flex items-center space-x-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center text-xs font-semibold">
+          ME
+        </div>
+        <div class="text-left leading-tight hidden sm:block">
+          <div class="text-xs font-bold text-[#1F2A33]">María Fernández</div>
+          <div class="text-[11px] text-[#78716C]">Ejecutiva Comercial &amp; Front-office</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Secondary Bar / Header Section -->
+  <div class="border-b border-[#E5E2DC] bg-[#FAF9F5] px-8 py-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-[#1F2A33]">Clientes</h1>
+        <p class="text-sm text-[#78716C] mt-0.5">Directorio corporativo unificado e historial cruzado interempresas del grupo</p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button class="inline-flex items-center space-x-2 px-3.5 py-2 text-sm font-medium text-[#4E4A45] bg-white border border-[#E5E2DC] rounded hover:bg-[#FAF9F5] hover:border-[#A39C90] transition-colors">
+          <svg class="w-4 h-4 text-[#78716C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          <span>Exportar</span>
+        </button>
+
+        <!-- CTA Principal: Nuevo cliente -->
+        <button class="inline-flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-white bg-[#1F2A33] rounded hover:bg-[#2C3E4D] active:bg-[#151D24] transition-colors shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>Nuevo cliente</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 px-8 py-6 max-w-[1600px] w-full mx-auto">
+
+    <!-- Filter & Search Toolbar -->
+    <div class="bg-white border border-[#E5E2DC] rounded-lg p-4 mb-6 shadow-sm">
+      <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+        
+        <!-- Search Input -->
+        <div class="relative flex-1 max-w-xl">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <svg class="h-4 w-4 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input type="text" placeholder="Buscar por nombre, razón social, DNI, RUC o empresa de origen..." class="w-full pl-10 pr-4 py-2 text-sm bg-[#FFFFFF] border border-[#E5E2DC] rounded focus:outline-none focus:border-[#C6600A] focus:ring-1 focus:ring-[#C6600A] placeholder-[#A39C90] transition-all">
+        </div>
+
+        <!-- Secondary Filters & Legend -->
+        <div class="flex flex-wrap items-center gap-3 text-xs text-[#78716C]">
+          <span class="font-medium text-[#4E4A45]">Filtro rápido grupo:</span>
+          <button class="px-2.5 py-1 rounded bg-[#1F2A33] text-white font-medium">Todos (124)</button>
+          <button class="px-2.5 py-1 rounded bg-[#FAF9F5] border border-[#E5E2DC] hover:border-[#A39C90] text-[#4E4A45]">VeloxRent</button>
+          <button class="px-2.5 py-1 rounded bg-[#FAF9F5] border border-[#E5E2DC] hover:border-[#A39C90] text-[#4E4A45]">Casa del Auto</button>
+          <button class="px-2.5 py-1 rounded bg-[#FAF9F5] border border-[#E5E2DC] hover:border-[#A39C90] text-[#4E4A45]">Motrix</button>
+          <button class="px-2.5 py-1 rounded bg-[#FAF9F5] border border-[#E5E2DC] hover:border-[#A39C90] text-[#4E4A45]">RENOVA</button>
+        </div>
+      </div>
+
+      <!-- Icon Legend Bar -->
+      <div class="mt-3.5 pt-3 border-t border-[#F0EFEB] flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-[#78716C]">
+        <span class="font-medium text-[#4E4A45] flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Leyenda de historial interempresas:
+        </span>
+        <div class="flex items-center space-x-1.5">
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-[#FEF3C7] text-[#B45309] font-bold text-[10px] border border-[#FDE68A]" title="VeloxRent">VR</span>
+          <span>VeloxRent (Alquileres)</span>
+        </div>
+        <div class="flex items-center space-x-1.5">
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-[#EFF6FF] text-[#1D4ED8] font-bold text-[10px] border border-[#DBEAFE]" title="Casa del Auto">CA</span>
+          <span>Casa del Auto (Venta)</span>
+        </div>
+        <div class="flex items-center space-x-1.5">
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-[#F1F5F9] text-[#334155] font-bold text-[10px] border border-[#E2E8F0]" title="Motrix">MX</span>
+          <span>Motrix (Taller &amp; Repuestos)</span>
+        </div>
+        <div class="flex items-center space-x-1.5">
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-[#ECFDF5] text-[#047857] font-bold text-[10px] border border-[#A7F3D0]" title="RENOVA">RN</span>
+          <span>RENOVA (Seminuevos)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="bg-white border border-[#E5E2DC] rounded-lg overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#FAF9F5] border-b border-[#E5E2DC] text-xs font-semibold text-[#4E4A45] uppercase tracking-wider">
+              <th scope="col" class="py-3.5 px-5">Nombre / Razón Social</th>
+              <th scope="col" class="py-3.5 px-5">Documento</th>
+              <th scope="col" class="py-3.5 px-5">Empresa de origen</th>
+              <th scope="col" class="py-3.5 px-5">Empresas donde tiene historial</th>
+              <th scope="col" class="py-3.5 px-5 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E5E2DC] text-sm">
+            
+            <!-- Row 1 -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors group cursor-pointer">
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded bg-[#F4F1EA] text-[#4E4A45] font-semibold text-xs flex items-center justify-center border border-[#E5E2DC]">
+                    CS
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Carlos Alberto Soto Ramos</div>
+                    <div class="text-xs text-[#78716C]">Cliente persona natural • Ayacucho</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex flex-col">
+                  <span class="font-mono-num font-semibold text-[#1F2A33] tracking-wide">41908234</span>
+                  <span class="text-[11px] text-[#78716C]">DNI</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#FAF9F5] text-[#1F2A33] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#C6600A] mr-1.5"></span>
+                  VeloxRent
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-1.5">
+                  <!-- VeloxRent badge icon -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#FEF3C7] text-[#B45309] font-bold text-xs border border-[#FDE68A] shadow-xs cursor-help" title="VeloxRent: 4 contratos de alquiler activos/previos">
+                    VR
+                  </div>
+                  <!-- Motrix badge icon -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#F1F5F9] text-[#334155] font-bold text-xs border border-[#E2E8F0] shadow-xs cursor-help" title="Motrix: 2 servicios de taller realizados">
+                    MX
+                  </div>
+                  <!-- Casa del Auto badge icon -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#EFF6FF] text-[#1D4ED8] font-bold text-xs border border-[#DBEAFE] shadow-xs cursor-help" title="Casa del Auto: Cotización de unidad 0km">
+                    CA
+                  </div>
+                  <span class="text-[11px] text-[#78716C] ml-1.5 font-medium">(3 empresas)</span>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-right">
+                <button class="px-3 py-1 text-xs font-medium text-[#1F2A33] bg-white border border-[#E5E2DC] rounded hover:border-[#1F2A33] transition-colors">
+                  Ver ficha
+                </button>
+              </td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors group cursor-pointer">
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded bg-[#EFF6FF] text-[#1D4ED8] font-semibold text-xs flex items-center justify-center border border-[#DBEAFE]">
+                    MC
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Minera Candelaria Andina S.A.C.</div>
+                    <div class="text-xs text-[#78716C]">Cliente corporativo • Flota 4x4</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex flex-col">
+                  <span class="font-mono-num font-semibold text-[#1F2A33] tracking-wide">20601849201</span>
+                  <span class="text-[11px] text-[#78716C]">RUC</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#FAF9F5] text-[#1F2A33] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] mr-1.5"></span>
+                  Casa del Auto
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-1.5">
+                  <!-- Casa del Auto -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#EFF6FF] text-[#1D4ED8] font-bold text-xs border border-[#DBEAFE] shadow-xs cursor-help" title="Casa del Auto: Compra de 8 pick-ups">
+                    CA
+                  </div>
+                  <!-- VeloxRent -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#FEF3C7] text-[#B45309] font-bold text-xs border border-[#FDE68A] shadow-xs cursor-help" title="VeloxRent: Alquiler temporal contingente">
+                    VR
+                  </div>
+                  <!-- Motrix -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#F1F5F9] text-[#334155] font-bold text-xs border border-[#E2E8F0] shadow-xs cursor-help" title="Motrix: Mantenimiento preventivo de flota">
+                    MX
+                  </div>
+                  <!-- RENOVA -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#ECFDF5] text-[#047857] font-bold text-xs border border-[#A7F3D0] shadow-xs cursor-help" title="RENOVA: Trade-in renovación de unidades">
+                    RN
+                  </div>
+                  <span class="text-[11px] text-[#1E7D4B] ml-1.5 font-medium bg-[#DCFCE7] px-1.5 py-0.5 rounded border border-[#BBF7D0]">Todas (4)</span>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-right">
+                <button class="px-3 py-1 text-xs font-medium text-[#1F2A33] bg-white border border-[#E5E2DC] rounded hover:border-[#1F2A33] transition-colors">
+                  Ver ficha
+                </button>
+              </td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors group cursor-pointer">
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded bg-[#F4F1EA] text-[#4E4A45] font-semibold text-xs flex items-center justify-center border border-[#E5E2DC]">
+                    RH
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Rosa Elena Huamán Prado</div>
+                    <div class="text-xs text-[#78716C]">Cliente persona natural • Huanta</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex flex-col">
+                  <span class="font-mono-num font-semibold text-[#1F2A33] tracking-wide">43819201</span>
+                  <span class="text-[11px] text-[#78716C]">DNI</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#FAF9F5] text-[#1F2A33] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#C6600A] mr-1.5"></span>
+                  VeloxRent
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-1.5">
+                  <!-- VeloxRent -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#FEF3C7] text-[#B45309] font-bold text-xs border border-[#FDE68A] shadow-xs cursor-help" title="VeloxRent: 1 alquiler registrado">
+                    VR
+                  </div>
+                  <span class="text-[11px] text-[#78716C] ml-1.5 font-medium">(Solo VeloxRent)</span>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-right">
+                <button class="px-3 py-1 text-xs font-medium text-[#1F2A33] bg-white border border-[#E5E2DC] rounded hover:border-[#1F2A33] transition-colors">
+                  Ver ficha
+                </button>
+              </td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors group cursor-pointer">
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded bg-[#F1F5F9] text-[#334155] font-semibold text-xs flex items-center justify-center border border-[#E2E8F0]">
+                    TC
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Transportes &amp; Logística del Centro E.I.R.L.</div>
+                    <div class="text-xs text-[#78716C]">Cliente corporativo • Carga y ruta</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex flex-col">
+                  <span class="font-mono-num font-semibold text-[#1F2A33] tracking-wide">20489102831</span>
+                  <span class="text-[11px] text-[#78716C]">RUC</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#FAF9F5] text-[#1F2A33] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#334155] mr-1.5"></span>
+                  Motrix
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-1.5">
+                  <!-- Motrix -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#F1F5F9] text-[#334155] font-bold text-xs border border-[#E2E8F0] shadow-xs cursor-help" title="Motrix: Taller de mantenimiento mayor">
+                    MX
+                  </div>
+                  <!-- VeloxRent -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#FEF3C7] text-[#B45309] font-bold text-xs border border-[#FDE68A] shadow-xs cursor-help" title="VeloxRent: Alquiler de reemplazo">
+                    VR
+                  </div>
+                  <span class="text-[11px] text-[#78716C] ml-1.5 font-medium">(2 empresas)</span>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-right">
+                <button class="px-3 py-1 text-xs font-medium text-[#1F2A33] bg-white border border-[#E5E2DC] rounded hover:border-[#1F2A33] transition-colors">
+                  Ver ficha
+                </button>
+              </td>
+            </tr>
+
+            <!-- Row 5 -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors group cursor-pointer">
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded bg-[#ECFDF5] text-[#047857] font-semibold text-xs flex items-center justify-center border border-[#A7F3D0]">
+                    GA
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Gustavo Adolfo Palomino Vilchez</div>
+                    <div class="text-xs text-[#78716C]">Cliente persona natural • Huamanga</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex flex-col">
+                  <span class="font-mono-num font-semibold text-[#1F2A33] tracking-wide">28391024</span>
+                  <span class="text-[11px] text-[#78716C]">DNI</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#FAF9F5] text-[#1F2A33] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#047857] mr-1.5"></span>
+                  RENOVA
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-1.5">
+                  <!-- RENOVA -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#ECFDF5] text-[#047857] font-bold text-xs border border-[#A7F3D0] shadow-xs cursor-help" title="RENOVA: Adquisición de seminuevo Hilux">
+                    RN
+                  </div>
+                  <!-- Casa del Auto -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#EFF6FF] text-[#1D4ED8] font-bold text-xs border border-[#DBEAFE] shadow-xs cursor-help" title="Casa del Auto: Evaluación crediticia previa">
+                    CA
+                  </div>
+                  <!-- VeloxRent -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#FEF3C7] text-[#B45309] font-bold text-xs border border-[#FDE68A] shadow-xs cursor-help" title="VeloxRent: Alquiler fin de semana">
+                    VR
+                  </div>
+                  <span class="text-[11px] text-[#78716C] ml-1.5 font-medium">(3 empresas)</span>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-right">
+                <button class="px-3 py-1 text-xs font-medium text-[#1F2A33] bg-white border border-[#E5E2DC] rounded hover:border-[#1F2A33] transition-colors">
+                  Ver ficha
+                </button>
+              </td>
+            </tr>
+
+            <!-- Row 6 -->
+            <tr class="hover:bg-[#FAF9F5] transition-colors group cursor-pointer">
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded bg-[#F4F1EA] text-[#4E4A45] font-semibold text-xs flex items-center justify-center border border-[#E5E2DC]">
+                    CS
+                  </div>
+                  <div>
+                    <div class="font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Constructora San Cristóbal S.A.</div>
+                    <div class="text-xs text-[#78716C]">Cliente corporativo • Obras viales</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex flex-col">
+                  <span class="font-mono-num font-semibold text-[#1F2A33] tracking-wide">20194820192</span>
+                  <span class="text-[11px] text-[#78716C]">RUC</span>
+                </div>
+              </td>
+              <td class="py-4 px-5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-[#FAF9F5] text-[#1F2A33] border border-[#E5E2DC]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#C6600A] mr-1.5"></span>
+                  VeloxRent
+                </span>
+              </td>
+              <td class="py-4 px-5">
+                <div class="flex items-center space-x-1.5">
+                  <!-- VeloxRent -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#FEF3C7] text-[#B45309] font-bold text-xs border border-[#FDE68A] shadow-xs cursor-help" title="VeloxRent: Alquiler flota pick-up">
+                    VR
+                  </div>
+                  <!-- Motrix -->
+                  <div class="inline-flex items-center justify-center w-7 h-7 rounded bg-[#F1F5F9] text-[#334155] font-bold text-xs border border-[#E2E8F0] shadow-xs cursor-help" title="Motrix: Asistencia técnica de auxilio">
+                    MX
+                  </div>
+                  <span class="text-[11px] text-[#78716C] ml-1.5 font-medium">(2 empresas)</span>
+                </div>
+              </td>
+              <td class="py-4 px-5 text-right">
+                <button class="px-3 py-1 text-xs font-medium text-[#1F2A33] bg-white border border-[#E5E2DC] rounded hover:border-[#1F2A33] transition-colors">
+                  Ver ficha
+                </button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination & Summary Footer -->
+      <div class="bg-[#FAF9F5] px-5 py-3 border-t border-[#E5E2DC] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#78716C]">
+        <div class="flex items-center space-x-2">
+          <span>Mostrando <span class="font-semibold text-[#1F2A33]">1 - 6</span> de <span class="font-semibold text-[#1F2A33]">124</span> clientes</span>
+          <span>•</span>
+          <span class="text-[#1E7D4B] font-medium">Historial cruzado sincronizado</span>
+        </div>
+
+        <div class="flex items-center space-x-1">
+          <button class="px-2.5 py-1.5 border border-[#E5E2DC] rounded bg-white text-[#A39C90] cursor-not-allowed text-xs font-medium">Anterior</button>
+          <button class="px-3 py-1.5 border border-[#1F2A33] rounded bg-[#1F2A33] text-white text-xs font-semibold">1</button>
+          <button class="px-3 py-1.5 border border-[#E5E2DC] rounded bg-white text-[#4E4A45] hover:bg-[#FAF9F5] text-xs font-medium">2</button>
+          <button class="px-3 py-1.5 border border-[#E5E2DC] rounded bg-white text-[#4E4A45] hover:bg-[#FAF9F5] text-xs font-medium">3</button>
+          <span class="px-1 text-[#A39C90]">...</span>
+          <button class="px-3 py-1.5 border border-[#E5E2DC] rounded bg-white text-[#4E4A45] hover:bg-[#FAF9F5] text-xs font-medium">21</button>
+          <button class="px-2.5 py-1.5 border border-[#E5E2DC] rounded bg-white text-[#4E4A45] hover:bg-[#FAF9F5] text-xs font-medium">Siguiente</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="border-t border-[#E5E2DC] bg-white px-8 py-3.5 text-xs text-[#78716C] flex flex-col md:flex-row items-center justify-between gap-2 mt-auto">
+    <div class="flex items-center space-x-4">
+      <span class="font-semibold text-[#1F2A33]">VeloxRent © 2026</span>
+      <span>•</span>
+      <span>Sistema de Gestión Comercial y Flotas</span>
+      <span>•</span>
+      <span>Módulo Clientes / Bandeja Unificada</span>
+    </div>
+    <div class="flex items-center space-x-6">
+      <span>Mesa Front-office: <strong class="text-[#1F2A33]">anexo 103</strong></span>
+      <span>•</span>
+      <span>Soporte TI / Sincronización: <strong class="text-[#1F2A33]">anexo 101</strong></span>
+      <span>•</span>
+      <button class="hover:text-[#C22B2B] flex items-center space-x-1 transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  </footer>
+
+
+
+</body></html>

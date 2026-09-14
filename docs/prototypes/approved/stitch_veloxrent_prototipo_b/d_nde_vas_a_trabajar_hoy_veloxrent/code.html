@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Dónde vas a trabajar hoy? - VeloxRent</title>
+  <!-- Google Fonts: Space Grotesk & Public Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#1F2A33',
+              orange: '#C6600A',
+              border: '#A39C90',
+              grayText: '#4E4A45',
+              subtleBg: '#F8F8F6'
+            }
+          },
+          fontFamily: {
+            title: ['Space Grotesk', 'sans-serif'],
+            body: ['Public Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-title {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .workplace-card {
+      border: 1.5px solid #A39C90;
+      border-radius: 4px;
+      height: 100px;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      background-color: #FFFFFF;
+    }
+    .workplace-card:hover,
+    .workplace-card:focus-visible {
+      border-color: #C6600A;
+      box-shadow: 0 4px 14px -3px rgba(198, 96, 10, 0.15);
+      transform: translateY(-2px);
+      outline: none;
+    }
+    .workplace-card:hover .icon-container,
+    .workplace-card:focus-visible .icon-container {
+      background-color: #FFF3EB;
+      color: #C6600A;
+      border-color: rgba(198, 96, 10, 0.2);
+    }
+    .workplace-card:hover .arrow-indicator,
+    .workplace-card:focus-visible .arrow-indicator {
+      opacity: 1;
+      transform: translateX(0);
+      color: #C6600A;
+    }
+    .workplace-card:active {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white flex flex-col justify-between selection:bg-[#C6600A]/15 selection:text-[#1F2A33]">
+  <!-- Header con logo sutil de VeloxRent centrado -->
+  <header class="w-full pt-10 pb-4 flex justify-center items-center">
+    <span class="font-title text-[22px] font-bold tracking-tight text-[#1F2A33]">VeloxRent</span>
+  </header>
+
+  <!-- Contenedor Principal Centrado -->
+  <main class="flex-1 flex items-center justify-center px-4 py-8">
+    <div class="w-full max-w-2xl">
+      <!-- Bloque de Título y Subtítulo explicativo -->
+      <div class="text-center mb-8">
+        <h1 class="font-title text-[22px] font-bold text-[#1F2A33] tracking-tight mb-2">
+          ¿Dónde vas a trabajar hoy?
+        </h1>
+        <p class="text-[14px] text-[#4E4A45] font-normal">
+          Selecciona tu empresa y sede para ingresar al sistema
+        </p>
+      </div>
+
+      <!-- Grid de Tarjetas (2 columnas desktop, 1 columna móvil) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        
+        <!-- Tarjeta 1: VeloxRent - Ayacucho Sede Central -->
+        <button type="button" class="workplace-card text-left px-5 py-4 flex items-center justify-between group w-full h-[100px] border-[1.5px] border-[#A39C90] rounded-[4px] bg-white transition-all duration-200" aria-label="Ingresar a VeloxRent, Ayacucho Sede Central">
+          <div class="flex items-center gap-3.5 min-w-0 pr-2">
+            <div class="icon-container flex-shrink-0 w-11 h-11 rounded-[4px] bg-[#F5F4F0] border border-transparent text-[#1F2A33] flex items-center justify-center transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="1.5" ry="1.5"></rect>
+                <path d="M9 22v-4h6v4"></path>
+                <line x1="8" y1="6" x2="10" y2="6"></line>
+                <line x1="14" y1="6" x2="16" y2="6"></line>
+                <line x1="8" y1="10" x2="10" y2="10"></line>
+                <line x1="14" y1="10" x2="16" y2="10"></line>
+                <line x1="8" y1="14" x2="10" y2="14"></line>
+                <line x1="14" y1="14" x2="16" y2="14"></line>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-title text-[16px] font-bold text-[#1F2A33] truncate leading-tight">
+                VeloxRent
+              </div>
+              <div class="text-[13px] text-[#4E4A45] truncate mt-1 leading-normal font-normal">
+                Ayacucho — Sede Central
+              </div>
+            </div>
+          </div>
+          <div class="arrow-indicator opacity-0 -translate-x-1.5 transition-all text-[#A39C90] flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Tarjeta 2: Casa del Auto - Ayacucho Sede Central -->
+        <button type="button" class="workplace-card text-left px-5 py-4 flex items-center justify-between group w-full h-[100px] border-[1.5px] border-[#A39C90] rounded-[4px] bg-white transition-all duration-200" aria-label="Ingresar a Casa del Auto, Ayacucho Sede Central">
+          <div class="flex items-center gap-3.5 min-w-0 pr-2">
+            <div class="icon-container flex-shrink-0 w-11 h-11 rounded-[4px] bg-[#F5F4F0] border border-transparent text-[#1F2A33] flex items-center justify-center transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="1.5" ry="1.5"></rect>
+                <path d="M9 22v-4h6v4"></path>
+                <line x1="8" y1="6" x2="10" y2="6"></line>
+                <line x1="14" y1="6" x2="16" y2="6"></line>
+                <line x1="8" y1="10" x2="10" y2="10"></line>
+                <line x1="14" y1="10" x2="16" y2="10"></line>
+                <line x1="8" y1="14" x2="10" y2="14"></line>
+                <line x1="14" y1="14" x2="16" y2="14"></line>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-title text-[16px] font-bold text-[#1F2A33] truncate leading-tight">
+                Casa del Auto
+              </div>
+              <div class="text-[13px] text-[#4E4A45] truncate mt-1 leading-normal font-normal">
+                Ayacucho — Sede Central
+              </div>
+            </div>
+          </div>
+          <div class="arrow-indicator opacity-0 -translate-x-1.5 transition-all text-[#A39C90] flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Tarjeta 3: VeloxRent - Sucursal Huanta -->
+        <button type="button" class="workplace-card text-left px-5 py-4 flex items-center justify-between group w-full h-[100px] border-[1.5px] border-[#A39C90] rounded-[4px] bg-white transition-all duration-200" aria-label="Ingresar a VeloxRent, Sucursal Huanta">
+          <div class="flex items-center gap-3.5 min-w-0 pr-2">
+            <div class="icon-container flex-shrink-0 w-11 h-11 rounded-[4px] bg-[#F5F4F0] border border-transparent text-[#1F2A33] flex items-center justify-center transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="1.5" ry="1.5"></rect>
+                <path d="M9 22v-4h6v4"></path>
+                <line x1="8" y1="6" x2="10" y2="6"></line>
+                <line x1="14" y1="6" x2="16" y2="6"></line>
+                <line x1="8" y1="10" x2="10" y2="10"></line>
+                <line x1="14" y1="10" x2="16" y2="10"></line>
+                <line x1="8" y1="14" x2="10" y2="14"></line>
+                <line x1="14" y1="14" x2="16" y2="14"></line>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-title text-[16px] font-bold text-[#1F2A33] truncate leading-tight">
+                VeloxRent
+              </div>
+              <div class="text-[13px] text-[#4E4A45] truncate mt-1 leading-normal font-normal">
+                Huanta — Sucursal Norte
+              </div>
+            </div>
+          </div>
+          <div class="arrow-indicator opacity-0 -translate-x-1.5 transition-all text-[#A39C90] flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Tarjeta 4: Casa del Auto - Taller & Operaciones -->
+        <button type="button" class="workplace-card text-left px-5 py-4 flex items-center justify-between group w-full h-[100px] border-[1.5px] border-[#A39C90] rounded-[4px] bg-white transition-all duration-200" aria-label="Ingresar a Casa del Auto, Taller Central">
+          <div class="flex items-center gap-3.5 min-w-0 pr-2">
+            <div class="icon-container flex-shrink-0 w-11 h-11 rounded-[4px] bg-[#F5F4F0] border border-transparent text-[#1F2A33] flex items-center justify-center transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="1.5" ry="1.5"></rect>
+                <path d="M9 22v-4h6v4"></path>
+                <line x1="8" y1="6" x2="10" y2="6"></line>
+                <line x1="14" y1="6" x2="16" y2="6"></line>
+                <line x1="8" y1="10" x2="10" y2="10"></line>
+                <line x1="14" y1="10" x2="16" y2="10"></line>
+                <line x1="8" y1="14" x2="10" y2="14"></line>
+                <line x1="14" y1="14" x2="16" y2="14"></line>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-title text-[16px] font-bold text-[#1F2A33] truncate leading-tight">
+                Casa del Auto
+              </div>
+              <div class="text-[13px] text-[#4E4A45] truncate mt-1 leading-normal font-normal">
+                Parque Industrial — Taller Central
+              </div>
+            </div>
+          </div>
+          <div class="arrow-indicator opacity-0 -translate-x-1.5 transition-all text-[#A39C90] flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+      </div>
+
+      <!-- Enlace inferior: Cerrar sesión / Usar otra cuenta -->
+      <div class="mt-8 text-center">
+        <a href="#" class="text-[14px] text-[#4E4A45] hover:text-[#1F2A33] transition-colors inline-flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          Cerrar sesión / Usar otra cuenta
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer sobrio institucional -->
+  <footer class="w-full pb-6 text-center">
+    <span class="text-[12px] text-[#A39C90]">VeloxRent © 2025 · Sistema de Gestión Interna</span>
+  </footer>
+
+
+
+</body></html>

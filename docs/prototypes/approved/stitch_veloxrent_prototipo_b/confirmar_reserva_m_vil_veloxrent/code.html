@@ -1,0 +1,323 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmar reserva — Móvil - VeloxRent</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: '#1F2A33',
+            'brand-accent': '#C6600A',
+            'brand-green': '#2F6B4F',
+            'brand-danger': '#C22B2B',
+            'surface-dim': '#EFEDE7',
+            'surface-subtle': '#F8F7F4',
+            'text-muted': '#4E4A45',
+            'border-light': '#E5E2DC',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      -webkit-font-smoothing: antialiased;
+    }
+    .touch-target {
+      min-height: 56px;
+    }
+  </style>
+</head>
+<body class="bg-white flex justify-center min-h-screen">
+  <!-- Mobile container 390px -->
+  <div class="w-full max-w-[390px] bg-white min-h-screen flex flex-col justify-between border-x border-border-light shadow-sm">
+    
+    <!-- Top Header -->
+    <header>
+      <!-- Mobile Status bar simulation -->
+      <div class="px-5 pt-3 pb-2 flex justify-between items-center text-xs text-text-muted font-medium border-b border-border-light/60">
+        <span>09:41</span>
+        <div class="flex items-center gap-1.5 text-[11px]">
+          <span>LTE</span>
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.28 19.64 10.59 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"></path></svg>
+          <div class="w-4 h-2.5 border border-current rounded-sm p-0.5 flex items-center">
+            <div class="bg-current h-full w-2.5 rounded-2xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Bar -->
+      <div class="px-4 py-3 flex items-center justify-between border-b border-border-light">
+        <div class="flex items-center gap-2.5">
+          <button class="w-8 h-8 flex items-center justify-center rounded-sm active:bg-surface-dim text-brand" aria-label="Volver">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-text-muted block leading-none">Reservas</span>
+            <h1 class="font-display text-base font-bold text-brand leading-tight">Confirmar reserva</h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium text-brand-green bg-emerald-50 px-2 py-0.5 rounded">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-green"></span>
+            En línea
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Scrollable Content -->
+    <main class="flex-1 px-4 py-4 space-y-4">
+      
+      <!-- Compact Vehicle Card -->
+      <div class="bg-surface-subtle border border-border-light rounded-md p-3">
+        <div class="flex items-center gap-3">
+          <!-- Thumbnail Image -->
+          <div class="w-20 h-16 rounded overflow-hidden flex-shrink-0 bg-surface-dim border border-border-light">
+            <img src="https://lh3.googleusercontent.com/aida/AEtjO1VpZxzy_KIN30sqq171EU4vFnN1XaT6pMsNlyvCEEM_TxOQBLiyZTPSupt4H7CmWgh-mNA7E4V-QeW2KIPGif4XTCrdCK2a9uSuysIY8Q5nFvOciGkRqhxziMYIgKWrlkD1G8xWJLVRZSnmwioGVo0_3zmBPUMzHDjPh7HiE0fsIl9XiSo22odNGq6-cidNur4ofWM8YEiDKnr5KGZzAd7u_FlStenFMeW-MIN69XkyIzvlzIE_gt6kMyk" alt="Toyota Hilux D0Y-704" class="w-full h-full object-cover">
+          </div>
+          
+          <!-- Compact Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1">
+              <h2 class="font-bold text-sm text-brand truncate">Toyota Hilux 4x4</h2>
+              <span class="text-[11px] font-mono bg-white border border-border-light px-1.5 py-0.5 rounded text-brand font-semibold shrink-0">
+                D0Y-704
+              </span>
+            </div>
+            <div class="flex items-center gap-1.5 mt-1 text-xs text-text-muted">
+              <svg class="w-3.5 h-3.5 text-text-muted/80 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span class="font-medium text-brand">04 - 07 sep</span>
+              <span class="text-[11px] text-text-muted">(3 días)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Small link for full details (sin saturar) -->
+        <div class="mt-2.5 pt-2 border-t border-border-light/80 flex items-center justify-between text-xs">
+          <span class="text-[11px] text-brand-green font-medium flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-green"></span>
+            Modalidad Remota
+          </span>
+          <button class="text-brand-accent hover:underline text-[12px] font-medium flex items-center gap-0.5">
+            Ver detalles completos
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Badge de estado debajo de la tarjeta -->
+      <div class="flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-surface-dim text-text-muted border border-border-light">
+            Borrador / No confirmada
+          </span>
+          <span class="text-xs text-text-muted font-mono">#RES-2291</span>
+        </div>
+        <span class="text-xs font-medium text-text-muted">1 de 5 completados</span>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="w-full bg-surface-dim rounded-full h-1.5 overflow-hidden">
+        <div class="bg-brand-green h-full rounded-full transition-all duration-300" style="width: 20%;"></div>
+      </div>
+
+      <!-- Section Title & Instructions -->
+      <div class="pt-1">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-text-muted">
+          Requisitos obligatorios (5)
+        </h3>
+        <p class="text-[12px] text-text-muted mt-0.5">
+          Toca "Subir" para capturar el documento o video con la cámara.
+        </p>
+      </div>
+
+      <!-- Checklist de 5 ítems en lista vertical (min-height: 56px cada fila) -->
+      <div class="divide-y divide-border-light border-y border-border-light">
+        
+        <!-- Ítem 1: Voucher de pago (Completado con check relleno) -->
+        <div class="touch-target py-2 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Ícono de estado a la izquierda (Relleno con check) -->
+            <div class="w-7 h-7 rounded-full bg-brand-green text-white flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 stroke-current stroke-[2.5]" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <!-- Nombre del requisito -->
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-brand truncate">1. Voucher de pago</div>
+              <div class="text-[11px] text-brand-green font-medium flex items-center gap-1">
+                <span>Validado</span>
+                <span class="text-text-muted font-normal">• BCP #93821034</span>
+              </div>
+            </div>
+          </div>
+          <!-- Botón compacto a la derecha -->
+          <button class="h-8 px-2.5 bg-surface-dim hover:bg-border-light text-brand text-xs font-medium rounded shrink-0 flex items-center gap-1 border border-border-light">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <span>Ver</span>
+          </button>
+        </div>
+
+        <!-- Ítem 2: Contrato firmado (Pendiente) -->
+        <div class="touch-target py-2 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Ícono de círculo vacío -->
+            <div class="w-7 h-7 rounded-full border-2 border-border-light bg-white flex items-center justify-center shrink-0">
+              <span class="w-2 h-2 rounded-full bg-border-light"></span>
+            </div>
+            <!-- Nombre del requisito -->
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-brand truncate">2. Contrato firmado</div>
+              <div class="text-[11px] text-text-muted">Documento marco suscrito</div>
+            </div>
+          </div>
+          <!-- Botón "Subir" que abre la cámara directo en móvil (capture="camera") -->
+          <label class="h-8 px-3 bg-brand hover:bg-brand/90 active:bg-black text-white text-xs font-semibold rounded shrink-0 flex items-center gap-1.5 cursor-pointer shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span>Subir</span>
+            <!-- Abre cámara directamente -->
+            <input type="file" accept="image/*" capture="camera" class="hidden">
+          </label>
+        </div>
+
+        <!-- Ítem 3: Políticas firmadas (Pendiente) -->
+        <div class="touch-target py-2 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Ícono de círculo vacío -->
+            <div class="w-7 h-7 rounded-full border-2 border-border-light bg-white flex items-center justify-center shrink-0">
+              <span class="w-2 h-2 rounded-full bg-border-light"></span>
+            </div>
+            <!-- Nombre del requisito -->
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-brand truncate">3. Políticas firmadas</div>
+              <div class="text-[11px] text-text-muted">Límites de velocidad y geocercas</div>
+            </div>
+          </div>
+          <!-- Botón "Subir" con captura de cámara -->
+          <label class="h-8 px-3 bg-brand hover:bg-brand/90 active:bg-black text-white text-xs font-semibold rounded shrink-0 flex items-center gap-1.5 cursor-pointer shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span>Subir</span>
+            <input type="file" accept="image/*" capture="camera" class="hidden">
+          </label>
+        </div>
+
+        <!-- Ítem 4: Documento de responsabilidad (Pendiente) -->
+        <div class="touch-target py-2 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Ícono de círculo vacío -->
+            <div class="w-7 h-7 rounded-full border-2 border-border-light bg-white flex items-center justify-center shrink-0">
+              <span class="w-2 h-2 rounded-full bg-border-light"></span>
+            </div>
+            <!-- Nombre del requisito -->
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-brand truncate">4. Responsabilidad</div>
+              <div class="text-[11px] text-text-muted">Declaración jurada deducible</div>
+            </div>
+          </div>
+          <!-- Botón "Subir" con captura de cámara -->
+          <label class="h-8 px-3 bg-brand hover:bg-brand/90 active:bg-black text-white text-xs font-semibold rounded shrink-0 flex items-center gap-1.5 cursor-pointer shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span>Subir</span>
+            <input type="file" accept="image/*" capture="camera" class="hidden">
+          </label>
+        </div>
+
+        <!-- Ítem 5: Video 360° del vehículo (Pendiente, Modalidad remota) -->
+        <div class="touch-target py-2 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Ícono de círculo vacío -->
+            <div class="w-7 h-7 rounded-full border-2 border-border-light bg-white flex items-center justify-center shrink-0">
+              <span class="w-2 h-2 rounded-full bg-border-light"></span>
+            </div>
+            <!-- Nombre del requisito -->
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-brand truncate">5. Video 360° vehículo</div>
+              <div class="text-[11px] text-brand-accent font-medium flex items-center gap-1">
+                <span>Grabación perimetral</span>
+                <span class="text-text-muted font-normal">• Remota</span>
+              </div>
+            </div>
+          </div>
+          <!-- Botón "Subir" con captura de video/cámara directo -->
+          <label class="h-8 px-3 bg-brand hover:bg-brand/90 active:bg-black text-white text-xs font-semibold rounded shrink-0 flex items-center gap-1.5 cursor-pointer shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            <span>Grabar</span>
+            <!-- Cámara de video directa -->
+            <input type="file" accept="video/*" capture="camera" class="hidden">
+          </label>
+        </div>
+
+      </div>
+
+      <!-- Helper Notice -->
+      <div class="bg-surface-subtle border border-border-light rounded p-2.5 flex items-start gap-2 text-xs text-text-muted">
+        <svg class="w-4 h-4 text-brand-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="leading-relaxed">
+          Al tocar <strong class="text-brand">Subir</strong> o <strong class="text-brand">Grabar</strong> se iniciará la cámara de tu dispositivo para capturar evidencia al instante.
+        </span>
+      </div>
+
+    </main>
+
+    <!-- Bottom Actions / Sticky Footer -->
+    <footer class="p-4 bg-white border-t border-border-light space-y-2">
+      <!-- Primary disabled CTA until 5 items are confirmed -->
+      <button disabled="" class="w-full h-11 bg-surface-dim text-text-muted/60 font-semibold text-sm rounded flex items-center justify-center gap-2 cursor-not-allowed border border-border-light/60">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+        Confirmar reserva (4 pendientes)
+      </button>
+
+      <!-- Secondary Action -->
+      <div class="flex items-center justify-between pt-1 text-xs">
+        <button class="text-text-muted hover:text-brand font-medium">
+          Guardar borrador
+        </button>
+        <span class="text-[11px] text-text-muted/70">
+          Sede Ayacucho • Anexo 103
+        </span>
+      </div>
+    </footer>
+
+  </div>
+
+
+</body></html>

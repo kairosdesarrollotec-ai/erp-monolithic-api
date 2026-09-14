@@ -1,0 +1,272 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sincronización - VeloxRent</title>
+  <!-- Google Fonts: Space Grotesk & Public Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              sand: '#A39C90',
+              muted: '#4E4A45',
+              border: '#E2DFDA',
+              cardBg: '#FAFAF8',
+              green: '#1E7D4B',
+              greenLight: '#E8F5EE',
+              amber: '#B5720A',
+              amberLight: '#FDF1DE',
+              red: '#C22B2B',
+              redLight: '#FBE9E9'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white text-brand-navy font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-[#C6600A] selection:text-white">
+
+  <!-- TOPBAR / GLOBAL HEADER -->
+  <header class="border-b border-[#E2DFDA] bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Marca y submódulo -->
+      <div class="flex items-center gap-4">
+        <span class="font-mono text-xl font-bold tracking-tight text-brand-navy">VeloxRent</span>
+        <span class="text-[#A39C90] text-sm">|</span>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#F4F3F0] text-brand-muted text-xs font-medium border border-[#E2DFDA]">
+          <span class="">Sincronización</span>
+        </div>
+      </div>
+
+      <!-- Estado de conexión y Sede activa -->
+      <div class="flex items-center gap-5">
+        <!-- Indicador En línea -->
+        <div class="flex items-center gap-2 text-xs font-medium text-brand-navy">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span class="">En línea</span>
+        </div>
+
+        <div class="h-4 w-[1px] bg-[#E2DFDA]"></div>
+
+        <!-- Sede Central selector/badge -->
+        <div class="flex items-center gap-1.5 text-xs text-brand-muted bg-[#FAFAF8] px-3 py-1.5 rounded border border-[#E2DFDA]">
+          <svg class="w-3.5 h-3.5 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+          <span class="font-medium text-brand-navy">Ayacucho — Sede Central</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-5xl w-full mx-auto px-6 py-10 flex-1">
+    
+    <!-- ENCABEZADO DE SECCIÓN CON BOTÓN ACCIÓN ARRIBA A LA DERECHA -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-[#E2DFDA] gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="font-mono text-3xl font-bold text-brand-navy tracking-tight">Sincronización</h1>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#FDF1DE] text-[#B5720A] border border-[#F6DEB9]">
+            1 pendiente en cola
+          </span>
+        </div>
+        <p class="text-sm text-brand-muted mt-1.5 max-w-xl leading-relaxed">
+          Monitoreo de transferencia de datos de campo, actas de inspección y registro fotográfico hacia el servidor central.
+        </p>
+      </div>
+
+      <!-- BOTÓN "REINTENTAR TODO" (Visible si hay algo pendiente) -->
+      <div class="flex items-center gap-3 self-start sm:self-center">
+        <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#FAFAF8] text-brand-navy font-mono text-xs font-semibold rounded border border-[#1F2A33] shadow-sm hover:border-brand-orange hover:text-brand-orange transition-colors group">
+          <svg class="w-4 h-4 text-brand-navy group-hover:text-brand-orange transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span class="">Reintentar todo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BANNER DE RESUMEN OPERATIVO -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="bg-[#FAFAF8] border border-[#E2DFDA] rounded p-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-brand-muted uppercase font-mono tracking-wider">Cola de subida</p>
+          <p class="text-xl font-bold text-brand-navy font-mono mt-0.5">1 proceso activo</p>
+        </div>
+        <span class="w-2.5 h-2.5 rounded-full bg-[#9E4C08] animate-ping"></span>
+      </div>
+
+      <div class="bg-[#FAFAF8] border border-[#E2DFDA] rounded p-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-brand-muted uppercase font-mono tracking-wider">Completados hoy</p>
+          <p class="text-xl font-bold text-brand-green font-mono mt-0.5">24 sincronizados</p>
+        </div>
+        <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+
+      <div class="bg-[#FAFAF8] border border-[#E2DFDA] rounded p-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-brand-muted uppercase font-mono tracking-wider">Velocidad de enlace</p>
+          <p class="text-xl font-bold text-brand-navy font-mono mt-0.5">3.4 MB/s <span class="text-xs font-normal text-brand-muted font-sans">4G LTE</span></p>
+        </div>
+        <svg class="w-5 h-5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: LISTA DE TARJETAS DE SINCRONIZACIÓN -->
+    <div class="space-y-4">
+      
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-xs font-mono font-semibold uppercase tracking-wider text-brand-muted">Procesos recientes y en curso</h2>
+        <span class="text-xs text-[#A39C90]">Última comprobación: hace 30 seg</span>
+      </div>
+
+      <!-- TARJETA 1: EN PROCESO DE SINCRONIZACIÓN -->
+      <!-- "Entrega #ALQ-1187 — Sincronizando 23 de 35 fotos" con barra de progreso color #C6600A -->
+      <div class="bg-white border-2 border-[#9E4C08] rounded shadow-sm p-5 transition-all"><div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="flex items-start gap-4"><div class="w-10 h-10 rounded bg-[#FDF1DE] flex items-center justify-center flex-shrink-0 text-[#9E4C08] border border-[#F6DEB9]"><svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div><div><div class="flex flex-wrap items-center gap-2.5"><h3 class="font-mono text-base font-bold text-brand-navy tracking-tight">Entrega #ALQ-1187</h3><span class="text-[#A39C90] text-xs font-normal">•</span><span class="text-xs font-medium text-brand-muted">Toyota Hilux (Placa DOY-704)</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-[#FDF1DE] text-[#9E4C08] border border-[#F6DEB9]">En curso</span></div><div class="flex items-center gap-2 mt-1"><p class="text-sm font-medium text-[#9E4C08]">Sincronizando 23 de 35 fotos</p><span class="text-xs text-brand-muted font-mono">(65% completado)</span></div><p class="text-xs text-brand-muted mt-0.5">Inspector: Mario Huamán • Tablet Rugged #03 • Estimado restante: 18 seg</p></div></div><div class="flex items-center gap-2 self-end md:self-center"><button type="button" class="text-xs font-mono font-medium text-brand-muted hover:text-brand-navy px-2.5 py-1.5 rounded border border-[#E2DFDA] hover:bg-[#FAFAF8] transition-colors">Pausar</button><button type="button" class="text-xs font-mono font-medium text-[#9E4C08] hover:text-[#7A3A05] px-2.5 py-1.5 rounded border border-[#F6DEB9] bg-[#FDF1DE] hover:bg-[#FBE5C7] transition-colors">Priorizar</button></div></div><div class="mt-4 pt-3 border-t border-[#F2EFE9]"><div class="flex justify-between items-center text-xs text-brand-muted mb-1.5 font-mono"><span class="">23 / 35 archivos (14.2 MB de 21.8 MB)</span><span class="font-bold text-[#9E4C08]">65%</span></div><div class="w-full bg-[#E2DFDA] rounded-full h-2.5 overflow-hidden"><div class="h-2.5 rounded-full bg-[#9E4C08] transition-all duration-300" style="width: 65%;"></div></div></div></div>
+
+      <!-- TARJETA 2: SINCRONIZADO RECIENTEMENTE -->
+      <!-- "Recepción #DEV-0456 — Sincronizado hace 5 min" con check verde #1E7D4B -->
+      <div class="bg-white border border-[#E2DFDA] hover:border-[#A39C90] rounded p-5 transition-all">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          
+          <div class="flex items-start gap-4">
+            <!-- Icono con Check Verde #1E7D4B -->
+            <div class="w-10 h-10 rounded bg-[#E8F5EE] flex items-center justify-center flex-shrink-0 text-[#1E7D4B] border border-[#CDE9DA]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+
+            <div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <h3 class="font-mono text-base font-bold text-brand-navy tracking-tight">Recepción #DEV-0456</h3>
+                <span class="text-[#A39C90] text-xs font-normal">•</span>
+                <span class="text-xs font-medium text-brand-muted">Chevrolet Colorado (Placa BXZ-910)</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-[#E8F5EE] text-[#1E7D4B] border border-[#CDE9DA]">
+                  Completado OK
+                </span>
+              </div>
+              
+              <div class="flex items-center gap-1.5 mt-1">
+                <svg class="w-4 h-4 text-[#1E7D4B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <p class="text-sm font-semibold text-[#1E7D4B]">
+                  Sincronizado hace 5 min
+                </p>
+                <span class="text-xs text-[#A39C90]">• 10:52 AM</span>
+              </div>
+
+              <p class="text-xs text-brand-muted mt-0.5">
+                Acta de recepción, 18 fotografías y checklist de fluidos confirmados en base central.
+              </p>
+            </div>
+          </div>
+
+          <!-- Acciones secundarias -->
+          <div class="flex items-center gap-3 self-end sm:self-center">
+            <span class="text-xs font-mono text-[#A39C90]">18/18 archivos</span>
+            <button type="button" class="text-xs font-mono font-medium text-brand-muted hover:text-brand-navy px-3 py-1.5 rounded border border-[#E2DFDA] hover:bg-[#FAFAF8] transition-colors">
+              Ver detalle
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TARJETA 3: OTRA SINCRONIZACIÓN EXITOSA PREVIA -->
+      <div class="bg-white border border-[#E2DFDA] hover:border-[#A39C90] rounded p-5 transition-all">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          
+          <div class="flex items-start gap-4">
+            <!-- Icono con Check Verde #1E7D4B -->
+            <div class="w-10 h-10 rounded bg-[#E8F5EE] flex items-center justify-center flex-shrink-0 text-[#1E7D4B] border border-[#CDE9DA]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+
+            <div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <h3 class="font-mono text-base font-bold text-brand-navy tracking-tight">Check-out #ALQ-1185</h3>
+                <span class="text-[#A39C90] text-xs font-normal">•</span>
+                <span class="text-xs font-medium text-brand-muted">Nissan Frontier (Placa F6T-412)</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-[#E8F5EE] text-[#1E7D4B] border border-[#CDE9DA]">
+                  Completado OK
+                </span>
+              </div>
+              
+              <div class="flex items-center gap-1.5 mt-1">
+                <svg class="w-4 h-4 text-[#1E7D4B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <p class="text-sm font-medium text-brand-navy">
+                  Sincronizado hoy, 09:45 AM
+                </p>
+                <span class="text-xs text-[#A39C90]">• hace 1h</span>
+              </div>
+
+              <p class="text-xs text-brand-muted mt-0.5">
+                Firma de contrato de salida y kilometraje verificado sin observaciones.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 self-end sm:self-center">
+            <span class="text-xs font-mono text-[#A39C90]">8/8 archivos</span>
+            <button type="button" class="text-xs font-mono font-medium text-brand-muted hover:text-brand-navy px-3 py-1.5 rounded border border-[#E2DFDA] hover:bg-[#FAFAF8] transition-colors">
+              Ver detalle
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- NOTA INFORMATIVA INFERIOR -->
+    <div class="mt-8 bg-[#FAFAF8] rounded border border-[#E2DFDA] p-4 flex items-start gap-3">
+      <svg class="w-4 h-4 text-[#A39C90] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div class="text-xs text-brand-muted leading-relaxed">
+        <span class="font-medium text-brand-navy">Sincronización automática activa:</span> Las operaciones registradas sin cobertura de red se resguardan en el almacenamiento local seguro y se transfieren automáticamente tan pronto se restablece la conectividad con la sede.
+      </div>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA GLOBAL -->
+  <footer class="border-t border-[#E2DFDA] bg-white py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-brand-muted">
+      <div class="">
+        VeloxRent © 2025 • Sistema de Gestión Interna
+      </div>
+      <div class="flex items-center gap-4 font-mono">
+        <span class="">Soporte Operaciones: anexo 102</span>
+        <span class="text-[#E2DFDA]">|</span>
+        <a href="#" class="hover:text-brand-navy text-brand-muted transition-colors">Cerrar sesión</a>
+      </div>
+    </div>
+  </footer>
+
+
+
+
+</body></html>

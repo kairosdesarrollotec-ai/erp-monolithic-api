@@ -1,0 +1,3821 @@
+schema_version: '1.0'
+generated_note: Catalogo inicial generado por bootstrap Claude Code a partir de docs/prototypes/approved/stitch_veloxrent_prototipo_b.
+  ux_id=null o status=PENDING_TRACE_REVIEW requiere vinculacion/revision manual antes de usarse como baseline
+  de una skill frontend-screen.
+screens:
+- proto_id: PROTO-TR-02-ACTIVACION-PASO-1
+  ux_id: TR-02
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: activa_tu_cuenta_paso_1_de_2_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_1_de_2_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_1_de_2_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: d18f7057474d55a058721a8944350e4d632dfaef0396426ab01af6e4a94cbac6
+  bytes: 56555
+  supersedes: null
+  note: activacion paso 1
+  is_reference_asset: false
+- proto_id: PROTO-TR-02-ACTIVACION-PASO-2-ERROR
+  ux_id: TR-02
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: activa_tu_cuenta_paso_2_de_2_error_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_2_de_2_error_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_2_de_2_error_veloxrent/code.html
+  screen_state: ERROR
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4493dd3cccd85daeea2a51c55bbf0215f2c7bf7e6b93fdda2864cffea64f3853
+  bytes: 62103
+  supersedes: null
+  note: activacion paso 2 error
+  is_reference_asset: false
+- proto_id: PROTO-TR-02-ACTIVACION-PASO-2-MOVIL
+  ux_id: TR-02
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: activa_tu_cuenta_paso_2_de_2_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_2_de_2_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_2_de_2_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 5bb4b5ba313ff4c800089ea175deb8bb80cdec9a221bbab02f56f46df8c3083a
+  bytes: 163977
+  supersedes: null
+  note: activacion paso 2 movil
+  is_reference_asset: false
+- proto_id: PROTO-TR-02-ACTIVACION-PASO-2
+  ux_id: TR-02
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: activa_tu_cuenta_paso_2_de_2_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_2_de_2_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_2_de_2_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 5d2dd0e4e6ffdb6caaeafd1431250d4fe2f5166a5d3418a82c04043029f7ac63
+  bytes: 51207
+  supersedes: null
+  note: activacion paso 2
+  is_reference_asset: false
+- proto_id: PROTO-DEV-03-DESFAVORABLE
+  ux_id: DEV-03
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: alcohol_metro_de_devoluci_n_desfavorable_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alcohol_metro_de_devoluci_n_desfavorable_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alcohol_metro_de_devoluci_n_desfavorable_veloxrent/code.html
+  screen_state: UNFAVORABLE
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 1330541b37128448a30eeef9e0eaa6259e125e1c36d487cd76d3153afc12ec54
+  bytes: 530797
+  supersedes: null
+  note: desfavorable
+  is_reference_asset: false
+- proto_id: PROTO-DEV-03-RECEPCION-DEV-0456
+  ux_id: DEV-03
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: alcohol_metro_de_devoluci_n_recepci_n_dev_0456_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alcohol_metro_de_devoluci_n_recepci_n_dev_0456_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alcohol_metro_de_devoluci_n_recepci_n_dev_0456_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0e36036637e4102a04ac53a4c249cb88f242efd6aab3be24d71478f2189894ad
+  bytes: 563834
+  supersedes: null
+  note: recepcion DEV-0456
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-10-ACTIVO-ALQ-1187
+  ux_id: ALQ-10
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: alquiler_alq_1187_activo_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alquiler_alq_1187_activo_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alquiler_alq_1187_activo_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 13118177fc7e2185d3e271bde5caeb66b0d88a25415c8dca400d3382f6b8f9ca
+  bytes: 526137
+  supersedes: null
+  note: activo ALQ-1187
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-10-ALERTA-GPS-BR-ALQ-006
+  ux_id: ALQ-10
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: alquiler_alq_1187_alerta_gps_no_disponible_br_alq_006_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alquiler_alq_1187_alerta_gps_no_disponible_br_alq_006_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alquiler_alq_1187_alerta_gps_no_disponible_br_alq_006_veloxrent/code.html
+  screen_state: ALERT
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 901592031c7e2f5662c95d9a0752f4a3a50faeccecc8a06426436bb05b708193
+  bytes: 541312
+  supersedes: null
+  note: alerta GPS BR-ALQ-006
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-01-BANDEJA
+  ux_id: ALQ-01
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: alquileres_bandeja_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alquileres_bandeja_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/alquileres_bandeja_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9387adcb37da6bbf59be38b760538bd72659c103c02670dcdcd8108029a9fa32
+  bytes: 579220
+  supersedes: null
+  note: bandeja
+  is_reference_asset: false
+- proto_id: PROTO-ADP-02-ASISTENCIA
+  ux_id: ADP-02
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: asistencia_septiembre_2026_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/asistencia_septiembre_2026_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/asistencia_septiembre_2026_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 52226c9b8f0c0212fe850df56397ca0f762cdad8241c448f0e4e39f81c743bba
+  bytes: 366137
+  supersedes: null
+  note: asistencia
+  is_reference_asset: false
+- proto_id: PROTO-ADM-04-AUDITORIA-ADMINISTRATIVA
+  ux_id: ADM-04
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: auditor_a_administrativa_administraci_n_del_sistema_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/auditor_a_administrativa_administraci_n_del_sistema_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/auditor_a_administrativa_administraci_n_del_sistema_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: acb256790e958fffe14a7754fa43244aab6bf0b8d1faf4d671eaf3440f19f5e7
+  bytes: 571672
+  supersedes: null
+  note: auditoria administrativa
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-automotive-inspection-photo-car-undercarriage-and
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: automotive_inspection_photo_car_undercarriage_and_tire_tread_depth_mechanical
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/automotive_inspection_photo_car_undercarriage_and_tire_tread_depth_mechanical/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: fb626cb092694d43c2c4a197ffb886f1326cd9375021317eb58703c850896335
+  bytes: 1722168
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-ASSET-automotive-inspection-photo-high-resolution-crisp
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: automotive_inspection_photo_high_resolution_crisp_daytime_photo_of_the_clean
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/automotive_inspection_photo_high_resolution_crisp_daytime_photo_of_the_clean/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: ca9d8118e300bf2bee534c6ed09705857d1dec1c07cac62b877201b2952b1775
+  bytes: 1918154
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-ASSET-automotive-inspection-photo-of-the-same-silver-toy
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: automotive_inspection_photo_of_the_same_silver_toyota_hilux_pickup_truck
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/automotive_inspection_photo_of_the_same_silver_toyota_hilux_pickup_truck/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: 9492cf3a5fe016250e7289638272bbac7c9a460e1a37f81e953a89b4a3bf5031
+  bytes: 1702690
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-ADP-07-COLA-AUTORIZACION
+  ux_id: ADP-07
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: autorizaci_n_de_salida_a_campo_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/autorizaci_n_de_salida_a_campo_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/autorizaci_n_de_salida_a_campo_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: f902a0d6991b704b799d64d99468f15a0c35211d6c4000d0ee0de9881def38a3
+  bytes: 347645
+  supersedes: null
+  note: cola autorizacion
+  is_reference_asset: false
+- proto_id: PROTO-ADP-07-COLA-AUTORIZACION-MOVIL
+  ux_id: ADP-07
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: autorizaci_n_de_salida_a_campo_m_vil_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/autorizaci_n_de_salida_a_campo_m_vil_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/autorizaci_n_de_salida_a_campo_m_vil_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 758966e7dbb4fdce126e8987c5936a6b2e30a9de4d866944d3f79779cae371eb
+  bytes: 185694
+  supersedes: null
+  note: cola autorizacion movil
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-b-squeda-global-desplegable-veloxrent
+  ux_id: null
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: b_squeda_global_desplegable_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/b_squeda_global_desplegable_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/b_squeda_global_desplegable_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: 3ebeb7489734b8f7f51c60105bd99357f8fc8f81b30c316fd173a80e50217d6b
+  bytes: 197504
+  supersedes: null
+  note: shell global - busqueda, sin UX-ID canonico dedicado
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-b-squeda-global-m-vil-veloxrent
+  ux_id: null
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: b_squeda_global_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/b_squeda_global_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/b_squeda_global_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: a81e8c93957938f4ac4001d73ccf9fc20ce6bb4de8ed5ad19ff649b143f0a641
+  bytes: 117590
+  supersedes: null
+  note: shell global - busqueda movil
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-b-squeda-global-sin-resultados-veloxrent
+  ux_id: null
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: b_squeda_global_sin_resultados_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/b_squeda_global_sin_resultados_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/b_squeda_global_sin_resultados_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: dd58114fb9a1f69f6ab4df7c418b34722d87f9c29676b7f43cd3c1c28d4e6797
+  bytes: 165730
+  supersedes: null
+  note: shell global - busqueda vacia
+  is_reference_asset: false
+- proto_id: PROTO-REC-03-BANDEJA-CANDIDATOS-VACANTE-MECANICO
+  ux_id: REC-03
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: candidatos_vacante_mec_nico_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/candidatos_vacante_mec_nico_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/candidatos_vacante_mec_nico_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 270af52f6e4b2da2b057a6b5b444ec43576c0a408c45ce5364ca3bdc47bfcc00
+  bytes: 309517
+  supersedes: null
+  note: bandeja candidatos vacante mecanico
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-car-interior-inspection-photo-showing-front-seats
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: car_interior_inspection_photo_showing_front_seats_and_center_console_with_gear
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/car_interior_inspection_photo_showing_front_seats_and_center_console_with_gear/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: f9716b0dc97eb8d5131fd05d9bfd30928ff864bd840832a27b2efbabe1c7fc29
+  bytes: 1763288
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-ADM-03-CATALOGOS-Y-PARAMETROS
+  ux_id: ADM-03
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: cat_logos_y_par_metros_administraci_n_del_sistema_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/cat_logos_y_par_metros_administraci_n_del_sistema_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/cat_logos_y_par_metros_administraci_n_del_sistema_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: ea3c5080eea06bbac54ec503bf8aecf249de6f246ba9114205815f3cc36b314f
+  bytes: 541009
+  supersedes: null
+  note: catalogos y parametros
+  is_reference_asset: false
+- proto_id: PROTO-CLI-01-BANDEJA
+  ux_id: CLI-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: clientes_bandeja_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/clientes_bandeja_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/clientes_bandeja_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0724a7946ae0e98fcc7bb1b7f8c897349c37a712b9f27f8bf0506a534e204ae3
+  bytes: 308130
+  supersedes: null
+  note: bandeja
+  is_reference_asset: false
+- proto_id: PROTO-CLI-01-COINCIDENCIA-DNI
+  ux_id: CLI-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: clientes_coincidencia_de_dni_existente_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/clientes_coincidencia_de_dni_existente_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/clientes_coincidencia_de_dni_existente_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 50fa46000ba9b49823230257648de86852d15392774bd6411306d92c1d0fcbc9
+  bytes: 331004
+  supersedes: null
+  note: coincidencia DNI
+  is_reference_asset: false
+- proto_id: PROTO-TR-03-DESAFIO-MFA-MOVIL-1
+  ux_id: TR-03
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: confirma_tu_identidad_m_vil_veloxrent_1
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirma_tu_identidad_m_vil_veloxrent_1/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirma_tu_identidad_m_vil_veloxrent_1/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 7522da741fe266b46f07a6865cb8d9c499d98fa69efc33432e53f0cd50bd8ffc
+  bytes: 86446
+  supersedes: null
+  note: desafio MFA movil 1
+  is_reference_asset: false
+- proto_id: PROTO-TR-03-DESAFIO-MFA-MOVIL-2
+  ux_id: TR-03
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: confirma_tu_identidad_m_vil_veloxrent_2
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirma_tu_identidad_m_vil_veloxrent_2/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirma_tu_identidad_m_vil_veloxrent_2/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0b94a2ecb60c44860e9afab8c468340f66d772ab2585705a9d93a46b2b0c9fe0
+  bytes: 96501
+  supersedes: null
+  note: desafio MFA movil 2
+  is_reference_asset: false
+- proto_id: PROTO-TR-03-DESAFIO-MFA-MODAL
+  ux_id: TR-03
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: confirma_tu_identidad_modal_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirma_tu_identidad_modal_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirma_tu_identidad_modal_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: baeb45ea926c22881af1da726aca70b41716055dd6ce9b47e8fd2db99915515a
+  bytes: 15039
+  supersedes: null
+  note: desafio MFA modal
+  is_reference_asset: false
+- proto_id: PROTO-RES-04-REQUISITOS-CONFIRMACION-MOVIL
+  ux_id: RES-04
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: confirmar_reserva_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirmar_reserva_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirmar_reserva_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 3b69190af88be5f286aa8d1fd85af0166ac468b737b9f24524cc88cebdcaa90d
+  bytes: 173312
+  supersedes: null
+  note: requisitos confirmacion movil
+  is_reference_asset: false
+- proto_id: PROTO-RES-04-MODALIDAD-NO-DETERMINADA
+  ux_id: RES-04
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: confirmar_reserva_modalidad_manual_no_determinada_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirmar_reserva_modalidad_manual_no_determinada_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirmar_reserva_modalidad_manual_no_determinada_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 5a474b3e2cb1b970cadeabbb0f85b9087fcab5bfe6c80cf33533be6ef737991b
+  bytes: 380576
+  supersedes: null
+  note: modalidad no determinada
+  is_reference_asset: false
+- proto_id: PROTO-RES-04-REQUISITOS-CONFIRMACION
+  ux_id: RES-04
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: confirmar_reserva_toyota_hilux_d0y_704_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirmar_reserva_toyota_hilux_d0y_704_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/confirmar_reserva_toyota_hilux_d0y_704_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9dacc2a34ea6fcb40ca41588cf3ea2165514967238afbe82898fd382999730b2
+  bytes: 432870
+  supersedes: null
+  note: requisitos confirmacion
+  is_reference_asset: false
+- proto_id: PROTO-CON-04-DETALLE-CON-0842
+  ux_id: CON-04
+  module: consulta
+  source: stitch_veloxrent_prototipo_b
+  folder: consulta_con_0842_detalle_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consulta_con_0842_detalle_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consulta_con_0842_detalle_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: a0dd7659bf137fe613317742a3cac532ed85e45baced27658d7628e8a7e3f8ea
+  bytes: 540985
+  supersedes: null
+  note: detalle CON-0842
+  is_reference_asset: false
+- proto_id: PROTO-CON-04-MODAL-CERRAR-SIN-CONVERSION
+  ux_id: CON-04
+  module: consulta
+  source: stitch_veloxrent_prototipo_b
+  folder: consulta_con_0842_modal_cerrar_sin_conversi_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consulta_con_0842_modal_cerrar_sin_conversi_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consulta_con_0842_modal_cerrar_sin_conversi_n_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: df2431e4169998adc1dc378a8c7f525e819500e484081ef2be672b01d1bc6013
+  bytes: 507314
+  supersedes: null
+  note: modal cerrar sin conversion
+  is_reference_asset: false
+- proto_id: PROTO-CON-01-BANDEJA-MOVIL
+  ux_id: CON-01
+  module: consulta
+  source: stitch_veloxrent_prototipo_b
+  folder: consultas_bandeja_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consultas_bandeja_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consultas_bandeja_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 5a3d35c54f57716279b6fb60be74e1826aaf172225e3cf837bd2287eb661bf33
+  bytes: 152231
+  supersedes: null
+  note: bandeja movil
+  is_reference_asset: false
+- proto_id: PROTO-CON-01-BANDEJA-VACIA
+  ux_id: CON-01
+  module: consulta
+  source: stitch_veloxrent_prototipo_b
+  folder: consultas_bandeja_vac_o_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consultas_bandeja_vac_o_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consultas_bandeja_vac_o_veloxrent/code.html
+  screen_state: EMPTY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: b813b01975edeb467ba193790a1710f6dbc87f368519a3cb930f473c8b30cc61
+  bytes: 109913
+  supersedes: null
+  note: bandeja vacia
+  is_reference_asset: false
+- proto_id: PROTO-CON-01-BANDEJA
+  ux_id: CON-01
+  module: consulta
+  source: stitch_veloxrent_prototipo_b
+  folder: consultas_bandeja_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consultas_bandeja_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/consultas_bandeja_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4382b0d190bb1a2715c8b5a105d202b2d6bdf9e99bdfdffd552c51a438353020
+  bytes: 8655
+  supersedes: null
+  note: bandeja
+  is_reference_asset: false
+- proto_id: PROTO-TR-10-SESION-EXPIRADA
+  ux_id: TR-10
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: control_de_acceso_sesi_n_expirada_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/control_de_acceso_sesi_n_expirada_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/control_de_acceso_sesi_n_expirada_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 6315a621c6c8420ba95c6599957fa3ae6812c3d3ba368936a609226848bced69
+  bytes: 59127
+  supersedes: null
+  note: sesion expirada
+  is_reference_asset: false
+- proto_id: PROTO-TR-10-ACCESO-DENEGADO
+  ux_id: TR-10
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: control_de_acceso_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/control_de_acceso_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/control_de_acceso_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 62784974c84ed7e6cab451631447a2619d1cca83420d5c269fa4fb8e81a82658
+  bytes: 45553
+  supersedes: null
+  note: acceso denegado
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-crisp-automotive-inspection-photo-of-the-front-ext
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: crisp_automotive_inspection_photo_of_the_front_exterior_of_a_silver_toyota
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/crisp_automotive_inspection_photo_of_the_front_exterior_of_a_silver_toyota/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: d4d46162cf464e4ca0c4c9b395be54583e1430e70610dde37099877f3322df2c
+  bytes: 1775095
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-TR-05-SELECCION-EMPRESA-SEDE
+  ux_id: TR-05
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: d_nde_vas_a_trabajar_hoy_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/d_nde_vas_a_trabajar_hoy_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/d_nde_vas_a_trabajar_hoy_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: c85c4c6865201170e42f554f5ef3711644332aba4829caf219b201de18ff96bf
+  bytes: 106516
+  supersedes: null
+  note: seleccion empresa/sede
+  is_reference_asset: false
+- proto_id: PROTO-DEV-07-DANO-ESTETICO-DEV-0456
+  ux_id: DEV-07
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: da_o_est_tico_devoluci_n_dev_0456_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/da_o_est_tico_devoluci_n_dev_0456_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/da_o_est_tico_devoluci_n_dev_0456_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4e0521cfc19a8e390b43d9434ab6dd53139350f2579649987e206325d9d3596b
+  bytes: 873030
+  supersedes: null
+  note: dano estetico DEV-0456
+  is_reference_asset: false
+- proto_id: PROTO-DEV-08-CARGO-POR-PARALIZACION-24H
+  ux_id: DEV-08
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: da_o_t_cnico_cargo_por_paralizaci_n_24h_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/da_o_t_cnico_cargo_por_paralizaci_n_24h_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/da_o_t_cnico_cargo_por_paralizaci_n_24h_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 21a724440da1e357efd72c4ada9de7c0c73f7073e22f8f132d5b1542aefad16b
+  bytes: 487610
+  supersedes: null
+  note: cargo por paralizacion 24h
+  is_reference_asset: false
+- proto_id: PROTO-DEV-08-DANO-TECNICO-DEV-0456
+  ux_id: DEV-08
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: da_o_t_cnico_devoluci_n_dev_0456_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/da_o_t_cnico_devoluci_n_dev_0456_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/da_o_t_cnico_devoluci_n_dev_0456_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 99385696da061fad19edb3d37cb7a3c7fb257d9e1c4ee41b9603b7439c2cdf83
+  bytes: 788554
+  supersedes: null
+  note: dano tecnico DEV-0456
+  is_reference_asset: false
+- proto_id: PROTO-REC-06-DECISION-DE-CONTRATACION
+  ux_id: REC-06
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: decisi_n_de_contrataci_n_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/decisi_n_de_contrataci_n_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/decisi_n_de_contrataci_n_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: c9b65c52c932feb378bd9f10255354428709c6ce259b6b85c2584a707f0bc9e8
+  bytes: 560953
+  supersedes: null
+  note: decision de contratacion
+  is_reference_asset: false
+- proto_id: PROTO-DEV-10-CIERRE-Y-EXPEDIENTE-DEV-0456
+  ux_id: DEV-10
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: devoluci_n_dev_0456_resumen_final_expediente_de_origen_alq_1187_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/devoluci_n_dev_0456_resumen_final_expediente_de_origen_alq_1187_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/devoluci_n_dev_0456_resumen_final_expediente_de_origen_alq_1187_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 214250b0d90a73831fbd14caf14bde2153afc7d26fe530001dbc883353a9d1da
+  bytes: 395284
+  supersedes: null
+  note: cierre y expediente DEV-0456
+  is_reference_asset: false
+- proto_id: PROTO-DEV-01-BANDEJA
+  ux_id: DEV-01
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: devoluciones_bandeja_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/devoluciones_bandeja_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/devoluciones_bandeja_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 6567ca54126e796ed74443b050f2ce7e468676477862e0c528e39b0270b7ff54
+  bytes: 543041
+  supersedes: null
+  note: bandeja
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-03-ENTREGA-PASO1-MOVIL-1
+  ux_id: ALQ-03
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_1_de_5_cliente_y_documentos_m_vil_veloxrent_1
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_1_de_5_cliente_y_documentos_m_vil_veloxrent_1/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_1_de_5_cliente_y_documentos_m_vil_veloxrent_1/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: ad1a4749502404d9579b75707d1c610dac92c127b5997748e3c4b38916af1f59
+  bytes: 172364
+  supersedes: null
+  note: entrega paso1 movil 1
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-03-ENTREGA-PASO1-MOVIL-2
+  ux_id: ALQ-03
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_1_de_5_cliente_y_documentos_m_vil_veloxrent_2
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_1_de_5_cliente_y_documentos_m_vil_veloxrent_2/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_1_de_5_cliente_y_documentos_m_vil_veloxrent_2/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 6bb24834e990240d210eda1a4f652ccd5d0e6b6280c06451a991d402755ebe0f
+  bytes: 167576
+  supersedes: null
+  note: entrega paso1 movil 2
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-03-ENTREGA-PASO1
+  ux_id: ALQ-03
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_1_de_5_cliente_y_documentos_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_1_de_5_cliente_y_documentos_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_1_de_5_cliente_y_documentos_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: cf67666eb75f700b2efc84bc172decaca0febbd230eb5b81acdf06f2e5661cfc
+  bytes: 610183
+  supersedes: null
+  note: entrega paso1
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-04-ENTREGA-PASO2-MTC-NO-DISPONIBLE
+  ux_id: ALQ-04
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_2_de_5_servicio_mtc_no_disponible_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_2_de_5_servicio_mtc_no_disponible_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_2_de_5_servicio_mtc_no_disponible_veloxrent/code.html
+  screen_state: UNAVAILABLE
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 627a834d85164238babad01c7527eb59a91c42447b69834d8ac95515c3497e26
+  bytes: 256393
+  supersedes: null
+  note: entrega paso2 MTC no disponible
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-04-ENTREGA-PASO2-VALIDACIONES-ALCOHOLIMETRO
+  ux_id: ALQ-04
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_2_de_5_validaciones_y_alcohol_metro_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_2_de_5_validaciones_y_alcohol_metro_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_2_de_5_validaciones_y_alcohol_metro_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 154ae3277fe6a6e984d574e687c414e0da9658ffae9472703c9ac10af6878fd5
+  bytes: 417512
+  supersedes: null
+  note: entrega paso2 validaciones+alcoholimetro (incluye ALQ-05)
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-07-ENTREGA-PASO3-EXCEPCION-GERENCIA
+  ux_id: ALQ-07
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_3_de_5_excepci_n_requerida_gerencia_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_3_de_5_excepci_n_requerida_gerencia_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_3_de_5_excepci_n_requerida_gerencia_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: bea0ffa5660a9d0e77f5ac3be1286f2fb6e7edcb2712a7699eecef7f386a99f4
+  bytes: 524705
+  supersedes: null
+  note: entrega paso3 excepcion gerencia
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-08-ENTREGA-PASO3-GARANTIA-Y-CONTRATO
+  ux_id: ALQ-08
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_3_de_5_garant_a_y_contrato_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_3_de_5_garant_a_y_contrato_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_3_de_5_garant_a_y_contrato_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 699a6472991e2e621739e895de688bbb449f3bbe8a49cd7f3f7e7302c8b5fecd
+  bytes: 593215
+  supersedes: null
+  note: entrega paso3 garantia y contrato
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CHECKLIST-CONFIRMADO-POR-SERVIDOR-MOVIL
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_4_de_5_checklist_y_evidencias_confirmado_por_servidor_m_vil
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_confirmado_por_servidor_m_vil/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_confirmado_por_servidor_m_vil/code.html
+  screen_state: SYNCED
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 21697d3f8770be60f1bbcccc0a7450459712046430ced0ac548aded43961091b
+  bytes: 471357
+  supersedes: null
+  note: checklist confirmado por servidor movil
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CHECKLIST-SIN-CONEXION-MOVIL
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_4_de_5_checklist_y_evidencias_sin_conexi_n_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_sin_conexi_n_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_sin_conexi_n_m_vil_veloxrent/code.html
+  screen_state: OFFLINE
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4b66c69538753d215d9a1aa04d9a0fc058bf9369a6be28d27c1231a5473ee7f8
+  bytes: 687195
+  supersedes: null
+  note: checklist sin conexion movil
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CHECKLIST-SINCRONIZANDO-MOVIL
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_4_de_5_checklist_y_evidencias_sincronizando_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_sincronizando_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_sincronizando_m_vil_veloxrent/code.html
+  screen_state: SYNCING
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: bafb5a21ce1e974f15064a3c0d43f2a636f60ac97f044693a8058c1c8b31b6f7
+  bytes: 600408
+  supersedes: null
+  note: checklist sincronizando movil
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CHECKLIST-ZONA-INTERIOR-MOVIL-390PX
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_m_vil_390px
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_m_vil_390px/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_m_vil_390px/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 5be447f2cfdc49c61ad8ce606b477139ea2cf83b3536acca1cea6fb822b43c25
+  bytes: 276779
+  supersedes: null
+  note: checklist zona interior movil 390px
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CHECKLIST-ZONA-INTERIOR-MOVIL
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 3e047caa4d89265d9d2283d87563fb0f09064bb679e92209d2c81fe74a0abd57
+  bytes: 654024
+  supersedes: null
+  note: checklist zona interior movil
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CHECKLIST-ZONA-INTERIOR-TABLET-768PX
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_tablet_768px
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_tablet_768px/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_checklist_y_evidencias_zona_2_de_5_interior_tablet_768px/code.html
+  screen_state: READY
+  viewport:
+    width: 768
+    height: 1024
+    dpr: 2
+    label: tablet
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: c1faedc14770f55875344b9d4663672f2f03c1e5a160e3c235d1deda65203bdd
+  bytes: 725033
+  supersedes: null
+  note: checklist zona interior tablet 768px
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CHECKLIST-REVISION
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_4_de_5_revisi_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_revisi_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_4_de_5_revisi_n_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 2cc0aa3f5a6618575344f256970c2d0dd3f2281d949c764036cd97cfebee7bcf
+  bytes: 1265884
+  supersedes: null
+  note: checklist revision
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-CONFIRMAR-ENTREGA-PASO5
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: entrega_etapa_5_de_5_confirmar_entrega_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_5_de_5_confirmar_entrega_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrega_etapa_5_de_5_confirmar_entrega_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4831e49999fddc1945c0b791ebdb962a733f593f29b0a68e18eed5aaf7661198
+  bytes: 564320
+  supersedes: null
+  note: confirmar entrega paso5
+  is_reference_asset: false
+- proto_id: PROTO-REC-05-ENTREVISTA
+  ux_id: REC-05
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: entrevista_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrevista_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/entrevista_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 22a4088c86ad9068a03f5eb75ea0906ff8d2e9ad00f0d6ca593bcc33d27f6f5a
+  bytes: 446353
+  supersedes: null
+  note: entrevista
+  is_reference_asset: false
+- proto_id: PROTO-RES-06-VEHICULO-NO-DISPONIBLE
+  ux_id: RES-06
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: este_veh_culo_ya_no_est_disponible_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/este_veh_culo_ya_no_est_disponible_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/este_veh_culo_ya_no_est_disponible_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9c714be644f1b552eebdd1bab6722435b73585575d837422629019a25e2c010f
+  bytes: 610581
+  supersedes: null
+  note: vehiculo no disponible
+  is_reference_asset: false
+- proto_id: PROTO-DEV-06-EVALUACION-DE-DANO-DEV-0456
+  ux_id: DEV-06
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: evaluaci_n_de_da_o_devoluci_n_dev_0456_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/evaluaci_n_de_da_o_devoluci_n_dev_0456_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/evaluaci_n_de_da_o_devoluci_n_dev_0456_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e333f70206a41cdeb3ba1a4a82316d0ae060c47a9b29067bd7298456723f3ccd
+  bytes: 1030491
+  supersedes: null
+  note: evaluacion de dano DEV-0456
+  is_reference_asset: false
+- proto_id: PROTO-DEV-06-MODAL-DANO-GRAVE-LISTA-ROJA-BR-DEV-008
+  ux_id: DEV-06
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: evaluaci_n_de_da_o_modal_da_o_grave_lista_roja_br_dev_008_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/evaluaci_n_de_da_o_modal_da_o_grave_lista_roja_br_dev_008_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/evaluaci_n_de_da_o_modal_da_o_grave_lista_roja_br_dev_008_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 989ce26b321f7483661f7c4aa5acbfbe85d8fcb0eca295a3b116ff61a6aeb7b1
+  bytes: 618466
+  supersedes: null
+  note: modal dano grave lista roja BR-DEV-008
+  is_reference_asset: false
+- proto_id: PROTO-ADP-03-FALTA
+  ux_id: ADP-03
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: falta_rosa_huam_n_prado_06_09_2026_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/falta_rosa_huam_n_prado_06_09_2026_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/falta_rosa_huam_n_prado_06_09_2026_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: a79852e95ea3e9ba9ddb3e044209ac7ce1e7bc38b96eebbb22e28494552530c0
+  bytes: 438686
+  supersedes: null
+  note: falta
+  is_reference_asset: false
+- proto_id: PROTO-CLI-02-FICHA-360-CLIENTE
+  ux_id: CLI-02
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: ficha_del_cliente_mar_a_quispe_huam_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/ficha_del_cliente_mar_a_quispe_huam_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/ficha_del_cliente_mar_a_quispe_huam_n_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 005475916bc80aef91a127e3517680b679f953655b56030785852e3fefec7d2c
+  bytes: 377543
+  supersedes: null
+  note: ficha 360 cliente
+  is_reference_asset: false
+- proto_id: PROTO-REC-04-FICHA-DATOS-RESTRINGIDOS
+  ux_id: REC-04
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: ficha_edwin_alanya_c_rdoba_datos_restringidos_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/ficha_edwin_alanya_c_rdoba_datos_restringidos_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/ficha_edwin_alanya_c_rdoba_datos_restringidos_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 53e73b086d1fd1666d3e3cea528cd6532b22fed07299b1290ce0c9138148bd9c
+  bytes: 552144
+  supersedes: null
+  note: ficha datos restringidos
+  is_reference_asset: false
+- proto_id: PROTO-REC-04-FICHA-Y-NEGOCIACION
+  ux_id: REC-04
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: ficha_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/ficha_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/ficha_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0c67a222477dab484f1070729e757d4f4f467aea0e16e0d00e36e60756080ad0
+  bytes: 622264
+  supersedes: null
+  note: ficha y negociacion
+  is_reference_asset: false
+- proto_id: PROTO-FLO-01-CATALOGO-DISPONIBILIDAD-FLOTA
+  ux_id: FLO-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: flota_cat_logo_y_disponibilidad_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/flota_cat_logo_y_disponibilidad_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/flota_cat_logo_y_disponibilidad_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e6a1bc5dd8dca3ffd638012d335cd0db738a3f5e6bcd95492d0594ed651bf710
+  bytes: 1169269
+  supersedes: null
+  note: catalogo disponibilidad flota
+  is_reference_asset: false
+- proto_id: PROTO-INC-02-DETALLE-INCIDENCIA-INC-0234
+  ux_id: INC-02
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: incidencia_inc_0234_p_rdida_de_llave_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/incidencia_inc_0234_p_rdida_de_llave_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/incidencia_inc_0234_p_rdida_de_llave_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4524006ed0630058796b7023aebfc70746bfe555369940d9c8a88510cfe043ca
+  bytes: 641774
+  supersedes: null
+  note: detalle incidencia INC-0234
+  is_reference_asset: false
+- proto_id: PROTO-INC-01-BANDEJA
+  ux_id: INC-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: incidencias_bandeja_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/incidencias_bandeja_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/incidencias_bandeja_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 52873113f46a0265c03da1255e826d41acb2650ee17bae55cdb1fbd3959da731
+  bytes: 815530
+  supersedes: null
+  note: bandeja
+  is_reference_asset: false
+- proto_id: PROTO-REC-07-INCORPORACION
+  ux_id: REC-07
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: incorporaci_n_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/incorporaci_n_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/incorporaci_n_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 60dca52e106c3d42487f3d803855ec8ee4b1dfa39fc18c21939b22eb002b9902
+  bytes: 432354
+  supersedes: null
+  note: incorporacion
+  is_reference_asset: false
+- proto_id: PROTO-TR-01-CUENTA-BLOQUEADA
+  ux_id: TR-01
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: inicio_de_sesi_n_bloqueado_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/inicio_de_sesi_n_bloqueado_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/inicio_de_sesi_n_bloqueado_veloxrent/code.html
+  screen_state: BLOCKED
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: fc3fd4075d069fb4223282a62e8891d081b88616b6774c032ca302ccd70e3f06
+  bytes: 29794
+  supersedes: null
+  note: cuenta bloqueada
+  is_reference_asset: false
+- proto_id: PROTO-TR-01-CREDENCIALES-INVALIDAS
+  ux_id: TR-01
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: inicio_de_sesi_n_error_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/inicio_de_sesi_n_error_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/inicio_de_sesi_n_error_veloxrent/code.html
+  screen_state: ERROR
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 3b7d7c97896ff4d733a3f651ebaf32f6391e8f2c659f1c4a5b249e76cc2cf140
+  bytes: 47405
+  supersedes: null
+  note: credenciales invalidas
+  is_reference_asset: false
+- proto_id: PROTO-TR-01-LOGIN-MOVIL
+  ux_id: TR-01
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: inicio_de_sesi_n_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/inicio_de_sesi_n_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/inicio_de_sesi_n_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: c977e92ee4c7a0e114b4a69315e294fc7ea93a8cb7d9ff99a73ae6f6a1d4fd28
+  bytes: 5527
+  supersedes: null
+  note: login movil
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-interior-car-cabin-photo-showing-dashboard-steerin
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: interior_car_cabin_photo_showing_dashboard_steering_wheel_and_infotainment
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/interior_car_cabin_photo_showing_dashboard_steering_wheel_and_infotainment/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: 3f3a26334e6df01d48ca6fc035fcd3553422938cb024135c2310cd9aad8cbff8
+  bytes: 1434332
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-TR-09-MODAL-CERRAR-SESION-CON-FORMULARIOS-PEND
+  ux_id: TR-09
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: modal_cerrar_sesi_n_con_formularios_pendientes_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_cerrar_sesi_n_con_formularios_pendientes_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_cerrar_sesi_n_con_formularios_pendientes_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: bee68a29edc0d294952d6b5c3291395b5ca1c3841b1b8953fd11d615299410ac
+  bytes: 183001
+  supersedes: null
+  note: modal cerrar sesion con formularios pendientes
+  is_reference_asset: false
+- proto_id: PROTO-REC-06-MODAL-CONFIRMAR-CONTRATACION
+  ux_id: REC-06
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: modal_confirmar_contrataci_n_de_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_confirmar_contrataci_n_de_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_confirmar_contrataci_n_de_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 814fbb5e7e2e9390f3987e6037c3c3fa78e00f40a30475cd27b552d654f861b1
+  bytes: 498931
+  supersedes: null
+  note: modal confirmar contratacion
+  is_reference_asset: false
+- proto_id: PROTO-ADP-09-MODAL-CONFIRMAR-TERMINO
+  ux_id: ADP-09
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: modal_confirmar_el_t_rmino_de_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_confirmar_el_t_rmino_de_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_confirmar_el_t_rmino_de_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e52b93d73e6078227b491d3e907478db3c727837e2e806d1e09b0cc8bd6a730e
+  bytes: 258108
+  supersedes: null
+  note: modal confirmar termino
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-MODAL-EXCEPCION-TIEMPO-INSUFICIENTE
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: modal_excepci_n_por_tiempo_insuficiente_entrega_alq_1187_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_excepci_n_por_tiempo_insuficiente_entrega_alq_1187_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modal_excepci_n_por_tiempo_insuficiente_entrega_alq_1187_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: f32ca2ef6b466e81f10747806d59ba6de8c759fdfca80b036505193f333c4a00
+  bytes: 209891
+  supersedes: null
+  note: modal excepcion tiempo insuficiente
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-modern-dark-metallic-grey-toyota-fortuner-suv-park
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: modern_dark_metallic_grey_toyota_fortuner_suv_parked_outdoor_in_clean_corporate
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modern_dark_metallic_grey_toyota_fortuner_suv_parked_outdoor_in_clean_corporate/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: ea96740b86956f81a26497c20821faf74320b7ba01a120e86d8adbca74fc9f82
+  bytes: 1864840
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-ASSET-modern-silver-toyota-hilux-4x4-pickup-truck-parked
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: modern_silver_toyota_hilux_4x4_pickup_truck_parked_outdoor_in_a_clean
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modern_silver_toyota_hilux_4x4_pickup_truck_parked_outdoor_in_a_clean/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: 8231d06727242edcbfa93077c41af7adebfdbce2464e9815386ca1c46415e797
+  bytes: 1936227
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-ASSET-modern-white-hyundai-creta-compact-suv-parked-outd
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: modern_white_hyundai_creta_compact_suv_parked_outdoor_in_clean_corporate_car
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/modern_white_hyundai_creta_compact_suv_parked_outdoor_in_clean_corporate_car/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: 48ada102ec4047f550beb7d7eaf44df7c07aa922fa8407c9fec8970602c284c2
+  bytes: 1503935
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-TR-07-CENTRO-NOTIFICACIONES-MOVIL
+  ux_id: TR-07
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: notificaciones_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/notificaciones_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/notificaciones_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 74b016efd0764ca7235f22f40b0562581f3dc0bff9b97237b14b73418839b92c
+  bytes: 181596
+  supersedes: null
+  note: centro notificaciones movil
+  is_reference_asset: false
+- proto_id: PROTO-ADM-05-PLANTILLA-NOTIFICACION-RESERVA-CONFIRMAD
+  ux_id: ADM-05
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: notificaciones_plantilla_reserva_confirmada_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/notificaciones_plantilla_reserva_confirmada_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/notificaciones_plantilla_reserva_confirmada_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 57fd58429e5fc50466b83b57ed28be33c4dcf0ae5f84cd61cf2a5cd2439b1bce
+  bytes: 453089
+  supersedes: null
+  note: plantilla notificacion reserva confirmada
+  is_reference_asset: false
+- proto_id: PROTO-CON-02-ADVERTENCIA-RUTA-TROCHA
+  ux_id: CON-02
+  module: consulta
+  source: stitch_veloxrent_prototipo_b
+  folder: nueva_consulta_advertencia_de_ruta_trocha_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nueva_consulta_advertencia_de_ruta_trocha_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nueva_consulta_advertencia_de_ruta_trocha_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: b6a478b1ebdffd4f4fa8e4b86c74db510152b65e9dc25e830581bf3020b0f241
+  bytes: 212379
+  supersedes: null
+  note: advertencia ruta trocha
+  is_reference_asset: false
+- proto_id: PROTO-CON-02-REGISTRO-DE-CONSULTA
+  ux_id: CON-02
+  module: consulta
+  source: stitch_veloxrent_prototipo_b
+  folder: nueva_consulta_registro_de_consulta_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nueva_consulta_registro_de_consulta_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nueva_consulta_registro_de_consulta_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: a2f0b8f01848ecdad020edfbf46df724aabc796925876a9d8cf3e2b88420f732
+  bytes: 194501
+  supersedes: null
+  note: registro de consulta
+  is_reference_asset: false
+- proto_id: PROTO-REC-01-MODAL-NUEVA-NECESIDAD
+  ux_id: REC-01
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: nueva_necesidad_de_personal_modal_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nueva_necesidad_de_personal_modal_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nueva_necesidad_de_personal_modal_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: b5f18fe1c3af4b9451a79a64757edbbcf1053f7f196c3ef9b7d617494b8a0c3f
+  bytes: 326961
+  supersedes: null
+  note: modal nueva necesidad
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-02-INICIO-CONVERSION-DESDE-RESERVA-RES-2291
+  ux_id: ALQ-02
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: nuevo_alquiler_desde_reserva_res_2291_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nuevo_alquiler_desde_reserva_res_2291_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/nuevo_alquiler_desde_reserva_res_2291_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0fa37f07bae896450ca60ca4088c9caee09992a663b1d9ccd8207297e23e803a
+  bytes: 429836
+  supersedes: null
+  note: inicio conversion desde reserva RES-2291
+  is_reference_asset: false
+- proto_id: PROTO-PAG-02-VALIDACION-PAG-0891
+  ux_id: PAG-02
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: pagos_validar_pag_0891_expediente_de_origen_alq_1187_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/pagos_validar_pag_0891_expediente_de_origen_alq_1187_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/pagos_validar_pag_0891_expediente_de_origen_alq_1187_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4da7fb38933323c1dd814efc003e7994e4ae270098d234acbbde25d74fa8799a
+  bytes: 617694
+  supersedes: null
+  note: validacion PAG-0891
+  is_reference_asset: false
+- proto_id: PROTO-PAG-01-BANDEJA
+  ux_id: PAG-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: pagos_y_garant_as_bandeja_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/pagos_y_garant_as_bandeja_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/pagos_y_garant_as_bandeja_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: cab97453e18ffba0147ca88081a24be69414a0dab482e85be08057968016b997
+  bytes: 832430
+  supersedes: null
+  note: bandeja
+  is_reference_asset: false
+- proto_id: PROTO-TR-07-CENTRO-NOTIFICACIONES-VACIO
+  ux_id: TR-07
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: panel_de_notificaciones_vac_o_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/panel_de_notificaciones_vac_o_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/panel_de_notificaciones_vac_o_veloxrent/code.html
+  screen_state: EMPTY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: fc9b921f451ca64691b6027d467d16f601e3d1c0214ccc7e5983e6c03123ff10
+  bytes: 112321
+  supersedes: null
+  note: centro notificaciones vacio
+  is_reference_asset: false
+- proto_id: PROTO-TR-07-CENTRO-NOTIFICACIONES
+  ux_id: TR-07
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: panel_de_notificaciones_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/panel_de_notificaciones_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/panel_de_notificaciones_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9143498987bf99874dab084468fe7d407fcae6b59ab28739262a1289ff8acc0c
+  bytes: 185996
+  supersedes: null
+  note: centro notificaciones
+  is_reference_asset: false
+- proto_id: PROTO-REC-02-PERFIL-Y-PUBLICACION-VACANTE-MECANICO
+  ux_id: REC-02
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: perfil_de_vacante_mec_nico_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/perfil_de_vacante_mec_nico_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/perfil_de_vacante_mec_nico_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 195570d6794f37f1af7020f785fdadea412ccffbcc3934fc97b5d6a720e345ec
+  bytes: 553084
+  supersedes: null
+  note: perfil y publicacion vacante mecanico
+  is_reference_asset: false
+- proto_id: PROTO-TR-09-MENU-PERFIL-Y-SESION
+  ux_id: TR-09
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: perfil_y_sesi_n_men_desplegable_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/perfil_y_sesi_n_men_desplegable_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/perfil_y_sesi_n_men_desplegable_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 6ee89e097c0d9290f32534d707164b321ec6b32f7c33c3392b1c6e5c529a078d
+  bytes: 165037
+  supersedes: null
+  note: menu perfil y sesion
+  is_reference_asset: false
+- proto_id: PROTO-REC-08-PERIODO-DE-PRUEBA
+  ux_id: REC-08
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: periodo_de_prueba_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/periodo_de_prueba_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/periodo_de_prueba_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 358f892fdaf4a7603e32084d1d453f0652dc82ddd5631a6017a63db8852b2df1
+  bytes: 589777
+  supersedes: null
+  note: periodo de prueba
+  is_reference_asset: false
+- proto_id: PROTO-REC-08-EVALUACION-MES-3-APROBADA
+  ux_id: REC-08
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: periodo_de_prueba_evaluaci_n_mes_3_aprobada_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/periodo_de_prueba_evaluaci_n_mes_3_aprobada_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/periodo_de_prueba_evaluaci_n_mes_3_aprobada_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e4381bda2d277d9a512114a51651ae10e9a4b5396b7d01fc215a76e47583011f
+  bytes: 603413
+  supersedes: null
+  note: evaluacion mes 3 aprobada
+  is_reference_asset: false
+- proto_id: PROTO-ADP-04-SOLICITUD-RESOLUCION-PERMISO
+  ux_id: ADP-04
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: permiso_edwin_alanya_c_rdoba_10_12_sep_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/permiso_edwin_alanya_c_rdoba_10_12_sep_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/permiso_edwin_alanya_c_rdoba_10_12_sep_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 70dca562d1bc46a05d78e908b632e33ca80e195c50924b2f13af5a1e35c556cc
+  bytes: 516357
+  supersedes: null
+  note: solicitud/resolucion permiso
+  is_reference_asset: false
+- proto_id: PROTO-ADP-01-BANDEJA-FICHA-DE-PERSONAL
+  ux_id: ADP-01
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: personal_fichas_de_personal_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/personal_fichas_de_personal_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/personal_fichas_de_personal_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: ba70c5fdb0610d2289fe29973a26e4e04a84b0c8985d8948ae2744075e639b5d
+  bytes: 594064
+  supersedes: null
+  note: bandeja/ficha de personal
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-professional-automotive-photo-of-a-modern-grey-or
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: professional_automotive_photo_of_a_modern_grey_or_black_mitsubishi_l200_4x4
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/professional_automotive_photo_of_a_modern_grey_or_black_mitsubishi_l200_4x4/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: f5723f60e5dec6512135d0a22401824c98aae3a564a8e5d6929243c0f4e36b16
+  bytes: 1860293
+  supersedes: null
+  note: foto de referencia, no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-RES-08-MODAL-CONFIRMAR-PERDIDA-DE-RESERVA
+  ux_id: RES-08
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: protocolo_de_no_show_modal_confirmar_p_rdida_de_reserva_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/protocolo_de_no_show_modal_confirmar_p_rdida_de_reserva_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/protocolo_de_no_show_modal_confirmar_p_rdida_de_reserva_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: f2f3208219d821efaf27c01bb60a8f65b2ad18b23f3c8ed4436f75e7c8839258
+  bytes: 437361
+  supersedes: null
+  note: modal confirmar perdida de reserva
+  is_reference_asset: false
+- proto_id: PROTO-RES-08-PROTOCOLO-NO-SHOW
+  ux_id: RES-08
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: protocolo_de_no_show_reserva_res_2291_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/protocolo_de_no_show_reserva_res_2291_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/protocolo_de_no_show_reserva_res_2291_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 8ddda053004de2093ecc338f21ed0fcd7dd6abaeee17204d391436125e89bbe1
+  bytes: 428143
+  supersedes: null
+  note: protocolo no-show
+  is_reference_asset: false
+- proto_id: PROTO-ASSET-realistic-photographic-document-of-a-peruvian-bank
+  ux_id: null
+  module: asset
+  source: stitch_veloxrent_prototipo_b
+  folder: realistic_photographic_document_of_a_peruvian_bank_transfer_voucher_receipt_or
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/realistic_photographic_document_of_a_peruvian_bank_transfer_voucher_receipt_or/screen.png
+    code: null
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: PENDING_TRACE_REVIEW
+  approved_by_role: null
+  approved_at: null
+  sha256: 22dedc3ab8436974a0f1a9cde2696fcea98d22770f9dfe131bf8d19237970564
+  bytes: 1417928
+  supersedes: null
+  note: foto de referencia (voucher), no es pantalla
+  is_reference_asset: true
+- proto_id: PROTO-DEV-04-CHECKLIST-RECEPCION-CONFIRMADO-POR-SERVI
+  ux_id: DEV-04
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: recepci_n_confirmado_por_servidor_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_confirmado_por_servidor_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_confirmado_por_servidor_m_vil_veloxrent/code.html
+  screen_state: SYNCED
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 83d771ca690b2a252f75bd4a32d9b040049826b8780f2740fdc69b90e26b1a5e
+  bytes: 184789
+  supersedes: null
+  note: checklist recepcion confirmado por servidor movil
+  is_reference_asset: false
+- proto_id: PROTO-DEV-04-CHECKLIST-RECEPCION-CONFIRMADO-POR-SERVI
+  ux_id: DEV-04
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: recepci_n_confirmado_por_servidor_toyota_hilux_d0y_704_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_confirmado_por_servidor_toyota_hilux_d0y_704_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_confirmado_por_servidor_toyota_hilux_d0y_704_veloxrent/code.html
+  screen_state: SYNCED
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0004a1aa72f37cf8615a5bed22e5f08d76644367db236f3bfb21238742dd2fff
+  bytes: 522918
+  supersedes: null
+  note: checklist recepcion confirmado por servidor
+  is_reference_asset: false
+- proto_id: PROTO-DEV-02-RECEPCION-POR-TERCERO
+  ux_id: DEV-02
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: recepci_n_devoluci_n_dev_0456_tercero_otra_persona_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_devoluci_n_dev_0456_tercero_otra_persona_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_devoluci_n_dev_0456_tercero_otra_persona_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 7f227f8376e09f81cb6df6e32f3b8fec5b2f5e371b109ab6207c4149824163e0
+  bytes: 442091
+  supersedes: null
+  note: recepcion por tercero
+  is_reference_asset: false
+- proto_id: PROTO-DEV-02-RECORDATORIO-Y-RECEPCION
+  ux_id: DEV-02
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: recepci_n_devoluci_n_dev_0456_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_devoluci_n_dev_0456_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_devoluci_n_dev_0456_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 77c28fc07049c19dd5739246a3ed4e129afb288f70d64580f42fe24f76aeb377
+  bytes: 409857
+  supersedes: null
+  note: recordatorio y recepcion
+  is_reference_asset: false
+- proto_id: PROTO-DEV-04-CHECKLIST-RECEPCION-SIN-CONEXION-MOVIL
+  ux_id: DEV-04
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: recepci_n_sin_conexi_n_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_sin_conexi_n_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_sin_conexi_n_m_vil_veloxrent/code.html
+  screen_state: OFFLINE
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 4b49deb0e2d9283a5a1f3b694f312553bff0cb868d039105c830e82aaa3e5133
+  bytes: 189324
+  supersedes: null
+  note: checklist recepcion sin conexion movil
+  is_reference_asset: false
+- proto_id: PROTO-DEV-04-CHECKLIST-RECEPCION-MOVIL
+  ux_id: DEV-04
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: recepci_n_toyota_hilux_d0y_704_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_toyota_hilux_d0y_704_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_toyota_hilux_d0y_704_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: dc1a0cffe7211a7040ef89d09cd495482978027fb33656f1514252250cacb0b4
+  bytes: 6500
+  supersedes: null
+  note: checklist recepcion movil
+  is_reference_asset: false
+- proto_id: PROTO-DEV-04-CHECKLIST-RECEPCION
+  ux_id: DEV-04
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: recepci_n_toyota_hilux_d0y_704_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_toyota_hilux_d0y_704_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/recepci_n_toyota_hilux_d0y_704_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e08d8d77ee02007783d97a864c0577eece4678a244e0083ff16d0ef96efbf20b
+  bytes: 506867
+  supersedes: null
+  note: checklist recepcion
+  is_reference_asset: false
+- proto_id: PROTO-ADP-10-CAPACITACION-INTERNA
+  ux_id: ADP-10
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: registrar_capacitaci_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/registrar_capacitaci_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/registrar_capacitaci_n_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0733903007d2cf77ee84243ed0ff96d83cae22381605a4a13cf7bb94c8812b65
+  bytes: 348907
+  supersedes: null
+  note: capacitacion interna
+  is_reference_asset: false
+- proto_id: PROTO-ADP-09-RENUNCIA-DESPIDO
+  ux_id: ADP-09
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: registrar_t_rmino_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/registrar_t_rmino_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/registrar_t_rmino_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 47e8af437c75c0e0cc669e77bdd2eef4e00db3bcc3308a6b4c56247daadcb559
+  bytes: 439054
+  supersedes: null
+  note: renuncia/despido
+  is_reference_asset: false
+- proto_id: PROTO-REP-01-CENTRO-DE-REPORTES
+  ux_id: REP-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: reportes_centro_de_reportes_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reportes_centro_de_reportes_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reportes_centro_de_reportes_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: fbfa25300cc43b52141e446544c6e3f93014cb6ea87e3fa0fac758c01974fbdb
+  bytes: 443827
+  supersedes: null
+  note: centro de reportes
+  is_reference_asset: false
+- proto_id: PROTO-RES-04-BORRADOR-NO-CONFIRMADA-RES-2291
+  ux_id: RES-04
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: reserva_res_2291_borrador_no_confirmada_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_borrador_no_confirmada_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_borrador_no_confirmada_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 54c66d59456d1763998912fabcba3a2a9e61931110bf1fea6ff910a58bd997ef
+  bytes: 376833
+  supersedes: null
+  note: borrador no confirmada RES-2291
+  is_reference_asset: false
+- proto_id: PROTO-RES-05-DETALLE-CONFIRMADA-RES-2291-1
+  ux_id: RES-05
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: reserva_res_2291_confirmada_veloxrent_1
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_confirmada_veloxrent_1/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_confirmada_veloxrent_1/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 7f42c7519bfb8489d23eea2502b0f653977dc745dbbc7c7aa19d579c365a1a52
+  bytes: 242334
+  supersedes: null
+  note: detalle confirmada RES-2291 1
+  is_reference_asset: false
+- proto_id: PROTO-RES-05-DETALLE-CONFIRMADA-RES-2291-2
+  ux_id: RES-05
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: reserva_res_2291_confirmada_veloxrent_2
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_confirmada_veloxrent_2/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_confirmada_veloxrent_2/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: be2fe667f11d73e2b2d36d77ca7114d2123de8771dda373324d36d0c5c6a5a88
+  bytes: 268152
+  supersedes: null
+  note: detalle confirmada RES-2291 2
+  is_reference_asset: false
+- proto_id: PROTO-RES-05-CONTINUAR-CON-ALQUILER-DESHABILITADO
+  ux_id: RES-05
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: reserva_res_2291_continuar_con_alquiler_deshabilitado_disponible_04_09_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_continuar_con_alquiler_deshabilitado_disponible_04_09_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_continuar_con_alquiler_deshabilitado_disponible_04_09_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 23ef43532a3ea9caad218e1d75fed149149dceda23d8817785db2d78af1f3212
+  bytes: 272861
+  supersedes: null
+  note: continuar con alquiler deshabilitado
+  is_reference_asset: false
+- proto_id: PROTO-RES-05-MODAL-CANCELAR-RESERVA
+  ux_id: RES-05
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: reserva_res_2291_modal_cancelar_reserva_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_modal_cancelar_reserva_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reserva_res_2291_modal_cancelar_reserva_veloxrent/code.html
+  screen_state: MODAL
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 77d9d12e14d613a1284d731337c7a36597e578b3e5d1d8d0ff4fdc50c245700a
+  bytes: 271624
+  supersedes: null
+  note: modal cancelar reserva
+  is_reference_asset: false
+- proto_id: PROTO-RES-01-BANDEJA
+  ux_id: RES-01
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: reservas_bandeja_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reservas_bandeja_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/reservas_bandeja_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 28c1b6e7ea53ffba1bb7dd99200af73e6606aa4109c55bcf74dd16106a30cd8f
+  bytes: 8954
+  supersedes: null
+  note: bandeja
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-RESOLUCION-DE-CONFLICTO-SYNC-ENTREGA-1
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: resoluci_n_de_conflicto_entrega_alq_1187_veloxrent_1
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_conflicto_entrega_alq_1187_veloxrent_1/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_conflicto_entrega_alq_1187_veloxrent_1/code.html
+  screen_state: CONFLICT
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9080500d51d3e7bcd57abb98d3f7ab271f05f6e9fbf8728a8ff98764ee16dd12
+  bytes: 734522
+  supersedes: null
+  note: resolucion de conflicto sync entrega 1
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-RESOLUCION-DE-CONFLICTO-SYNC-ENTREGA-2
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: resoluci_n_de_conflicto_entrega_alq_1187_veloxrent_2
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_conflicto_entrega_alq_1187_veloxrent_2/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_conflicto_entrega_alq_1187_veloxrent_2/code.html
+  screen_state: CONFLICT
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e71c97a69a8e6aaa4ec18d4c506860ed1253ae46570c5ae09ee5ae2f2e67958c
+  bytes: 298762
+  supersedes: null
+  note: resolucion de conflicto sync entrega 2
+  is_reference_asset: false
+- proto_id: PROTO-DEV-09-RESOLUCION-DE-GARANTIA-ALQ-1187
+  ux_id: DEV-09
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: resoluci_n_de_garant_a_alquiler_alq_1187_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_garant_a_alquiler_alq_1187_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_garant_a_alquiler_alq_1187_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: fee2a8df1e264eb2864ce2c6866fe5bd1eff6cdbc00b01bcaa0a5f68423919a2
+  bytes: 459663
+  supersedes: null
+  note: resolucion de garantia ALQ-1187
+  is_reference_asset: false
+- proto_id: PROTO-DEV-09-BLOQUEADA-POR-INCIDENCIA-INC-0234
+  ux_id: DEV-09
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: resoluci_n_de_garant_a_bloqueada_por_incidencia_inc_0234_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_garant_a_bloqueada_por_incidencia_inc_0234_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_garant_a_bloqueada_por_incidencia_inc_0234_veloxrent/code.html
+  screen_state: BLOCKED
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0fecd1a1eba29529e5e7c1fa2ff33ca66de362e2ab32f08a9b718f5062794439
+  bytes: 439159
+  supersedes: null
+  note: bloqueada por incidencia INC-0234
+  is_reference_asset: false
+- proto_id: PROTO-DEV-09-RESOLUCION-DE-GARANTIA-DEV-0456
+  ux_id: DEV-09
+  module: devolucion
+  source: stitch_veloxrent_prototipo_b
+  folder: resoluci_n_de_garant_a_devoluci_n_dev_0456_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_garant_a_devoluci_n_dev_0456_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resoluci_n_de_garant_a_devoluci_n_dev_0456_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 38d26b0c99b93468c2e678beaabc27365befd6b4b080c9d6054b024530fae04d
+  bytes: 430251
+  supersedes: null
+  note: resolucion de garantia DEV-0456
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-10-RESULTADO-TRAS-CHECKLIST
+  ux_id: ALQ-10
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: resultado_alquiler_alq_1187_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resultado_alquiler_alq_1187_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resultado_alquiler_alq_1187_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 762222655e17c32df1b7e45de890aaa3fa86a81e8da6eba044e0f442374528e1
+  bytes: 189379
+  supersedes: null
+  note: resultado tras checklist
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-RESULTADO-DANO-ZONA-3
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: resultado_da_o_en_zona_3_alquiler_alq_1187_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resultado_da_o_en_zona_3_alquiler_alq_1187_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resultado_da_o_en_zona_3_alquiler_alq_1187_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e03b531baf1fea30830f07758ee93cbd6348dc7d3303ce361ca7aaf47e9cc713
+  bytes: 733950
+  supersedes: null
+  note: resultado dano zona 3
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-09-RESULTADO-ZONA-1-EXTERIOR
+  ux_id: ALQ-09
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: resultado_zona_1_de_5_exterior_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resultado_zona_1_de_5_exterior_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/resultado_zona_1_de_5_exterior_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: bd7d39727ea15e5350192ff71487deac5739cba33206c8de3e46ecc455ef685d
+  bytes: 1081393
+  supersedes: null
+  note: resultado zona 1 exterior
+  is_reference_asset: false
+- proto_id: PROTO-TR-04-RECUPERACION-DE-ACCESO
+  ux_id: TR-04
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: revisa_tu_correo_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/revisa_tu_correo_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/revisa_tu_correo_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: dd67f95684d1e6244f26fcc2cd305e15726d3baa2140991ab9521819a8b2ca32
+  bytes: 48360
+  supersedes: null
+  note: recuperacion de acceso
+  is_reference_asset: false
+- proto_id: PROTO-ADM-02-ROLES-Y-PERMISOS
+  ux_id: ADM-02
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: roles_y_permisos_administraci_n_del_sistema_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/roles_y_permisos_administraci_n_del_sistema_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/roles_y_permisos_administraci_n_del_sistema_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 15319f9adec2e0976ba2fe219cad75bbeb71e996ed0555ae27b0fd15df41e14d
+  bytes: 529227
+  supersedes: null
+  note: roles y permisos
+  is_reference_asset: false
+- proto_id: PROTO-ADM-02-CONFLICTO-SOD
+  ux_id: ADM-02
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: roles_y_permisos_conflicto_de_segregaci_n_de_funciones_sod_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/roles_y_permisos_conflicto_de_segregaci_n_de_funciones_sod_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/roles_y_permisos_conflicto_de_segregaci_n_de_funciones_sod_veloxrent/code.html
+  screen_state: CONFLICT
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 96c9e43434a8c864f77872d10a649a5f15080f22eda75812c6063f19920751fb
+  bytes: 527976
+  supersedes: null
+  note: conflicto SoD
+  is_reference_asset: false
+- proto_id: PROTO-ADP-08-SEGUIMIENTO-DE-REGRESO
+  ux_id: ADP-08
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: seguimiento_de_regreso_edwin_alanya_c_rdoba_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/seguimiento_de_regreso_edwin_alanya_c_rdoba_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/seguimiento_de_regreso_edwin_alanya_c_rdoba_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 63b5bfbeccf13d74dd834477f54b7bcbf4238ac703d7b61eeabe1bf2006c66e8
+  bytes: 623328
+  supersedes: null
+  note: seguimiento de regreso
+  is_reference_asset: false
+- proto_id: PROTO-ADP-07-NO-AUTORIZADA
+  ux_id: ADP-07
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: sin_autorizaci_n_salida_a_campo_no_autorizada_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/sin_autorizaci_n_salida_a_campo_no_autorizada_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/sin_autorizaci_n_salida_a_campo_no_autorizada_veloxrent/code.html
+  screen_state: UNAVAILABLE
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 95a4f5ec7f0a517344092fd162a2572bb67c599aa5a64a637962e93202ccf234
+  bytes: 475141
+  supersedes: null
+  note: no autorizada
+  is_reference_asset: false
+- proto_id: PROTO-TR-08-LISTA-DE-PROCESOS
+  ux_id: TR-08
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: sincronizaci_n_lista_de_procesos_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/sincronizaci_n_lista_de_procesos_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/sincronizaci_n_lista_de_procesos_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: bcec70fc7adce7809b614c32a422640b55706513bdba7bd435dcca176f28faf7
+  bytes: 340840
+  supersedes: null
+  note: lista de procesos
+  is_reference_asset: false
+- proto_id: PROTO-TR-08-CENTRO-DE-SINCRONIZACION
+  ux_id: TR-08
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: sincronizaci_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/sincronizaci_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/sincronizaci_n_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: a27f929aec9720c7ebafcb43b4fd6833f9812560a93311086115ed5b866b788b
+  bytes: 555375
+  supersedes: null
+  note: centro de sincronizacion
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-11-SOLICITAR-AMPLIACION-ALQ-1187
+  ux_id: ALQ-11
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: solicitar_ampliaci_n_alquiler_alq_1187_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_ampliaci_n_alquiler_alq_1187_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_ampliaci_n_alquiler_alq_1187_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: fcb8cc3efbe4b9270ce31f4dd68d84d57b2b9e6c25f17e77d39a29d3c3a7fbc0
+  bytes: 477620
+  supersedes: null
+  note: solicitar ampliacion ALQ-1187
+  is_reference_asset: false
+- proto_id: PROTO-ALQ-11-AVISO-NO-CUMPLIDO-12H
+  ux_id: ALQ-11
+  module: alquiler
+  source: stitch_veloxrent_prototipo_b
+  folder: solicitar_ampliaci_n_aviso_no_cumplido_12h_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_ampliaci_n_aviso_no_cumplido_12h_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_ampliaci_n_aviso_no_cumplido_12h_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: d911228245b6d9cbfb18cc6031924a0805bdfe43e60111da933690cdcc050b05
+  bytes: 533226
+  supersedes: null
+  note: aviso no cumplido 12h
+  is_reference_asset: false
+- proto_id: PROTO-ADP-06-SOLICITUD-SALIDA-A-CAMPO-MOVIL
+  ux_id: ADP-06
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: solicitar_salida_a_campo_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_salida_a_campo_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_salida_a_campo_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: ceab9746d57bef895247692c0361396497acb04ab1573588f22d722bf4c86e36
+  bytes: 119167
+  supersedes: null
+  note: solicitud salida a campo movil
+  is_reference_asset: false
+- proto_id: PROTO-ADP-06-SOLICITUD-SALIDA-A-CAMPO-SIN-CONEXION
+  ux_id: ADP-06
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: solicitar_salida_a_campo_sin_conexi_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_salida_a_campo_sin_conexi_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_salida_a_campo_sin_conexi_n_veloxrent/code.html
+  screen_state: OFFLINE
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 593ccea43efcde6009ed224bead91a6882907a2527d0727cf882e549dcefdee8
+  bytes: 232505
+  supersedes: null
+  note: solicitud salida a campo sin conexion
+  is_reference_asset: false
+- proto_id: PROTO-ADP-06-SOLICITUD-SALIDA-A-CAMPO
+  ux_id: ADP-06
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: solicitar_salida_a_campo_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_salida_a_campo_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_salida_a_campo_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 30327b265f50bf37dc8462c1a034bbc89229d9c813799993954a4f77c14520bb
+  bytes: 313413
+  supersedes: null
+  note: solicitud salida a campo
+  is_reference_asset: false
+- proto_id: PROTO-ADP-05-CONFLICTO-DE-FECHAS-BR-ADP-002
+  ux_id: ADP-05
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: solicitar_vacaciones_conflicto_de_fechas_br_adp_002_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_vacaciones_conflicto_de_fechas_br_adp_002_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_vacaciones_conflicto_de_fechas_br_adp_002_veloxrent/code.html
+  screen_state: CONFLICT
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: b8b889bf239ed3143903a901333b16f3029861be9386b00de442457688436f40
+  bytes: 660370
+  supersedes: null
+  note: conflicto de fechas BR-ADP-002
+  is_reference_asset: false
+- proto_id: PROTO-ADP-05-CALENDARIO-Y-SOLICITUD-VACACIONES
+  ux_id: ADP-05
+  module: administracion-personal
+  source: stitch_veloxrent_prototipo_b
+  folder: solicitar_vacaciones_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_vacaciones_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/solicitar_vacaciones_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 5f58e4f3725e07c7e4142a4fe3bc138a25df34c286cac7d9fd99cc25284179af
+  bytes: 333310
+  supersedes: null
+  note: calendario y solicitud vacaciones
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-ADMINISTRACION
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_administraci_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_administraci_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_administraci_n_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 0929fc70ce0865af37f26ea9cfc6195d5275808777181e9c65ca929120e4ea3a
+  bytes: 115685
+  supersedes: null
+  note: dashboard rol administracion
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-AUDITORIA
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_auditor_a_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_auditor_a_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_auditor_a_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 7734819a640eb984ee5540891d77a1676a029d5c52615c99509f20aeef984a1d
+  bytes: 120798
+  supersedes: null
+  note: dashboard rol auditoria
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-CAMPO
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_campo_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_campo_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_campo_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 3d3a874f6bb0aee33b8a7cda5b75477e964fdbf05639a7e29cd2e8d1dafee0fe
+  bytes: 215838
+  supersedes: null
+  note: dashboard rol campo
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-FINANZAS
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_finanzas_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_finanzas_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_finanzas_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 2d1eeb67c6ddd468d69b946bf2ac424edb959340419baecccac423d2d6976484
+  bytes: 163304
+  supersedes: null
+  note: dashboard rol finanzas
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-FRONT-OFFICE
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_front_office_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_front_office_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_front_office_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9f9393e30b35a649ebd971397db15bbaae857bb25db7a7e7eac4f74a433be7ef
+  bytes: 487048
+  supersedes: null
+  note: dashboard rol front office
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-GERENCIA-MOVIL
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_gerencia_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_gerencia_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_gerencia_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: a4038f77c913fed4c365f9a912307e71e6329da7e71ef3874e910aa74772fb59
+  bytes: 140247
+  supersedes: null
+  note: dashboard rol gerencia movil
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-GERENCIA
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_gerencia_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_gerencia_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_gerencia_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 061f26e74750dfd8903393eca8e75a01629633d5d28b7191fb41195c68a9bb4a
+  bytes: 150669
+  supersedes: null
+  note: dashboard rol gerencia
+  is_reference_asset: false
+- proto_id: PROTO-TR-06-DASHBOARD-ROL-RRHH
+  ux_id: TR-06
+  module: transversal
+  source: stitch_veloxrent_prototipo_b
+  folder: tablero_inicio_rr.hh._veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_rr.hh._veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/tablero_inicio_rr.hh._veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 95ec1b32c7977024ccdf0b1b884b1d82d8583ec25b2838e5f17ed98471c7ccea
+  bytes: 257366
+  supersedes: null
+  note: dashboard rol RRHH
+  is_reference_asset: false
+- proto_id: PROTO-FLO-02-DETALLE-MANTENIMIENTO-VEHICULO
+  ux_id: FLO-02
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: toyota_hilux_d0y_704_detalle_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/toyota_hilux_d0y_704_detalle_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/toyota_hilux_d0y_704_detalle_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 72a8122a33ac4c293846b542e48044de27959a12950fd4a06693fa420bce7640
+  bytes: 649574
+  supersedes: null
+  note: detalle/mantenimiento vehiculo
+  is_reference_asset: false
+- proto_id: PROTO-ADM-01-USUARIOS-Y-ASIGNACIONES
+  ux_id: ADM-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: usuarios_administraci_n_del_sistema_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/usuarios_administraci_n_del_sistema_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/usuarios_administraci_n_del_sistema_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: e429647cb419dd254e3711dd2037f03b3a46a4ef0cd657ff594b9ea40644bbac
+  bytes: 729808
+  supersedes: null
+  note: usuarios y asignaciones
+  is_reference_asset: false
+- proto_id: PROTO-REC-01-VACANTES-NECESIDADES
+  ux_id: REC-01
+  module: reclutamiento
+  source: stitch_veloxrent_prototipo_b
+  folder: vacantes_reclutamiento_y_selecci_n_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/vacantes_reclutamiento_y_selecci_n_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/vacantes_reclutamiento_y_selecci_n_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9fda7989e56862d1f9d6df8b6a2748a8582275f5bab8fa8bf4c99caccd32155e
+  bytes: 545693
+  supersedes: null
+  note: vacantes/necesidades
+  is_reference_asset: false
+- proto_id: PROTO-FLO-02-VEHICULO-NUEVO-SIN-GPS-ACTIVO
+  ux_id: FLO-02
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: veh_culo_nuevo_sin_gps_activo_toyota_hilux_d0y_704_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culo_nuevo_sin_gps_activo_toyota_hilux_d0y_704_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culo_nuevo_sin_gps_activo_toyota_hilux_d0y_704_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 05ba2d40decbb63d0cb76333bfaf707fa09978259eebe3a0aec59819fa01f0ee
+  bytes: 420070
+  supersedes: null
+  note: vehiculo nuevo sin GPS activo
+  is_reference_asset: false
+- proto_id: PROTO-RES-07-VENTA-DE-VEHICULO-RESERVADO
+  ux_id: RES-07
+  module: reserva
+  source: stitch_veloxrent_prototipo_b
+  folder: veh_culo_vendido_reserva_res_2291_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culo_vendido_reserva_res_2291_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culo_vendido_reserva_res_2291_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: aec02c47ed9ecae9b5a537b778d86c1b2c1029de08ad9e4cd72161326b581284
+  bytes: 759753
+  supersedes: null
+  note: venta de vehiculo reservado
+  is_reference_asset: false
+- proto_id: PROTO-FLO-01-ADVERTENCIA-ACTUALIZACION-1
+  ux_id: FLO-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_1
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_1/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_1/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9932d455d64cba0f5142efac1ed6b3a7e8c98448ff703d0de15f1b295718c35c
+  bytes: 924871
+  supersedes: null
+  note: advertencia actualizacion 1
+  is_reference_asset: false
+- proto_id: PROTO-FLO-01-ADVERTENCIA-ACTUALIZACION-2
+  ux_id: FLO-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_2
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_2/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_2/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: eba80336aa39fdf507fe40469eae32e58ddb87eab4cbd596bde54607664087cd
+  bytes: 834456
+  supersedes: null
+  note: advertencia actualizacion 2
+  is_reference_asset: false
+- proto_id: PROTO-FLO-01-AYACUCHO-04-07-SEP-1
+  ux_id: FLO-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_1
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_1/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_1/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: 9b5242ea0838135912a118c13ff931552b93097bc9dfe61bef5aaf46d404f382
+  bytes: 7822
+  supersedes: null
+  note: ayacucho 04-07 sep 1
+  is_reference_asset: false
+- proto_id: PROTO-FLO-01-AYACUCHO-04-07-SEP-2
+  ux_id: FLO-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_2
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_2/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_2/code.html
+  screen_state: READY
+  viewport:
+    width: 1440
+    height: 1024
+    dpr: 1
+    label: desktop
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: b1a522a1605ddbe560f247f550094db53e060ac87c1bd8d9f34af6976e884277
+  bytes: 916980
+  supersedes: null
+  note: ayacucho 04-07 sep 2
+  is_reference_asset: false
+- proto_id: PROTO-FLO-01-CATALOGO-DISPONIBILIDAD-MOVIL
+  ux_id: FLO-01
+  module: soporte
+  source: stitch_veloxrent_prototipo_b
+  folder: veh_culos_disponibles_m_vil_veloxrent
+  files:
+    screenshot: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_m_vil_veloxrent/screen.png
+    code: docs/prototypes/approved/stitch_veloxrent_prototipo_b/veh_culos_disponibles_m_vil_veloxrent/code.html
+  screen_state: READY
+  viewport:
+    width: 390
+    height: 844
+    dpr: 3
+    label: mobile
+  theme: light
+  locale: es-PE
+  status: APPROVED
+  approved_by_role: PRODUCTO
+  approved_at: '2026-09-14'
+  sha256: bff6ea4bcb0d1b265564e493601ea51b38ec7c86a7a44f0dbeb9e5356e55ce2b
+  bytes: 539141
+  supersedes: null
+  note: catalogo disponibilidad movil
+  is_reference_asset: false

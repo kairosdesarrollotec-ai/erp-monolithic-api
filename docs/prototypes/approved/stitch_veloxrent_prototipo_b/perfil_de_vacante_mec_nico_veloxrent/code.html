@@ -1,0 +1,420 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil de vacante — Mecánico - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              green: '#1E7D4B',
+              red: '#C22B2B',
+              blue: '#2166B0',
+              border: '#E2DFD8',
+              muted: '#736E65',
+              dark: '#1F2A33',
+              bglight: '#F8F7F4'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-between text-slate-800 antialiased selection:bg-orange-100">
+
+  <!-- TOP APP BAR -->
+  <header class="border-b border-[#E2DFD8] bg-white sticky top-0 z-30">
+    <div class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Navigation Breadcrumbs -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 mr-2">
+          <span class="font-display font-bold text-2xl tracking-tight text-[#1F2A33]">Velox<span class="text-[#C6600A]">Rent</span></span>
+        </div>
+        
+        <span class="bg-[#F4F3F0] text-xs font-semibold px-2.5 py-1 rounded text-[#4E4A45] border border-[#E2DFD8]">Recursos Humanos</span>
+        
+        <div class="h-4 w-[1px] bg-[#E2DFD8]"></div>
+        
+        <nav class="flex items-center space-x-2 text-sm text-[#736E65]">
+          <span>Personal</span>
+          <span>›</span>
+          <span>Reclutamiento y Selección</span>
+          <span>›</span>
+          <a href="#" class="hover:text-[#1F2A33] transition-colors">Vacantes</a>
+          <span>›</span>
+          <span class="font-medium text-[#1F2A33]">Perfil de vacante</span>
+        </nav>
+      </div>
+
+      <!-- Right Header Status & User Profile -->
+      <div class="flex items-center space-x-5">
+        <!-- Status indicator -->
+        <div class="flex items-center space-x-1.5 bg-[#E8F5EE] text-[#1E7D4B] px-3 py-1 rounded-full text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <!-- Sede selector / location -->
+        <div class="flex items-center space-x-1.5 text-xs text-[#4E4A45] bg-[#F8F7F4] px-3 py-1.5 rounded border border-[#E2DFD8]">
+          <svg class="w-3.5 h-3.5 text-[#736E65]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="font-medium">Ayacucho — Sede Central</span>
+        </div>
+
+        <!-- User Chip (Rodrigo Ortiz - Jefe de RRHH) -->
+        <div class="flex items-center space-x-3 pl-2 border-l border-[#E2DFD8]">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">
+            RO
+          </div>
+          <div class="text-left hidden sm:block">
+            <div class="text-xs font-semibold text-[#1F2A33] leading-tight">Rodrigo Ortiz</div>
+            <div class="text-[11px] text-[#736E65] leading-tight">Jefe de RR.HH.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUBHEADER / BANNER DE NAVEGACIÓN DE RETORNO -->
+  <div class="bg-[#F8F7F4] border-b border-[#E2DFD8]">
+    <div class="max-w-[1400px] mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="#" class="inline-flex items-center text-xs font-medium text-[#736E65] hover:text-[#1F2A33] transition-colors">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Volver a Vacantes
+        </a>
+        <span class="text-[#D1CCC4]">|</span>
+        <span class="text-xs text-[#736E65]">Expediente de requerimiento: <strong class="text-[#1F2A33] font-mono">REQ-2025-018</strong></span>
+        <span class="bg-[#E8F5EE] text-[#1E7D4B] text-[11px] font-semibold px-2 py-0.5 rounded border border-[#C5E6D2]">
+          Origen: Crecimiento
+        </span>
+      </div>
+      <div class="flex items-center space-x-4 text-xs text-[#736E65]">
+        <span>Paso <strong>2 de 2</strong>: Definición de perfil y difusión</span>
+        <span class="w-24 bg-[#E2DFD8] h-1.5 rounded-full overflow-hidden">
+          <span class="bg-[#C6600A] h-full block w-full"></span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-[1400px] mx-auto px-6 py-8 flex-1 w-full">
+    
+    <!-- Title & Status Header -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center space-x-3 mb-1.5">
+          <h1 class="font-display font-bold text-2xl text-[#1F2A33] tracking-tight">
+            Perfil de vacante — Mecánico
+          </h1>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#EAF2FB] text-[#2166B0] border border-[#BFD9F5]">
+            Borrador de publicación
+          </span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#F8F7F4] text-[#736E65] border border-[#E2DFD8]">
+            Área: Mantenimiento y Taller
+          </span>
+        </div>
+        <p class="text-sm text-[#736E65]">
+          Define las responsabilidades prácticas del puesto, esquema de remuneración y los canales de atracción autorizados para este perfil técnico.
+        </p>
+      </div>
+
+      <!-- Quick summary badge -->
+      <div class="flex items-center space-x-3 text-xs bg-[#F8F7F4] p-3 rounded border border-[#E2DFD8]">
+        <div class="w-2 h-2 rounded-full bg-[#1E7D4B]"></div>
+        <div>
+          <span class="text-[#736E65] block">Empresa vinculada:</span>
+          <span class="font-semibold text-[#1F2A33]">VeloxRent Servicios Mineros S.A.C.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- LEFT COLUMN: Funciones principales y Condiciones (8 cols) -->
+      <div class="lg:col-span-8 space-y-6">
+
+        <!-- CARD 1: Funciones principales (Textarea libre) -->
+        <section class="bg-white border border-[#E2DFD8] rounded p-6 shadow-sm">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-base font-bold text-[#1F2A33] font-display">Funciones principales</h2>
+                <span class="text-xs text-[#C6600A] font-semibold">* Obligatorio</span>
+              </div>
+              <p class="text-xs text-[#736E65] mt-0.5">
+                Redacción abierta sin segmentaciones rígidas. Incluye las tareas clave en campo o taller, uso de herramientas diagnósticas y rutinas preventivas.
+              </p>
+            </div>
+            <span class="text-[11px] font-mono text-[#736E65] bg-[#F8F7F4] px-2 py-1 rounded border border-[#E2DFD8]">
+              Formato libre
+            </span>
+          </div>
+
+          <!-- Textarea libre -->
+          <div class="relative">
+            <textarea rows="7" class="w-full p-4 text-sm text-[#1F2A33] bg-[#FFFFFF] border border-[#E2DFD8] rounded focus:outline-none focus:ring-2 focus:ring-[#1F2A33] focus:border-transparent font-sans leading-relaxed resize-y placeholder:text-[#A39C90]" placeholder="Describe aquí las funciones sin sub-campos rígidos:
+- Ejecución de mantenimientos preventivos y correctivos a camionetas 4x4 (Toyota Hilux y Mitsubishi L200).
+- Diagnóstico electrónico computarizado con scanner OBD-II y resolución de códigos de falla en motor y transmisión.
+- Inspección técnica pericial pre y post arriendo en patio operativo para checklist de entrega y devolución.
+- Coordinación directa con jefatura de taller para reposición de repuestos originales y control de desgaste de neumáticos de flota minera.
+- Cumplimiento estricto de las directivas de seguridad SST y uso obligatorio de EPP en patio.">• Ejecución de mantenimientos preventivos y correctivos a flota 4x4 de arriendo (Toyota Hilux, Mitsubishi L200, Fortuner).
+• Diagnóstico de fallas mecánicas, eléctricas y electrónicas mediante scanner automotriz multimarca en sede Ayacucho y auxilio mecánico en ruta minera si se requiere.
+• Inspección técnica pericial al ingreso y salida de unidades para homologación de actas periciales (desgaste de frenos, suspensión reforzada, niveles de fluidos).
+• Reporte inmediato de incidencias técnicas mayores que demanden paralización o trámite de garantía con concesionario oficial.
+• Registro diario de órdenes de trabajo en el sistema interno de gestión de flota de VeloxRent.</textarea>
+          </div>
+
+          <div class="mt-2.5 flex items-center justify-between text-xs text-[#736E65]">
+            <span>Tip: Puedes usar guiones o viñetas para mayor legibilidad de los postulantes.</span>
+            <span class="font-mono text-[11px] text-[#A39C90]">748 caracteres</span>
+          </div>
+        </section>
+
+        <!-- CARD 2: Condiciones (Sueldo y Horario) -->
+        <section class="bg-white border border-[#E2DFD8] rounded p-6 shadow-sm">
+          <div class="mb-4">
+            <h2 class="text-base font-bold text-[#1F2A33] font-display">Condiciones</h2>
+            <p class="text-xs text-[#736E65] mt-0.5">
+              Parámetros contractuales, esquema de turnos y rango salarial mensual bruto acorde al tarifario de personal técnico.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Campo: Sueldo -->
+            <div>
+              <label class="block text-xs font-bold text-[#1F2A33] mb-1.5 uppercase tracking-wide">
+                Sueldo bruto mensual (PEN) <span class="text-[#C6600A]">*</span>
+              </label>
+              <div class="relative rounded">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-sm font-semibold text-[#736E65]">
+                  S/
+                </div>
+                <input type="text" value="3,200.00" class="w-full pl-9 pr-14 py-2.5 text-sm font-semibold text-[#1F2A33] border border-[#E2DFD8] rounded focus:outline-none focus:ring-2 focus:ring-[#1F2A33] focus:border-transparent font-mono" placeholder="0.00">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-xs text-[#736E65]">
+                  al mes
+                </div>
+              </div>
+              <div class="mt-2 flex items-center space-x-2 text-[11px] text-[#736E65]">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span>
+                <span>Planilla completa con beneficios de ley (Régimen General).</span>
+              </div>
+            </div>
+
+            <!-- Campo: Horario -->
+            <div>
+              <label class="block text-xs font-bold text-[#1F2A33] mb-1.5 uppercase tracking-wide">
+                Horario y régimen de trabajo <span class="text-[#C6600A]">*</span>
+              </label>
+              <div class="relative">
+                <input type="text" value="Lunes a Sábado de 07:30 a 16:30 (Taller Ayacucho) + Guardias pasivas rotativas" class="w-full px-3.5 py-2.5 text-sm text-[#1F2A33] border border-[#E2DFD8] rounded focus:outline-none focus:ring-2 focus:ring-[#1F2A33] focus:border-transparent" placeholder="Ej: Lunes a Viernes 08:00 a 17:00 / Sistema atípico 14x7">
+              </div>
+              <div class="mt-2 flex items-center space-x-2 text-[11px] text-[#736E65]">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#2166B0]"></span>
+                <span>Incluye 1 hora de refrigerio subvencionado en comedor interno.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos adicionales complementarios de condiciones -->
+          <div class="mt-5 pt-4 border-t border-[#F0ECE1] grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div class="bg-[#F8F7F4] p-2.5 rounded border border-[#E2DFD8]">
+              <span class="text-[#736E65] block text-[11px]">Sede de trabajo fija:</span>
+              <strong class="text-[#1F2A33]">Taller Central — Ayacucho</strong>
+            </div>
+            <div class="bg-[#F8F7F4] p-2.5 rounded border border-[#E2DFD8]">
+              <span class="text-[#736E65] block text-[11px]">Periodo de prueba:</span>
+              <strong class="text-[#1F2A33]">3 meses reglamentarios</strong>
+            </div>
+            <div class="bg-[#F8F7F4] p-2.5 rounded border border-[#E2DFD8]">
+              <span class="text-[#736E65] block text-[11px]">SCTR Salud y Pensión:</span>
+              <strong class="text-[#1E7D4B]">Cobertura al 100% (Riesgo minero)</strong>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Canales de publicación y Acción de Publicar (4 cols) -->
+      <div class="lg:col-span-4 space-y-6">
+
+        <!-- CARD 3: Canales de publicación -->
+        <section class="bg-white border border-[#E2DFD8] rounded p-6 shadow-sm">
+          <div class="mb-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-base font-bold text-[#1F2A33] font-display">Canales de publicación</h2>
+              <span class="text-[11px] font-semibold text-[#1E7D4B] bg-[#E8F5EE] px-2 py-0.5 rounded">3 canales</span>
+            </div>
+            <p class="text-xs text-[#736E65] mt-0.5">
+              Medios donde se transmitirá la vacante de forma simultánea.
+            </p>
+          </div>
+
+          <div class="space-y-3.5">
+
+            <!-- Checkbox 1: Facebook -->
+            <label class="flex items-start p-3 rounded border border-[#E2DFD8] hover:border-[#1F2A33] cursor-pointer bg-white transition-all group">
+              <input type="checkbox" checked="" class="mt-1 h-4 w-4 text-[#1F2A33] rounded border-gray-300 focus:ring-[#1F2A33] accent-[#1F2A33]">
+              <div class="ml-3">
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-sm font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Facebook</span>
+                  <span class="text-[10px] bg-[#EAF2FB] text-[#2166B0] px-1.5 py-0.2 rounded font-medium">Redes Velox</span>
+                </div>
+                <p class="text-xs text-[#736E65] mt-0.5">
+                  Publicación automática en la página institucional de VeloxRent y grupos de empleo automotriz regional Ayacucho.
+                </p>
+              </div>
+            </label>
+
+            <!-- Checkbox 2: Recomendación -->
+            <label class="flex items-start p-3 rounded border border-[#E2DFD8] hover:border-[#1F2A33] cursor-pointer bg-white transition-all group">
+              <input type="checkbox" checked="" class="mt-1 h-4 w-4 text-[#1F2A33] rounded border-gray-300 focus:ring-[#1F2A33] accent-[#1F2A33]">
+              <div class="ml-3">
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-sm font-semibold text-[#1F2A33] group-hover:text-[#C6600A] transition-colors">Recomendación</span>
+                  <span class="text-[10px] bg-[#FDF1DE] text-[#B5720A] px-1.5 py-0.2 rounded font-medium">Interno</span>
+                </div>
+                <p class="text-xs text-[#736E65] mt-0.5">
+                  Programa de referidos de colaboradores con bonificación por recomendación técnica calificada.
+                </p>
+              </div>
+            </label>
+
+            <!-- Checkbox 3: Institutos técnicos (Visible condicionalmente para puesto Mecánico) -->
+            <div class="p-3 rounded border-2 border-[#1E7D4B] bg-[#F5FAF7] relative transition-all">
+              <div class="flex items-start">
+                <input type="checkbox" checked="" id="canal-institutos" class="mt-1 h-4 w-4 text-[#1E7D4B] rounded border-gray-300 focus:ring-[#1E7D4B] accent-[#1E7D4B] cursor-pointer">
+                <div class="ml-3 flex-1">
+                  <div class="flex items-center justify-between">
+                    <label for="canal-institutos" class="text-sm font-bold text-[#1F2A33] cursor-pointer">
+                      Institutos técnicos
+                    </label>
+                    <span class="inline-flex items-center text-[10px] font-bold bg-[#E8F5EE] text-[#1E7D4B] px-2 py-0.5 rounded border border-[#A8DFBE]">
+                      Específico para Mecánico
+                    </span>
+                  </div>
+                  <p class="text-xs text-[#4E4A45] mt-1 leading-normal">
+                    Convenio de bolsa laboral técnica: <strong>SENATI</strong>, <strong>TECSUP</strong> y centros de formación automotriz especializada.
+                  </p>
+                  
+                  <!-- Píldora de regla de negocio aplicada -->
+                  <div class="mt-2.5 flex items-center text-[11px] text-[#1E7D4B] bg-white px-2 py-1 rounded border border-[#C5E6D2]">
+                    <svg class="w-3.5 h-3.5 mr-1.5 shrink-0 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Regla activa: visible únicamente porque el puesto seleccionado es <strong>Mecánico</strong>.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#F0ECE1] text-[11px] text-[#736E65] flex items-center justify-between">
+            <span>Canales seleccionados: <strong class="text-[#1F2A33]">3 de 3</strong></span>
+            <span class="text-[#1E7D4B] font-medium">Revisión automática OK</span>
+          </div>
+        </section>
+
+        <!-- CARD 4: Panel de Confirmación y Botón Publicar -->
+        <section class="bg-[#F8F7F4] border border-[#E2DFD8] rounded p-6 shadow-sm">
+          <h3 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wider mb-2 font-display">
+            Confirmación de Publicación
+          </h3>
+          <p class="text-xs text-[#736E65] mb-5 leading-relaxed">
+            Al publicar, la vacante cambiará su estado a <strong>"Abierta / Publicada"</strong> en la bandeja de Reclutamiento y comenzará a recibir expedientes de postulantes.
+          </p>
+
+          <!-- Botón "Publicar" fondo #1F2A33 -->
+          <button type="button" class="w-full bg-[#1F2A33] hover:bg-[#2b3b47] active:bg-[#141c22] text-white font-medium text-sm py-3 px-5 rounded flex items-center justify-center space-x-2 transition-all shadow hover:shadow-md cursor-pointer">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            <span class="tracking-wide">Publicar</span>
+          </button>
+
+          <!-- Secondary actions -->
+          <div class="mt-3 flex items-center justify-between text-xs pt-3 border-t border-[#E2DFD8]">
+            <a href="#" class="text-[#736E65] hover:text-[#1F2A33] font-medium transition-colors">
+              Guardar borrador
+            </a>
+            <a href="#" class="text-[#C22B2B] hover:underline font-medium">
+              Descartar cambios
+            </a>
+          </div>
+        </section>
+
+        <!-- Banner informativo normativo de RR.HH. -->
+        <div class="p-3.5 bg-[#FFF9F2] border border-[#F5DCB7] rounded text-xs text-[#8A4B00] flex items-start space-x-2.5">
+          <svg class="w-4 h-4 text-[#C6600A] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div class="leading-relaxed">
+            <strong>Protocolo PR-RRHH-003:</strong> Los avisos publicados para mecánicos de taller minero requieren verificación previa de homologación técnica por el jefe de mantenimiento.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER INSTITUCIONAL VELOXRENT -->
+  <footer class="border-t border-[#E2DFD8] bg-white mt-12 py-4">
+    <div class="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-xs text-[#736E65] gap-3">
+      <div class="flex items-center space-x-4">
+        <span><strong>VeloxRent</strong> © 2025</span>
+        <span class="text-[#D1CCC4]">•</span>
+        <span>Sistema de Gestión Interna</span>
+        <span class="text-[#D1CCC4]">•</span>
+        <span>Protocolo SST-RRHH-001 / Selección de Personal</span>
+      </div>
+
+      <div class="flex items-center space-x-6">
+        <span>Soporte RR.HH.: <strong class="text-[#1F2A33]">anexo 104</strong></span>
+        <span class="text-[#D1CCC4]">•</span>
+        <span>Mesa de Operaciones: <strong class="text-[#1F2A33]">anexo 101</strong></span>
+        <span class="text-[#D1CCC4]">•</span>
+        <a href="#" class="inline-flex items-center text-[#C22B2B] hover:text-[#9A1E1E] font-medium transition-colors">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          Cerrar sesión
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

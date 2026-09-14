@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "secondary-fixed-dim": "#ffb68a",
+          "secondary-container": "#fd8a38",
+          "on-secondary-fixed": "#321300",
+          "on-primary-container": "#86919c",
+          "secondary": "#994700",
+          "surface-container-lowest": "#ffffff",
+          "surface-variant": "#e5e2dc",
+          "on-primary": "#ffffff",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#d8e4f0",
+          "error": "#ba1a1a",
+          "on-secondary-container": "#662d00",
+          "outline": "#74777b",
+          "surface-dim": "#dddad4",
+          "on-surface-variant": "#44474b",
+          "on-surface": "#1c1c18",
+          "inverse-primary": "#bcc8d4",
+          "primary-fixed-dim": "#bcc8d4",
+          "inverse-on-surface": "#f4f0ea",
+          "tertiary-fixed": "#d4e3ff",
+          "on-error-container": "#93000a",
+          "on-primary-fixed": "#121d25",
+          "on-tertiary-fixed-variant": "#004785",
+          "background": "#fcf9f3",
+          "surface-tint": "#54606a",
+          "tertiary-container": "#002951",
+          "on-secondary-fixed-variant": "#743400",
+          "error-container": "#ffdad6",
+          "surface": "#fcf9f3",
+          "on-error": "#ffffff",
+          "outline-variant": "#c4c7cb",
+          "primary-container": "#1f2a33",
+          "surface-container-highest": "#e5e2dc",
+          "surface-container-high": "#ebe8e2",
+          "surface-container-low": "#f6f3ed",
+          "secondary-fixed": "#ffdbc8",
+          "on-primary-fixed-variant": "#3d4852",
+          "inverse-surface": "#31302d",
+          "primary": "#0a161e",
+          "surface-container": "#f1ede7",
+          "on-background": "#1c1c18",
+          "on-tertiary-container": "#5692df",
+          "on-tertiary-fixed": "#001c3a",
+          "surface-bright": "#fcf9f3",
+          "on-tertiary": "#ffffff",
+          "tertiary": "#00142d",
+          "tertiary-fixed-dim": "#a5c8ff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "spacing-2xs": "0.125rem",
+          "margin-desktop": "1.5rem",
+          "gutter-tablet": "0.75rem",
+          "spacing-sm": "0.5rem",
+          "spacing-2xl": "2rem",
+          "gutter-desktop": "1rem",
+          "spacing-xl": "1.5rem",
+          "gutter-mobile": "0.5rem",
+          "margin-mobile": "0.75rem",
+          "margin-tablet": "1rem",
+          "spacing-lg": "1.25rem",
+          "spacing-base": "1rem",
+          "spacing-3xl": "3rem",
+          "spacing-xs": "0.25rem",
+          "spacing-md": "0.75rem"
+        },
+        "fontFamily": {
+          "body-sm": [
+            "Public Sans"
+          ],
+          "label-sm": [
+            "Public Sans"
+          ],
+          "headline-lg": [
+            "Public Sans"
+          ],
+          "headline-sm": [
+            "Public Sans"
+          ],
+          "body-base": [
+            "Public Sans"
+          ],
+          "label-md": [
+            "Public Sans"
+          ],
+          "headline-xl": [
+            "Public Sans"
+          ],
+          "headline-xl-mobile": [
+            "Public Sans"
+          ],
+          "code-operational": [
+            "Space Grotesk"
+          ],
+          "body-lg": [
+            "Public Sans"
+          ],
+          "code-operational-sm": [
+            "Space Grotesk"
+          ]
+        },
+        "fontSize": {
+          "body-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "0.6875rem",
+            {
+              "lineHeight": "0.875rem",
+              "letterSpacing": "0.04em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-sm": [
+            "1.125rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-base": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "0.8125rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "2rem",
+            {
+              "lineHeight": "2.5rem",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "700"
+            }
+          ],
+          "headline-xl-mobile": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "700"
+            }
+          ],
+          "code-operational": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-lg": [
+            "1rem",
+            {
+              "lineHeight": "1.5rem",
+              "fontWeight": "400"
+            }
+          ],
+          "code-operational-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.03em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      }
+    }
+  };</script></head><body class="bg-surface font-body-base text-body-base text-on-surface min-h-screen"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 flex items-center px-spacing-lg gap-spacing-md bg-surface-container"><div class="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-on-secondary font-headline-sm text-headline-sm font-bold shadow-sm">V</div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-primary leading-none">VeloxRent</span><span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant uppercase tracking-wider mt-spacing-2xs">ERP Logística</span></div></div><div class="px-spacing-md pt-spacing-lg pb-spacing-xs"><span class="px-spacing-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Módulos Operativos</span></div><nav class="flex flex-col gap-spacing-2xs px-spacing-sm" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="dashboard-general" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span>Flota y Control</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="gestion-vehicular" href="#"><span class="material-symbols-outlined text-[20px]">directions_car</span>Parque Automotor</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="contratos-alquiler" href="#"><span class="material-symbols-outlined text-[20px]">assignment</span>Contratos &amp; Actas</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="mantenimiento-taller" href="#"><span class="material-symbols-outlined text-[20px]">build</span>Mantenimiento</a><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="liquidacion-facturacion" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span>Facturación &amp; Tarifas</a></nav><div class="px-spacing-md pt-spacing-lg pb-spacing-xs"><span class="px-spacing-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Sede &amp; Ajustes</span></div><nav class="flex flex-col gap-spacing-2xs px-spacing-sm" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="configuracion-sede" href="#"><span class="material-symbols-outlined text-[20px]">corporate_fare</span>Sedes &amp; Terminales</a><a aria-current="page" class="flex items-center gap-spacing-md px-spacing-md py-spacing-sm rounded-lg transition-colors bg-primary-container text-on-primary font-semibold shadow-sm" data-path="auditoria-sistema" href="#"><span class="material-symbols-outlined text-[20px]">security</span>Auditoría TI</a></nav></div><div class="p-spacing-md bg-surface-container-lowest m-spacing-sm rounded-lg shadow-sm"><div class="flex items-center gap-spacing-sm text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">dns</span><span class="font-code-operational-sm text-code-operational-sm">Cluster: AYAC-SRV-01</span></div><div class="flex items-center justify-between mt-spacing-xs"><span class="font-label-sm text-label-sm text-on-surface-variant">Estado Backend</span><span class="inline-flex items-center px-spacing-xs py-spacing-2xs rounded bg-surface-container font-code-operational-sm text-code-operational-sm text-secondary font-bold">SYNC 99.8%</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-30 flex items-center justify-between px-spacing-xl"><div class="flex items-center gap-spacing-base"><span class="inline-flex items-center px-spacing-sm py-spacing-xs rounded bg-primary-container text-on-primary font-code-operational-sm text-code-operational-sm uppercase tracking-wide">ERP v4.2.1-PROD</span><div class="flex items-center gap-spacing-xs text-on-surface-variant font-body-sm text-body-sm"><span class="hover:text-on-surface cursor-pointer">Sistemas</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="hover:text-on-surface cursor-pointer">Operaciones</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="text-on-surface font-semibold">Panel Principal</span></div></div><div class="flex items-center gap-spacing-lg"><div class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span><span class="font-label-sm text-label-sm font-semibold text-[#1E7D4B] uppercase tracking-wide">Online</span></div><div class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded-lg bg-surface-container-high text-on-surface"><span class="material-symbols-outlined text-[18px] text-secondary">location_on</span><span class="font-label-md text-label-md font-semibold">Ayacucho — Sede Central</span></div><div class="h-6 w-px bg-surface-variant"></div><div class="flex items-center gap-spacing-md"><div class="text-right hidden sm:flex flex-col"><span class="font-label-md text-label-md font-bold text-on-surface leading-tight">Gustavo Alarcón</span><span class="font-label-sm text-label-sm text-on-surface-variant">Administrador de Sistemas</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface flex-1 px-spacing-xl py-spacing-xl"><div class="flex flex-col w-full max-w-[390px] mx-auto pb-24 select-none">
+<!-- Top Operational Header (Compact Mobile Card) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-spacing-base mb-spacing-sm flex flex-col gap-spacing-sm">
+<!-- Breadcrumb & Step Context -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-spacing-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-code-operational-sm text-code-operational-sm text-secondary font-bold uppercase tracking-wider">Etapa 4 de 5</span>
+<span class="text-outline-variant text-[12px]">•</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Inspección de Entrega</span>
+</div>
+<!-- Local Storage / Sync Pill -->
+<div class="inline-flex items-center gap-spacing-2xs bg-surface-container-low px-spacing-sm py-spacing-2xs rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+<span class="material-symbols-outlined text-[14px] text-[#1E7D4B]">cloud_done</span>
+<span class="font-code-operational-sm text-[11px] text-[#1E7D4B] font-semibold leading-none">Guardado local</span>
+</div>
+</div>
+<!-- Title & Metric Counter Row -->
+<div class="flex items-end justify-between pt-spacing-2xs">
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight leading-snug">
+          Zona 2 de 5: Interior (Cabina)
+        </h1>
+<p class="font-code-operational-sm text-code-operational-sm text-on-surface-variant mt-spacing-2xs">
+          Hilux 4x4 • Placa: <span class="text-on-surface font-semibold">V9K-842</span>
+</p>
+</div>
+<!-- Photo Counter -->
+<div class="flex items-center gap-spacing-xs bg-surface-container px-spacing-sm py-spacing-2xs rounded-lg">
+<span class="material-symbols-outlined text-[16px] text-on-surface">photo_camera</span>
+<span class="font-code-operational-sm text-code-operational-sm font-bold text-on-surface">14/35</span>
+</div>
+</div>
+<!-- Technical Countdown & SLA -->
+<div class="flex items-center justify-between pt-spacing-2xs">
+<div class="inline-flex items-center gap-spacing-xs bg-secondary-fixed/40 px-spacing-sm py-spacing-2xs rounded">
+<span class="material-symbols-outlined text-[15px] text-secondary font-bold">timer</span>
+<span class="font-code-operational-sm text-[12px] text-secondary font-bold tracking-tight">18:32 restantes (SLA patio)</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">40% auditado</span>
+</div>
+<!-- Horizontal Slim Progress Track -->
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden mt-spacing-2xs">
+<div class="h-full bg-secondary rounded-full" style="width: 40%;"></div>
+</div>
+</div>
+<!-- Segmented Technical Tabs (FIV / FCKE) -->
+<div class="grid grid-cols-2 gap-spacing-xs p-spacing-2xs bg-surface-container-low rounded-lg mb-spacing-sm">
+<button class="flex items-center justify-center gap-spacing-xs py-spacing-sm px-spacing-xs bg-primary text-on-primary rounded-lg shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<div class="flex flex-col items-start leading-none text-left">
+<span class="font-label-md text-[12px] font-bold">FIV: Fotos Cabina</span>
+<span class="font-code-operational-sm text-[10px] text-primary-fixed-dim mt-0.5">2 de 6 listas</span>
+</div>
+</button>
+<button class="flex items-center justify-center gap-spacing-xs py-spacing-sm px-spacing-xs text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">fact_check</span>
+<div class="flex flex-col items-start leading-none text-left">
+<span class="font-label-md text-[12px] font-semibold">FCKE: Equipamiento</span>
+<span class="font-code-operational-sm text-[10px] text-outline mt-0.5">0 de 12 ítems</span>
+</div>
+</button>
+</div>
+<!-- Instructional Banner -->
+<div class="bg-[#FDF1DE] rounded-lg p-spacing-sm mb-spacing-sm flex items-start gap-spacing-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5 shrink-0">info</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-bold text-on-secondary-fixed">Instrucción de patio VeloxRent:</span>
+<p class="font-body-sm text-[11.5px] leading-tight text-on-secondary-fixed-variant mt-0.5">
+        Captura nítida con buena iluminación. Cada foto se firma con timestamp geolocalizado y hash SHA-256 en almacenamiento local del dispositivo.
+      </p>
+</div>
+</div>
+<!-- 6-Photo Inspection Grid (2 Columns, optimized for 390px touch) -->
+<div class="grid grid-cols-2 gap-spacing-sm">
+<!-- Card 01/06: Captured -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col group">
+<div class="relative w-full aspect-[4/3] bg-surface-container-high overflow-hidden">
+<img alt="Foto de cabina Toyota Hilux" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1WvQPPBqX5yWAY_mX5Fb3bIBYE1ttFwDCVFdG1DOAVnZWk4FtXZrKHInKye1ECilUK9Ht9w0AV1dqpl1DZkwBTfYGTGl7DVTL9CnoTGY35lYcNJhrZexvjrEmSF0VEsuLGwBwPpJz3zA_hQKQaJi2VQ2QqYG9iyiqBCskIW743JG15-rTOJSBxXug6Zs38QwF8XB_06NlE3OAGX1Lzrpq9qKVljooABzbxd2NlIw3eYwI-DcAJ0kmvcag"/>
+<!-- Success Badge -->
+<div class="absolute top-2 left-2 inline-flex items-center gap-spacing-2xs bg-[#EBF5F0] px-spacing-xs py-0.5 rounded shadow-sm">
+<span class="material-symbols-outlined text-[13px] text-[#1E7D4B] font-bold">check_circle</span>
+<span class="font-code-operational-sm text-[10px] text-[#1E7D4B] font-bold tracking-wide">✓ LISTA</span>
+</div>
+<!-- Retake Quick Action -->
+<button class="absolute bottom-2 right-2 w-7 h-7 bg-primary/80 hover:bg-primary text-on-primary rounded-full flex items-center justify-center backdrop-blur-sm shadow transition-transform active:scale-95" title="Rehacer foto" type="button">
+<span class="material-symbols-outlined text-[14px]">cached</span>
+</button>
+</div>
+<div class="p-spacing-sm flex flex-col justify-between flex-1 bg-surface-container-lowest">
+<div>
+<span class="font-label-sm text-[11px] font-bold text-primary block leading-tight truncate">01/06 Tablero y panel</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant block mt-0.5">Odómetro y testigos</span>
+</div>
+<div class="flex items-center justify-between pt-spacing-xs mt-spacing-xs">
+<span class="font-code-operational-sm text-[10px] text-outline font-medium">10:52:14</span>
+<span class="font-code-operational-sm text-[10px] text-[#1E7D4B] font-bold">SHA-OK</span>
+</div>
+</div>
+</div>
+<!-- Card 02/06: Captured -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col group">
+<div class="relative w-full aspect-[4/3] bg-surface-container-high overflow-hidden">
+<img alt="Foto consola central Toyota Hilux" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XOrxOKf7zUfJZRsaVaRC1KNCEFztNPrO6_9_tqW5_VYk5YiEQd4bjo53fc4sPQru9PxHegyk-oVXRvm3xnZgfJfVd20WjhZQQ3VKhXziGv-n55Sa1vdUBh6aOzUx700YHkylcxsDd_oT68-Sp3Ph0zKMYO6ae3o-nkqGrNOjoQRAbu1lUl4fBwPPXwsQaFSLuDWG2-zLg3_ec4hvmO-YUarRsD0sdPf6p-OYygXQQGw0i7hyb3otBGiaM"/>
+<!-- Success Badge -->
+<div class="absolute top-2 left-2 inline-flex items-center gap-spacing-2xs bg-[#EBF5F0] px-spacing-xs py-0.5 rounded shadow-sm">
+<span class="material-symbols-outlined text-[13px] text-[#1E7D4B] font-bold">check_circle</span>
+<span class="font-code-operational-sm text-[10px] text-[#1E7D4B] font-bold tracking-wide">✓ LISTA</span>
+</div>
+<!-- Retake Quick Action -->
+<button class="absolute bottom-2 right-2 w-7 h-7 bg-primary/80 hover:bg-primary text-on-primary rounded-full flex items-center justify-center backdrop-blur-sm shadow transition-transform active:scale-95" title="Rehacer foto" type="button">
+<span class="material-symbols-outlined text-[14px]">cached</span>
+</button>
+</div>
+<div class="p-spacing-sm flex flex-col justify-between flex-1 bg-surface-container-lowest">
+<div>
+<span class="font-label-sm text-[11px] font-bold text-primary block leading-tight truncate">02/06 Consola y palanca</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant block mt-0.5">Selectora 4x4 y freno</span>
+</div>
+<div class="flex items-center justify-between pt-spacing-xs mt-spacing-xs">
+<span class="font-code-operational-sm text-[10px] text-outline font-medium">10:53:02</span>
+<span class="font-code-operational-sm text-[10px] text-[#1E7D4B] font-bold">SHA-OK</span>
+</div>
+</div>
+</div>
+<!-- Card 03/06: Pending / Shutter Trigger -->
+<button class="bg-surface-container-lowest rounded-xl p-spacing-sm flex flex-col justify-between text-left shadow-sm active:bg-surface-container-high transition-all" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-code-operational-sm text-[10px] font-bold text-on-surface">03/06</span>
+<span class="inline-flex items-center gap-0.5 bg-[#FDF1DE] text-secondary font-code-operational-sm text-[10px] font-bold px-1.5 py-0.5 rounded">
+          Requerido
+        </span>
+</div>
+<!-- Direct In Situ Shutter Button -->
+<div class="w-full aspect-[4/3] my-spacing-xs rounded-lg bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<div class="w-11 h-11 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]">photo_camera</span>
+</div>
+<span class="font-label-md text-[12px] font-bold text-secondary mt-1">Capturar foto</span>
+<span class="font-code-operational-sm text-[9.5px] text-on-surface-variant">Disparador directo</span>
+</div>
+<div>
+<span class="font-label-sm text-[11px] font-bold text-primary block leading-tight">Asientos posteriores</span>
+<span class="font-body-sm text-[10.5px] text-on-surface-variant block truncate mt-0.5">Tapicería y cinturones</span>
+</div>
+</button>
+<!-- Card 04/06: Pending / Shutter Trigger -->
+<button class="bg-surface-container-lowest rounded-xl p-spacing-sm flex flex-col justify-between text-left shadow-sm active:bg-surface-container-high transition-all" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-code-operational-sm text-[10px] font-bold text-on-surface">04/06</span>
+<span class="inline-flex items-center gap-0.5 bg-[#FDF1DE] text-secondary font-code-operational-sm text-[10px] font-bold px-1.5 py-0.5 rounded">
+          Requerido
+        </span>
+</div>
+<div class="w-full aspect-[4/3] my-spacing-xs rounded-lg bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<div class="w-11 h-11 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]">photo_camera</span>
+</div>
+<span class="font-label-md text-[12px] font-bold text-primary mt-1">Capturar foto</span>
+<span class="font-code-operational-sm text-[9.5px] text-on-surface-variant">Disparador directo</span>
+</div>
+<div>
+<span class="font-label-sm text-[11px] font-bold text-primary block leading-tight">Techo y parasoles</span>
+<span class="font-body-sm text-[10.5px] text-on-surface-variant block truncate mt-0.5">Retrovisor y luces domo</span>
+</div>
+</button>
+<!-- Card 05/06: Pending / Shutter Trigger -->
+<button class="bg-surface-container-lowest rounded-xl p-spacing-sm flex flex-col justify-between text-left shadow-sm active:bg-surface-container-high transition-all" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-code-operational-sm text-[10px] font-bold text-on-surface">05/06</span>
+<span class="inline-flex items-center gap-0.5 bg-[#FDF1DE] text-secondary font-code-operational-sm text-[10px] font-bold px-1.5 py-0.5 rounded">
+          Requerido
+        </span>
+</div>
+<div class="w-full aspect-[4/3] my-spacing-xs rounded-lg bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<div class="w-11 h-11 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]">photo_camera</span>
+</div>
+<span class="font-label-md text-[12px] font-bold text-primary mt-1">Capturar foto</span>
+<span class="font-code-operational-sm text-[9.5px] text-on-surface-variant">Disparador directo</span>
+</div>
+<div>
+<span class="font-label-sm text-[11px] font-bold text-primary block leading-tight">Guantera y doc. SOAT</span>
+<span class="font-body-sm text-[10.5px] text-on-surface-variant block truncate mt-0.5">Tarjeta propiedad/seguro</span>
+</div>
+</button>
+<!-- Card 06/06: Pending / Shutter Trigger -->
+<button class="bg-surface-container-lowest rounded-xl p-spacing-sm flex flex-col justify-between text-left shadow-sm active:bg-surface-container-high transition-all" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-code-operational-sm text-[10px] font-bold text-on-surface">06/06</span>
+<span class="inline-flex items-center gap-0.5 bg-[#FDF1DE] text-secondary font-code-operational-sm text-[10px] font-bold px-1.5 py-0.5 rounded">
+          Requerido
+        </span>
+</div>
+<div class="w-full aspect-[4/3] my-spacing-xs rounded-lg bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<div class="w-11 h-11 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]">photo_camera</span>
+</div>
+<span class="font-label-md text-[12px] font-bold text-primary mt-1">Capturar foto</span>
+<span class="font-code-operational-sm text-[9.5px] text-on-surface-variant">Disparador directo</span>
+</div>
+<div>
+<span class="font-label-sm text-[11px] font-bold text-primary block leading-tight">Pedales y alfombras</span>
+<span class="font-body-sm text-[10.5px] text-on-surface-variant block truncate mt-0.5">Piso conductor y goma</span>
+</div>
+</button>
+</div>
+<!-- Bottom CTA Fixed Drawer Area -->
+<div class="fixed bottom-0 left-0 right-0 z-30 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.06)] p-spacing-md flex justify-center">
+<div class="w-full max-w-[390px] flex flex-col gap-spacing-xs">
+<!-- Primary Forward Flow Button -->
+<button class="w-full h-[52px] bg-primary hover:bg-[#121A20] active:scale-[0.99] text-on-primary rounded font-label-md text-[15px] font-semibold flex items-center justify-center gap-spacing-sm shadow transition-all" type="button">
+<span>Siguiente: Zona 3 (Tolva y Maletero)</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<!-- Secondary Retract Actions -->
+<div class="flex items-center justify-between px-spacing-xs pt-spacing-2xs">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-on-surface font-label-sm text-[12px] font-semibold transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span>Zona 1 (Exterior)</span>
+</button>
+<button class="flex items-center gap-1 text-secondary hover:text-on-secondary-container font-label-sm text-[12px] font-semibold transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">pause_circle</span>
+<span>Pausar inspección</span>
+</button>
+</div>
+</div>
+</div>
+</div></main><footer class="w-full bg-surface-container-low shadow-[0_-1px_8px_rgba(0,0,0,0.03)] px-spacing-xl py-spacing-md"><div class="flex flex-wrap items-center justify-between gap-spacing-md font-body-sm text-body-sm text-on-surface-variant"><div class="flex items-center gap-spacing-lg"><span class="font-label-md text-label-md text-on-surface font-bold">VeloxRent ERP © 2025</span><span class="hidden md:inline text-outline-variant">|</span><div class="flex items-center gap-spacing-xs"><span class="material-symbols-outlined text-[16px] text-secondary">call</span><span>Mesa TI: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 101</strong></span></div><div class="flex items-center gap-spacing-xs"><span class="material-symbols-outlined text-[16px] text-secondary">security</span><span>Soporte Seguridad: <strong class="font-code-operational-sm text-code-operational-sm text-on-surface">Anexo 102</strong></span></div></div><div class="flex items-center gap-spacing-xl"><span>Módulo Activo: <span class="font-code-operational-sm text-code-operational-sm text-on-surface font-semibold">ADM-AYAC-LOG</span></span><a class="flex items-center gap-spacing-xs text-error hover:text-on-error-container font-label-md text-label-md transition-colors" data-path="iniciar-sesion" href="#"><span class="material-symbols-outlined text-[18px]">logout</span>Cerrar Sesión</a></div></div></footer></div></body></html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html><html lang="es" class="h-full"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagos y Garantías — Bandeja - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .font-mono-num {
+      font-family: 'Space Grotesk', monospace;
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col bg-white text-[#1F2A33]">
+
+  <!-- Cabecera Corporativa Unificada VeloxRent -->
+  <header class="border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Izquierda: Logo y Migas de Pan -->
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+          <span class="text-2xl font-black tracking-tight text-[#1F2A33] flex items-center">
+            <span class="bg-[#1F2A33] text-white px-2 py-0.5 rounded text-sm font-bold mr-1.5 font-mono-num">V</span>
+            Velox<span class="text-[#C6600A]">Rent</span>
+          </span>
+          <span class="text-xs bg-[#F5F3EF] text-[#6B665E] font-medium px-2 py-0.5 rounded border border-[#E5E2DC] font-mono-num">ERP v3.4</span>
+        </div>
+        
+        <div class="h-5 w-px bg-[#E5E2DC]"></div>
+        
+        <nav class="flex items-center space-x-2 text-sm">
+          <span class="text-[#6B665E] font-medium">Finanzas</span>
+          <span class="text-[#A39C90]">›</span>
+          <span class="text-[#6B665E] font-medium">Pagos y garantías</span>
+          <span class="text-[#A39C90]">›</span>
+          <span class="text-[#1F2A33] font-semibold">Bandeja</span>
+        </nav>
+      </div>
+
+      <!-- Derecha: Estado, Sede y Perfil de Usuario -->
+      <div class="flex items-center space-x-5">
+        <div class="flex items-center space-x-2 bg-[#F0F7F4] text-[#1E7D4B] px-2.5 py-1 rounded-full text-xs font-semibold border border-[#D0E7DC]">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span class="">En línea</span>
+        </div>
+
+        <div class="flex items-center space-x-1.5 text-xs text-[#6B665E] bg-[#F5F3EF] px-2.5 py-1 rounded border border-[#E5E2DC]">
+          <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="font-medium">Ayacucho — Sede Central</span>
+        </div>
+
+        <div class="flex items-center space-x-3 pl-2 border-l border-[#E5E2DC]">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs font-mono-num">
+            RC
+          </div>
+          <div class="text-left hidden sm:block">
+            <div class="text-xs font-bold text-[#1F2A33] leading-tight">Rosa Cárdenas</div>
+            <div class="text-[11px] text-[#6B665E] leading-tight">Analista de Tesorería &amp; Finanzas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
+
+    <!-- Encabezado de Página y Acciones -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 gap-4">
+      <div>
+        <div class="flex items-center space-x-3">
+          <h1 class="text-2xl font-bold tracking-tight text-[#1F2A33]">Pagos y Garantías</h1>
+          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#F5F3EF] text-[#6B665E] border border-[#E5E2DC] font-mono-num">
+            42 registros en cola
+          </span>
+        </div>
+        <p class="text-sm text-[#6B665E] mt-1">
+          Control financiero de cobros de alquiler, retenciones de garantía, liquidaciones de devolución y penalidades por daño.
+        </p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button type="button" class="inline-flex items-center space-x-2 px-3.5 py-2 border border-[#E5E2DC] rounded text-sm font-medium text-[#4E4A45] bg-white hover:bg-[#FAF9F5] transition shadow-sm">
+          <svg class="w-4 h-4 text-[#6B665E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          <span class="">Exportar reporte</span>
+        </button>
+
+        <button type="button" class="inline-flex items-center space-x-2 px-4 py-2 bg-[#1F2A33] text-white rounded text-sm font-semibold hover:bg-[#2A3945] transition shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span class="">Registrar transacción</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros y Búsqueda -->
+    <div class="bg-[#FAF9F5] p-4 rounded border border-[#E5E2DC] mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <!-- Búsqueda General -->
+        <div class="relative flex-1">
+          <svg class="w-4 h-4 text-[#A39C90] absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input type="text" placeholder="Buscar por cliente, DNI, RUC o expediente (#ALQ, #DEV, #RES)..." class="w-full pl-10 pr-4 py-2 text-sm bg-white border border-[#E5E2DC] rounded focus:outline-none focus:border-[#1F2A33] placeholder-[#A39C90]">
+        </div>
+
+        <!-- Filtros Rápidos de Tipo y Estado -->
+        <div class="flex items-center flex-wrap gap-2 text-xs">
+          <span class="text-[#6B665E] font-medium mr-1">Filtrar por tipo:</span>
+          <button class="px-2.5 py-1.5 rounded bg-[#1F2A33] text-white font-medium">Todos</button>
+          <button class="px-2.5 py-1.5 rounded bg-white text-[#4E4A45] border border-[#E5E2DC] hover:bg-[#F5F3EF]">Pagos</button>
+          <button class="px-2.5 py-1.5 rounded bg-white text-[#4E4A45] border border-[#E5E2DC] hover:bg-[#F5F3EF]">Garantías</button>
+          <button class="px-2.5 py-1.5 rounded bg-white text-[#4E4A45] border border-[#E5E2DC] hover:bg-[#F5F3EF]">Devoluciones</button>
+          <button class="px-2.5 py-1.5 rounded bg-white text-[#4E4A45] border border-[#E5E2DC] hover:bg-[#F5F3EF]">Cargos</button>
+
+          <div class="h-4 w-px bg-[#E5E2DC] mx-1"></div>
+
+          <span class="text-[#6B665E] font-medium mr-1">Estado:</span>
+          <select class="py-1.5 pl-2.5 pr-7 bg-white text-xs border border-[#E5E2DC] rounded text-[#4E4A45] focus:outline-none">
+            <option>Todos los estados</option>
+            <option>Pendiente</option>
+            <option>Validado</option>
+            <option>Rechazado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla Principal de Pagos y Garantías -->
+    <div class="bg-white border border-[#E5E2DC] rounded shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-[#FAF9F5] border-b border-[#E5E2DC] text-[12px] uppercase font-semibold text-[#6B665E] tracking-wider">
+            <tr>
+              <th scope="col" class="py-3.5 px-5">Cliente</th>
+              <th scope="col" class="py-3.5 px-4">Expediente</th>
+              <th scope="col" class="py-3.5 px-4">Monto</th>
+              <th scope="col" class="py-3.5 px-4">Tipo</th>
+              <th scope="col" class="py-3.5 px-4">Estado</th>
+              <th scope="col" class="py-3.5 px-4 text-center">Fecha / Hora</th>
+              <th scope="col" class="py-3.5 px-5 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E5E2DC] bg-white">
+            
+            <!-- Fila 1: María Quispe Huamán - Pago - Validado -->
+            <tr class="hover:bg-[#FAF9F5] transition">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">María Quispe Huamán</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">DNI 45920184</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Persona Natural</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#ALQ-1187</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Toyota Hilux D0Y-704</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                S/ 2,450.00
+                <div class="text-[11px] text-[#6B665E] font-normal">Transferencia BCP</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#EEF4FB] text-[#2166B0] border border-[#D5E3F5]">
+                  Pago
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Validado #1E7D4B -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E8F5EC] text-[#1E7D4B] border border-[#C5E8D1]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] mr-1.5"></span>
+                  Validado
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">10/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">09:15 AM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] px-2.5 py-1 rounded border border-[#E5E2DC] hover:border-[#1F2A33] bg-white transition">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 2: Minera Candelaria Andina S.A.C. - Garantía - Validado -->
+            <tr class="hover:bg-[#FAF9F5] transition">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">Minera Candelaria Andina S.A.C.</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">RUC 20601849201</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Corporativo</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#RES-2291</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Toyota Fortuner F8T-992</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                US$ 1,500.00
+                <div class="text-[11px] text-[#6B665E] font-normal">Carta Fianza BBVA</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#F5F0FB] text-[#683AB7] border border-[#E3D6F5]">
+                  Garantía
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Validado #1E7D4B -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E8F5EC] text-[#1E7D4B] border border-[#C5E8D1]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] mr-1.5"></span>
+                  Validado
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">09/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">16:40 PM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] px-2.5 py-1 rounded border border-[#E5E2DC] hover:border-[#1F2A33] bg-white transition">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 3: Constructora San Cristóbal S.A. - Pago - Pendiente -->
+            <tr class="hover:bg-[#FAF9F5] transition bg-[#FFFDF9]">
+              <td class="py-3.5 px-5">
+                <div class="flex items-center space-x-2">
+                  <span class="font-semibold text-[#1F2A33]">Constructora San Cristóbal S.A.</span>
+                  <span class="text-[11px] px-1.5 py-0.5 rounded bg-[#F5F0FB] text-[#683AB7] border border-[#E3D6F5] font-medium">Agente externo</span>
+                </div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">RUC 20194820192</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Pago por tercero</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#ALQ-1205</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Toyota Hilux D0Y-704</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                S/ 3,850.00
+                <div class="text-[11px] text-[#B5720A] font-medium">Voucher por conciliar</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#EEF4FB] text-[#2166B0] border border-[#D5E3F5]">
+                  Pago
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Pendiente #B5720A -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FDF1DE] text-[#B5720A] border border-[#F6DCB3]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#B5720A] mr-1.5"></span>
+                  Pendiente
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">10/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">11:20 AM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" title="Requiere verificación en PAG-02 por tratarse de pago de agente externo" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-[#1F2A33] hover:bg-[#F5F3EF] px-2.5 py-1 rounded border border-[#1F2A33] bg-white transition shadow-sm">
+                  <span class="">Revisar</span>
+                  <span class="text-[10px] text-[#6B665E] font-mono-num">[PAG-02]</span>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 4: Víctor Hugo Morales Quispe - Devolución - Validado -->
+            <tr class="hover:bg-[#FAF9F5] transition bg-[#FFFDF9]">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">Marcos Aurelio Mendoza Vega</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">DNI 47291048</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Titular directo</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#ALQ-1208</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Nissan Frontier F4D-812</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                S/ 1,820.00
+                <div class="text-[11px] text-[#B5720A] font-medium">Transferencia BBVA titular</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#EEF4FB] text-[#2166B0] border border-[#D5E3F5]">
+                  Pago
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Pendiente #B5720A -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FDF1DE] text-[#B5720A] border border-[#F6DCB3]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#B5720A] mr-1.5"></span>
+                  Pendiente
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">10/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">10:45 AM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-white hover:bg-[#2A3945] px-3 py-1 rounded bg-[#1F2A33] transition shadow-sm">
+                  Validar
+                </button>
+              </td>
+            </tr><tr class="hover:bg-[#FAF9F5] transition">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">Víctor Hugo Morales Quispe</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">DNI 41908234</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Conductor Titular</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#DEV-0456</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Toyota Hilux D0Y-704</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                US$ 1,200.00
+                <div class="text-[11px] text-[#6B665E] font-normal">Liberación de retención</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#EAF7F0] text-[#2F6B4F] border border-[#CDEEDB]">
+                  Devolución
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Validado #1E7D4B -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E8F5EC] text-[#1E7D4B] border border-[#C5E8D1]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] mr-1.5"></span>
+                  Validado
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">08/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">18:05 PM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] px-2.5 py-1 rounded border border-[#E5E2DC] hover:border-[#1F2A33] bg-white transition">
+                  Ver recibo
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 5: Transportes & Logística del Centro E.I.R.L. - Cargo - Validado -->
+            <tr class="hover:bg-[#FAF9F5] transition">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">Transportes &amp; Logística del Centro E.I.R.L.</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">RUC 20489102831</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Carga pesada</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#DEV-0449</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Mitsubishi L200 B6Z-812</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                S/ 580.00
+                <div class="text-[11px] text-[#6B665E] font-normal">Paralización técnica 24h</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#FDF0EC] text-[#C6600A] border border-[#F7D8CB]">
+                  Cargo
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Validado #1E7D4B -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E8F5EC] text-[#1E7D4B] border border-[#C5E8D1]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B] mr-1.5"></span>
+                  Validado
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">07/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">14:30 PM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] px-2.5 py-1 rounded border border-[#E5E2DC] hover:border-[#1F2A33] bg-white transition">
+                  Ver detalle
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 6: Carlos Alberto Soto Ramos - Garantía - Rechazado -->
+            <tr class="hover:bg-[#FAF9F5] transition bg-[#FFF9F9]">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">Carlos Alberto Soto Ramos</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">DNI 41908234</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Persona Natural</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#RES-2287</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Hyundai Creta B4T-312</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#C22B2B]">
+                US$ 1,000.00
+                <div class="text-[11px] text-[#C22B2B] font-normal">Tarjeta sin fondos POS</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#F5F0FB] text-[#683AB7] border border-[#E3D6F5]">
+                  Garantía
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Rechazado #C22B2B -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FBE9E9] text-[#C22B2B] border border-[#F5C7C7]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#C22B2B] mr-1.5"></span>
+                  Rechazado
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">06/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">10:12 AM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-[#C22B2B] hover:bg-[#FBE9E9] px-2.5 py-1 rounded border border-[#C22B2B] bg-white transition">
+                  Ver motivo
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 7: Rosa Elena Huamán Prado - Cargo - Pendiente -->
+            <tr class="hover:bg-[#FAF9F5] transition bg-[#FFFDF9]">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">Rosa Elena Huamán Prado</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">DNI 43819201</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Persona Natural</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#DEV-0452</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Toyota Yaris Sedán Y1B-890</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                S/ 320.00
+                <div class="text-[11px] text-[#B5720A] font-medium">Daño estético guardafango</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#FDF0EC] text-[#C6600A] border border-[#F7D8CB]">
+                  Cargo
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Pendiente #B5720A -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FDF1DE] text-[#B5720A] border border-[#F6DCB3]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#B5720A] mr-1.5"></span>
+                  Pendiente
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">05/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">17:48 PM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-[#B5720A] hover:bg-[#FDF1DE] px-2.5 py-1 rounded border border-[#B5720A] bg-white transition">
+                  Cobrar cargo
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila 8: Gustavo Adolfo Palomino Vilchez - Devolución - Pendiente -->
+            <tr class="hover:bg-[#FAF9F5] transition bg-[#FFFDF9]">
+              <td class="py-3.5 px-5">
+                <div class="font-semibold text-[#1F2A33]">Gustavo Adolfo Palomino Vilchez</div>
+                <div class="text-xs text-[#6B665E] flex items-center space-x-2 mt-0.5">
+                  <span class="font-mono-num">DNI 28391024</span>
+                  <span class="">•</span>
+                  <span class="text-[#8C8275]">Persona Natural</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num">
+                <a href="#" class="font-bold text-[#1F2A33] hover:text-[#C6600A] transition inline-flex items-center space-x-1">
+                  <span class="">#DEV-0448</span>
+                  <svg class="w-3 h-3 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <div class="text-[11px] text-[#6B665E]">Chevrolet Colorado C3M-901</div>
+              </td>
+              <td class="py-3.5 px-4 font-mono-num font-bold text-[#1F2A33]">
+                US$ 1,500.00
+                <div class="text-[11px] text-[#B5720A] font-medium">Plazo 24h corriendo</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-[#EAF7F0] text-[#2F6B4F] border border-[#CDEEDB]">
+                  Devolución
+                </span>
+              </td>
+              <td class="py-3.5 px-4">
+                <!-- Badge Pendiente #B5720A -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FDF1DE] text-[#B5720A] border border-[#F6DCB3]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#B5720A] mr-1.5"></span>
+                  Pendiente
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-mono-num text-xs text-[#6B665E]">
+                <div class="">04/09/2026</div>
+                <div class="text-[11px] text-[#A39C90]">15:10 PM</div>
+              </td>
+              <td class="py-3.5 px-5 text-right">
+                <button type="button" class="text-xs font-semibold text-[#B5720A] hover:bg-[#FDF1DE] px-2.5 py-1 rounded border border-[#B5720A] bg-white transition">
+                  Liberar garantía
+                </button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación y Resumen Inferior -->
+      <div class="bg-[#FAF9F5] px-6 py-3.5 border-t border-[#E5E2DC] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6B665E]">
+        <div class="flex items-center space-x-4">
+          <span class="">Mostrando <strong class="text-[#1F2A33] font-mono-num">1 - 8</strong> de <strong class="text-[#1F2A33] font-mono-num">42</strong> transacciones</span>
+          <span class="">•</span>
+          <span class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#B5720A]"></span>
+            <span class="">3 pendientes de validación en sede</span>
+          </span>
+        </div>
+
+        <div class="flex items-center space-x-1">
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-white text-[#A39C90] cursor-not-allowed">Anterior</button>
+          <button class="px-2.5 py-1 rounded border border-[#1F2A33] bg-[#1F2A33] text-white font-bold font-mono-num">1</button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-white text-[#4E4A45] hover:bg-[#F5F3EF] font-mono-num">2</button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-white text-[#4E4A45] hover:bg-[#F5F3EF] font-mono-num">3</button>
+          <span class="px-1 text-[#A39C90]">...</span>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-white text-[#4E4A45] hover:bg-[#F5F3EF] font-mono-num">6</button>
+          <button class="px-2.5 py-1 rounded border border-[#E5E2DC] bg-white text-[#4E4A45] hover:bg-[#F5F3EF]">Siguiente</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Banner Informativo de Conciliación Normativa -->
+    <div class="mt-6 bg-[#F5F3EF] border border-[#E5E2DC] rounded p-4 flex items-start space-x-3 text-xs text-[#6B665E]"><svg class="w-4 h-4 text-[#C6600A] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div class="">
+        <span class="font-bold text-[#1F2A33]">Regla de validación financiera (BR-FIN-003):</span>
+        Los pagos directos de titular se pueden <strong>Validar</strong> de forma inmediata con comprobante verificado. En caso de pagos efectuados por terceros o agentes externos, pulsar <strong>Revisar</strong> para su conciliación reglamentaria en el subflujo PAG-02 antes de la autorización de entrega. Las liberaciones de garantía cuentan con un plazo máximo de 24 horas hábiles.
+      </div></div>
+
+  </main>
+
+  <!-- Pie de Página Institucional Unificado VeloxRent -->
+  <footer class="border-t border-[#E5E2DC] bg-[#FAF9F5] text-xs text-[#6B665E] py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <span class="font-semibold text-[#1F2A33]">VeloxRent © 2026</span>
+        <span class="">•</span>
+        <span class="">Sistema de Gestión Comercial y Flotas</span>
+        <span class="">•</span>
+        <span class="font-medium text-[#1F2A33]">Módulo Finanzas / Pagos y Garantías</span>
+      </div>
+
+      <div class="flex items-center space-x-6">
+        <div class="">Mesa Finanzas: <strong class="text-[#1F2A33] font-mono-num">anexo 205</strong></div>
+        <div class="">Mesa Front-office: <strong class="text-[#1F2A33] font-mono-num">anexo 103</strong></div>
+        <div class="">Soporte TI: <strong class="text-[#1F2A33] font-mono-num">anexo 101</strong></div>
+        <a href="#" class="inline-flex items-center space-x-1 text-[#C22B2B] hover:underline font-medium">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span class="">Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+
+</body></html>

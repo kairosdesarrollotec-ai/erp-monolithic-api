@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"tertiary-container":"#002951","primary-fixed":"#d8e4f0","surface-bright":"#fcf9f3","inverse-surface":"#31302d","on-secondary-container":"#662d00","error-container":"#ffdad6","on-tertiary":"#ffffff","on-primary-fixed":"#121d25","on-secondary":"#ffffff","on-surface":"#1c1c18","on-secondary-fixed":"#321300","secondary":"#994700","inverse-primary":"#bcc8d4","tertiary":"#00142d","outline-variant":"#c4c7cb","tertiary-fixed-dim":"#a5c8ff","tertiary-fixed":"#d4e3ff","secondary-fixed":"#ffdbc8","error":"#ba1a1a","secondary-fixed-dim":"#ffb68a","on-error":"#ffffff","surface-container-highest":"#e5e2dc","inverse-on-surface":"#f4f0ea","on-surface-variant":"#44474b","surface-container-low":"#f6f3ed","surface-container-lowest":"#ffffff","on-tertiary-fixed-variant":"#004785","on-primary-fixed-variant":"#3d4852","on-background":"#1c1c18","on-error-container":"#93000a","surface-variant":"#e5e2dc","on-primary-container":"#86919c","surface-container-high":"#ebe8e2","primary-container":"#1f2a33","surface-tint":"#54606a","primary-fixed-dim":"#bcc8d4","primary":"#0a161e","surface":"#fcf9f3","surface-container":"#f1ede7","surface-dim":"#dddad4","on-tertiary-fixed":"#001c3a","on-secondary-fixed-variant":"#743400","secondary-container":"#fd8a38","on-tertiary-container":"#5692df","outline":"#74777b","background":"#fcf9f3","on-primary":"#ffffff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"spacing-3xl":"3rem","gutter-mobile":"0.5rem","margin-desktop":"1.5rem","gutter-desktop":"1rem","spacing-2xl":"2rem","spacing-xl":"1.5rem","spacing-lg":"1.25rem","spacing-sm":"0.5rem","spacing-2xs":"0.125rem","spacing-md":"0.75rem","spacing-base":"1rem","gutter-tablet":"0.75rem","margin-mobile":"0.75rem","margin-tablet":"1rem","spacing-xs":"0.25rem"},"fontFamily":{"body-sm":["Public Sans"],"label-md":["Public Sans"],"code-operational-sm":["Space Grotesk"],"headline-lg":["Public Sans"],"headline-xl-mobile":["Public Sans"],"code-operational":["Space Grotesk"],"body-base":["Public Sans"],"headline-xl":["Public Sans"],"headline-sm":["Public Sans"],"body-lg":["Public Sans"],"label-sm":["Public Sans"]},"fontSize":{"body-sm":["0.75rem",{"lineHeight":"1rem","fontWeight":"400"}],"label-md":["0.8125rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"500"}],"code-operational-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.03em","fontWeight":"600"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-xl-mobile":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.01em","fontWeight":"700"}],"code-operational":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.02em","fontWeight":"500"}],"body-base":["0.875rem",{"lineHeight":"1.25rem","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["1rem",{"lineHeight":"1.5rem","fontWeight":"400"}],"label-sm":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface-container-lowest text-on-surface font-body-base text-body-base min-h-screen flex flex-col selection:bg-primary-fixed"><header class="fixed top-0 inset-x-0 z-50 bg-surface-container-lowest/90 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 max-w-[390px] mx-auto px-margin-mobile flex items-center justify-between"><button aria-label="Volver" class="w-11 h-11 flex items-center justify-start text-on-surface-variant hover:text-on-surface transition-colors" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[20px]">arrow_back</span></button><div class="flex items-center gap-spacing-xs"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-code-operational-sm text-code-operational-sm text-on-surface uppercase tracking-wider">Verificacion 2Fa</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 flex flex-col relative w-full max-w-[390px] mx-auto pt-14 pb-safe bg-surface-container-lowest"><div class="flex flex-col w-full">
+<!-- Sub-bar / Breadcrumb & Telemetry Context -->
+<section class="bg-surface-container-low px-spacing-base py-spacing-md flex flex-col gap-spacing-xs">
+<div class="flex items-center justify-between">
+<a class="inline-flex items-center gap-spacing-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-sm uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+        Volver al Centro de Sincronización
+      </a>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant bg-surface-container-highest px-spacing-sm py-spacing-2xs rounded">
+        SYNC-ERR-8812
+      </span>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-spacing-sm pt-spacing-xs">
+<div class="flex items-center gap-spacing-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Módulo Alquileres</span>
+<span class="text-outline text-label-sm">/</span>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">Nuevo alquiler</span>
+</div>
+<div class="flex items-center gap-spacing-xs">
+<span class="inline-flex items-center gap-spacing-2xs bg-secondary-fixed text-on-secondary-fixed font-code-operational-sm text-code-operational-sm px-spacing-sm py-spacing-2xs rounded">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+          1 conflicto pendiente
+        </span>
+</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm pt-spacing-2xs">
+<span class="flex items-center gap-spacing-xs">
+<span class="material-symbols-outlined text-[14px]">badge</span>
+        Edwin Alanya (Mecánico / Patio)
+      </span>
+<span class="flex items-center gap-spacing-2xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+        Sede Ayacucho
+      </span>
+</div>
+</section>
+<!-- Main Viewport / Working Area -->
+<div class="bg-surface-container-lowest px-spacing-base py-spacing-lg flex flex-col gap-spacing-lg">
+<!-- Title and Lead Info -->
+<header class="flex flex-col gap-spacing-xs">
+<div class="flex items-center gap-spacing-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Resolución de conflicto de evidencia fotográfica</h2>
+</div>
+<p class="font-body-base text-body-base text-on-surface-variant">
+        Se encontraron cambios simultáneos para la misma toma en la inspección de entrega. Seleccione qué versión debe prevalecer en el expediente digital oficial antes de continuar.
+      </p>
+</header>
+<!-- Master Conflict Card (Amber Highlighted) -->
+<article class="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden flex flex-col" style="box-shadow: 0 0 0 2px #8A5505;">
+<!-- Card Header -->
+<div class="bg-surface-container-high px-spacing-base py-spacing-md flex flex-col gap-spacing-xs">
+<div class="flex items-start justify-between gap-spacing-sm">
+<div class="flex items-center gap-spacing-sm">
+<span class="w-8 h-8 rounded bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">sync_problem</span>
+</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface leading-snug">Conflicto en zona Interior — Entrega #ALQ-1187</h3>
+<p class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">
+                Unidad: Toyota Hilux D0Y-704 · Toma 02 de 06: Consola central y palanca de cambios
+              </p>
+</div>
+</div>
+</div>
+<div class="flex items-center self-start mt-spacing-2xs bg-secondary-fixed text-on-secondary-fixed px-spacing-sm py-spacing-2xs rounded font-code-operational-sm text-code-operational-sm gap-spacing-2xs">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+          Divergencia horaria: 4 min
+        </div>
+</div>
+<!-- Comparative Panels (Side-by-Side on standard, stacked on tight mobile) -->
+<div class="p-spacing-md flex flex-col gap-spacing-base bg-surface-container-lowest">
+<!-- Column 1: Local Version -->
+<section class="bg-surface-container-low rounded-lg p-spacing-sm flex flex-col gap-spacing-sm transition-all duration-200" id="panel-local">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-spacing-xs bg-primary-container text-on-primary font-label-md text-label-md px-spacing-sm py-spacing-2xs rounded">
+<span class="material-symbols-outlined text-[16px]">tablet_android</span>
+              Tu versión (este dispositivo)
+            </span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">2.8 MB · 1080p</span>
+</div>
+<!-- Image Frame -->
+<div class="relative w-full aspect-[4/3] rounded overflow-hidden bg-primary-container">
+<img alt="Inspección de cabina de Toyota Hilux tomada desde tablet con vista frontal directa de palanca de cambios" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1WvQPPBqX5yWAY_mX5Fb3bIBYE1ttFwDCVFdG1DOAVnZWk4FtXZrKHInKye1ECilUK9Ht9w0AV1dqpl1DZkwBTfYGTGl7DVTL9CnoTGY35lYcNJhrZexvjrEmSF0VEsuLGwBwPpJz3zA_hQKQaJi2VQ2QqYG9iyiqBCskIW743JG15-rTOJSBxXug6Zs38QwF8XB_06NlE3OAGX1Lzrpq9qKVljooABzbxd2NlIw3eYwI-DcAJ0kmvcag"/>
+<span class="absolute top-2 right-2 bg-primary/80 backdrop-blur-sm text-on-primary font-code-operational-sm text-code-operational-sm px-spacing-sm py-spacing-2xs rounded">
+              Caché local
+            </span>
+</div>
+<!-- Technical Metadata Grid -->
+<dl class="flex flex-col gap-spacing-xs bg-surface-container-lowest p-spacing-sm rounded font-body-sm text-body-sm text-on-surface">
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Capturado por:</dt>
+<dd class="font-body-base text-body-base font-medium text-on-surface">Edwin Alanya (Mecánico de Patio)</dd>
+</div>
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Fecha y hora de captura:</dt>
+<dd class="font-code-operational text-code-operational text-on-surface">Hoy, 10:53:02 AM</dd>
+</div>
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Dispositivo origen:</dt>
+<dd class="font-body-base text-body-base text-on-surface">Tablet Samsung Tab Active4 (Local)</dd>
+</div>
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Observación técnica:</dt>
+<dd class="font-body-base text-body-base text-on-surface-variant">Encuadre frontal directo con ángulo cerrado a palanca 4x4.</dd>
+</div>
+</dl>
+<!-- Footer Metadata -->
+<div class="flex items-center justify-between pt-spacing-2xs text-on-surface-variant font-code-operational-sm text-code-operational-sm">
+<span class="flex items-center gap-spacing-2xs text-secondary font-medium">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span>
+              Guardado localmente sin confirmar
+            </span>
+<span class="text-outline">Hash: 8a9f...10b</span>
+</div>
+</section>
+<!-- Column 2: Server Version -->
+<section class="bg-surface-container-low rounded-lg p-spacing-sm flex flex-col gap-spacing-sm transition-all duration-200" id="panel-server">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-spacing-xs bg-tertiary-container text-on-tertiary-container font-label-md text-label-md px-spacing-sm py-spacing-2xs rounded">
+<span class="material-symbols-outlined text-[16px]">cloud</span>
+              Versión del servidor
+            </span>
+<span class="font-code-operational-sm text-code-operational-sm text-on-surface-variant">3.1 MB · 1080p</span>
+</div>
+<!-- Image Frame -->
+<div class="relative w-full aspect-[4/3] rounded overflow-hidden bg-primary-container">
+<img alt="Inspección de cabina de Toyota Hilux con portapapeles y lista de chequeo física visible sobre asiento" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XOrxOKf7zUfJZRsaVaRC1KNCEFztNPrO6_9_tqW5_VYk5YiEQd4bjo53fc4sPQru9PxHegyk-oVXRvm3xnZgfJfVd20WjhZQQ3VKhXziGv-n55Sa1vdUBh6aOzUx700YHkylcxsDd_oT68-Sp3Ph0zKMYO6ae3o-nkqGrNOjoQRAbu1lUl4fBwPPXwsQaFSLuDWG2-zLg3_ec4hvmO-YUarRsD0sdPf6p-OYygXQQGw0i7hyb3otBGiaM"/>
+<span class="absolute top-2 right-2 bg-tertiary/80 backdrop-blur-sm text-on-tertiary font-code-operational-sm text-code-operational-sm px-spacing-sm py-spacing-2xs rounded">
+              Confirmado en servidor
+            </span>
+</div>
+<!-- Technical Metadata Grid -->
+<dl class="flex flex-col gap-spacing-xs bg-surface-container-lowest p-spacing-sm rounded font-body-sm text-body-sm text-on-surface">
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Capturado por:</dt>
+<dd class="font-body-base text-body-base font-medium text-on-surface">M. Ejecutivo (Front-office / Patio)</dd>
+</div>
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Fecha y hora de subida:</dt>
+<dd class="font-code-operational text-code-operational text-on-surface">Hoy, 10:49:18 AM</dd>
+</div>
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Dispositivo origen:</dt>
+<dd class="font-body-base text-body-base text-on-surface">Terminal Sede Central Ayacucho</dd>
+</div>
+<div>
+<dt class="font-label-sm text-label-sm text-on-surface-variant uppercase">Observación técnica:</dt>
+<dd class="font-body-base text-body-base text-on-surface-variant">Incluye tabla de soporte con hoja física de checklist visible.</dd>
+</div>
+</dl>
+<!-- Footer Metadata -->
+<div class="flex items-center justify-between pt-spacing-2xs text-on-surface-variant font-code-operational-sm text-code-operational-sm">
+<span class="flex items-center gap-spacing-2xs text-on-tertiary-container font-medium">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span>
+              Alojado en nube de VeloxRent
+            </span>
+<span class="text-outline">Hash: 44e1...c2a</span>
+</div>
+</section>
+</div>
+<!-- Combination Criteria Info Box -->
+<aside class="mx-spacing-md mb-spacing-md bg-surface-container-high p-spacing-md rounded-lg flex items-start gap-spacing-sm">
+<span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0 mt-0.5">merge_type</span>
+<div class="flex flex-col gap-spacing-2xs">
+<h4 class="font-label-md text-label-md text-on-surface font-semibold">Criterio de combinación disponible</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Las fotos corresponden a ángulos complementarios de la misma zona técnica (consola central sin accesorios vs. con hoja de verificación). Si elige <strong>"Combinar"</strong>, se registrará una como toma principal y la otra como anexo fotográfico secundario en el expediente #ALQ-1187 sin pérdida de datos.
+          </p>
+</div>
+</aside>
+</article>
+<!-- Resolution Action Selector -->
+<section class="flex flex-col gap-spacing-md">
+<div class="flex flex-col gap-spacing-2xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Toma de decisión</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Seleccione una acción para resolver la inconsistencia:</h3>
+</div>
+<!-- 3 Unselected Action Buttons -->
+<div class="flex flex-col gap-spacing-sm" id="action-selection-group">
+<!-- Option 1: Keep Mine -->
+<button class="w-full text-left p-spacing-md bg-surface-container-lowest rounded-lg shadow-sm hover:bg-surface-container-low transition-colors flex items-center justify-between" id="btn-action-local" onclick="selectAction('local')" style="box-shadow: 0 0 0 1.5px #1F2A33;" type="button">
+<div class="flex items-center gap-spacing-md">
+<span class="w-10 h-10 rounded bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">tablet_android</span>
+</span>
+<div>
+<span class="block font-label-md text-label-md font-semibold text-on-surface">Conservar la mía</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">Reemplazar servidor con la captura local</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]" id="icon-check-local">radio_button_unchecked</span>
+</button>
+<!-- Option 2: Keep Server -->
+<button class="w-full text-left p-spacing-md bg-surface-container-lowest rounded-lg shadow-sm hover:bg-surface-container-low transition-colors flex items-center justify-between" id="btn-action-server" onclick="selectAction('server')" style="box-shadow: 0 0 0 1.5px #2166B0;" type="button">
+<div class="flex items-center gap-spacing-md">
+<span class="w-10 h-10 rounded bg-tertiary-container text-on-tertiary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">cloud_download</span>
+</span>
+<div>
+<span class="block font-label-md text-label-md font-semibold text-on-surface">Conservar del servidor</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">Descartar local y aceptar versión en nube</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]" id="icon-check-server">radio_button_unchecked</span>
+</button>
+<!-- Option 3: Merge -->
+<button class="w-full text-left p-spacing-md bg-surface-container-lowest rounded-lg shadow-sm hover:bg-surface-container-low transition-colors flex items-center justify-between" id="btn-action-merge" onclick="selectAction('merge')" style="box-shadow: 0 0 0 1.5px #1E7D4B;" type="button">
+<div class="flex items-center gap-spacing-md">
+<span class="w-10 h-10 rounded bg-surface-container-high text-on-surface flex items-center justify-center flex-shrink-0" style="background-color: #EBF5F0; color: #1E7D4B;">
+<span class="material-symbols-outlined text-[20px]">call_merge</span>
+</span>
+<div>
+<span class="block font-label-md text-label-md font-semibold text-on-surface">Combinar (ambas fotos)</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">Archivar complementarias sin sobreescritura</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]" id="icon-check-merge">radio_button_unchecked</span>
+</button>
+</div>
+<!-- Action Confirmation CTA -->
+<div class="pt-spacing-xs">
+<button class="w-full py-spacing-md px-spacing-xl bg-surface-container-high text-outline font-label-md text-label-md rounded font-semibold flex items-center justify-center gap-spacing-xs transition-all cursor-not-allowed" disabled="" id="confirm-resolution-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span id="confirm-label">Seleccione una opción para confirmar</span>
+</button>
+</div>
+</section>
+<!-- Explanatory Impact Cards -->
+<section class="flex flex-col gap-spacing-sm pt-spacing-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Matriz de consecuencias operativas</span>
+<div class="grid grid-cols-1 gap-spacing-sm">
+<!-- Consequence 1 -->
+<div class="p-spacing-md bg-surface-container-low rounded-lg flex items-start gap-spacing-sm">
+<span class="w-6 h-6 rounded bg-primary-container text-on-primary font-code-operational-sm text-code-operational-sm flex items-center justify-center flex-shrink-0">
+            1
+          </span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Al "Conservar la mía":</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              La foto de este dispositivo reemplaza la del servidor y se marcará para subida inmediata prioritaria con sello de auditoría de patio.
+            </p>
+</div>
+</div>
+<!-- Consequence 2 -->
+<div class="p-spacing-md bg-surface-container-low rounded-lg flex items-start gap-spacing-sm">
+<span class="w-6 h-6 rounded bg-tertiary-container text-on-tertiary-container font-code-operational-sm text-code-operational-sm flex items-center justify-center flex-shrink-0">
+            2
+          </span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Al "Conservar del servidor":</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Se descarta la copia local y se descarga la versión autorizada en la base central sin alterar el registro telemático del expediente.
+            </p>
+</div>
+</div>
+<!-- Consequence 3 -->
+<div class="p-spacing-md bg-surface-container-low rounded-lg flex items-start gap-spacing-sm">
+<span class="w-6 h-6 rounded bg-surface-container-high font-code-operational-sm text-code-operational-sm flex items-center justify-center flex-shrink-0" style="background-color: #EBF5F0; color: #1E7D4B;">
+            3
+          </span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Al "Combinar":</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Ambas capturas se integran en el acta FIV con sellos de tiempo independientes para soporte pericial y trazabilidad contractual.
+            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Institutional Technical Footer -->
+<footer class="mt-spacing-md pt-spacing-md bg-surface-container-high p-spacing-md rounded-lg flex flex-col gap-spacing-sm text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex flex-wrap items-center justify-between gap-spacing-xs">
+<span class="font-semibold text-on-surface">VeloxRent Fleet System</span>
+<span class="font-code-operational-sm text-code-operational-sm">v4.18.2 — AYAC</span>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-spacing-xs pt-spacing-2xs">
+<span>Mesa de Patio &amp; Inspección: <strong class="text-on-surface">Anexo 108</strong></span>
+<span>Soporte TI: <strong class="text-on-surface">Anexo 101</strong></span>
+</div>
+<div class="flex items-center justify-between pt-spacing-xs">
+<span class="font-code-operational-sm text-code-operational-sm">ID Sesión: USR-ALANYA-AYAC</span>
+<a class="text-error font-label-sm text-label-sm font-semibold hover:underline inline-flex items-center gap-spacing-2xs" href="#">
+<span class="material-symbols-outlined text-[14px]">logout</span>
+          Cerrar sesión
+        </a>
+</div>
+</footer>
+</div>
+<script>
+    let selectedOption = null;
+
+    function selectAction(type) {
+      selectedOption = type;
+      
+      const btnLocal = document.getElementById('btn-action-local');
+      const btnServer = document.getElementById('btn-action-server');
+      const btnMerge = document.getElementById('btn-action-merge');
+
+      const iconLocal = document.getElementById('icon-check-local');
+      const iconServer = document.getElementById('icon-check-server');
+      const iconMerge = document.getElementById('icon-check-merge');
+
+      const confirmBtn = document.getElementById('confirm-resolution-btn');
+      const confirmLabel = document.getElementById('confirm-label');
+
+      // Reset backgrounds and icons
+      btnLocal.classList.remove('bg-surface-container-high');
+      btnServer.classList.remove('bg-surface-container-high');
+      btnMerge.classList.remove('bg-surface-container-high');
+
+      iconLocal.textContent = 'radio_button_unchecked';
+      iconServer.textContent = 'radio_button_unchecked';
+      iconMerge.textContent = 'radio_button_unchecked';
+
+      // Highlight selected
+      if (type === 'local') {
+        btnLocal.classList.add('bg-surface-container-high');
+        iconLocal.textContent = 'radio_button_checked';
+        confirmLabel.textContent = 'Confirmar: Conservar la mía (Local)';
+      } else if (type === 'server') {
+        btnServer.classList.add('bg-surface-container-high');
+        iconServer.textContent = 'radio_button_checked';
+        confirmLabel.textContent = 'Confirmar: Conservar del servidor';
+      } else if (type === 'merge') {
+        btnMerge.classList.add('bg-surface-container-high');
+        iconMerge.textContent = 'radio_button_checked';
+        confirmLabel.textContent = 'Confirmar: Combinar ambas tomas';
+      }
+
+      // Enable CTA
+      confirmBtn.removeAttribute('disabled');
+      confirmBtn.classList.remove('bg-surface-container-high', 'text-outline', 'cursor-not-allowed');
+      confirmBtn.classList.add('bg-secondary', 'text-on-secondary', 'hover:opacity-95', 'cursor-pointer');
+    }
+  </script>
+</div></main></body></html>

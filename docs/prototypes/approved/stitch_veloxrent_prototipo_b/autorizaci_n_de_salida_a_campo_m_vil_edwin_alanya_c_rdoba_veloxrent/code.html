@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Autorización de salida a campo — Edwin Alanya Córdoba - VeloxRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: '#1F2A33',
+            'primary-hover': '#151C22',
+            accent: '#9E4C08',
+            'accent-light': '#FDF1DE',
+            'accent-border': '#FED7AA',
+            danger: '#C22B2B',
+            'danger-hover': '#9E2222',
+            'danger-light': '#FBE9E9',
+            'danger-border': '#FECACA',
+            border: '#DDDAD4',
+            'border-dark': '#A39C90',
+            surface: '#FFFFFF',
+            muted: '#5C5446',
+            subtle: '#8C827A',
+            soft: '#F6F3ED',
+            'soft-card': '#FAF8F5',
+            success: '#1E7D4B',
+            'success-light': '#ECFDF5',
+          },
+          borderRadius: {
+            DEFAULT: '4px',
+            sm: '4px',
+            md: '4px',
+            lg: '4px',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', system-ui, sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-display {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+    }
+    .touch-target {
+      min-height: 52px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white flex justify-center text-[#1F2A33]">
+  <!-- Mobile Container (390px viewport standard) -->
+  <div class="w-full max-w-[390px] min-h-screen flex flex-col justify-between bg-white relative shadow-sm border-x border-[#F0EDE6]">
+    
+    <!-- Top Navigation / Status Header -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-[#DDDAD4] px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <button type="button" aria-label="Volver al tablero" class="w-9 h-9 flex items-center justify-center rounded border border-[#DDDAD4] hover:bg-[#F6F3ED] text-[#1F2A33] transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <div>
+            <div class="text-[11px] font-semibold tracking-wide uppercase text-[#5C5446] leading-none">
+              PERSONAL · SALIDA A CAMPO
+            </div>
+            <div class="text-[12px] font-semibold text-[#1F2A33] mt-0.5">
+              Expediente #SOL-CAM-2026-0412
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-[#FDF1DE] border border-[#FED7AA]">
+          <span class="w-2 h-2 rounded-full bg-[#9E4C08] animate-pulse"></span>
+          <span class="text-[11px] font-semibold text-[#9E4C08]">Pendiente</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scrollable Main Content -->
+    <main class="flex-1 px-4 pt-3.5 pb-28">
+      
+      <!-- Title Section -->
+      <div class="mb-3.5">
+        <h1 class="font-display font-bold text-[20px] leading-tight text-[#1F2A33]">
+          Autorización de salida a campo
+        </h1>
+        <p class="text-[13px] text-[#5C5446] mt-0.5">
+          Decisión de primera instancia para auxilio mecánico fuera de sede.
+        </p>
+      </div>
+
+      <!-- Applicant Identity Card -->
+      <div class="bg-[#FAF8F5] border border-[#DDDAD4] rounded p-3 mb-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-display font-bold text-[14px]">
+            EA
+          </div>
+          <div>
+            <div class="font-semibold text-[14px] text-[#1F2A33] leading-tight">
+              Edwin Alanya Córdoba
+            </div>
+            <div class="text-[12px] text-[#5C5446] mt-0.5">
+              Mecánico Especialista 4x4 · DNI 47829103
+            </div>
+          </div>
+        </div>
+        <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#ECFDF5] text-[#1E7D4B] border border-[#A7F3D0]">
+          Planilla
+        </span>
+      </div>
+
+      <!-- Urgency & Escalation Timer Card -->
+      <div class="bg-[#FFFBF5] border-2 border-[#FED7AA] rounded p-3.5 mb-4 shadow-sm text-center">
+        <!-- Instance Level Indicator -->
+        <div class="inline-flex items-center justify-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FDF1DE] text-[#9E4C08] text-[12px] font-semibold tracking-tight mb-2 border border-[#FED7AA]">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          Instancia Activa
+        </div>
+
+        <div class="text-[14px] font-medium text-[#1F2A33]">
+          Nivel 1 de 3 · Fiorella
+        </div>
+
+        <!-- Big Countdown Timer: Space Grotesk Bold 32px, #9E4C08 -->
+        <div class="my-2.5 flex items-baseline justify-center gap-1.5">
+          <span class="font-display font-bold text-[32px] leading-none text-[#9E4C08] tracking-tight">
+            04:12
+          </span>
+          <span class="text-[11px] font-semibold text-[#9E4C08] uppercase tracking-wider">
+            min restantes
+          </span>
+        </div>
+
+        <!-- Escalation rule explanation: 13px -->
+        <p class="text-[13px] text-[#5C5446] leading-snug px-1 border-t border-[#FED7AA]/60 pt-2 mt-1">
+          Si no se responde, escala a José Pariona (nivel 2) y luego a Cecilia (nivel 3) — no hay un 4º nivel automático.
+        </p>
+      </div>
+
+      <!-- Request Details Section (Apilados verticalmente, texto 14px) -->
+      <div class="bg-white border border-[#DDDAD4] rounded p-3.5 space-y-3.5 mb-3">
+        <div class="text-[12px] font-bold text-[#5C5446] uppercase tracking-wider border-b border-[#F0EDE6] pb-1.5 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-[#5C5446]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Detalle del desplazamiento solicitado
+        </div>
+
+        <!-- Item 1: Motivo (Apilado verticalmente, texto 14px) -->
+        <div>
+          <span class="text-[12px] font-semibold text-[#8C827A] uppercase tracking-wide block mb-0.5">
+            Motivo de la salida
+          </span>
+          <p class="text-[14px] font-semibold text-[#1F2A33] leading-snug bg-[#FAF8F5] p-2.5 rounded border border-[#EBE7DF]">
+            Auxilio mecánico en ruta minera Km 48 — Cambio de alternador Hilux D0Y-704
+          </p>
+        </div>
+
+        <!-- Item 2: Área (Apilado verticalmente, texto 14px) -->
+        <div>
+          <span class="text-[12px] font-semibold text-[#8C827A] uppercase tracking-wide block mb-0.5">
+            Área operativa
+          </span>
+          <div class="text-[14px] text-[#1F2A33] flex items-center justify-between bg-[#FAF8F5] px-2.5 py-2 rounded border border-[#EBE7DF]">
+            <span class="font-medium">Mantenimiento y Taller Central</span>
+            <span class="text-[11px] font-semibold text-[#5C5446] bg-[#EBE7DF] px-1.5 py-0.5 rounded">COD: OPE-AYAC-TAL</span>
+          </div>
+        </div>
+
+        <!-- Item 3: Hora (Apilado verticalmente, texto 14px) -->
+        <div>
+          <span class="text-[12px] font-semibold text-[#8C827A] uppercase tracking-wide block mb-0.5">
+            Horario programado
+          </span>
+          <div class="bg-[#FAF8F5] p-2.5 rounded border border-[#EBE7DF] space-y-1.5">
+            <div class="flex items-center justify-between text-[14px]">
+              <span class="text-[#5C5446]">Salida prevista:</span>
+              <span class="font-semibold text-[#1F2A33]">09:15 AM</span>
+            </div>
+            <div class="flex items-center justify-between text-[14px]">
+              <span class="text-[#5C5446]">Retorno estimado:</span>
+              <span class="font-semibold text-[#1F2A33]">01:30 PM</span>
+            </div>
+            <div class="pt-1.5 border-t border-[#DDDAD4] flex items-center justify-between text-[12px] text-[#5C5446]">
+              <span>Cómputo fuera de sede:</span>
+              <span class="font-semibold text-[#1F2A33]">4h 15 min</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Legal / SST Notice -->
+      <div class="p-2.5 rounded bg-[#FAF8F5] border border-[#DDDAD4] flex items-start gap-2">
+        <svg class="w-4 h-4 text-[#5C5446] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-[11px] text-[#5C5446] leading-relaxed">
+          <strong class="font-semibold text-[#1F2A33]">Protocolo PR-CAM-004:</strong> La aprobación suspende el control en garita y autoriza el egreso de la camioneta de auxilio.
+        </p>
+      </div>
+
+    </main>
+
+    <!-- Fixed Bottom Actions Bar (Sticky CTA: 52px height, 50% width each) -->
+    <footer class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#DDDAD4] p-3 shadow-lg flex justify-center">
+      <div class="w-full max-w-[390px] flex items-center gap-2.5 px-1">
+        
+        <!-- Button Rechazar: 50% width, 52px touch-target, border #C22B2B, text #C22B2B -->
+        <button 
+          type="button" 
+          onclick="handleReject()" 
+          class="w-1/2 touch-target h-[52px] flex items-center justify-center gap-1.5 rounded border-2 border-[#C22B2B] bg-white text-[#C22B2B] hover:bg-[#FBE9E9] active:bg-[#FBE9E9] font-semibold text-[15px] transition-colors focus:outline-none focus:ring-2 focus:ring-[#C22B2B]/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+          Rechazar
+        </button>
+
+        <!-- Button Aprobar: 50% width, 52px touch-target, bg #1F2A33, text white -->
+        <button 
+          type="button" 
+          onclick="handleApprove()" 
+          class="w-1/2 touch-target h-[52px] flex items-center justify-center gap-1.5 rounded bg-[#1F2A33] hover:bg-[#151C22] active:bg-[#000000] text-white font-semibold text-[15px] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A33]/30">
+          <svg class="w-4 h-4 text-[#FED7AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+          </svg>
+          Aprobar
+        </button>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // Live countdown timer simulation
+    let seconds = 252; // 04:12
+    const timerEl = document.querySelector('span.text-\\[32px\\]');
+    
+    function updateTimer() {
+      if (seconds > 0) {
+        seconds--;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        if (timerEl) {
+          timerEl.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+      }
+    }
+    setInterval(updateTimer, 1000);
+
+    function handleApprove() {
+      alert('Solicitud #SOL-CAM-2026-0412 aprobada por Fiorella (Nivel 1). Se emitió autorización para garita.');
+    }
+
+    function handleReject() {
+      const motivo = prompt('Ingresa el motivo del rechazo de salida a campo:');
+      if (motivo) {
+        alert('Solicitud rechazada. Se notificó al colaborador.');
+      }
+    }
+  </script>
+</body>
+</html>

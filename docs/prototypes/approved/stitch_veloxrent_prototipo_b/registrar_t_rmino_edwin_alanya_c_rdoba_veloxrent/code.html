@@ -1,0 +1,544 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar término — Edwin Alanya Córdoba - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              danger: '#C22B2B',
+              warning: '#B5720A',
+              success: '#1E7D4B',
+              border: '#E5E2DC',
+              bgLight: '#FAF9F5',
+              subtle: '#4E4A45',
+              borderMuted: '#A39C90'
+            }
+          },
+          fontFamily: {
+            sans: ['Public Sans', 'sans-serif'],
+            grotesk: ['Space Grotesk', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-code {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-white text-[#1F2A33]">
+
+  <!-- Top Bar / Cabecera Principal Corporativa -->
+  <header class="border-b border-[#E5E2DC] bg-white px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3">
+        <span class="text-xl font-bold font-grotesk tracking-tight text-[#C6600A]">VeloxRent</span>
+        <span class="px-2 py-0.5 text-xs font-semibold rounded bg-[#FAF9F5] border border-[#E5E2DC] text-[#4E4A45] font-code">ERP v3.4</span>
+      </div>
+
+      <div class="h-4 w-px bg-[#E5E2DC]"></div>
+
+      <!-- Breadcrumbs de navegación -->
+      <nav class="flex items-center gap-2 text-xs text-[#4E4A45]">
+        <span>Recursos Humanos</span>
+        <span class="text-[#A39C90]">›</span>
+        <span>Personal</span>
+        <span class="text-[#A39C90]">›</span>
+        <span>Renuncia y despido</span>
+        <span class="text-[#A39C90]">›</span>
+        <span class="font-semibold text-[#1F2A33]">Registrar término</span>
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-6 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+        <span class="text-[#4E4A45] font-medium">En línea</span>
+      </div>
+
+      <div class="flex items-center gap-2 text-[#4E4A45]">
+        <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        <span>Ayacucho — Sede Central</span>
+      </div>
+
+      <div class="flex items-center gap-2 pl-2 border-l border-[#E5E2DC]">
+        <div class="w-7 h-7 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs font-grotesk">
+          RO
+        </div>
+        <div>
+          <div class="font-medium text-[#1F2A33]">Rodrigo Ortiz</div>
+          <div class="text-[10px] text-[#4E4A45]">Jefe de RR.HH.</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Subbarra contextual del expediente -->
+  <div class="bg-[#FAF9F5] border-b border-[#E5E2DC] px-8 py-2.5 flex items-center justify-between text-xs">
+    <div class="flex items-center gap-6">
+      <a href="#" class="inline-flex items-center gap-1.5 text-[#4E4A45] hover:text-[#1F2A33] font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        <span>Volver a Fichas de personal</span>
+      </a>
+
+      <div class="h-3.5 w-px bg-[#E5E2DC]"></div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-[#4E4A45]">Expediente:</span>
+        <span class="font-semibold text-[#1F2A33] font-code">#EXP-BAJA-2026-004</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-[#4E4A45]">Fecha de tramitación:</span>
+        <span class="font-semibold text-[#1F2A33]">08/09/2026</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-[#4E4A45]">Régimen legal:</span>
+        <span class="px-2 py-0.5 rounded bg-white border border-[#E5E2DC] text-[#1F2A33] font-code text-[11px]">D.L. 728 — Plazo Indeterminado</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="px-2.5 py-1 rounded text-[11px] font-semibold tracking-wide uppercase bg-[#FBE9E9] text-[#C22B2B] border border-[#F6CACA]">
+        Proceso de desvinculación
+      </span>
+      <span class="text-[#4E4A45] font-code text-[11px]">Protocolo: PR-RRHH-028</span>
+    </div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-8 py-8">
+
+    <!-- Encabezado de la Pantalla -->
+    <div class="mb-6 flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-bold font-grotesk tracking-tight text-[#1F2A33]">
+          Registrar término — Edwin Alanya Córdoba
+        </h1>
+        <p class="text-sm text-[#4E4A45] mt-1">
+          Formalización reglamentaria de desvinculación laboral, liquidación de beneficios y deshabilitación de accesos de taller y garita.
+        </p>
+      </div>
+      <div class="bg-[#FAF9F5] border border-[#E5E2DC] rounded px-3 py-2 text-right">
+        <span class="text-[11px] text-[#4E4A45] block">Estado laboral actual</span>
+        <span class="text-xs font-semibold text-[#1E7D4B] flex items-center justify-end gap-1.5 mt-0.5">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span> Planilla Vigente
+        </span>
+      </div>
+    </div>
+
+    <!-- Ficha de resumen del colaborador -->
+    <section class="border border-[#E5E2DC] rounded-lg p-5 mb-8 bg-[#FAF9F5]">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-13 h-13 w-12 h-12 rounded-lg bg-[#1F2A33] text-white flex items-center justify-center font-bold text-base font-grotesk shadow-sm">
+            EA
+          </div>
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="text-base font-bold text-[#1F2A33] font-grotesk">Edwin Alanya Córdoba</h2>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#E8F5EC] text-[#1E7D4B] border border-[#CDE8D5]">
+                Planilla — Plazo Indeterminado
+              </span>
+              <span class="text-xs text-[#4E4A45] font-code">COL-AYA-2026-088</span>
+            </div>
+            <div class="flex items-center gap-6 mt-1.5 text-xs text-[#4E4A45]">
+              <span><strong class="text-[#1F2A33]">DNI:</strong> 47829103</span>
+              <span>•</span>
+              <span><strong class="text-[#1F2A33]">Cargo:</strong> Mecánico Especialista 4x4 / Flota Minera</span>
+              <span>•</span>
+              <span><strong class="text-[#1F2A33]">Área:</strong> Taller Central Ayacucho</span>
+              <span>•</span>
+              <span><strong class="text-[#1F2A33]">Ingreso:</strong> 08/09/2026 (Continuidad contractual)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-l border-[#E5E2DC] pl-6 text-right">
+          <div class="text-xs text-[#4E4A45]">Remuneración mensual pactada</div>
+          <div class="text-lg font-bold font-grotesk text-[#1F2A33]">S/ 3,500.00</div>
+          <div class="text-[11px] text-[#4E4A45] mt-0.5">Sede Ayacucho (Taller y Mina)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contenedor del Formulario Principal -->
+    <div class="border border-[#E5E2DC] rounded-lg bg-white p-6 shadow-sm">
+
+      <!-- Sección 1: Selector de Tipo de Término (Chips) -->
+      <div class="mb-8">
+        <label class="block text-xs font-bold uppercase tracking-wider text-[#4E4A45] mb-3">
+          Tipo de término laboral *
+        </label>
+        
+        <div class="flex items-center gap-4">
+          <!-- Chip Renuncia (Activo por defecto) -->
+          <button type="button" id="btn-tipo-renuncia" onclick="cambiarTipo('renuncia')" class="flex items-center gap-3 px-5 py-3 rounded-lg border-2 border-[#1F2A33] bg-[#1F2A33] text-white font-medium text-sm transition-all shadow-sm">
+            <span class="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
+              <span id="dot-renuncia" class="w-2 h-2 rounded-full bg-white"></span>
+            </span>
+            <span>Renuncia voluntaria</span>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-[#2D3C48] text-[#FAF9F5] font-normal">Iniciativa del colaborador</span>
+          </button>
+
+          <!-- Chip Despido -->
+          <button type="button" id="btn-tipo-despido" onclick="cambiarTipo('despido')" class="flex items-center gap-3 px-5 py-3 rounded-lg border-2 border-[#E5E2DC] bg-[#FAF9F5] text-[#4E4A45] hover:border-[#A39C90] font-medium text-sm transition-all">
+            <span class="w-4 h-4 rounded-full border-2 border-[#A39C90] flex items-center justify-center">
+              <span id="dot-despido" class="w-2 h-2 rounded-full bg-transparent"></span>
+            </span>
+            <span>Despido</span>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-white border border-[#E5E2DC] text-[#C22B2B] font-normal">Causal reglamentaria / Decisión empresa</span>
+          </button>
+        </div>
+        <p class="text-xs text-[#4E4A45] mt-2.5">
+          Seleccione la causal para cargar los requisitos legales, plazos de cómputo y cálculos normativos de liquidación según el D.L. 728.
+        </p>
+      </div>
+
+      <div class="h-px bg-[#E5E2DC] w-full mb-8"></div>
+
+      <!-- VISTA DINÁMICA 1: Formulario para RENUNCIA -->
+      <div id="vista-renuncia" class="space-y-6">
+        <div class="flex items-center justify-between pb-2 border-b border-[#FAF9F5]">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-[#1F2A33] flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#1F2A33]"></span>
+            Datos del cese voluntario (Renuncia)
+          </h3>
+          <span class="text-xs text-[#4E4A45] italic">Regulado bajo Art. 18 D.L. 728 (Aviso formal de 30 días o exoneración)</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Campo: Fecha de aviso -->
+          <div>
+            <label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">
+              Fecha de aviso *
+            </label>
+            <div class="relative">
+              <input type="date" value="2026-09-08" class="w-full bg-white border border-[#E5E2DC] rounded px-3.5 py-2.5 text-sm text-[#1F2A33] focus:outline-none focus:border-[#1F2A33] focus:ring-1 focus:ring-[#1F2A33] font-code">
+            </div>
+            <p class="text-[11px] text-[#4E4A45] mt-1.5 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Fecha en que el trabajador presentó la carta física o digital de renuncia.
+            </p>
+          </div>
+
+          <!-- Campo: Último día trabajado -->
+          <div>
+            <label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">
+              Último día trabajado *
+            </label>
+            <div class="relative">
+              <input type="date" value="2026-09-30" class="w-full bg-white border border-[#E5E2DC] rounded px-3.5 py-2.5 text-sm text-[#1F2A33] focus:outline-none focus:border-[#1F2A33] focus:ring-1 focus:ring-[#1F2A33] font-code">
+            </div>
+            <div class="flex items-center justify-between mt-1.5">
+              <p class="text-[11px] text-[#4E4A45]">Cierre efectivo de labores y entrega de turno en taller.</p>
+              <label class="inline-flex items-center gap-1.5 text-[11px] text-[#1F2A33] font-medium cursor-pointer">
+                <input type="checkbox" class="rounded border-[#A39C90] text-[#1F2A33] focus:ring-0">
+                <span>Exoneración de 30 días solicitada</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campo: Pago pendiente calculado -->
+        <div class="border border-[#E5E2DC] rounded-lg p-5 bg-[#FAF9F5] mt-4">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-[#1F2A33]">
+                Pago pendiente calculado *
+              </label>
+              <p class="text-xs text-[#4E4A45] mt-0.5">
+                Cálculo previo proforma de liquidación de beneficios sociales al día de cese proyectado.
+              </p>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-[#E8F5EC] text-[#1E7D4B] border border-[#CDE8D5] text-xs font-semibold font-code">
+              Cómputo en regla (48h hábiles)
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 pb-3 border-b border-[#E5E2DC] text-xs">
+            <div>
+              <span class="text-[#4E4A45] block text-[11px]">Días laborados setiembre:</span>
+              <span class="font-semibold text-[#1F2A33] font-code text-sm">22 días (S/ 2,566.67)</span>
+            </div>
+            <div>
+              <span class="text-[#4E4A45] block text-[11px]">Vacaciones truncas:</span>
+              <span class="font-semibold text-[#1F2A33] font-code text-sm">S/ 480.20</span>
+            </div>
+            <div>
+              <span class="text-[#4E4A45] block text-[11px]">Gratificación trunca:</span>
+              <span class="font-semibold text-[#1F2A33] font-code text-sm">S/ 583.33</span>
+            </div>
+            <div>
+              <span class="text-[#4E4A45] block text-[11px]">CTS trunca:</span>
+              <span class="font-semibold text-[#1F2A33] font-code text-sm">S/ 310.80</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-4">
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-medium text-[#4E4A45]">Monto total neto estimado a liquidar:</span>
+              <div class="relative">
+                <input type="text" value="S/ 3,941.00" readonly="" class="bg-white border-2 border-[#1F2A33] rounded px-3 py-1.5 text-base font-bold text-[#1F2A33] font-code w-36 text-right focus:outline-none shadow-inner">
+              </div>
+              <span class="text-[11px] text-[#4E4A45] italic">(Sujeto a validación contable de retenciones y SCTR)</span>
+            </div>
+            <button type="button" class="text-xs text-[#C6600A] hover:underline font-semibold flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              Recalcular según último día
+            </button>
+          </div>
+        </div>
+
+        <!-- Checklists de entrega de puesto para Renuncia -->
+        <div class="bg-white border border-[#E5E2DC] rounded p-4 text-xs text-[#4E4A45]">
+          <div class="font-semibold text-[#1F2A33] mb-2 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Requisitos de cierre para formalizar renuncia:
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]">
+            <span class="flex items-center gap-1.5 text-[#1F2A33]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span> Carta de renuncia recepcionada
+            </span>
+            <span class="flex items-center gap-1.5 text-[#1F2A33]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#B5720A]"></span> Devolución de herramientas y EPP en taller
+            </span>
+            <span class="flex items-center gap-1.5 text-[#1F2A33]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#A39C90]"></span> Constancia de entrega de fotocheck y RFID
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA DINÁMICA 2: Formulario para DESPIDO -->
+      <div id="vista-despido" class="space-y-6 hidden">
+        <div class="flex items-center justify-between pb-2 border-b border-[#FAF9F5]">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-[#C22B2B] flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#C22B2B]"></span>
+            Datos del cese por despido (Causal justificada)
+          </h3>
+          <span class="text-xs text-[#4E4A45] italic">Regulado bajo Arts. 23, 24 y 25 D.L. 728 (Causas justas relacionadas a conducta o capacidad)</span>
+        </div>
+
+        <!-- Campo: Motivo del despido -->
+        <div>
+          <label class="block text-xs font-semibold text-[#1F2A33] mb-1.5">
+            Motivo del despido *
+          </label>
+          <select class="w-full bg-white border border-[#E5E2DC] rounded px-3.5 py-2.5 text-sm text-[#1F2A33] focus:outline-none focus:border-[#C22B2B] focus:ring-1 focus:ring-[#C22B2B] mb-3">
+            <option value="">-- Seleccione la causal tipificada en el D.L. 728 --</option>
+            <option value="falta_grave_tardanza" selected="">Falta grave: Inasistencias o tardanzas reiteradas y desobediencia al reglamento (Art. 25 inc. h)</option>
+            <option value="falta_grave_seguridad">Falta grave: Incumplimiento reiterado de normativas de seguridad minera SST (Art. 25 inc. a)</option>
+            <option value="rendimiento_deficiente">Capacidad: Rendimiento deficiente verificado e injustificado (Art. 23 inc. b)</option>
+            <option value="negligencia_taller">Falta grave: Negligencia grave en custodia de unidades o equipos de alquiler (Art. 25 inc. c)</option>
+            <option value="otro">Otra causal legal con imputación previa de cargos</option>
+          </select>
+          
+          <div class="relative">
+            <textarea rows="3" placeholder="Detalle la fundamentación fáctica, fechas de imputación de cargos y descargo previo del colaborador..." class="w-full bg-white border border-[#E5E2DC] rounded p-3 text-sm text-[#1F2A33] focus:outline-none focus:border-[#C22B2B] focus:ring-1 focus:ring-[#C22B2B]">Infracción reiterada al protocolo de desplazamiento PR-CAM-004 y acumulación de faltas injustificadas registradas durante el mes de setiembre de 2026, sin subsanación tras carta de preaviso de despido.</textarea>
+          </div>
+          <p class="text-[11px] text-[#4E4A45] mt-1.5">
+            Obligatorio para sustentar el expediente laboral y la carta de despido notarial ante la Autoridad Administrativa de Trabajo (SUNAFIL).
+          </p>
+        </div>
+
+        <!-- Campo: Sanciones previas registradas -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-semibold text-[#1F2A33]">
+              Sanciones previas registradas (Historial disciplinario del expediente) *
+            </label>
+            <span class="text-[11px] font-semibold text-[#C22B2B] font-code">3 incidencias formales vinculadas</span>
+          </div>
+
+          <div class="border border-[#E5E2DC] rounded-lg overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[#FAF9F5] border-b border-[#E5E2DC] text-[#4E4A45] font-semibold text-[11px] uppercase">
+                <tr>
+                  <th class="py-2.5 px-3.5">Fecha</th>
+                  <th class="py-2.5 px-3.5">Tipo de Sanción / Falta</th>
+                  <th class="py-2.5 px-3.5">Expediente / Ref.</th>
+                  <th class="py-2.5 px-3.5">Ámbito</th>
+                  <th class="py-2.5 px-3.5 text-right">Estado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#E5E2DC] bg-white">
+                <tr class="hover:bg-[#FAF9F5]">
+                  <td class="py-2.5 px-3.5 font-code text-[#1F2A33]">08/09/2026</td>
+                  <td class="py-2.5 px-3.5 font-medium text-[#B5720A]">Tardanza injustificada 3ª en ruta (+45 min)</td>
+                  <td class="py-2.5 px-3.5 text-[#4E4A45] font-code">#SOL-CAM-2026-0412</td>
+                  <td class="py-2.5 px-3.5 text-[#4E4A45]">Garita Taller Central</td>
+                  <td class="py-2.5 px-3.5 text-right">
+                    <span class="px-2 py-0.5 rounded bg-[#FDF1DE] text-[#B5720A] text-[10px] font-semibold">Advertencia formal</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#FAF9F5]">
+                  <td class="py-2.5 px-3.5 font-code text-[#1F2A33]">05/09/2026</td>
+                  <td class="py-2.5 px-3.5 font-medium text-[#4E4A45]">Tardanza 2ª en despacho (+35 min)</td>
+                  <td class="py-2.5 px-3.5 text-[#4E4A45] font-code">#SOL-CAM-2026-0398</td>
+                  <td class="py-2.5 px-3.5 text-[#4E4A45]">Despacho auxilio</td>
+                  <td class="py-2.5 px-3.5 text-right">
+                    <span class="px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#E5E2DC] text-[#4E4A45] text-[10px] font-medium">Registrada</span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-[#FAF9F5]">
+                  <td class="py-2.5 px-3.5 font-code text-[#1F2A33]">02/09/2026</td>
+                  <td class="py-2.5 px-3.5 font-medium text-[#4E4A45]">Tardanza 1ª retorno mina Carhuanca (+25 min)</td>
+                  <td class="py-2.5 px-3.5 text-[#4E4A45] font-code">#SOL-CAM-2026-0371</td>
+                  <td class="py-2.5 px-3.5 text-[#4E4A45]">Mina Carhuanca</td>
+                  <td class="py-2.5 px-3.5 text-right">
+                    <span class="px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#E5E2DC] text-[#4E4A45] text-[10px] font-medium">Registrada</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" checked="" id="chk-carta-preaviso" class="rounded border-[#A39C90] text-[#C22B2B] focus:ring-0">
+              <label for="chk-carta-preaviso" class="text-[#1F2A33] font-medium">
+                Carta de preaviso de despido notificada válidamente (Plazo legal de 6 días para descargo vencido)
+              </label>
+            </div>
+            <button type="button" class="text-xs text-[#C6600A] hover:underline font-medium">
+              + Adjuntar acta notarial o descargo
+            </button>
+          </div>
+        </div>
+
+        <!-- Alerta reglamentaria de despido -->
+        <div class="bg-[#FBE9E9] border border-[#F6CACA] rounded-lg p-4 flex items-start gap-3">
+          <svg class="w-5 h-5 text-[#C22B2B] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+          <div class="text-xs text-[#1F2A33]">
+            <strong class="font-bold text-[#C22B2B] block mb-0.5">Atención: Cese de alta sensibilidad laboral</strong>
+            Al confirmar el despido, el sistema revocará inmediatamente las credenciales biométricas en garitas, accesos a sistemas de órdenes de taller y enviará la comunicación oficial a la asesoría legal corporativa y notaría para el acta de cese.
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Acciones Finales -->
+      <div class="mt-8 pt-6 border-t border-[#E5E2DC] flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="#" class="text-xs text-[#4E4A45] hover:text-[#1F2A33] font-medium">
+            Cancelar y volver al expediente
+          </a>
+          <span class="text-[#E5E2DC]">|</span>
+          <span class="text-[11px] text-[#A39C90]">
+            Dictamen suscrito por: <strong class="text-[#4E4A45]">Rodrigo Ortiz (Jefatura de RR.HH.)</strong>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Botón de Confirmación Principal (Requerimiento exacto: Fondo #C22B2B) -->
+          <button type="button" id="btn-confirmar-termino" class="flex items-center gap-2 px-6 py-2.5 rounded text-sm font-semibold text-white bg-[#C22B2B] hover:bg-[#a82222] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C22B2B] focus:ring-offset-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+            </svg>
+            <span>Confirmar término</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Pie de página institucional VeloxRent -->
+  <footer class="border-t border-[#E5E2DC] bg-[#FAF9F5] px-8 py-3 text-xs text-[#4E4A45] mt-auto">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <span><strong>VeloxRent</strong> © 2025</span>
+        <span>•</span>
+        <span>Sistema de Gestión Interna</span>
+        <span>•</span>
+        <span>Módulo Personal / Protocolo PR-RRHH-028 (Término y Liquidación)</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <span>Soporte RR.HH.: <strong>anexo 104</strong></span>
+        <span>•</span>
+        <span>Asesoría Legal / Desvinculaciones: <strong>anexo 112</strong></span>
+        <span>•</span>
+        <a href="#" class="inline-flex items-center gap-1.5 text-[#4E4A45] hover:text-[#C22B2B] transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Cerrar sesión</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica Interactiva para alternar dinámicamente entre Renuncia y Despido -->
+  <script>
+    function cambiarTipo(tipo) {
+      const btnRenuncia = document.getElementById('btn-tipo-renuncia');
+      const btnDespido = document.getElementById('btn-tipo-despido');
+      const dotRenuncia = document.getElementById('dot-renuncia');
+      const dotDespido = document.getElementById('dot-despido');
+      const vistaRenuncia = document.getElementById('vista-renuncia');
+      const vistaDespido = document.getElementById('vista-despido');
+
+      if (tipo === 'renuncia') {
+        // Estilos botón Renuncia (Activo)
+        btnRenuncia.className = "flex items-center gap-3 px-5 py-3 rounded-lg border-2 border-[#1F2A33] bg-[#1F2A33] text-white font-medium text-sm transition-all shadow-sm";
+        dotRenuncia.className = "w-2 h-2 rounded-full bg-white";
+
+        // Estilos botón Despido (Inactivo)
+        btnDespido.className = "flex items-center gap-3 px-5 py-3 rounded-lg border-2 border-[#E5E2DC] bg-[#FAF9F5] text-[#4E4A45] hover:border-[#A39C90] font-medium text-sm transition-all";
+        dotDespido.className = "w-2 h-2 rounded-full bg-transparent";
+
+        // Vistas
+        vistaRenuncia.classList.remove('hidden');
+        vistaDespido.classList.add('hidden');
+      } else if (tipo === 'despido') {
+        // Estilos botón Despido (Activo con borde y fondo oscuro institucional)
+        btnDespido.className = "flex items-center gap-3 px-5 py-3 rounded-lg border-2 border-[#C22B2B] bg-[#FBE9E9] text-[#C22B2B] font-bold text-sm transition-all shadow-sm";
+        dotDespido.className = "w-2 h-2 rounded-full bg-[#C22B2B]";
+
+        // Estilos botón Renuncia (Inactivo)
+        btnRenuncia.className = "flex items-center gap-3 px-5 py-3 rounded-lg border-2 border-[#E5E2DC] bg-[#FAF9F5] text-[#4E4A45] hover:border-[#A39C90] font-medium text-sm transition-all";
+        dotRenuncia.className = "w-2 h-2 rounded-full bg-transparent";
+
+        // Vistas
+        vistaRenuncia.classList.add('hidden');
+        vistaDespido.classList.remove('hidden');
+      }
+    }
+  </script>
+
+
+</body></html>

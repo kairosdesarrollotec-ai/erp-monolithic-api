@@ -1,0 +1,734 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha del cliente — María Quispe Huamán - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+    .font-mono-code {
+      font-family: 'Space Grotesk', monospace;
+    }
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col justify-between text-[#1F2A33]">
+
+  <!-- TOP APP BAR -->
+  <header class="border-b border-[#E5E2DC] bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Izquierda: Marca y Breadcrumbs -->
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <span class="font-mono-code text-xl font-bold tracking-tight text-[#1F2A33]">Velox<span class="text-[#C6600A]">Rent</span></span>
+          <span class="text-xs bg-[#F4F2EE] text-[#6E685F] px-2 py-0.5 rounded font-mono-code border border-[#E5E2DC]">ERP v3.4</span>
+        </div>
+        <div class="h-5 w-px bg-[#E5E2DC]"></div>
+        <nav class="flex items-center gap-2 text-sm">
+          <span class="text-[#6E685F]">Comercial</span>
+          <span class="text-[#A39C90]">›</span>
+          <a href="#" class="text-[#6E685F] hover:text-[#1F2A33]">Clientes</a>
+          <span class="text-[#A39C90]">›</span>
+          <span class="font-medium text-[#1F2A33]">Ficha del cliente</span>
+        </nav>
+      </div>
+
+      <!-- Derecha: Sede y Perfil de usuario -->
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF7EE] text-[#1E7D4B] text-xs font-medium border border-[#CDEED5]">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span>En línea</span>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-[#6E685F]">
+          <svg class="w-4 h-4 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="font-medium text-[#1F2A33]">Ayacucho</span>
+          <span class="text-[#A39C90]">— Sede Central</span>
+        </div>
+
+        <div class="h-5 w-px bg-[#E5E2DC]"></div>
+
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs font-mono-code">
+            ME
+          </div>
+          <div class="text-left">
+            <p class="text-xs font-semibold text-[#1F2A33] leading-none">María Fernández</p>
+            <p class="text-[11px] text-[#6E685F] leading-tight mt-0.5">Ejecutiva Comercial &amp; Front-office</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUBHEADER / RETORNO Y ACCIONES RÁPIDAS -->
+  <div class="bg-[#FAF9F5] border-b border-[#E5E2DC]">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="#" class="inline-flex items-center gap-1.5 text-xs font-medium text-[#6E685F] hover:text-[#1F2A33] transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span>Volver a Bandeja de Clientes</span>
+        </a>
+        <span class="text-[#D3CEBA]">|</span>
+        <span class="text-xs text-[#6E685F]">Código Corporativo: <strong class="font-mono-code text-[#1F2A33]">#CLI-45920184-VR</strong></span>
+        <span class="text-[#D3CEBA]">|</span>
+        <span class="text-xs text-[#6E685F]">Última actualización: <span class="font-mono-code">04/09/2026 09:14</span> (Sincronizado interempresas)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="px-3 py-1.5 text-xs font-medium text-[#1F2A33] bg-white border border-[#D3CEBA] rounded hover:bg-[#F4F2EE] transition-colors flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-[#6E685F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+          </svg>
+          Editar datos
+        </button>
+        <button class="px-3.5 py-1.5 text-xs font-medium text-white bg-[#1F2A33] rounded hover:bg-[#151D23] transition-colors flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Nueva Consulta / Alquiler
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-6 py-6 w-full flex-grow space-y-6">
+
+    <!-- CABECERA DE FICHA CON SEMÁFORO PROMINENTE FIJO ARRIBA -->
+    <div class="bg-white border-2 border-[#E5E2DC] rounded-lg p-6 shadow-sm">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        
+        <!-- Identidad principal del cliente -->
+        <div class="flex items-start gap-4">
+          <div class="w-16 h-16 rounded-lg bg-[#FAF9F5] border border-[#E5E2DC] flex items-center justify-center font-mono-code font-bold text-xl text-[#1F2A33]">
+            MQ
+          </div>
+          <div>
+            <div class="flex items-center gap-3">
+              <h1 class="text-2xl font-bold text-[#1F2A33] tracking-tight">María Quispe Huamán</h1>
+              <span class="bg-[#FAF9F5] text-[#6E685F] text-xs font-medium px-2.5 py-0.5 rounded border border-[#E5E2DC]">Persona Natural</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-y-1 gap-x-4 mt-2 text-xs text-[#6E685F]">
+              <span class="flex items-center gap-1">
+                <span class="text-[#A39C90]">DNI:</span>
+                <strong class="font-mono-code text-[#1F2A33] text-sm font-semibold">45920184</strong>
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <span class="text-[#A39C90]">Celular:</span>
+                <strong class="font-mono-code text-[#1F2A33]">+51 966 123 456</strong>
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <span class="text-[#A39C90]">Correo:</span>
+                <span class="text-[#1F2A33]">m.quispe.huaman@gmail.com</span>
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <span class="text-[#A39C90]">Sede de registro:</span>
+                <span class="text-[#1F2A33]">Ayacucho (2024)</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BADGE DE SEMÁFORO PROMINENTE ARRIBA (SIEMPRE VISIBLE) -->
+        <div class="flex items-center gap-4 bg-[#FAF9F5] border-2 border-[#CDEED5] rounded-lg p-4 lg:min-w-[340px]">
+          <!-- Indicador visual del semáforo: Verde destacado -->
+          <div class="flex flex-col items-center justify-center bg-white p-2.5 rounded-md border border-[#E5E2DC] shadow-inner">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="w-3.5 h-3.5 rounded-full bg-[#1E7D4B] ring-4 ring-[#CDEED5] shadow-sm"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#E5E2DC]"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#E5E2DC]"></span>
+            </div>
+            <span class="text-[10px] font-mono-code font-bold uppercase tracking-wider text-[#1E7D4B]">ÓPTIMO</span>
+          </div>
+
+          <!-- Diagnóstico de crédito y comportamiento -->
+          <div class="flex-grow">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono-code uppercase font-semibold text-[#6E685F] tracking-wide">Semáforo de Riesgo</span>
+              <span class="text-[10px] font-mono-code bg-[#EBF7EE] text-[#1E7D4B] px-1.5 py-0.5 rounded font-bold border border-[#CDEED5]">HABILITADO</span>
+            </div>
+            <div class="text-base font-bold text-[#1E7D4B] mt-0.5">
+              Calificación Verde / Apto
+            </div>
+            <p class="text-xs text-[#6E685F] mt-0.5">
+              Sin moras ni siniestros graves. Garantía estándar de 1x sin retención notarial.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Resumen rápido de relaciones comerciales grupales -->
+      <div class="mt-4 pt-4 border-t border-[#E5E2DC] flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="text-[#6E685F] font-medium">Presencia en el grupo corporativo:</span>
+          <div class="flex items-center gap-1.5">
+            <span class="px-2 py-0.5 rounded bg-[#FEF3C7] text-[#B45309] font-mono-code font-bold text-[11px] border border-[#FDE68A]">VR (VeloxRent)</span>
+            <span class="px-2 py-0.5 rounded bg-[#EFF6FF] text-[#1D4ED8] font-mono-code font-bold text-[11px] border border-[#BFDBFE]">CA (Casa del Auto)</span>
+            <span class="px-2 py-0.5 rounded bg-[#F1F5F9] text-[#334155] font-mono-code font-bold text-[11px] border border-[#CBD5E1]">MX (Motrix)</span>
+            <span class="px-2 py-0.5 rounded bg-[#FAF9F5] text-[#A39C90] font-mono-code text-[11px] border border-[#E5E2DC] line-through">RN (Sin exp.)</span>
+          </div>
+        </div>
+        <div class="text-xs text-[#6E685F]">
+          Total operaciones registradas: <strong class="font-mono-code text-[#1F2A33]">5 expedientes cerrados</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN NO FUSIONADA: "OTROS REGISTROS DE ESTA PERSONA" -->
+    <!-- Regla: Si el cliente también es Candidato o Empleado en otro momento, aparece como referencia enlazada en una sección aparte, NUNCA fusionado -->
+    <div class="bg-[#FFFDF7] border-2 border-[#EADBB6] rounded-lg p-5">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="p-2 bg-[#FDF1DE] rounded-md text-[#B5720A] border border-[#F5DEB3] mt-0.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wide">Otros registros de esta persona</h2>
+              <span class="text-[11px] bg-[#FDF1DE] text-[#8C5205] px-2 py-0.5 rounded font-mono-code font-semibold border border-[#F5DEB3]">
+                Referencia enlazada por DNI (No fusionada)
+              </span>
+            </div>
+            <p class="text-xs text-[#6E685F] mt-1 max-w-3xl">
+              De acuerdo con la política de integridad comercial y de personal (<strong class="font-mono-code text-[#8C5205]">BR-CLI-007</strong>), las identidades laborales o postulaciones no se mezclan con los registros comerciales de alquiler. Se enlazan exclusivamente por DNI único para trazabilidad y auditoría.
+            </p>
+          </div>
+        </div>
+        <span class="text-xs font-mono-code text-[#8C5205] bg-white px-2.5 py-1 rounded border border-[#EADBB6]">
+          1 registro externo
+        </span>
+      </div>
+
+      <!-- Tarjeta de referencia enlazada -->
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-[#EADBB6]">
+        <div class="bg-white border border-[#E5E2DC] rounded p-3.5 flex items-center justify-between shadow-sm hover:border-[#8C5205] transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded bg-[#EBF2FA] text-[#2166B0] flex items-center justify-center font-bold text-xs">
+              RRHH
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-[#1F2A33]">Postulante / Candidato a vacante</span>
+                <span class="text-[10px] bg-[#F4F2EE] text-[#6E685F] px-1.5 py-0.2 rounded font-mono-code">Exp. #CAN-2025-089</span>
+              </div>
+              <p class="text-xs text-[#6E685F] mt-0.5">
+                Vacante: <strong class="text-[#1F2A33]">Asistente de Facturación (Sede Ayacucho)</strong> • Postulación: Dic 2025
+              </p>
+              <div class="flex items-center gap-2 mt-1 text-[11px] text-[#A39C90]">
+                <span>Estado RR.HH.: <em>Proceso concluido sin contratación</em></span>
+              </div>
+            </div>
+          </div>
+          <a href="#" class="inline-flex items-center gap-1 text-xs font-medium text-[#2166B0] hover:underline px-2.5 py-1 rounded bg-[#EBF2FA] border border-[#BFDBFE]">
+            <span>Ver legajo RR.HH.</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
+        </div>
+
+        <div class="bg-white border border-dashed border-[#D3CEBA] rounded p-3.5 flex items-center justify-center text-center">
+          <p class="text-xs text-[#A39C90]">
+            No registra antecedentes como personal de planilla ni proveedores directos en VeloxRent ni empresas filiales.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIONES COLAPSABLES -->
+    <div class="space-y-4">
+
+      <!-- SECCIÓN COLAPSABLE 1: "DOCUMENTOS" -->
+      <details class="bg-white border border-[#E5E2DC] rounded-lg shadow-sm group" open="">
+        <summary class="px-6 py-4 flex items-center justify-between cursor-pointer select-none bg-[#FAF9F5] border-b border-[#E5E2DC] rounded-t-lg">
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded bg-white border border-[#D3CEBA] flex items-center justify-center text-[#1F2A33]">
+              <svg class="w-4 h-4 text-[#6E685F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wide">Documentos del cliente</h3>
+              <p class="text-xs text-[#6E685F]">Archivos de validación de identidad, licencia de conducir y comprobantes domiciliarios</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs bg-[#EBF7EE] text-[#1E7D4B] px-2.5 py-0.5 rounded font-mono-code font-semibold border border-[#CDEED5]">
+              3 válidos • 1 por renovar
+            </span>
+            <svg class="w-5 h-5 text-[#6E685F] transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </summary>
+
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Doc 1: DNI -->
+            <div class="border border-[#E5E2DC] rounded p-4 bg-white flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono-code font-bold uppercase text-[#1E7D4B] bg-[#EBF7EE] px-1.5 py-0.5 rounded border border-[#CDEED5]">Vigente</span>
+                  <span class="text-xs text-[#A39C90] font-mono-code">PDF • 1.4 MB</span>
+                </div>
+                <h4 class="text-xs font-bold text-[#1F2A33] mt-2">DNI Digital (Ambas caras)</h4>
+                <p class="text-xs font-mono-code text-[#6E685F] mt-0.5">N° 45920184</p>
+                <p class="text-[11px] text-[#A39C90] mt-2">Caducidad: <span class="font-mono-code text-[#1F2A33]">18/11/2028</span></p>
+                <p class="text-[11px] text-[#A39C90]">Validado con RENIEC en línea</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+                <a href="#" class="text-xs font-medium text-[#2166B0] hover:underline flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                  Ver archivo
+                </a>
+                <button class="text-xs text-[#6E685F] hover:text-[#1F2A33]">Reemplazar</button>
+              </div>
+            </div>
+
+            <!-- Doc 2: Brevete -->
+            <div class="border border-[#E5E2DC] rounded p-4 bg-white flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono-code font-bold uppercase text-[#1E7D4B] bg-[#EBF7EE] px-1.5 py-0.5 rounded border border-[#CDEED5]">Vigente</span>
+                  <span class="text-xs text-[#A39C90] font-mono-code">PDF • 2.1 MB</span>
+                </div>
+                <h4 class="text-xs font-bold text-[#1F2A33] mt-2">Licencia de Conducir (MTC)</h4>
+                <p class="text-xs font-mono-code text-[#6E685F] mt-0.5">Clase A-IIa • Q45920184</p>
+                <p class="text-[11px] text-[#A39C90] mt-2">Caducidad: <span class="font-mono-code text-[#1F2A33]">14/05/2027</span></p>
+                <p class="text-[11px] text-[#A39C90]">Récord MTC: 0 puntos firmes</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+                <a href="#" class="text-xs font-medium text-[#2166B0] hover:underline flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                  Ver archivo
+                </a>
+                <button class="text-xs text-[#6E685F] hover:text-[#1F2A33]">Reemplazar</button>
+              </div>
+            </div>
+
+            <!-- Doc 3: Recibo de servicios -->
+            <div class="border border-[#F5DEB3] rounded p-4 bg-[#FFFDF7] flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono-code font-bold uppercase text-[#B5720A] bg-[#FDF1DE] px-1.5 py-0.5 rounded border border-[#F5DEB3]">Por renovar</span>
+                  <span class="text-xs text-[#A39C90] font-mono-code">JPG • 0.8 MB</span>
+                </div>
+                <h4 class="text-xs font-bold text-[#1F2A33] mt-2">Recibo de Luz / Domicilio</h4>
+                <p class="text-xs text-[#6E685F] mt-0.5">Electrocentro S.A. • Ayacucho</p>
+                <p class="text-[11px] text-[#A39C90] mt-2">Emisión: <span class="font-mono-code text-[#1F2A33]">Mayo 2026 (&gt; 90 días)</span></p>
+                <p class="text-[11px] text-[#B5720A]">Solicitar recibo actualizado</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-[#F5DEB3] flex items-center justify-between">
+                <a href="#" class="text-xs font-medium text-[#2166B0] hover:underline flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                  Ver archivo
+                </a>
+                <button class="text-xs text-[#C6600A] font-semibold hover:underline">Subir nuevo</button>
+              </div>
+            </div>
+
+            <!-- Doc 4: Formato de autorización notarial / Tarjeta -->
+            <div class="border border-[#E5E2DC] rounded p-4 bg-white flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono-code font-bold uppercase text-[#1E7D4B] bg-[#EBF7EE] px-1.5 py-0.5 rounded border border-[#CDEED5]">Aprobado</span>
+                  <span class="text-xs text-[#A39C90] font-mono-code">PDF • 3.2 MB</span>
+                </div>
+                <h4 class="text-xs font-bold text-[#1F2A33] mt-2">Pagaré / Carta de Garantía</h4>
+                <p class="text-xs font-mono-code text-[#6E685F] mt-0.5">Notaría Ayacucho • Reg. 8832</p>
+                <p class="text-[11px] text-[#A39C90] mt-2">Cobertura: <span class="font-mono-code text-[#1F2A33]">US$ 1,500.00</span></p>
+                <p class="text-[11px] text-[#A39C90]">Vigente para flota SUV / 4x4</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-[#E5E2DC] flex items-center justify-between">
+                <a href="#" class="text-xs font-medium text-[#2166B0] hover:underline flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                  Ver archivo
+                </a>
+                <button class="text-xs text-[#6E685F] hover:text-[#1F2A33]">Historial</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button class="px-3 py-1.5 text-xs font-medium text-[#1F2A33] bg-[#FAF9F5] border border-[#D3CEBA] rounded hover:bg-[#F4F2EE] transition-colors flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-[#6E685F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+              </svg>
+              Adjuntar nuevo documento digital
+            </button>
+          </div>
+        </div>
+      </details>
+
+      <!-- SECCIÓN COLAPSABLE 2: "HISTORIAL POR EMPRESA" (VeloxRent, Casa del Auto, Motrix, RENOVA) -->
+      <details class="bg-white border border-[#E5E2DC] rounded-lg shadow-sm group" open="">
+        <summary class="px-6 py-4 flex items-center justify-between cursor-pointer select-none bg-[#FAF9F5] border-b border-[#E5E2DC] rounded-t-lg">
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded bg-white border border-[#D3CEBA] flex items-center justify-center text-[#1F2A33]">
+              <svg class="w-4 h-4 text-[#6E685F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wide">Historial por empresa del grupo</h3>
+              <p class="text-xs text-[#6E685F]">Expedientes cruzados consolidados en VeloxRent, Casa del Auto, Motrix y RENOVA</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono-code text-[#6E685F]">
+              4 empresas auditadas
+            </span>
+            <svg class="w-5 h-5 text-[#6E685F] transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </summary>
+
+        <div class="p-6 space-y-6">
+
+          <!-- 1. VELOXRENT (Alquiler de Flota) -->
+          <div class="border border-[#FDE68A] rounded-lg p-4 bg-[#FFFDF5]">
+            <div class="flex items-center justify-between border-b border-[#FDE68A] pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2 py-0.5 rounded bg-[#FEF3C7] text-[#B45309] font-mono-code font-bold text-xs border border-[#FDE68A]">VR</span>
+                <h4 class="text-sm font-bold text-[#1F2A33]">VeloxRent — Alquiler de Vehículos y Camionetas</h4>
+                <span class="text-xs text-[#6E685F]">(Empresa captadora original)</span>
+              </div>
+              <span class="text-xs font-mono-code font-semibold text-[#B45309]">2 Expedientes cerrados</span>
+            </div>
+
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="text-[11px] uppercase font-mono-code text-[#6E685F] bg-[#FAF9F5] border-b border-[#E5E2DC]">
+                  <tr>
+                    <th class="py-2 px-3">Expediente</th>
+                    <th class="py-2 px-3">Vehículo / Placa</th>
+                    <th class="py-2 px-3">Periodo</th>
+                    <th class="py-2 px-3">Monto</th>
+                    <th class="py-2 px-3">Devolución / Garantía</th>
+                    <th class="py-2 px-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E5E2DC] bg-white">
+                  <tr>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">#ALQ-0832</td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-medium text-[#1F2A33]">Toyota Hilux 4x4</div>
+                      <span class="font-mono-code text-[#6E685F] text-[11px]">D0Y-704</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">12/08/2024 — 18/08/2024</td>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">S/ 2,450.00</td>
+                    <td class="py-2.5 px-3">
+                      <span class="inline-flex items-center gap-1 text-[#1E7D4B] font-medium">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Devuelto conforme • Garantía 100% liberada
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <a href="#" class="text-[#2166B0] hover:underline font-medium">Ver contrato</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">#ALQ-0511</td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-medium text-[#1F2A33]">Hyundai Creta 1.6</div>
+                      <span class="font-mono-code text-[#6E685F] text-[11px]">B4T-312</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">02/02/2024 — 05/02/2024</td>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">S/ 1,020.00</td>
+                    <td class="py-2.5 px-3">
+                      <span class="inline-flex items-center gap-1 text-[#1E7D4B] font-medium">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Devuelto a tiempo • Sin observaciones
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <a href="#" class="text-[#2166B0] hover:underline font-medium">Ver contrato</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 2. CASA DEL AUTO (Venta de vehículos y accesorios) -->
+          <div class="border border-[#BFDBFE] rounded-lg p-4 bg-[#F8FAFC]">
+            <div class="flex items-center justify-between border-b border-[#BFDBFE] pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2 py-0.5 rounded bg-[#EFF6FF] text-[#1D4ED8] font-mono-code font-bold text-xs border border-[#BFDBFE]">CA</span>
+                <h4 class="text-sm font-bold text-[#1F2A33]">Casa del Auto — Concesionario &amp; Venta Vehicular</h4>
+              </div>
+              <span class="text-xs font-mono-code font-semibold text-[#1D4ED8]">1 Expediente registrado</span>
+            </div>
+
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="text-[11px] uppercase font-mono-code text-[#6E685F] bg-[#FAF9F5] border-b border-[#E5E2DC]">
+                  <tr>
+                    <th class="py-2 px-3">Expediente</th>
+                    <th class="py-2 px-3">Operación comercial</th>
+                    <th class="py-2 px-3">Fecha</th>
+                    <th class="py-2 px-3">Comprobante</th>
+                    <th class="py-2 px-3">Estado de pago</th>
+                    <th class="py-2 px-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E5E2DC] bg-white">
+                  <tr>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">#COT-CA-9921</td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-medium text-[#1F2A33]">Cotización y Test Drive — Toyota Fortuner</div>
+                      <span class="text-[#6E685F] text-[11px]">Sede Huamanga • Asesor: Carlos Vivanco</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">15/11/2024</td>
+                    <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">Sin emisión (Fase consulta)</td>
+                    <td class="py-2.5 px-3">
+                      <span class="px-2 py-0.5 rounded bg-[#F4F2EE] text-[#6E685F] font-mono-code text-[11px] border border-[#E5E2DC]">
+                        Cerrado por expiración
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <a href="#" class="text-[#2166B0] hover:underline font-medium">Ver cotización</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 3. MOTRIX (Taller mecánico y repuestos) -->
+          <div class="border border-[#CBD5E1] rounded-lg p-4 bg-[#F8FAFC]">
+            <div class="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2 py-0.5 rounded bg-[#F1F5F9] text-[#334155] font-mono-code font-bold text-xs border border-[#CBD5E1]">MX</span>
+                <h4 class="text-sm font-bold text-[#1F2A33]">Motrix — Taller Multimarca &amp; Mantenimiento</h4>
+              </div>
+              <span class="text-xs font-mono-code font-semibold text-[#334155]">2 Órdenes de servicio</span>
+            </div>
+
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="text-[11px] uppercase font-mono-code text-[#6E685F] bg-[#FAF9F5] border-b border-[#E5E2DC]">
+                  <tr>
+                    <th class="py-2 px-3">Orden Servicio</th>
+                    <th class="py-2 px-3">Trabajo realizado / Vehículo propio</th>
+                    <th class="py-2 px-3">Fecha</th>
+                    <th class="py-2 px-3">Monto</th>
+                    <th class="py-2 px-3">Estado de pago</th>
+                    <th class="py-2 px-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E5E2DC] bg-white">
+                  <tr>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">#OS-MX-3012</td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-medium text-[#1F2A33]">Mantenimiento preventivo 20,000 km</div>
+                      <span class="font-mono-code text-[#6E685F] text-[11px]">Vehículo particular: Y1B-890 (Toyota Yaris)</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">10/01/2025</td>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">S/ 680.00</td>
+                    <td class="py-2.5 px-3">
+                      <span class="text-[#1E7D4B] font-medium font-mono-code text-[11px]">Cancelado (Boleta B004-1290)</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <a href="#" class="text-[#2166B0] hover:underline font-medium">Ver OS</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">#OS-MX-1980</td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-medium text-[#1F2A33]">Alineamiento y balanceo computarizado</div>
+                      <span class="font-mono-code text-[#6E685F] text-[11px]">Vehículo particular: Y1B-890</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">20/07/2024</td>
+                    <td class="py-2.5 px-3 font-mono-code font-semibold text-[#1F2A33]">S/ 180.00</td>
+                    <td class="py-2.5 px-3">
+                      <span class="text-[#1E7D4B] font-medium font-mono-code text-[11px]">Cancelado (Boleta B004-0412)</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <a href="#" class="text-[#2166B0] hover:underline font-medium">Ver OS</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4. RENOVA (Seminuevos garantizados) -->
+          <div class="border border-[#E5E2DC] rounded-lg p-4 bg-white opacity-85">
+            <div class="flex items-center justify-between border-b border-[#E5E2DC] pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2 py-0.5 rounded bg-[#ECFDF5] text-[#047857] font-mono-code font-bold text-xs border border-[#A7F3D0]">RN</span>
+                <h4 class="text-sm font-bold text-[#1F2A33]">RENOVA — Seminuevos Garantizados</h4>
+              </div>
+              <span class="text-xs font-mono-code text-[#A39C90]">0 Expedientes</span>
+            </div>
+            <div class="py-3 text-center text-xs text-[#6E685F]">
+              El cliente no registra tasaciones, compras ni ventas de seminuevos en la división RENOVA.
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- SECCIÓN COLAPSABLE 3: "AUDITORÍA DE ACCESOS" -->
+      <details class="bg-white border border-[#E5E2DC] rounded-lg shadow-sm group">
+        <summary class="px-6 py-4 flex items-center justify-between cursor-pointer select-none bg-[#FAF9F5] border-b border-[#E5E2DC] rounded-t-lg">
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded bg-white border border-[#D3CEBA] flex items-center justify-center text-[#1F2A33]">
+              <svg class="w-4 h-4 text-[#6E685F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-[#1F2A33] uppercase tracking-wide">Auditoría de accesos y consultas</h3>
+              <p class="text-xs text-[#6E685F]">Registro inmutable de usuarios del sistema que han consultado o modificado este legajo</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono-code text-[#6E685F]">Últimos 4 registros</span>
+            <svg class="w-5 h-5 text-[#6E685F] transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </summary>
+
+        <div class="p-6">
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+              <thead class="text-[11px] uppercase font-mono-code text-[#6E685F] bg-[#FAF9F5] border-b border-[#E5E2DC]">
+                <tr>
+                  <th class="py-2.5 px-3">Fecha y Hora</th>
+                  <th class="py-2.5 px-3">Usuario / Operador</th>
+                  <th class="py-2.5 px-3">Rol &amp; Área</th>
+                  <th class="py-2.5 px-3">Acción realizada</th>
+                  <th class="py-2.5 px-3">IP / Terminal</th>
+                  <th class="py-2.5 px-3">Motivo declarado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#E5E2DC] bg-white">
+                <tr>
+                  <td class="py-2.5 px-3 font-mono-code text-[#1F2A33] whitespace-nowrap">08/09/2026 11:24:05</td>
+                  <td class="py-2.5 px-3 font-medium text-[#1F2A33]">María Fernández</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Ejecutiva Comercial (Front-office)</td>
+                  <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded bg-[#EFF6FF] text-[#1D4ED8] font-mono-code text-[11px] border border-[#BFDBFE]">
+                      Consulta de ficha
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">192.168.10.45 (Sede Ayacucho)</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Detección de coincidencia DNI en nuevo registro</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 font-mono-code text-[#1F2A33] whitespace-nowrap">15/01/2025 09:12:40</td>
+                  <td class="py-2.5 px-3 font-medium text-[#1F2A33]">Javier Morales C.</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Asesor de Servicio Motrix</td>
+                  <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded bg-[#FAF9F5] text-[#1F2A33] font-mono-code text-[11px] border border-[#E5E2DC]">
+                      Cierre de orden de trabajo
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">192.168.20.12 (Taller Motrix)</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Facturación OS-MX-3012</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 font-mono-code text-[#1F2A33] whitespace-nowrap">18/08/2024 16:45:10</td>
+                  <td class="py-2.5 px-3 font-medium text-[#1F2A33]">Víctor Hugo Morales Q.</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Inspector de Patio (VeloxRent)</td>
+                  <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded bg-[#EBF7EE] text-[#1E7D4B] font-mono-code text-[11px] border border-[#CDEED5]">
+                      Acta de devolución
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">192.168.10.88 (Garita Patio)</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Recepción conforme vehículo D0Y-704</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 font-mono-code text-[#1F2A33] whitespace-nowrap">12/08/2024 08:30:19</td>
+                  <td class="py-2.5 px-3 font-medium text-[#1F2A33]">Fiorella Olivos</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Jefatura de Operaciones</td>
+                  <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded bg-[#FAF9F5] text-[#1F2A33] font-mono-code text-[11px] border border-[#E5E2DC]">
+                      Aprobación contrato
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 font-mono-code text-[#6E685F]">192.168.10.02 (Gerencia Operativa)</td>
+                  <td class="py-2.5 px-3 text-[#6E685F]">Validación inicial cliente nuevo ALQ-0832</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-[11px] text-[#A39C90] mt-3">
+            * Conforme a la Ley N° 29733 (Protección de Datos Personales), toda consulta a este legajo queda registrada con sello de tiempo criptográfico.
+          </p>
+        </div>
+      </details>
+
+    </div>
+
+    <!-- NOTA DE INTEGRIDAD NORMATIVA AL PIE DEL FORMULARIO -->
+    <div class="bg-[#FAF9F5] border border-[#E5E2DC] rounded-lg p-4 flex items-center justify-between text-xs text-[#6E685F]">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-[#B5720A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>
+          <strong>Regla de integridad comercial (Anti-fusión automática):</strong> Cualquier cambio en nombres o identidad requiere validación de documento físico. Los expedientes interempresas se conservan en sus bases de datos de origen.
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="text-xs text-[#6E685F] hover:text-[#1F2A33] underline">Descargar legajo PDF</button>
+        <span>•</span>
+        <button class="text-xs text-[#6E685F] hover:text-[#1F2A33] underline">Auditoría completa</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA CORPORATIVO UNIFICADO -->
+  <footer class="border-t border-[#E5E2DC] bg-[#FAF9F5] py-3 text-xs text-[#6E685F]">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-4">
+        <span><strong class="text-[#1F2A33]">VeloxRent</strong> © 2026</span>
+        <span>•</span>
+        <span>Sistema de Gestión Comercial y Flotas</span>
+        <span>•</span>
+        <span>Módulo Clientes / Ficha unificada</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <span>Mesa Front-office: <strong class="font-mono-code text-[#1F2A33]">anexo 103</strong></span>
+        <span>•</span>
+        <span>Soporte TI / Integridad de Datos: <strong class="font-mono-code text-[#1F2A33]">anexo 101</strong></span>
+        <span>•</span>
+        <a href="#" class="text-[#C22B2B] hover:underline flex items-center gap-1 font-medium">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          Cerrar sesión
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+</body></html>

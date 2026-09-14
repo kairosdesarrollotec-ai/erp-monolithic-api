@@ -1,0 +1,518 @@
+<!DOCTYPE html><html lang="es" class="h-full"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrega — Etapa 1 de 5: Cliente y documentos - VeloxRent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#1F2A33',
+              orange: '#C6600A',
+              green: '#2F6B4F',
+              emerald: '#1E7D4B',
+              border: '#A39C90',
+              muted: '#4E4A45',
+              bgLight: '#FCF9F3',
+              surface: '#FFFFFF',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FFFFFF;
+      color: #1F2A33;
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col bg-white text-[#1F2A33] selection:bg-[#C6600A]/15 selection:text-[#1F2A33]">
+
+  <!-- Top App Navigation Bar (Standard VeloxRent ERP) -->
+  <header class="border-b border-[#E5E0D8] bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Left: Logo & Breadcrumbs -->
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+          <span class="font-display font-bold text-2xl tracking-tight text-[#1F2A33]">Velox<span class="text-[#C6600A]">Rent</span></span>
+        </div>
+        <div class="h-5 w-px bg-[#E5E0D8]"></div>
+        <nav class="flex items-center space-x-2 text-xs font-medium text-[#4E4A45]" aria-label="Breadcrumb">
+          <span class="hover:text-[#1F2A33] cursor-pointer transition-colors">Gestión Interna</span>
+          <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          <span class="hover:text-[#1F2A33] cursor-pointer transition-colors">Alquileres</span>
+          <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          <span class="text-[#1F2A33] font-semibold">Nuevo alquiler</span>
+        </nav>
+      </div>
+
+      <!-- Right: Connection, Branch, Notifications & User -->
+      <div class="flex items-center space-x-4">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EBF5EE] text-[#1E7D4B] text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-[#1E7D4B] animate-pulse"></span>
+          <span class="">En línea</span>
+        </div>
+
+        <div class="flex items-center gap-1.5 px-3 py-1 bg-[#F6F3ED] rounded-md text-xs font-medium text-[#4E4A45] border border-[#E5E0D8]">
+          <svg class="w-3.5 h-3.5 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          <span class="">Ayacucho — Sede Central</span>
+        </div>
+
+        <button class="relative p-2 text-[#4E4A45] hover:text-[#1F2A33] hover:bg-[#F6F3ED] rounded-md transition-colors" title="Notificaciones">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C6600A] rounded-full ring-2 ring-white"></span>
+        </button>
+
+        <div class="flex items-center gap-2 pl-2 border-l border-[#E5E0D8]">
+          <div class="w-8 h-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-bold text-xs">ME</div>
+          <div class="text-left hidden md:block">
+            <p class="text-xs font-semibold leading-tight text-[#1F2A33]">María Ejecutivo</p>
+            <p class="text-[10px] text-[#4E4A45] leading-tight">Front-office</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Progress Stepper (Fijo arriba con 5 puntos conectados por línea) -->
+  <section class="bg-white border-b border-[#E5E0D8] py-4 sticky top-16 z-20 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="relative flex items-center justify-between">
+        <!-- Connecting Line Background -->
+        <div class="absolute left-6 right-6 top-3.5 h-0.5 bg-[#E5E0D8] -z-0"></div>
+        <!-- Progress Active Line (From step 1 to step 1) -->
+        <div class="absolute left-6 w-0 top-3.5 h-0.5 bg-[#C6600A] -z-0 transition-all duration-300"></div>
+
+        <!-- Step 1: Documentos (Activo) -->
+        <div class="relative z-10 flex flex-col items-center group cursor-pointer">
+          <div class="w-7 h-7 rounded-full bg-[#C6600A] text-white flex items-center justify-center text-xs font-bold ring-4 ring-white shadow-sm" style="background-color: rgb(158, 76, 8);">
+            1
+          </div>
+          <span class="mt-1.5 text-xs font-semibold text-[#C6600A]" style="color: rgb(158, 76, 8);">Documentos</span>
+          <span class="text-[10px] text-[#A39C90] hidden sm:block">Cliente y brevete</span>
+        </div>
+
+        <!-- Step 2: Validaciones (Vacío) -->
+        <div class="relative z-10 flex flex-col items-center group">
+          <div class="w-7 h-7 rounded-full bg-white border-2 border-[#A39C90] text-[#4E4A45] flex items-center justify-center text-xs font-medium ring-4 ring-white" style="color: rgb(163, 156, 144);">
+            2
+          </div>
+          <span class="mt-1.5 text-xs font-medium text-[#4E4A45]">Validaciones</span>
+          <span class="text-[10px] text-[#A39C90] hidden sm:block">RENIEC / Récord MTC</span>
+        </div>
+
+        <!-- Step 3: Garantía (Vacío) -->
+        <div class="relative z-10 flex flex-col items-center group">
+          <div class="w-7 h-7 rounded-full bg-white border-2 border-[#A39C90] text-[#4E4A45] flex items-center justify-center text-xs font-medium ring-4 ring-white" style="color: rgb(163, 156, 144);">
+            3
+          </div>
+          <span class="mt-1.5 text-xs font-medium text-[#4E4A45]">Garantía</span>
+          <span class="text-[10px] text-[#A39C90] hidden sm:block">Preautorización / Fianza</span>
+        </div>
+
+        <!-- Step 4: Checklist (Vacío) -->
+        <div class="relative z-10 flex flex-col items-center group">
+          <div class="w-7 h-7 rounded-full bg-white border-2 border-[#A39C90] text-[#4E4A45] flex items-center justify-center text-xs font-medium ring-4 ring-white" style="color: rgb(163, 156, 144);">
+            4
+          </div>
+          <span class="mt-1.5 text-xs font-medium text-[#4E4A45]">Checklist</span>
+          <span class="text-[10px] text-[#A39C90] hidden sm:block">Inspección de salida</span>
+        </div>
+
+        <!-- Step 5: Confirmar (Vacío) -->
+        <div class="relative z-10 flex flex-col items-center group">
+          <div class="w-7 h-7 rounded-full bg-white border-2 border-[#A39C90] text-[#4E4A45] flex items-center justify-center text-xs font-medium ring-4 ring-white" style="color: rgb(163, 156, 144);">
+            5
+          </div>
+          <span class="mt-1.5 text-xs font-medium text-[#4E4A45]">Confirmar</span>
+          <span class="text-[10px] text-[#A39C90] hidden sm:block">Firma y entrega</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Body -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-6 py-6 pb-28">
+
+    <!-- Top Metadata Header & Autosave status -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-[#FDF1DE] text-[#C6600A] border border-[#F5D8B8]">
+            Etapa 1 de 5
+          </span>
+          <span class="text-xs text-[#A39C90]">· Expediente #ALQ-0430</span>
+          <span class="text-xs text-[#A39C90]">· Reserva vinculada: <span class="font-mono text-[#1F2A33] font-medium">#RES-2291</span></span>
+        </div>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#1F2A33]">
+          Entrega — Etapa 1 de 5: Cliente y documentos
+        </h1>
+        <p class="text-xs sm:text-sm text-[#4E4A45] mt-0.5">
+          Validación de identidad legal, titularidad de contratación y récord de conducción habilitado.
+        </p>
+      </div>
+
+      <!-- Indicador de autoguardado discreto arriba a la derecha -->
+      <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EBF5EE] text-[#2F6B4F] text-xs font-medium self-start sm:self-center border border-[#CDE5D6] shadow-sm" style="background-color: rgb(234, 243, 238); color: rgb(47, 107, 79); border-color: rgb(47, 107, 79);">
+        <svg class="w-4 h-4 text-[#2F6B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span class="">Guardado</span>
+      </div>
+    </div>
+
+    <!-- Unidad Asignada Card (Contextual Banner) -->
+    <div class="mb-6 p-4 rounded-lg bg-[#FCF9F3] border border-[#E5E0D8] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded bg-white border border-[#E5E0D8] flex flex-col items-center justify-center text-center p-1 shadow-sm">
+          <span class="text-[10px] uppercase font-bold text-[#C6600A]">Flota</span>
+          <span class="text-xs font-extrabold font-mono text-[#1F2A33]">4x4</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm text-[#1F2A33]">Toyota Hilux 4x4 MT Doble Cabina</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-white border border-[#A39C90] text-[#1F2A33]">Placa: DOY-704</span>
+          </div>
+          <p class="text-xs text-[#4E4A45] mt-0.5">
+            Tarifa: Corporativa Minera · Salida programada: <strong class="text-[#1F2A33]">04/09/2026</strong> · Entrega pactada: Patio Central Ayacucho
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-xs border-t md:border-t-0 md:border-l border-[#E5E0D8] pt-2 md:pt-0 md:pl-4">
+        <div>
+          <p class="text-[11px] text-[#A39C90]">Garantía contractual</p>
+          <p class="font-mono font-bold text-sm text-[#1F2A33]">S/ 1,000.00</p>
+        </div>
+        <div class="h-6 w-px bg-[#E5E0D8]"></div>
+        <div>
+          <p class="text-[11px] text-[#A39C90]">Estado operativo</p>
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E7D4B]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#1E7D4B]"></span> Listo en patio
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1: Selector "Tipo de conductor" (Chips) -->
+    <div class="bg-white rounded-lg border border-[#E5E0D8] p-5 mb-6 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-bold text-[#1F2A33]">
+            Tipo de conductor <span class="text-[#C6600A]">*</span>
+          </label>
+          <p class="text-xs text-[#4E4A45]">Seleccione el rol o personería que asumirá la responsabilidad del vehículo</p>
+        </div>
+        <span class="text-[11px] text-[#C6600A] font-medium bg-[#FDF1DE] px-2 py-0.5 rounded border border-[#F5D8B8]">Requerido</span>
+      </div>
+
+      <!-- Chips Container -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Chip 1: Titular (Selected) -->
+        <label class="relative flex items-center justify-between p-3.5 rounded-md border-2 border-[#1F2A33] bg-[#FCF9F3] cursor-pointer transition-all shadow-xs">
+          <input type="radio" name="tipo_conductor" value="titular" checked="" class="sr-only">
+          <div class="flex items-center gap-2.5">
+            <div class="w-4 h-4 rounded-full border-4 border-[#1F2A33] bg-white"></div>
+            <div>
+              <span class="block text-xs font-bold text-[#1F2A33]">Titular</span>
+              <span class="block text-[11px] text-[#4E4A45]">Arrendatario directo / titular de reserva</span>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-[#1F2A33]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+        </label>
+
+        <!-- Chip 2: Acompañante -->
+        <label class="relative flex items-center justify-between p-3.5 rounded-md border border-[#E5E0D8] hover:border-[#A39C90] bg-white cursor-pointer transition-all">
+          <input type="radio" name="tipo_conductor" value="acompanante" class="sr-only">
+          <div class="flex items-center gap-2.5">
+            <div class="w-4 h-4 rounded-full border border-[#A39C90] bg-white"></div>
+            <div>
+              <span class="block text-xs font-semibold text-[#1F2A33]">Acompañante</span>
+              <span class="block text-[11px] text-[#A39C90]">Conductor secundario autorizado</span>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        </label>
+
+        <!-- Chip 3: Persona jurídica -->
+        <label class="relative flex items-center justify-between p-3.5 rounded-md border border-[#E5E0D8] hover:border-[#A39C90] bg-white cursor-pointer transition-all">
+          <input type="radio" name="tipo_conductor" value="persona_juridica" class="sr-only">
+          <div class="flex items-center gap-2.5">
+            <div class="w-4 h-4 rounded-full border border-[#A39C90] bg-white"></div>
+            <div>
+              <span class="block text-xs font-semibold text-[#1F2A33]">Persona jurídica</span>
+              <span class="block text-[11px] text-[#A39C90]">Conductor designado por empresa</span>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-[#A39C90]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+        </label>
+      </div>
+
+      <!-- Corporate Link Notice -->
+      <div class="mt-3 flex items-center justify-between p-2.5 rounded bg-[#FCF9F3] border border-[#E5E0D8] text-xs">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#C6600A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span class="text-[#4E4A45]">Cliente corporativo vinculado: <strong class="text-[#1F2A33]">Minera Los Andes S.A.C.</strong> (RUC 20491823901)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#2F6B4F] bg-[#EBF5EE] px-2 py-0.5 rounded border border-[#CDE5D6]">Póliza Flota Minera Vigente</span>
+      </div>
+    </div>
+
+    <!-- Section 2: Documentos Obligatorios -->
+    <div class="space-y-6">
+
+      <!-- Documento 1: Licencia de Conducir (Siempre obligatoria) -->
+      <div class="bg-white rounded-lg border border-[#E5E0D8] p-5 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-[#E5E0D8] gap-2">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded bg-[#FCF9F3] border border-[#E5E0D8] flex items-center justify-center text-[#1F2A33]">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-bold text-[#1F2A33]">Licencia de conducir</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#FBE9E9] text-[#C22B2B] border border-[#F3C2C2]">
+                  Siempre obligatoria
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FCF9F3] text-[#4E4A45] border border-[#E5E0D8]">
+                  Exigible clase A-IIb mín. para Toyota Hilux
+                </span>
+              </div>
+              <p class="text-xs text-[#4E4A45] mt-0.5">Brevete nacional vigente emitido por el MTC o licencia internacional con validación consular.</p>
+            </div>
+          </div>
+          <div class="inline-flex items-center gap-1.5 text-xs text-[#1E7D4B] font-medium bg-[#EBF5EE] px-2.5 py-1 rounded border border-[#CDE5D6]">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            <span class="">Validado en récord MTC (0 pts firmes)</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Campo: N° de Licencia -->
+          <div>
+            <label class="block text-xs font-semibold text-[#1F2A33] mb-1">
+              N° de Licencia / Brevete <span class="text-[#C6600A]">*</span>
+            </label>
+            <div class="relative">
+              <input type="text" value="Q44829104" class="w-full px-3 py-2 text-xs font-mono font-medium rounded border border-[#E5E0D8] bg-[#FCF9F3] text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]">
+              <span class="absolute right-2.5 top-2 text-[#1E7D4B]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- Campo: Categoría -->
+          <div>
+            <label class="block text-xs font-semibold text-[#1F2A33] mb-1">
+              Categoría <span class="text-[#C6600A]">*</span>
+            </label>
+            <select class="w-full px-3 py-2 text-xs font-medium rounded border border-[#E5E0D8] bg-white text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]">
+              <option value="A-IIb" selected="">A-IIb (Profesional - Pick-Up y Minería)</option>
+              <option value="A-I">A-I (Particular básico - No apto pick-up)</option>
+              <option value="A-IIIa">A-IIIa (Pesado / Interprovincial)</option>
+              <option value="A-IIIc">A-IIIc (Profesional Especial)</option>
+            </select>
+          </div>
+
+          <!-- Campo: Vencimiento -->
+          <div>
+            <label class="block text-xs font-semibold text-[#1F2A33] mb-1">
+              Fecha de vencimiento <span class="text-[#C6600A]">*</span>
+            </label>
+            <div class="relative">
+              <input type="text" value="14/11/2028" class="w-full px-3 py-2 text-xs font-medium rounded border border-[#E5E0D8] bg-white text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]">
+              <span class="absolute right-2.5 top-2 text-[#A39C90]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Archivo digital adjunto de brevete -->
+        <div class="mt-4 pt-3 border-t border-[#E5E0D8] flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#1E7D4B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-[#4E4A45]">Archivo digital adjunto: <strong class="text-[#1F2A33] font-mono">brevete_vmorales_aiib_front_back.pdf</strong> (1.4 MB)</span>
+          </div>
+          <button class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] inline-flex items-center gap-1 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <span class="">Actualizar archivo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Documento 2: DNI o Pasaporte / CE según nacionalidad (Solo una opción activa) -->
+      <div class="bg-white rounded-lg border border-[#E5E0D8] p-5 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-[#E5E0D8] gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-[#1F2A33]">Documento de identidad según nacionalidad</h2>
+              <span class="text-[#C6600A] font-bold text-sm">*</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FCF9F3] text-[#4E4A45] border border-[#E5E0D8]">
+                Selección exclusiva requerida (1 de 2)
+              </span>
+            </div>
+            <p class="text-xs text-[#4E4A45] mt-0.5">Seleccione el documento de identidad legal vigente con el que se celebrará la responsabilidad contractual.</p>
+          </div>
+          <span class="text-[11px] text-[#A39C90] italic">Nunca ambas casillas activas</span>
+        </div>
+
+        <!-- Selector de Alternativa: DNI vs Pasaporte / CE -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <!-- Opción 1: DNI Peruano (Activo) -->
+          <label class="relative flex items-start gap-3 p-4 rounded-md border-2 border-[#1F2A33] bg-[#FCF9F3] cursor-pointer transition-all shadow-xs">
+            <input type="radio" name="doc_identidad" value="dni" checked="" class="sr-only">
+            <div class="mt-0.5 w-4 h-4 rounded-full border-4 border-[#1F2A33] bg-white flex-shrink-0"></div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#1F2A33]">DNI (Peruano)</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#EBF5EE] text-[#1E7D4B] border border-[#CDE5D6]">NACIONAL</span>
+              </div>
+              <p class="text-[11px] text-[#4E4A45] mt-1">Para ciudadanos peruanos con Documento Nacional de Identidad azul o electrónico (DNIe) de 8 dígitos.</p>
+            </div>
+          </label>
+
+          <!-- Opción 2: Pasaporte / Carné de Extranjería (Inactivo) -->
+          <label class="relative flex items-start gap-3 p-4 rounded-md border border-[#E5E0D8] bg-white hover:border-[#A39C90] cursor-pointer transition-all opacity-85">
+            <input type="radio" name="doc_identidad" value="extranjero" class="sr-only">
+            <div class="mt-0.5 w-4 h-4 rounded-full border border-[#A39C90] bg-white flex-shrink-0"></div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[#1F2A33]">Pasaporte / Carné de Extranjería (CE)</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F6F3ED] text-[#4E4A45] border border-[#E5E0D8]">EXTRANJERO</span>
+              </div>
+              <p class="text-[11px] text-[#A39C90] mt-1">Para ciudadanos extranjeros no residentes o residentes temporales con pasaporte oficial o CE vigente.</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Formulario Desplegado: Solo la opción activa (DNI Peruano) -->
+        <div class="bg-[#FCF9F3] border border-[#E5E0D8] rounded-md p-4">
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#E5E0D8]">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#1F2A33] flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+              Casilla activa: Formulario de DNI (Perú)
+            </span>
+            <span class="text-xs text-[#1E7D4B] font-medium flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+              Consulta RENIEC en línea disponible
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- N° DNI -->
+            <div>
+              <label class="block text-xs font-semibold text-[#1F2A33] mb-1">Número de DNI (8 dígitos) <span class="text-[#C6600A]">*</span></label>
+              <div class="relative">
+                <input type="text" value="44829104" maxlength="8" class="w-full px-3 py-2 text-xs font-mono font-medium rounded border border-[#E5E0D8] bg-white text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]">
+                <span class="absolute right-2.5 top-2 text-[#1E7D4B]">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Nombres -->
+            <div>
+              <label class="block text-xs font-semibold text-[#1F2A33] mb-1">Nombres completos <span class="text-[#C6600A]">*</span></label>
+              <input type="text" value="Víctor Hugo" class="w-full px-3 py-2 text-xs font-medium rounded border border-[#E5E0D8] bg-white text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]">
+            </div>
+
+            <!-- Apellidos -->
+            <div>
+              <label class="block text-xs font-semibold text-[#1F2A33] mb-1">Apellidos completos <span class="text-[#C6600A]">*</span></label>
+              <input type="text" value="Morales Quicaño" class="w-full px-3 py-2 text-xs font-medium rounded border border-[#E5E0D8] bg-white text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]">
+            </div>
+
+            <!-- Fecha de Emisión / Caducidad -->
+            <div>
+              <label class="block text-xs font-semibold text-[#1F2A33] mb-1">Fecha de caducidad <span class="text-[#C6600A]">*</span></label>
+              <div class="relative">
+                <input type="text" value="05/18/2030" class="w-full px-3 py-2 text-xs font-medium rounded border border-[#E5E0D8] bg-white text-[#1F2A33] focus:outline-none focus:border-[#1F2A33]">
+                <span class="absolute right-2.5 top-2 text-[#A39C90]">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Archivo escaneado de DNI y verificación -->
+          <div class="mt-4 pt-3 border-t border-[#E5E0D8] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-[#4E4A45]">Archivo DNI escaneado:</span>
+              <span class="font-mono bg-white px-2 py-0.5 rounded border border-[#E5E0D8] text-[#1F2A33]">dni_victor_morales_anverso_reverso.jpg</span>
+              <span class="text-[#1E7D4B] font-semibold flex items-center gap-0.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                Verificado
+              </span>
+            </div>
+            <button class="text-xs font-semibold text-[#1F2A33] hover:text-[#C6600A] transition-colors self-start sm:self-auto">
+              Reemplazar archivo
+            </button>
+          </div>
+        </div>
+
+        <!-- Regla de negocio de identidad -->
+        <p class="mt-3 text-[11px] text-[#A39C90] flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-[#C6600A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <span class="">Regla contractual BR-ALQ-018: Solo una modalidad de identidad puede figurar en la liquidación notarial. Cambiar el tipo de documento resetea la verificación del documento opuesto.</span>
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Sticky Bottom Navigation Bar (Mismo lugar en las 5 etapas) -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E0D8] py-3.5 px-6 z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <!-- Left: Back link or exit -->
+      <a href="#" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#4E4A45] hover:text-[#1F2A33] transition-colors py-2 px-3 rounded hover:bg-[#F6F3ED]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        <span class="">Volver a expedientes de alquiler</span>
+      </a>
+
+      <!-- Right: Secondary & Fixed Primary Action "Continuar" -->
+      <div class="flex items-center gap-4">
+        <button type="button" class="text-xs font-semibold text-[#4E4A45] hover:text-[#1F2A33] py-2.5 px-4 rounded border border-[#E5E0D8] hover:border-[#A39C90] bg-white transition-colors">
+          Guardar borrador de etapa
+        </button>
+
+        <!-- Botón "Continuar" fondo #1F2A33, fijo abajo a la derecha — mismo lugar en las 5 etapas -->
+        <button type="button" class="inline-flex items-center gap-2 px-6 py-2.5 rounded text-xs font-semibold text-white bg-[#1F2A33] hover:bg-[#2b3944] active:bg-[#151c22] shadow-sm transition-all">
+          <span class="">Continuar a Validaciones</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- System Subfooter (Info & Support) -->
+  <div class="bg-white border-t border-[#E5E0D8] py-2 px-6 text-[11px] text-[#A39C90] flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <span class="">VeloxRent © 2026 · Sistema de Gestión Interna</span>
+      <span class="">·</span>
+      <span class="">Protocolo BR-ALQ-018 / Verificación de conductores</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="">Soporte Front-office: <strong class="text-[#4E4A45]">anexo 103</strong></span>
+      <span class="">·</span>
+      <a href="#" class="text-[#C22B2B] hover:underline">Cerrar sesión</a>
+    </div>
+  </div>
+
+
+
+
+
+</body></html>

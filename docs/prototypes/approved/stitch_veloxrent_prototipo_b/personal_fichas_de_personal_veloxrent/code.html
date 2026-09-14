@@ -1,0 +1,672 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Personal — Fichas de personal - VeloxRent</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Public Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            velox: {
+              orange: '#C6600A',
+              dark: '#1F2A33',
+              border: '#E5E2DC',
+              bgLight: '#FBF9F5',
+              surface: '#FFFFFF',
+              green: '#1E7D4B',
+              greenLight: '#E6F5EC',
+              blue: '#2166B0',
+              blueLight: '#EBF3FA',
+              subtleText: '#68737D',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-resets">
+    body {
+      background-color: #F8F7F4;
+      color: #1F2A33;
+      font-family: 'Public Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+<!-- BEGIN: TopBar -->
+<header class="bg-white border-b border-[#E5E2DC] sticky top-0 z-30 shadow-xs" data-purpose="primary-header">
+<div class="max-w-[1580px] mx-auto px-6 h-16 flex items-center justify-between gap-4">
+<!-- Brand and Breadcrumbs -->
+<div class="flex items-center space-x-4">
+<a class="text-xl font-display font-bold tracking-tight text-[#1F2A33]" href="#">
+          Velox<span class="text-[#C6600A]">Rent</span>
+</a>
+<span class="text-[#D1CBC3]">|</span>
+<!-- Breadcrumbs Navigation -->
+<nav aria-label="Breadcrumb" class="flex items-center text-sm font-medium text-[#68737D] space-x-2">
+<span>Recursos Humanos</span>
+<span class="text-[#A49E95]">›</span>
+<a class="hover:text-[#1F2A33] transition-colors" href="#">Personal</a>
+<span class="text-[#A49E95]">›</span>
+<span class="text-[#1F2A33] font-semibold">Fichas de personal</span>
+</nav>
+</div>
+<!-- User State, Branch, Profile -->
+<div class="flex items-center space-x-3">
+<!-- Online Badge -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#E6F5EC] text-[#1E7D4B] border border-[#C2E7D0]">
+<span class="h-2 w-2 rounded-full bg-[#1E7D4B]"></span>
+<span>En línea</span>
+</div>
+<!-- Branch Selector -->
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-[#374151] bg-[#F7F6F3] border border-[#E5E2DC]">
+<svg class="w-3.5 h-3.5 text-[#68737D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Ayacucho — Sede Central</span>
+</div>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2.5 pl-2">
+<div class="h-8 w-8 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-display font-semibold text-xs tracking-wider">
+            RO
+          </div>
+<div class="flex flex-col text-left">
+<span class="text-xs font-bold text-[#1F2A33] leading-none">Rodrigo Ortiz</span>
+<span class="text-[11px] text-[#68737D] font-medium leading-none mt-0.5">Jefe de RR.HH.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Overview Subheader -->
+<div class="bg-[#FCFBFA] border-t border-[#EFECE6] px-6 py-2">
+<div class="max-w-[1580px] mx-auto flex items-center justify-between text-xs">
+<div class="flex items-center divide-x divide-[#E5E2DC] text-[#68737D]">
+<div class="pr-3 font-medium flex items-center gap-1.5">
+<span class="font-semibold text-[#1F2A33]">Colaboradores activos:</span> 24 registros
+          </div>
+<div class="px-3 font-medium flex items-center gap-1.5">
+<span class="inline-block w-2 h-2 rounded-full bg-[#1E7D4B]"></span>
+<span>En planilla: <strong class="text-[#1F2A33]">21</strong></span>
+</div>
+<div class="px-3 font-medium flex items-center gap-1.5">
+<span class="inline-block w-2 h-2 rounded-full bg-[#2166B0]"></span>
+<span>En periodo de prueba: <strong class="text-[#1F2A33]">3</strong></span>
+</div>
+<div class="pl-3 text-[#5A646E]">
+            Ámbito: <strong>Sede Central y Talleres Ayacucho</strong>
+</div>
+</div>
+<!-- Top Right Secondary Action -->
+<div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F2A33] hover:bg-[#141C22] text-white text-xs font-medium rounded shadow-xs transition-colors" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Nueva alta de personal
+          </button>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainContent -->
+<main class="max-w-[1580px] mx-auto w-full px-6 py-7 space-y-6 flex-grow" data-purpose="personal-directory">
+<!-- Page Title & Operational Actions -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-2xl font-display font-bold text-[#1F2A33] tracking-tight">Personal</h1>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#EFECE6] text-[#4A5568]">
+            24 colaboradores activos
+          </span>
+</div>
+<p class="text-sm text-[#68737D] mt-1">
+          Directorio institucional, expedientes laborales y seguimiento de relación contractual de la plantilla activa.
+        </p>
+</div>
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#D5D1C8] text-[#1F2A33] text-xs font-medium rounded shadow-xs hover:bg-[#F9F8F6] transition-colors" type="button">
+<svg class="w-4 h-4 text-[#68737D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Exportar Padrón
+        </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 bg-[#C6600A] hover:bg-[#A94F05] text-white text-xs font-semibold rounded shadow-xs transition-colors" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Registrar nuevo colaborador
+        </button>
+</div>
+</div>
+<!-- Filters Bar Container -->
+<div class="bg-white p-3.5 rounded-lg border border-[#E5E2DC] shadow-xs space-y-3" data-purpose="table-filters">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+<!-- Search Field -->
+<div class="md:col-span-4 relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-[#8C959E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="block w-full pl-9 pr-3 py-2 text-xs border border-[#D5D1C8] rounded-md leading-5 bg-white placeholder-[#8C959E] focus:outline-hidden focus:ring-1 focus:ring-[#C6600A] focus:border-[#C6600A]" placeholder="Buscar por nombre, DNI, cargo o código interno..." type="text">
+</div>
+<!-- Filter: Empresa -->
+<div class="md:col-span-2">
+<select class="block w-full py-2 pl-3 pr-8 text-xs border border-[#D5D1C8] rounded-md bg-white text-[#374151] focus:outline-hidden focus:ring-1 focus:ring-[#C6600A] focus:border-[#C6600A]">
+<option value="">Todas las empresas</option>
+<option value="peru">VeloxRent Perú S.A.C.</option>
+<option value="mineros">VeloxRent Servicios Mineros S.A.C.</option>
+<option value="corp">VeloxRent Corporativo</option>
+</select>
+</div>
+<!-- Filter: Área -->
+<div class="md:col-span-2">
+<select class="block w-full py-2 pl-3 pr-8 text-xs border border-[#D5D1C8] rounded-md bg-white text-[#374151] focus:outline-hidden focus:ring-1 focus:ring-[#C6600A] focus:border-[#C6600A]">
+<option value="">Todas las áreas</option>
+<option value="mantenimiento">Mantenimiento y Taller</option>
+<option value="campo">Campo / Inspección Técnica</option>
+<option value="comercial">Operaciones Comerciales</option>
+<option value="telemetria">Tecnología y Telemática</option>
+<option value="admin">Administración y RR.HH.</option>
+</select>
+</div>
+<!-- Filter: Modalidad -->
+<div class="md:col-span-2">
+<select class="block w-full py-2 pl-3 pr-8 text-xs border border-[#D5D1C8] rounded-md bg-white text-[#374151] focus:outline-hidden focus:ring-1 focus:ring-[#C6600A] focus:border-[#C6600A]">
+<option value="">Todas las modalidades</option>
+<option value="planilla">Planilla directa</option>
+<option value="prueba">Periodo de prueba</option>
+</select>
+</div>
+<!-- Filter: Sede -->
+<div class="md:col-span-2">
+<select class="block w-full py-2 pl-3 pr-8 text-xs border border-[#D5D1C8] rounded-md bg-white text-[#374151] focus:outline-hidden focus:ring-1 focus:ring-[#C6600A] focus:border-[#C6600A]">
+<option value="">Todas las sedes</option>
+<option value="ayacucho">Ayacucho — Sede Central</option>
+<option value="taller_ayacucho">Taller Central Ayacucho</option>
+<option value="lima">Lima Corporativo</option>
+</select>
+</div>
+</div>
+<!-- Micro metadata / Active Filter status -->
+<div class="flex items-center justify-between text-[11px] text-[#68737D] pt-1 border-t border-[#F2EFE9]">
+<span>Mostrando <strong>6</strong> colaboradores destacados de 24 registros activos</span>
+<button class="text-[#C6600A] hover:underline font-medium" type="button">Restablecer filtros</button>
+</div>
+</div>
+<!-- BEGIN: PersonnelTable -->
+<div class="bg-white border border-[#E5E2DC] rounded-lg shadow-xs overflow-hidden" data-purpose="personnel-table-container">
+<div class="overflow-x-auto">
+<table class="min-w-full divide-y divide-[#E5E2DC] text-left">
+<thead class="bg-[#F8F7F4]">
+<tr class="text-[11px] font-semibold text-[#545E66] uppercase tracking-wider">
+<th class="py-3.5 px-4" scope="col">Colaborador</th>
+<th class="py-3.5 px-4" scope="col">Área y Sede</th>
+<th class="py-3.5 px-4" scope="col">Empresa</th>
+<th class="py-3.5 px-4" scope="col">Relación Laboral</th>
+<th class="py-3.5 px-4" scope="col">Expediente de Origen / Historial</th>
+<th class="py-3.5 px-4 text-right" scope="col">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#EFECE6] text-xs">
+<!-- ROW 1: Edwin Alanya Córdoba -->
+<tr class="hover:bg-[#FCFBF9] transition-colors">
+<td class="py-4 px-4 align-top">
+<div class="flex items-start gap-3">
+<div class="h-9 w-9 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-display font-semibold text-xs shrink-0">
+                    EA
+                  </div>
+<div>
+<a class="font-bold text-sm text-[#1F2A33] hover:text-[#C6600A] transition-colors block leading-snug" href="#">
+                      Edwin Alanya Córdoba
+                    </a>
+<div class="text-[#4A5568] font-medium mt-0.5">Mecánico Especialista 4x4 / Flota Minera</div>
+<div class="text-[11px] text-[#717B84] mt-0.5 flex items-center gap-1.5">
+<span>DNI: <strong>47829103</strong></span>
+<span>·</span>
+<span>Brevete: <strong>A-IIb vigente</strong></span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="font-medium text-[#1F2A33]">Mantenimiento y Taller</div>
+<div class="text-[11px] text-[#68737D] mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#A49E95]"></span>
+<span>Taller Central Ayacucho</span>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<span class="font-medium text-[#1F2A33]">VeloxRent Servicios Mineros S.A.C.</span>
+<span class="block text-[11px] text-[#717B84]">RUC 20608912341</span>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] font-semibold bg-[#EBF3FA] text-[#2166B0] border border-[#BFD7F0]">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" fill-rule="evenodd"></path>
+</svg>
+<span>Periodo de prueba</span>
+</div>
+<div class="text-[11px] text-[#2166B0] font-semibold mt-1">Día 45 de 90</div>
+</td>
+<td class="py-4 px-4 align-top">
+<!-- Traceability Reference Component -->
+<div class="p-2 rounded bg-[#F8F9FA] border border-[#E1E5EA] max-w-sm">
+<div class="flex items-center gap-1.5 text-xs font-semibold text-[#1F2A33]">
+<span class="text-[#0284C7]">🔗</span>
+<a class="text-[#2166B0] hover:underline font-mono text-[11px]" href="#">VAC-2025-015</a>
+<span class="text-[11px] font-normal text-[#5A646E]">(Candidato seleccionado)</span>
+</div>
+<div class="text-[10px] text-[#6C757D] mt-1 leading-tight border-t border-[#EAEAEA] pt-1">
+                    Expediente de selección enlazado — referencia de auditoría independiente
+                  </div>
+</div>
+</td>
+<td class="py-4 px-4 align-top text-right whitespace-nowrap">
+<div class="inline-flex items-center gap-2">
+<a class="px-3 py-1.5 bg-white border border-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-[#1F2A33] text-xs font-medium rounded transition-colors shadow-2xs" href="#">
+                    Ver ficha →
+                  </a>
+<button class="p-1.5 text-[#68737D] hover:text-[#1F2A33] rounded hover:bg-[#F2EFE9]" title="Más opciones" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+</svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 2: Víctor Hugo Morales Quispe -->
+<tr class="hover:bg-[#FCFBF9] transition-colors">
+<td class="py-4 px-4 align-top">
+<div class="flex items-start gap-3">
+<div class="h-9 w-9 rounded-full bg-[#374151] text-white flex items-center justify-center font-display font-semibold text-xs shrink-0">
+                    VM
+                  </div>
+<div>
+<a class="font-bold text-sm text-[#1F2A33] hover:text-[#C6600A] transition-colors block leading-snug" href="#">
+                      Víctor Hugo Morales Quispe
+                    </a>
+<div class="text-[#4A5568] font-medium mt-0.5">Conductor / Inspector de Campo</div>
+<div class="text-[11px] text-[#717B84] mt-0.5 flex items-center gap-1.5">
+<span>DNI: <strong>41908234</strong></span>
+<span>·</span>
+<span>Brevete: <strong>A-IIIc vigente</strong></span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="font-medium text-[#1F2A33]">Campo / Inspección Técnica</div>
+<div class="text-[11px] text-[#68737D] mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#A49E95]"></span>
+<span>Sede Central Ayacucho</span>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<span class="font-medium text-[#1F2A33]">VeloxRent Perú S.A.C.</span>
+<span class="block text-[11px] text-[#717B84]">RUC 20491039481</span>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] font-semibold bg-[#E6F5EC] text-[#1E7D4B] border border-[#C2E7D0]">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+<span>Planilla</span>
+</div>
+<div class="text-[11px] text-[#1E7D4B] font-medium mt-1">Plazo Indeterminado</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="p-2 rounded bg-[#F8F9FA] border border-[#E1E5EA] max-w-sm">
+<div class="flex items-center gap-1.5 text-xs font-semibold text-[#1F2A33]">
+<span class="text-[#0284C7]">🔗</span>
+<a class="text-[#2166B0] hover:underline font-mono text-[11px]" href="#">VAC-2024-009</a>
+<span class="text-[11px] font-normal text-[#5A646E]">(Personal fijo)</span>
+</div>
+<div class="text-[10px] text-[#717B84] mt-0.5">Ingreso por convocatoria cerrada 2024</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top text-right whitespace-nowrap">
+<div class="inline-flex items-center gap-2">
+<a class="px-3 py-1.5 bg-white border border-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-[#1F2A33] text-xs font-medium rounded transition-colors shadow-2xs" href="#">
+                    Ver ficha →
+                  </a>
+<button class="p-1.5 text-[#68737D] hover:text-[#1F2A33] rounded hover:bg-[#F2EFE9]" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+</svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: Marcos Talavera Hinostroza -->
+<tr class="hover:bg-[#FCFBF9] transition-colors">
+<td class="py-4 px-4 align-top">
+<div class="flex items-start gap-3">
+<div class="h-9 w-9 rounded-full bg-[#1F2A33] text-white flex items-center justify-center font-display font-semibold text-xs shrink-0">
+                    MT
+                  </div>
+<div>
+<a class="font-bold text-sm text-[#1F2A33] hover:text-[#C6600A] transition-colors block leading-snug" href="#">
+                      Marcos Talavera Hinostroza
+                    </a>
+<div class="text-[#4A5568] font-medium mt-0.5">Jefe de Taller Central</div>
+<div class="text-[11px] text-[#717B84] mt-0.5 flex items-center gap-1.5">
+<span>DNI: <strong>28391024</strong></span>
+<span>·</span>
+<span>CIP: <strong>249811</strong></span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="font-medium text-[#1F2A33]">Mantenimiento y Taller</div>
+<div class="text-[11px] text-[#68737D] mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#A49E95]"></span>
+<span>Taller Central Ayacucho</span>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<span class="font-medium text-[#1F2A33]">VeloxRent Servicios Mineros S.A.C.</span>
+<span class="block text-[11px] text-[#717B84]">RUC 20608912341</span>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] font-semibold bg-[#E6F5EC] text-[#1E7D4B] border border-[#C2E7D0]">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+<span>Planilla</span>
+</div>
+<div class="text-[11px] text-[#55606B] mt-1">Cargo de Confianza / Jefatura</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="p-2 rounded bg-[#F8F9FA] border border-[#E1E5EA] max-w-sm">
+<div class="text-xs font-semibold text-[#374151]">
+                    Contratación directa — Alta 2021
+                  </div>
+<div class="text-[11px] text-[#68737D] mt-0.5">Fundador de línea de taller mecánico</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top text-right whitespace-nowrap">
+<div class="inline-flex items-center gap-2">
+<a class="px-3 py-1.5 bg-white border border-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-[#1F2A33] text-xs font-medium rounded transition-colors shadow-2xs" href="#">
+                    Ver ficha →
+                  </a>
+<button class="p-1.5 text-[#68737D] hover:text-[#1F2A33] rounded hover:bg-[#F2EFE9]" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+</svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 4: María Quispe Mendoza -->
+<tr class="hover:bg-[#FCFBF9] transition-colors">
+<td class="py-4 px-4 align-top">
+<div class="flex items-start gap-3">
+<div class="h-9 w-9 rounded-full bg-[#52525B] text-white flex items-center justify-center font-display font-semibold text-xs shrink-0">
+                    MQ
+                  </div>
+<div>
+<a class="font-bold text-sm text-[#1F2A33] hover:text-[#C6600A] transition-colors block leading-snug" href="#">
+                      María Quispe Mendoza
+                    </a>
+<div class="text-[#4A5568] font-medium mt-0.5">Ejecutiva de Front-office y Reservas</div>
+<div class="text-[11px] text-[#717B84] mt-0.5">
+                      DNI: <strong>46102938</strong>
+</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="font-medium text-[#1F2A33]">Operaciones Comerciales</div>
+<div class="text-[11px] text-[#68737D] mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#A49E95]"></span>
+<span>Sede Central Ayacucho</span>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<span class="font-medium text-[#1F2A33]">VeloxRent Perú S.A.C.</span>
+<span class="block text-[11px] text-[#717B84]">RUC 20491039481</span>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] font-semibold bg-[#E6F5EC] text-[#1E7D4B] border border-[#C2E7D0]">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+<span>Planilla</span>
+</div>
+<div class="text-[11px] text-[#1E7D4B] font-medium mt-1">Plazo Indeterminado</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="p-2 rounded bg-[#F8F9FA] border border-[#E1E5EA] max-w-sm">
+<div class="flex items-center gap-1.5 text-xs font-semibold text-[#1F2A33]">
+<span class="text-[#0284C7]">🔗</span>
+<a class="text-[#2166B0] hover:underline font-mono text-[11px]" href="#">VAC-2023-011</a>
+<span class="text-[11px] font-normal text-[#5A646E]">(Promoción interna)</span>
+</div>
+<div class="text-[10px] text-[#717B84] mt-0.5">Traslado desde Counter Aeropuerto</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top text-right whitespace-nowrap">
+<div class="inline-flex items-center gap-2">
+<a class="px-3 py-1.5 bg-white border border-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-[#1F2A33] text-xs font-medium rounded transition-colors shadow-2xs" href="#">
+                    Ver ficha →
+                  </a>
+<button class="p-1.5 text-[#68737D] hover:text-[#1F2A33] rounded hover:bg-[#F2EFE9]" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+</svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 5: Carlos Mendoza Huamán -->
+<tr class="hover:bg-[#FCFBF9] transition-colors">
+<td class="py-4 px-4 align-top">
+<div class="flex items-start gap-3">
+<div class="h-9 w-9 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-display font-semibold text-xs shrink-0">
+                    CM
+                  </div>
+<div>
+<a class="font-bold text-sm text-[#1F2A33] hover:text-[#C6600A] transition-colors block leading-snug" href="#">
+                      Carlos Mendoza Huamán
+                    </a>
+<div class="text-[#4A5568] font-medium mt-0.5">Técnico de Monitoreo GPS &amp; IoT</div>
+<div class="text-[11px] text-[#717B84] mt-0.5">
+                      DNI: <strong>45192834</strong>
+</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="font-medium text-[#1F2A33]">Tecnología y Telemática</div>
+<div class="text-[11px] text-[#68737D] mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#A49E95]"></span>
+<span>Lima Corporativo (Híbrido)</span>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<span class="font-medium text-[#1F2A33]">VeloxRent Corporativo</span>
+<span class="block text-[11px] text-[#717B84]">RUC 20556102839</span>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] font-semibold bg-[#EBF3FA] text-[#2166B0] border border-[#BFD7F0]">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" fill-rule="evenodd"></path>
+</svg>
+<span>Periodo de prueba</span>
+</div>
+<div class="text-[11px] text-[#2166B0] font-semibold mt-1">Día 20 de 90</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="p-2 rounded bg-[#F8F9FA] border border-[#E1E5EA] max-w-sm">
+<div class="flex items-center gap-1.5 text-xs font-semibold text-[#1F2A33]">
+<span class="text-[#0284C7]">🔗</span>
+<a class="text-[#2166B0] hover:underline font-mono text-[11px]" href="#">VAC-2025-016</a>
+<span class="text-[11px] font-normal text-[#5A646E]">(Reclutamiento abierto)</span>
+</div>
+<div class="text-[10px] text-[#717B84] mt-0.5">Incorporación estratégica área telemática</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top text-right whitespace-nowrap">
+<div class="inline-flex items-center gap-2">
+<a class="px-3 py-1.5 bg-white border border-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-[#1F2A33] text-xs font-medium rounded transition-colors shadow-2xs" href="#">
+                    Ver ficha →
+                  </a>
+<button class="p-1.5 text-[#68737D] hover:text-[#1F2A33] rounded hover:bg-[#F2EFE9]" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+</svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 6: Rosa Huamán Prado -->
+<tr class="hover:bg-[#FCFBF9] transition-colors">
+<td class="py-4 px-4 align-top">
+<div class="flex items-start gap-3">
+<div class="h-9 w-9 rounded-full bg-[#4B5563] text-white flex items-center justify-center font-display font-semibold text-xs shrink-0">
+                    RH
+                  </div>
+<div>
+<a class="font-bold text-sm text-[#1F2A33] hover:text-[#C6600A] transition-colors block leading-snug" href="#">
+                      Rosa Huamán Prado
+                    </a>
+<div class="text-[#4A5568] font-medium mt-0.5">Asistente de Contabilidad y Facturación</div>
+<div class="text-[11px] text-[#717B84] mt-0.5">
+                      DNI: <strong>43819201</strong>
+</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="font-medium text-[#1F2A33]">Finanzas y Tesorería</div>
+<div class="text-[11px] text-[#68737D] mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#A49E95]"></span>
+<span>Sede Central Ayacucho</span>
+</div>
+</td>
+<td class="py-4 px-4 align-top">
+<span class="font-medium text-[#1F2A33]">VeloxRent Perú S.A.C.</span>
+<span class="block text-[11px] text-[#717B84]">RUC 20491039481</span>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-[11px] font-semibold bg-[#E6F5EC] text-[#1E7D4B] border border-[#C2E7D0]">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+<span>Planilla</span>
+</div>
+<div class="text-[11px] text-[#1E7D4B] font-medium mt-1">Plazo Indeterminado</div>
+</td>
+<td class="py-4 px-4 align-top">
+<div class="p-2 rounded bg-[#F8F9FA] border border-[#E1E5EA] max-w-sm">
+<div class="flex items-center gap-1.5 text-xs font-semibold text-[#1F2A33]">
+<span class="text-[#0284C7]">🔗</span>
+<a class="text-[#2166B0] hover:underline font-mono text-[11px]" href="#">VAC-2024-003</a>
+</div>
+<div class="text-[10px] text-[#717B84] mt-0.5">Evaluación curricular y psicológica aprobada</div>
+</div>
+</td>
+<td class="py-4 px-4 align-top text-right whitespace-nowrap">
+<div class="inline-flex items-center gap-2">
+<a class="px-3 py-1.5 bg-white border border-[#1F2A33] hover:bg-[#1F2A33] hover:text-white text-[#1F2A33] text-xs font-medium rounded transition-colors shadow-2xs" href="#">
+                    Ver ficha →
+                  </a>
+<button class="p-1.5 text-[#68737D] hover:text-[#1F2A33] rounded hover:bg-[#F2EFE9]" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+</svg>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer in Table -->
+<div class="px-6 py-3 bg-[#FCFBF9] border-t border-[#E5E2DC] flex items-center justify-between text-xs text-[#68737D]">
+<div>
+          Página <strong>1</strong> de <strong>4</strong> (Total: 24 expedientes)
+        </div>
+<div class="inline-flex items-center space-x-1">
+<button class="px-2.5 py-1 border border-[#D5D1C8] rounded text-[#8C959E] bg-white cursor-not-allowed" disabled="" type="button">
+            Anterior
+          </button>
+<button class="px-2.5 py-1 border border-[#C6600A] bg-[#C6600A] text-white font-semibold rounded" type="button">
+            1
+          </button>
+<button class="px-2.5 py-1 border border-[#D5D1C8] rounded text-[#1F2A33] bg-white hover:bg-[#F2EFE9]" type="button">
+            2
+          </button>
+<button class="px-2.5 py-1 border border-[#D5D1C8] rounded text-[#1F2A33] bg-white hover:bg-[#F2EFE9]" type="button">
+            3
+          </button>
+<button class="px-2.5 py-1 border border-[#D5D1C8] rounded text-[#1F2A33] bg-white hover:bg-[#F2EFE9]" type="button">
+            4
+          </button>
+<button class="px-2.5 py-1 border border-[#D5D1C8] rounded text-[#1F2A33] bg-white hover:bg-[#F2EFE9]" type="button">
+            Siguiente
+          </button>
+</div>
+</div>
+</div>
+<!-- END: PersonnelTable -->
+<!-- BEGIN: TraceabilityNotice -->
+<section class="bg-[#F8F9FB] border border-[#D5DEE8] rounded-lg p-4" data-purpose="traceability-protocol-callout">
+<div class="flex items-start gap-3">
+<div class="p-1 rounded bg-[#E0EDF8] text-[#1D5E99] shrink-0 mt-0.5">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<div class="text-xs text-[#334155] leading-relaxed">
+<strong class="text-[#0F172A] font-semibold">Regla de Trazabilidad y Separación de Expedientes (PR-RRHH-002):</strong> 
+          La ficha del colaborador en Personal constituye el registro legal activo. Si el colaborador ingresó a través de un proceso de Reclutamiento y Selección, los antecedentes de postulación, evaluación de peritaje y entrevistas se conservan como referencia histórica enlazada mediante su código de vacante de origen, garantizando la inmutabilidad de la auditoría laboral sin duplicar ni sobreescribir datos maestros.
+        </div>
+</div>
+</section>
+<!-- END: TraceabilityNotice -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="bg-white border-t border-[#E5E2DC] py-4 text-xs text-[#68737D]" data-purpose="system-footer">
+<div class="max-w-[1580px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3">
+<!-- System Identifiers -->
+<div class="flex flex-wrap items-center gap-x-2 text-[11px]">
+<span class="font-semibold text-[#1F2A33]">VeloxRent © 2025</span>
+<span class="text-[#D1CBC3]">·</span>
+<span>Sistema de Gestión Interna</span>
+<span class="text-[#D1CBC3]">·</span>
+<span>Protocolo SST-RRHH-001 / Gestión de Fichas de Personal</span>
+</div>
+<!-- Support & Helpdesk -->
+<div class="flex flex-wrap items-center gap-x-4 text-[11px]">
+<span>Soporte RR.HH.: <strong class="text-[#1F2A33]">anexo 104</strong></span>
+<span class="text-[#D1CBC3]">·</span>
+<span>Mesa de Operaciones: <strong class="text-[#1F2A33]">anexo 101</strong></span>
+<span class="text-[#D1CBC3]">·</span>
+<a class="inline-flex items-center gap-1 text-[#C6600A] hover:underline font-medium" href="#">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Cerrar sesión</span>
+</a>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
+</body></html>
