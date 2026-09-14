@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../common/persistence/prisma.service';
+import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   AuditEventRepositoryPort,
   RecordLoginAttemptInput,
