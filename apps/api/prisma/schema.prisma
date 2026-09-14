@@ -1,0 +1,79 @@
+// Prisma schema baseline - KAIROS/VeloxRent ERP
+// Fuente: TDD-KAIROS-TRANSVERSAL.md, secciones 7.1, 7.3, 7.4
+// Este archivo cubre unicamente las tablas transversales compartidas
+// (idempotency_keys, outbox_events, audit_events, vehicle_commitments).
+// Las entidades de dominio por modulo (Reserva, Alquiler, Devolucion,
+// Consulta, Reclutamiento, Administracion de Personal) se agregan de
+// forma incremental, pantalla a pantalla, segun TDD-<MOD>-001.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// TDD-KAIROS-TRANSVERSAL.md 7.3 - deduplicacion de comandos idempotentes
+model IdempotencyKey {
+  id           String   @id @default(uuid())
+  key          String   @unique
+  organizationId String @map("organization_id")
+  requestHash  String   @map("request_hash")
+  responseBody Json?    @map("response_body")
+  statusCode   Int?     @map("status_code")
+  createdAt    DateTime @default(now()) @map("created_at")
+  expiresAt    DateTime @map("expires_at")
+
+  @@map("idempotency_keys")
+}
+
+/// TDD-KAIROS-TRANSVERSAL.md 7.3 - outbox pattern para eventos de dominio
+model OutboxEvent {
+  id            String    @id @default(uuid())
+  aggregateType String    @map("aggregate_type")
+  aggregateId   String    @map("aggregate_id")
+  eventType     String    @map("event_type")
+  payload       Json
+  createdAt     DateTime  @default(now()) @map("created_at")
+  processedAt   DateTime? @map("processed_at")
+
+  @@index([processedAt])
+  @@map("outbox_events")
+}
+
+/// TDD-KAIROS-TRANSVERSAL.md 7.3 - bitacora de auditoria, reutilizada por
+/// los 6 modulos (no se duplica una tabla de auditoria por modulo)
+model AuditEvent {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  actorUserId    String?  @map("actor_user_id")
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id")
+  action         String
+  changes        Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([organizationId, entityType, entityId])
+  @@map("audit_events")
+}
+
+/// TDD-KAIROS-TRANSVERSAL.md 7.4 - compromisos de vehiculo compartidos
+/// entre Reserva y Alquiler (evita doble asignacion del mismo vehiculo)
+model VehicleCommitment {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  vehicleId      String   @map("vehicle_id")
+  sourceType     String   @map("source_type") // RESERVATION | RENTAL | MAINTENANCE
+  sourceId       String   @map("source_id")
+  status         String   // ACTIVE | CONSOLIDATED | RELEASED | EXPIRED
+  startsAt       DateTime @map("starts_at")
+  endsAt         DateTime @map("ends_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([sourceType, sourceId])
+  @@index([vehicleId, status])
+  @@map("vehicle_commitments")
+}
