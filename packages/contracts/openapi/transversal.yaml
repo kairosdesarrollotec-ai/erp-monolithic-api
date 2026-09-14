@@ -1,0 +1,42 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Transversal API
+  version: 0.1.0
+  description: >
+    Contrato del modulo Transversal. Primer endpoint: registro de intentos
+    de login (TR-01), auditoria reutilizando la tabla audit_events
+    (TDD-KAIROS-TRANSVERSAL.md 7.3). El login en si lo resuelve Firebase
+    Authentication directamente desde el frontend (TDD 8.3) - este backend
+    solo registra el resultado para auditoria.
+paths:
+  /audit/login-attempts:
+    post:
+      operationId: recordLoginAttempt
+      summary: Registra un intento de inicio de sesion (TR-01)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordLoginAttemptRequest'
+      responses:
+        '204':
+          description: Evento de auditoria registrado
+        '400':
+          description: Payload invalido
+components:
+  schemas:
+    RecordLoginAttemptRequest:
+      type: object
+      required: [email, outcome]
+      properties:
+        email:
+          type: string
+          format: email
+        outcome:
+          type: string
+          enum: [SUCCESS, FAILURE]
+        reason:
+          type: string
+          maxLength: 200
+          description: Motivo del fallo, nunca la contrasena.
