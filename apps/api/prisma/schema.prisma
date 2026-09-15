@@ -77,3 +77,20 @@ model VehicleCommitment {
   @@index([vehicleId, status])
   @@map("vehicle_commitments")
 }
+
+/// TR-02 (PANTALLAS-V2-B-TRANSVERSAL.md) - modelo minimo propuesto para
+/// saber si un usuario esta en "primer acceso" (contrasena temporal, MFA
+/// sin enrolar). PROPUESTO, no confirmado formalmente todavia por el
+/// equipo - ver docs/decision-log.md. No modela roles/permisos (eso es
+/// SDD-KAIROS-TRANSVERSAL.md 15.5, fuera de alcance de HU-21).
+model UserProfile {
+  id                     String    @id @default(uuid())
+  organizationId         String    @map("organization_id")
+  firebaseUid            String    @unique @map("firebase_uid")
+  requiresPasswordChange Boolean   @default(true) @map("requires_password_change")
+  mfaEnrolledAt          DateTime? @map("mfa_enrolled_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  @@map("user_profiles")
+}
