@@ -5,8 +5,8 @@ import { WorkContextRepositoryPort } from '../ports/work-context-repository.port
 describe('GetWorkContextAssignmentsHandler', () => {
   it('devuelve las asignaciones del repositorio tal cual, sin filtrarlas', async () => {
     const assignments = [
-      { companyId: 'c1', companyName: 'VeloxRent', branchId: 'b1', branchName: 'Ayacucho — Sede Central' },
-      { companyId: 'c2', companyName: 'Casa del Auto', branchId: 'b2', branchName: 'Lima — Sede Norte' },
+      { companyId: 'c1', companyName: 'VeloxRent', branchId: 'b1', branchName: 'Ayacucho — Sede Central', role: 'GERENCIA' },
+      { companyId: 'c2', companyName: 'Casa del Auto', branchId: 'b2', branchName: 'Lima — Sede Norte', role: 'FRONT_OFFICE' },
     ];
     const repository: jest.Mocked<WorkContextRepositoryPort> = {
       findAssignmentsByFirebaseUid: jest.fn().mockResolvedValue(assignments),

@@ -1,10 +1,12 @@
 import type { Prisma } from '@prisma/client';
+import type { WorkerRole } from '../../domain/worker-role';
 
 export interface WorkContextAssignmentRecord {
   companyId: string;
   companyName: string;
   branchId: string;
   branchName: string;
+  role: WorkerRole;
 }
 
 export interface SelectWorkContextInput {
@@ -35,9 +37,9 @@ export abstract class WorkContextRepositoryPort {
    * Confirma que la combinacion companyId/branchId elegida por el usuario
    * sigue siendo una asignacion vigente para el (nunca se confia en lo que
    * el cliente envio sin cruzarlo contra la asignacion real,
-   * SDD-KAIROS-TRANSVERSAL.md 14.3) y devuelve el organizationId de esa
-   * asignacion para el evento de auditoria. null si no es una asignacion
-   * valida y vigente del usuario.
+   * SDD-KAIROS-TRANSVERSAL.md 14.3) y devuelve el organizationId y el rol
+   * (PROVISIONAL, ver domain/worker-role.ts) de esa asignacion. null si no
+   * es una asignacion valida y vigente del usuario.
    *
    * `tx` es opcional: cuando el llamador esta dentro de una transaccion
    * (ver TransactionManagerPort), se le pasa el mismo cliente para que la
@@ -47,5 +49,5 @@ export abstract class WorkContextRepositoryPort {
   abstract findValidAssignment(
     input: SelectWorkContextInput,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ organizationId: string } | null>;
+  ): Promise<{ organizationId: string; role: WorkerRole } | null>;
 }

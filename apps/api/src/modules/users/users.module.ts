@@ -5,6 +5,7 @@ import { CompleteActivationHandler } from './application/commands/complete-activ
 import { GetWorkContextAssignmentsHandler } from './application/queries/get-work-context-assignments.handler';
 import { SelectWorkContextHandler } from './application/commands/select-work-context.handler';
 import { WorkContextAuthorizationService } from './application/services/work-context-authorization.service';
+import { GetDashboardHandler } from './application/queries/get-dashboard.handler';
 import { UserProfileRepositoryPort } from './application/ports/user-profile-repository.port';
 import { WorkContextRepositoryPort } from './application/ports/work-context-repository.port';
 import { PrismaUserProfileRepository } from './infrastructure/persistence/prisma-user-profile.repository';
@@ -20,6 +21,7 @@ import { AuditModule } from '../audit/audit.module';
     GetWorkContextAssignmentsHandler,
     SelectWorkContextHandler,
     WorkContextAuthorizationService,
+    GetDashboardHandler,
     { provide: UserProfileRepositoryPort, useClass: PrismaUserProfileRepository },
     { provide: WorkContextRepositoryPort, useClass: PrismaWorkContextRepository },
   ],

@@ -6,6 +6,7 @@ import {
   WorkContextAssignmentRecord,
   SelectWorkContextInput,
 } from '../../application/ports/work-context-repository.port';
+import type { WorkerRole } from '../../domain/worker-role';
 
 @Injectable()
 export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
@@ -30,6 +31,7 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
       (assignment: {
         companyId: string;
         branchId: string;
+        role: WorkerRole;
         company: { name: string };
         branch: { name: string };
       }) => ({
@@ -37,6 +39,7 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
         companyName: assignment.company.name,
         branchId: assignment.branchId,
         branchName: assignment.branch.name,
+        role: assignment.role,
       }),
     );
   }
@@ -44,7 +47,7 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
   async findValidAssignment(
     input: SelectWorkContextInput,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ organizationId: string } | null> {
+  ): Promise<{ organizationId: string; role: WorkerRole } | null> {
     const client = tx ?? this.prisma;
     const now = new Date();
     // findFirst (no findUnique) porque la vigencia (active/validFrom/
@@ -62,6 +65,8 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
       },
     });
 
-    return assignment ? { organizationId: assignment.organizationId } : null;
+    return assignment
+      ? { organizationId: assignment.organizationId, role: assignment.role as WorkerRole }
+      : null;
   }
 }

@@ -158,12 +158,33 @@ model Branch {
 /// `active`/`validFrom`/`validUntil` modelan la vigencia real; antes la
 /// existencia de la fila era el unico criterio (nunca expiraba ni se
 /// podia revocar sin borrar el registro, perdiendo el historial).
+///
+/// PROVISIONAL (HU-24/TR-06): `role` es un modelo minimo para poder
+/// enrutar al tablero correcto por rol. El modelo definitivo de roles y
+/// permisos (matriz rol-accion-empresa-sede versionada) vive en ADM-02
+/// (Roles y permisos, PANTALLAS-V2-B-SOPORTE.md), que todavia no esta
+/// construido. Cuando exista, este campo se migra al modelo real de
+/// ADM-02 - no se diseno como definitivo. El enum WorkerRole (7 valores,
+/// 1:1 con los 7 prototipos aprobados de TR-06) vive justo antes de este
+/// modelo.
+enum WorkerRole {
+  ADMINISTRACION
+  AUDITORIA
+  CAMPO
+  FINANZAS
+  FRONT_OFFICE
+  GERENCIA
+  RRHH
+}
+
 model UserCompanyAssignment {
   id             String    @id @default(uuid())
   organizationId String    @map("organization_id")
   firebaseUid    String    @map("firebase_uid")
   companyId      String    @map("company_id")
   branchId       String    @map("branch_id")
+  /// PROVISIONAL - ver nota arriba del modelo.
+  role           WorkerRole
   active         Boolean   @default(true)
   validFrom      DateTime  @default(now()) @map("valid_from")
   validUntil     DateTime? @map("valid_until")

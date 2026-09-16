@@ -123,6 +123,62 @@ paths:
           description: Activacion marcada como completa
         '401':
           description: Token de Firebase ausente o invalido
+  /users/me/dashboard:
+    get:
+      operationId: getDashboard
+      summary: >
+        Resuelve el rol del usuario para el contexto elegido y el estado
+        del tablero (TR-06).
+      description: >
+        PROVISIONAL (HU-24/TR-06, hallazgo medio de revision PR#5
+        "dashboard siempre EMPTY"): esta operacion es infraestructura de
+        enrutamiento por rol, no la funcionalidad completa de TR-06. Los
+        modulos de dominio (Consulta, Reserva, Alquiler, Devolucion,
+        Reclutamiento, Administracion de Personal) todavia no existen,
+        asi que hoy `state` solo puede ser EMPTY - no hay tareas ni
+        alertas reales que calcular. No se cierra HU-24/TR-06 como
+        funcionalidad terminada mientras este endpoint no calcule datos
+        reales por rol.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rol resuelto y estado del tablero
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '400':
+          description: Payload invalido (companyId/branchId ausentes o con formato distinto de UUID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o invalido
+        '403':
+          description: >
+            La combinacion companyId/branchId no es una asignacion vigente
+            del usuario (BR-ORG-002) - nunca se acepta un contexto que el
+            usuario no tiene autorizado o cuya asignacion esta
+            revocada/caducada, aunque lo haya enviado el cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -154,7 +210,7 @@ components:
             $ref: '#/components/schemas/WorkContextAssignment'
     WorkContextAssignment:
       type: object
-      required: [companyId, companyName, branchId, branchName]
+      required: [companyId, companyName, branchId, branchName, role]
       properties:
         companyId:
           type: string
@@ -166,6 +222,45 @@ components:
           format: uuid
         branchName:
           type: string
+        role:
+          $ref: '#/components/schemas/WorkerRole'
+    WorkerRole:
+      type: string
+      description: >
+        PROVISIONAL (HU-24/TR-06) - modelo minimo de rol solo para enrutar
+        al tablero correcto. El modelo definitivo (matriz rol-accion-
+        empresa-sede versionada) vive en ADM-02, todavia no construido.
+      enum:
+        - ADMINISTRACION
+        - AUDITORIA
+        - CAMPO
+        - FINANZAS
+        - FRONT_OFFICE
+        - GERENCIA
+        - RRHH
+    DashboardResponse:
+      type: object
+      required: [role, state]
+      description: >
+        Hallazgo medio de revision PR#5 ("OpenAPI provisional sin
+        estrategia de evolucion"): `state` se modela como un enum
+        abierto a crecer de forma aditiva. Cuando exista un estado con
+        datos reales (p.ej. READY con tareas/alertas por rol), se agrega
+        como un nuevo valor del enum mas un campo opcional nuevo (p.ej.
+        `tasks`) - nunca reemplazando o removiendo EMPTY ni cambiando el
+        tipo de `state`, para no romper clientes generados contra este
+        contrato. La forma exacta de READY se define cuando el modulo de
+        dominio correspondiente exista (fuente BDD/SDD/TDD del modulo),
+        no se inventa aqui.
+      properties:
+        role:
+          $ref: '#/components/schemas/WorkerRole'
+        state:
+          type: string
+          description: >
+            PROVISIONAL: unico valor soportado hoy. Ver descripcion de
+            DashboardResponse para la estrategia de evolucion.
+          enum: [EMPTY]
     SelectWorkContextRequest:
       type: object
       required: [companyId, branchId]
