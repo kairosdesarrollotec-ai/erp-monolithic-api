@@ -1,13 +1,19 @@
-import { Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import { GetActivationStatusHandler } from '../../application/queries/get-activation-status.handler';
 import { GetActivationStatusQuery } from '../../application/queries/get-activation-status.query';
 import { CompleteActivationHandler } from '../../application/commands/complete-activation.handler';
 import { CompleteActivationCommand } from '../../application/commands/complete-activation.command';
+import { GetWorkContextAssignmentsHandler } from '../../application/queries/get-work-context-assignments.handler';
+import { GetWorkContextAssignmentsQuery } from '../../application/queries/get-work-context-assignments.query';
+import { SelectWorkContextHandler } from '../../application/commands/select-work-context.handler';
+import { SelectWorkContextCommand } from '../../application/commands/select-work-context.command';
 import {
   AuthenticatedRequest,
   FirebaseAuthGuard,
 } from '../../infrastructure/auth/firebase-auth.guard';
 import { ActivationStatusResponse } from './dto/activation-status.response';
+import { WorkContextAssignmentsResponse } from './dto/work-context-assignments.response';
+import { SelectWorkContextDto } from './dto/select-work-context.dto';
 
 @Controller('users/me')
 @UseGuards(FirebaseAuthGuard)
@@ -15,6 +21,8 @@ export class UsersController {
   constructor(
     private readonly getActivationStatus: GetActivationStatusHandler,
     private readonly completeActivation: CompleteActivationHandler,
+    private readonly getWorkContextAssignments: GetWorkContextAssignmentsHandler,
+    private readonly selectWorkContext: SelectWorkContextHandler,
   ) {}
 
   @Get('activation-status')
@@ -26,5 +34,26 @@ export class UsersController {
   @HttpCode(204)
   async completeActivationEndpoint(@Req() req: AuthenticatedRequest): Promise<void> {
     await this.completeActivation.execute(new CompleteActivationCommand(req.firebaseUid!));
+  }
+
+  /** TR-05 (HU-23) - lista de empresas/sedes autorizadas para el usuario. */
+  @Get('assignments')
+  async assignments(@Req() req: AuthenticatedRequest): Promise<WorkContextAssignmentsResponse> {
+    const assignments = await this.getWorkContextAssignments.execute(
+      new GetWorkContextAssignmentsQuery(req.firebaseUid!),
+    );
+    return { assignments };
+  }
+
+  /** TR-05 (HU-23) - fija el contexto de trabajo elegido, con validacion server-side. */
+  @Post('work-context')
+  @HttpCode(204)
+  async workContext(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: SelectWorkContextDto,
+  ): Promise<void> {
+    await this.selectWorkContext.execute(
+      new SelectWorkContextCommand(req.firebaseUid!, dto.companyId, dto.branchId),
+    );
   }
 }

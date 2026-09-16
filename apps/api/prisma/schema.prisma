@@ -94,3 +94,58 @@ model UserProfile {
 
   @@map("user_profiles")
 }
+
+/// TR-05 (PANTALLAS-V2-B-TRANSVERSAL.md, HU-23) - maestros minimos de
+/// empresa y sede (SDD-KAIROS-TRANSVERSAL.md 14.1/14.4: "empresa
+/// propietaria" y "sede"). PROPUESTO - primera vez que estas entidades
+/// se modelan en este backend; el detalle completo de organizacion
+/// (empresa operadora, jerarquias, etc.) queda fuera de alcance de
+/// HU-23, se amplia cuando otro modulo lo necesite.
+model Company {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  branches    Branch[]
+  assignments UserCompanyAssignment[]
+
+  @@map("companies")
+}
+
+/// TR-05 - sede operativa de una empresa (SDD-KAIROS-TRANSVERSAL.md 14.1).
+model Branch {
+  id        String   @id @default(uuid())
+  companyId String   @map("company_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  company     Company                  @relation(fields: [companyId], references: [id])
+  assignments UserCompanyAssignment[]
+
+  @@index([companyId])
+  @@map("branches")
+}
+
+/// TR-05 (BR-ORG-002) - asignaciones vigentes de un usuario a
+/// empresa/sede. Es la unica fuente de verdad de "donde puede trabajar
+/// hoy" un usuario - el usuario nunca envia un company_id/branch_id
+/// libremente, solo elige entre lo que ya existe aqui
+/// (SDD-KAIROS-TRANSVERSAL.md 14.3/14.4).
+model UserCompanyAssignment {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  firebaseUid    String   @map("firebase_uid")
+  companyId      String   @map("company_id")
+  branchId       String   @map("branch_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+  branch  Branch  @relation(fields: [branchId], references: [id])
+
+  @@unique([firebaseUid, companyId, branchId])
+  @@index([firebaseUid])
+  @@map("user_company_assignments")
+}

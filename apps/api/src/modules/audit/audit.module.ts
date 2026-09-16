@@ -10,5 +10,10 @@ import { PrismaAuditEventRepository } from './infrastructure/persistence/prisma-
     RecordLoginAttemptHandler,
     { provide: AuditEventRepositoryPort, useClass: PrismaAuditEventRepository },
   ],
+  // AuditEventRepositoryPort se reutiliza fuera de este modulo (p.ej.
+  // TR-05/HU-23 audita la seleccion de contexto de trabajo) - ver
+  // TDD-KAIROS-TRANSVERSAL.md 7.3, audit_events es transversal a los 6
+  // modulos.
+  exports: [AuditEventRepositoryPort],
 })
 export class AuditModule {}

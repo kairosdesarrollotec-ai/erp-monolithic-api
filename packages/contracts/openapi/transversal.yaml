@@ -8,6 +8,11 @@ info:
     (TDD-KAIROS-TRANSVERSAL.md 7.3). El login en si lo resuelve Firebase
     Authentication directamente desde el frontend (TDD 8.3) - este backend
     solo registra el resultado para auditoria.
+
+    NOTA (HU-23): los endpoints /users/me/activation-status y
+    /users/me/complete-activation (TR-02, HU-21) ya existen en el backend
+    pero nunca se documentaron aqui - queda pendiente agregarlos, fuera de
+    alcance de este cambio.
 paths:
   /audit/login-attempts:
     post:
@@ -24,7 +29,51 @@ paths:
           description: Evento de auditoria registrado
         '400':
           description: Payload invalido
+  /users/me/assignments:
+    get:
+      operationId: getWorkContextAssignments
+      summary: Lista las empresas/sedes autorizadas para el usuario autenticado (TR-05)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Asignaciones vigentes del usuario (puede ser una lista vacia)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkContextAssignmentsResponse'
+        '401':
+          description: Token de Firebase ausente o invalido
+  /users/me/work-context:
+    post:
+      operationId: selectWorkContext
+      summary: Fija el contexto de trabajo (empresa/sede) elegido en TR-05
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectWorkContextRequest'
+      responses:
+        '204':
+          description: Contexto fijado y registrado en auditoria
+        '400':
+          description: Payload invalido
+        '401':
+          description: Token de Firebase ausente o invalido
+        '403':
+          description: >
+            La combinacion companyId/branchId no es una asignacion vigente
+            del usuario (BR-ORG-002) - nunca se acepta un contexto que el
+            usuario no tiene autorizado, aunque lo haya enviado el cliente
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: ID token de Firebase Authentication, enviado como "Authorization Bearer <idToken>"
   schemas:
     RecordLoginAttemptRequest:
       type: object
@@ -40,3 +89,31 @@ components:
           type: string
           maxLength: 200
           description: Motivo del fallo, nunca la contrasena.
+    WorkContextAssignmentsResponse:
+      type: object
+      required: [assignments]
+      properties:
+        assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkContextAssignment'
+    WorkContextAssignment:
+      type: object
+      required: [companyId, companyName, branchId, branchName]
+      properties:
+        companyId:
+          type: string
+        companyName:
+          type: string
+        branchId:
+          type: string
+        branchName:
+          type: string
+    SelectWorkContextRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId:
+          type: string
+        branchId:
+          type: string

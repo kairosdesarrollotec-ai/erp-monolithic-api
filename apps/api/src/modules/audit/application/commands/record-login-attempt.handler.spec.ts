@@ -6,6 +6,7 @@ describe('RecordLoginAttemptHandler', () => {
   it('nunca envia la contrasena al repositorio, solo email/outcome/reason', async () => {
     const repository: jest.Mocked<AuditEventRepositoryPort> = {
       recordLoginAttempt: jest.fn().mockResolvedValue(undefined),
+      recordWorkContextSelection: jest.fn().mockResolvedValue(undefined),
     };
     const handler = new RecordLoginAttemptHandler(repository);
 
@@ -25,6 +26,7 @@ describe('RecordLoginAttemptHandler', () => {
   it('registra intentos exitosos sin motivo', async () => {
     const repository: jest.Mocked<AuditEventRepositoryPort> = {
       recordLoginAttempt: jest.fn().mockResolvedValue(undefined),
+      recordWorkContextSelection: jest.fn().mockResolvedValue(undefined),
     };
     const handler = new RecordLoginAttemptHandler(repository);
 
