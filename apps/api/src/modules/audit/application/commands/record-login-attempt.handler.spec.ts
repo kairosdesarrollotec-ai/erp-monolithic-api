@@ -7,6 +7,7 @@ describe('RecordLoginAttemptHandler', () => {
     const repository: jest.Mocked<AuditEventRepositoryPort> = {
       recordLoginAttempt: jest.fn().mockResolvedValue(undefined),
       recordWorkContextSelection: jest.fn().mockResolvedValue(undefined),
+      recordReservationEvent: jest.fn().mockResolvedValue(undefined),
     };
     const handler = new RecordLoginAttemptHandler(repository);
 
@@ -27,6 +28,7 @@ describe('RecordLoginAttemptHandler', () => {
     const repository: jest.Mocked<AuditEventRepositoryPort> = {
       recordLoginAttempt: jest.fn().mockResolvedValue(undefined),
       recordWorkContextSelection: jest.fn().mockResolvedValue(undefined),
+      recordReservationEvent: jest.fn().mockResolvedValue(undefined),
     };
     const handler = new RecordLoginAttemptHandler(repository);
 

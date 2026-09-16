@@ -206,3 +206,125 @@ model UserCompanyAssignment {
   @@index([firebaseUid, active, validUntil])
   @@map("user_company_assignments")
 }
+
+/// PROVISIONAL (HU-27/RES, PROP-005 - ver docs/decision-log.md): modelo
+/// minimo de Cliente, solo los campos que Reserva necesita leer/mostrar.
+/// El modulo real de Clientes (Customers, ver SDD-RES-001 seccion 3.3)
+/// no esta construido todavia. Se migra cuando exista.
+model Customer {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  fullName       String   @map("full_name")
+  documentType   String   @map("document_type")
+  documentNumber String   @map("document_number")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  reservations Reservation[]
+
+  @@map("customers")
+}
+
+/// PROVISIONAL (HU-27/RES, PROP-005): modelo minimo de Vehiculo, solo los
+/// campos que Reserva necesita leer/mostrar. El modulo real de Flota
+/// (Fleet, ver SDD-RES-001 seccion 3.3) no esta construido todavia.
+model Vehicle {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  plate          String   @unique
+  brand          String
+  model          String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  reservations Reservation[]
+
+  @@map("vehicles")
+}
+
+/// PROVISIONAL (HU-27/RES, PROP-005): referencia minima a la Consulta de
+/// origen (BR-CON-001: toda reserva viene de una Consulta). El modulo
+/// real de Consulta (Inquiries, HU-26) esta pausado por falta de
+/// prototipo aprobado de CON-03 - ver tarea HU-26 en ClickUp.
+model Inquiry {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  reservations Reservation[]
+
+  @@map("inquiries")
+}
+
+/// TDD-RES-001.md seccion 8.1 - 5 estados reales (corregido 31 ago 2026:
+/// sin PENDING_PAYMENT ni EXPIRED, no existe bloqueo provisional).
+enum ReservationStatus {
+  DRAFT
+  CONFIRMED
+  PENDING_SALE_RESOLUTION
+  CONVERTED
+  CANCELLED
+}
+
+/// TDD-RES-001.md seccion 7.2.
+enum ChannelMode {
+  PRESENCIAL
+  VIRTUAL
+}
+
+/// TDD-RES-001.md seccion 9.2 - bloqueo atomico unico (BR-RES-009):
+/// paymentValidatedAt y documentsCompletedAt deben estar AMBOS presentes
+/// antes de que status pueda ser CONFIRMED (validado en aplicacion, ver
+/// ConfirmReservationHandler - el CHECK de base de datos del TDD original
+/// se refuerza aqui a nivel de dominio/aplicacion, Prisma no expone
+/// CHECK constraints declarativos).
+model Reservation {
+  id                    String             @id @default(uuid())
+  organizationId        String             @map("organization_id")
+  operatingCompanyId    String             @map("operating_company_id")
+  branchId              String             @map("branch_id")
+  inquiryId             String             @map("inquiry_id")
+  customerId            String             @map("customer_id")
+  vehicleId             String             @map("vehicle_id")
+  status                ReservationStatus  @default(DRAFT)
+  channelMode           ChannelMode        @map("channel_mode")
+  startAt               DateTime           @map("start_at")
+  endAt                 DateTime           @map("end_at")
+  /// BR-RES-001 - parametro versionado; PROVISIONAL: valor vigente fijo
+  /// en codigo (S/300, version 1) - ver docs/decision-log.md PROP-005.
+  /// Se migra a una tabla de parametros versionada real cuando exista.
+  requiredPaymentAmount Decimal            @map("required_payment_amount") @db.Decimal(12, 2)
+  currency              String             @db.Char(3)
+  paymentPolicyVersion  Int                @map("payment_policy_version")
+  paymentValidatedAt    DateTime?          @map("payment_validated_at")
+  documentsCompletedAt  DateTime?          @map("documents_completed_at")
+  confirmedAt           DateTime?          @map("confirmed_at")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  createdBy             String             @map("created_by")
+  version                Int               @default(1)
+
+  inquiry  Inquiry  @relation(fields: [inquiryId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id])
+
+  acceptance ReservationAcceptance?
+
+  @@index([operatingCompanyId, status, createdAt])
+  @@index([customerId, createdAt])
+  @@map("reservations")
+}
+
+/// TDD-RES-001.md seccion 9.3 - evidencia de aceptacion remota (BR-RES-006).
+/// PROVISIONAL: evidenceRef reemplaza al FK real a evidence(id) del TDD
+/// (el modulo Evidence no esta construido) - guarda una referencia de
+/// texto libre (p.ej. URL de almacenamiento) sin validar su existencia.
+model ReservationAcceptance {
+  id                   String    @id @default(uuid())
+  reservationId        String    @unique @map("reservation_id")
+  evidenceRef          String    @map("evidence_ref")
+  termsVersion         String    @map("terms_version")
+  acceptedByCustomerId String    @map("accepted_by_customer_id")
+  acceptedAt           DateTime? @map("accepted_at")
+  recordedBy           String    @map("recorded_by")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id])
+
+  @@map("reservation_acceptances")
+}

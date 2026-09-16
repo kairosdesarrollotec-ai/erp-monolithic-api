@@ -15,6 +15,14 @@ export interface RecordWorkContextSelectionInput {
   branchId: string;
 }
 
+export interface RecordReservationEventInput {
+  organizationId: string;
+  actorUserId: string;
+  reservationId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -31,6 +39,19 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordWorkContextSelection(
     input: RecordWorkContextSelectionInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * HU-27 (Reserva) - reutilizable por Alquiler/Devolucion, ver TDD-*-001
+   * seccion 17/24 de cada modulo. `tx` opcional (hallazgo critico PR#6
+   * "cambio de estado y auditoria no son atomicos"): permite que este
+   * registro participe de la misma transaccion que la mutacion de la
+   * reserva que lo precede - un fallo de auditoria revierte tambien la
+   * mutacion.
+   */
+  abstract recordReservationEvent(
+    input: RecordReservationEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

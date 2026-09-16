@@ -26,10 +26,11 @@ import { AuditModule } from '../audit/audit.module';
     { provide: WorkContextRepositoryPort, useClass: PrismaWorkContextRepository },
   ],
   // WorkContextAuthorizationService se exporta para que otros modulos
-  // (Inquiries, Reservations, etc., cuando necesiten re-validar el
-  // contexto de trabajo en sus propios comandos - hallazgo medio "logica
-  // futura duplicada") lo reutilicen importando UsersModule, en vez de
-  // reimplementar su propia version de esta politica.
+  // (Reservations/HU-27 y los que sigan - Alquiler, Devolucion, etc.,
+  // hallazgo medio PR#4 "logica futura duplicada", hallazgo alto PR#6
+  // "no usa el servicio central") lo reutilicen importando UsersModule,
+  // en vez de reimplementar su propia version de esta politica o llamar
+  // directamente a WorkContextRepositoryPort.
   exports: [WorkContextAuthorizationService],
 })
 export class UsersModule {}
