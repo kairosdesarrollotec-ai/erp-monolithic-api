@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   AuditEventRepositoryPort,
@@ -23,8 +24,12 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort {
     });
   }
 
-  async recordWorkContextSelection(input: RecordWorkContextSelectionInput): Promise<void> {
-    await this.prisma.auditEvent.create({
+  async recordWorkContextSelection(
+    input: RecordWorkContextSelectionInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.auditEvent.create({
       data: {
         organizationId: input.organizationId,
         actorUserId: input.firebaseUid,

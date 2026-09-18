@@ -125,6 +125,7 @@ model Branch {
   company     Company                  @relation(fields: [companyId], references: [id])
   assignments UserCompanyAssignment[]
 
+  @@unique([id, companyId])
   @@index([companyId])
   @@map("branches")
 }
@@ -134,18 +135,36 @@ model Branch {
 /// hoy" un usuario - el usuario nunca envia un company_id/branch_id
 /// libremente, solo elige entre lo que ya existe aqui
 /// (SDD-KAIROS-TRANSVERSAL.md 14.3/14.4).
+///
+/// Hallazgo critico de revision PR#4 ("la base permite asociar una sede
+/// con una empresa diferente"): `branch` ya NO es una FK simple por
+/// `branchId` - es una FK COMPUESTA `(branchId, companyId)` hacia
+/// `Branch(id, companyId)` (ver `@@unique([id, companyId])` en Branch).
+/// Esto hace que insertar una asignacion donde `branchId` pertenezca a
+/// una empresa distinta de `companyId` sea un error de integridad
+/// referencial a nivel de base de datos, no solo una validacion de
+/// aplicacion que se puede olvidar u omitir.
+///
+/// Hallazgo alto ("las asignaciones 'vigentes' no tienen vigencia"):
+/// `active`/`validFrom`/`validUntil` modelan la vigencia real; antes la
+/// existencia de la fila era el unico criterio (nunca expiraba ni se
+/// podia revocar sin borrar el registro, perdiendo el historial).
 model UserCompanyAssignment {
-  id             String   @id @default(uuid())
-  organizationId String   @map("organization_id")
-  firebaseUid    String   @map("firebase_uid")
-  companyId      String   @map("company_id")
-  branchId       String   @map("branch_id")
-  createdAt      DateTime @default(now()) @map("created_at")
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  firebaseUid    String    @map("firebase_uid")
+  companyId      String    @map("company_id")
+  branchId       String    @map("branch_id")
+  active         Boolean   @default(true)
+  validFrom      DateTime  @default(now()) @map("valid_from")
+  validUntil     DateTime? @map("valid_until")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   company Company @relation(fields: [companyId], references: [id])
-  branch  Branch  @relation(fields: [branchId], references: [id])
+  branch  Branch  @relation(fields: [branchId, companyId], references: [id, companyId])
 
   @@unique([firebaseUid, companyId, branchId])
   @@index([firebaseUid])
+  @@index([firebaseUid, active, validUntil])
   @@map("user_company_assignments")
 }

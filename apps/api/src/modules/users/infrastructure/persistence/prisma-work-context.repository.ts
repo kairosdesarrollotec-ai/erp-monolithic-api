@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   WorkContextRepositoryPort,
@@ -13,8 +14,14 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
   async findAssignmentsByFirebaseUid(
     firebaseUid: string,
   ): Promise<WorkContextAssignmentRecord[]> {
+    const now = new Date();
     const assignments = await this.prisma.userCompanyAssignment.findMany({
-      where: { firebaseUid },
+      where: {
+        firebaseUid,
+        active: true,
+        validFrom: { lte: now },
+        OR: [{ validUntil: null }, { validUntil: { gt: now } }],
+      },
       include: { company: true, branch: true },
       orderBy: [{ company: { name: 'asc' } }, { branch: { name: 'asc' } }],
     });
@@ -36,14 +43,22 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
 
   async findValidAssignment(
     input: SelectWorkContextInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<{ organizationId: string } | null> {
-    const assignment = await this.prisma.userCompanyAssignment.findUnique({
+    const client = tx ?? this.prisma;
+    const now = new Date();
+    // findFirst (no findUnique) porque la vigencia (active/validFrom/
+    // validUntil) es un filtro adicional fuera de la clave unica
+    // compuesta (firebaseUid, companyId, branchId) - hallazgo alto
+    // "asignaciones vigentes sin vigencia" de la revision PR#4.
+    const assignment = await client.userCompanyAssignment.findFirst({
       where: {
-        firebaseUid_companyId_branchId: {
-          firebaseUid: input.firebaseUid,
-          companyId: input.companyId,
-          branchId: input.branchId,
-        },
+        firebaseUid: input.firebaseUid,
+        companyId: input.companyId,
+        branchId: input.branchId,
+        active: true,
+        validFrom: { lte: now },
+        OR: [{ validUntil: null }, { validUntil: { gt: now } }],
       },
     });
 

@@ -1,3 +1,5 @@
+import type { Prisma } from '@prisma/client';
+
 export interface WorkContextAssignmentRecord {
   companyId: string;
   companyName: string;
@@ -18,6 +20,13 @@ export interface SelectWorkContextInput {
  * de HU-23.
  */
 export abstract class WorkContextRepositoryPort {
+  /**
+   * Hallazgo alto de revision PR#4 ("las asignaciones 'vigentes' no
+   * tienen vigencia"): solo devuelve asignaciones con `active = true` y
+   * dentro de `[validFrom, validUntil)` - una asignacion revocada o
+   * caducada nunca aparece aqui, aunque el registro siga existiendo en
+   * la tabla (se conserva para historial/auditoria, no se borra).
+   */
   abstract findAssignmentsByFirebaseUid(
     firebaseUid: string,
   ): Promise<WorkContextAssignmentRecord[]>;
@@ -28,9 +37,15 @@ export abstract class WorkContextRepositoryPort {
    * el cliente envio sin cruzarlo contra la asignacion real,
    * SDD-KAIROS-TRANSVERSAL.md 14.3) y devuelve el organizationId de esa
    * asignacion para el evento de auditoria. null si no es una asignacion
-   * valida del usuario.
+   * valida y vigente del usuario.
+   *
+   * `tx` es opcional: cuando el llamador esta dentro de una transaccion
+   * (ver TransactionManagerPort), se le pasa el mismo cliente para que la
+   * lectura participe de esa transaccion en vez de abrir su propia
+   * conexion.
    */
   abstract findValidAssignment(
     input: SelectWorkContextInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<{ organizationId: string } | null>;
 }

@@ -9,10 +9,19 @@ info:
     Authentication directamente desde el frontend (TDD 8.3) - este backend
     solo registra el resultado para auditoria.
 
-    NOTA (HU-23): los endpoints /users/me/activation-status y
-    /users/me/complete-activation (TR-02, HU-21) ya existen en el backend
-    pero nunca se documentaron aqui - queda pendiente agregarlos, fuera de
-    alcance de este cambio.
+    NOTA (PR#4, corregido el hallazgo medio "OpenAPI incompleto"):
+    /users/me/activation-status y /users/me/complete-activation (TR-02,
+    HU-21) ya se documentan aqui.
+
+    NOTA IMPORTANTE (PR#4, hallazgo critico "'fijar contexto' no persiste
+    ningun contexto"): esta API es stateless (SDD-KAIROS-TRANSVERSAL.md
+    9.3) - POST /users/me/work-context valida la combinacion empresa/sede
+    contra las asignaciones vigentes del usuario y deja un evento
+    auditable, pero NO crea una sesion ni un contexto activo del lado del
+    servidor. El cliente debe reenviar companyId/branchId en cada request
+    subsecuente que lo necesite, y cada endpoint que reciba esos valores
+    los re-valida de forma independiente contra las asignaciones vigentes
+    del usuario (deny-by-default) - nunca confia en una seleccion previa.
 paths:
   /audit/login-attempts:
     post:
@@ -37,7 +46,10 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: Asignaciones vigentes del usuario (puede ser una lista vacia)
+          description: >
+            Asignaciones vigentes del usuario (active=true, dentro de
+            [validFrom, validUntil)) - puede ser una lista vacia. Una
+            asignacion revocada o caducada nunca aparece aqui.
           content:
             application/json:
               schema:
@@ -47,7 +59,13 @@ paths:
   /users/me/work-context:
     post:
       operationId: selectWorkContext
-      summary: Fija el contexto de trabajo (empresa/sede) elegido en TR-05
+      summary: Valida y audita la seleccion de contexto de trabajo (empresa/sede) de TR-05
+      description: >
+        NO fija una sesion/contexto activo del lado del servidor (API
+        stateless, ver nota de la seccion "description" de este
+        documento). Valida la combinacion contra las asignaciones
+        vigentes del usuario y registra el evento auditable del punto 11
+        del contrato TR-05.
       security:
         - bearerAuth: []
       requestBody:
@@ -58,16 +76,53 @@ paths:
               $ref: '#/components/schemas/SelectWorkContextRequest'
       responses:
         '204':
-          description: Contexto fijado y registrado en auditoria
+          description: Combinacion valida y vigente - evento de auditoria registrado
         '400':
-          description: Payload invalido
+          description: Payload invalido (companyId/branchId ausentes o con formato distinto de UUID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
         '401':
           description: Token de Firebase ausente o invalido
         '403':
           description: >
             La combinacion companyId/branchId no es una asignacion vigente
             del usuario (BR-ORG-002) - nunca se acepta un contexto que el
-            usuario no tiene autorizado, aunque lo haya enviado el cliente
+            usuario no tiene autorizado o cuya asignacion esta
+            revocada/caducada, aunque lo haya enviado el cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+  /users/me/activation-status:
+    get:
+      operationId: getActivationStatus
+      summary: Estado de primer acceso del usuario autenticado (TR-02, HU-21)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: >
+            Si el usuario todavia no tiene UserProfile (cuentas previas a
+            este modelo), se asume que no requiere activacion.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationStatusResponse'
+        '401':
+          description: Token de Firebase ausente o invalido
+  /users/me/complete-activation:
+    post:
+      operationId: completeActivation
+      summary: Marca completado el flujo de activacion (TR-02, HU-21)
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Activacion marcada como completa
+        '401':
+          description: Token de Firebase ausente o invalido
 components:
   securitySchemes:
     bearerAuth:
@@ -103,10 +158,12 @@ components:
       properties:
         companyId:
           type: string
+          format: uuid
         companyName:
           type: string
         branchId:
           type: string
+          format: uuid
         branchName:
           type: string
     SelectWorkContextRequest:
@@ -115,5 +172,37 @@ components:
       properties:
         companyId:
           type: string
+          format: uuid
         branchId:
+          type: string
+          format: uuid
+    ActivationStatusResponse:
+      type: object
+      required: [requiresPasswordChange, requiresMfaEnrollment]
+      properties:
+        requiresPasswordChange:
+          type: boolean
+        requiresMfaEnrollment:
+          type: boolean
+    NestErrorResponse:
+      description: >
+        Forma real y actual del error (no problem+json todavia): el
+        formato default que NestJS serializa para toda HttpException sin
+        un ExceptionFilter global (no existe uno en este backend por
+        ahora). Migrar a application/problem+json (RFC 9457, ya usado
+        como convencion objetivo en TDD-KAIROS-*.md) es un cambio
+        transversal a todos los modulos, fuera de alcance de PR#4 -
+        pendiente como su propio cambio.
+      type: object
+      required: [statusCode, message, error]
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
           type: string
