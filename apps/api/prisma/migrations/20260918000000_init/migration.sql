@@ -5,8 +5,7 @@
 -- sin historial reproducible y sin posibilidad de rollback. Esta es la
 -- primera migracion real del proyecto - captura el estado completo del
 -- schema (incluye los hallazgos criticos corregidos en este mismo PR:
--- integridad empresa/sede y vigencia de asignaciones, mas el rol
--- PROVISIONAL de HU-24/TR-06 incorporado al rebasar PR#5 sobre esta base).
+-- integridad empresa/sede y vigencia de asignaciones).
 --
 -- Generada y probada a mano contra un Postgres 16 real (no `prisma migrate
 -- dev`): el sandbox de desarrollo donde se escribio originalmente no
@@ -119,27 +118,18 @@ CREATE TABLE "branches" (
     CONSTRAINT "branches_pkey" PRIMARY KEY ("id")
 );
 
--- CreateEnum
--- PROVISIONAL (HU-24/TR-06): modelo minimo de rol para poder enrutar al
--- tablero correcto por rol. El modelo definitivo de roles y permisos
--- (matriz rol-accion-empresa-sede versionada) vive en ADM-02 (Roles y
--- permisos, PANTALLAS-V2-B-SOPORTE.md), todavia no construido.
-CREATE TYPE "WorkerRole" AS ENUM ('ADMINISTRACION', 'AUDITORIA', 'CAMPO', 'FINANZAS', 'FRONT_OFFICE', 'GERENCIA', 'RRHH');
-
 -- CreateTable
 -- Hallazgo critico PR#4 ("la base permite asociar una sede con una empresa
 -- diferente"): se agregan active/valid_from/valid_until (hallazgo alto
 -- "asignaciones vigentes sin vigencia") ademas de la FK compuesta hacia
 -- branches (ver abajo) que impide, a nivel de base de datos, que
--- company_id no coincida con la empresa real de la sede. "role"
--- (PROVISIONAL, ver CreateEnum arriba) es el rol de HU-24/TR-06.
+-- company_id no coincida con la empresa real de la sede.
 CREATE TABLE "user_company_assignments" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "firebase_uid" TEXT NOT NULL,
     "company_id" TEXT NOT NULL,
     "branch_id" TEXT NOT NULL,
-    "role" "WorkerRole" NOT NULL,
     "active" BOOLEAN NOT NULL DEFAULT true,
     "valid_from" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "valid_until" TIMESTAMP(3),
