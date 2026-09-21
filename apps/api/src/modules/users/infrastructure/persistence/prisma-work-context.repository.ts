@@ -8,6 +8,32 @@ import {
 } from '../../application/ports/work-context-repository.port';
 import type { WorkerRole } from '../../domain/worker-role';
 
+/**
+ * Nota de tipado (PROP-003/NOTA-PROP-003, docs/decision-log.md): el
+ * cliente Prisma generado en los shells de Claude Code (sandbox en la
+ * nube y VM Linux del dispositivo remoto) queda desactualizado respecto
+ * al schema real cada vez que este cambia, porque `prisma generate` no
+ * tiene salida de red hacia binaries.prisma.sh en esos entornos - solo
+ * funciona en una Terminal real de macOS del usuario. Los `as unknown as`
+ * de abajo son deliberados: describen la forma REAL que produce el
+ * schema actual (incluye `role`, agregado al rebasar PR#5), no un intento
+ * de ocultar una incompatibilidad. Cuando el usuario corra
+ * `npx prisma generate` en su Terminal, el cliente real coincide con
+ * estas formas sin cambios adicionales.
+ */
+type AssignmentWithRoleAndNames = {
+  companyId: string;
+  branchId: string;
+  role: WorkerRole;
+  company: { name: string };
+  branch: { name: string };
+};
+
+type AssignmentWithOrgAndRole = {
+  organizationId: string;
+  role: WorkerRole;
+};
+
 @Injectable()
 export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -16,7 +42,7 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
     firebaseUid: string,
   ): Promise<WorkContextAssignmentRecord[]> {
     const now = new Date();
-    const assignments = await this.prisma.userCompanyAssignment.findMany({
+    const assignments = (await this.prisma.userCompanyAssignment.findMany({
       where: {
         firebaseUid,
         active: true,
@@ -25,23 +51,15 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
       },
       include: { company: true, branch: true },
       orderBy: [{ company: { name: 'asc' } }, { branch: { name: 'asc' } }],
-    });
+    })) as unknown as AssignmentWithRoleAndNames[];
 
-    return assignments.map(
-      (assignment: {
-        companyId: string;
-        branchId: string;
-        role: WorkerRole;
-        company: { name: string };
-        branch: { name: string };
-      }) => ({
-        companyId: assignment.companyId,
-        companyName: assignment.company.name,
-        branchId: assignment.branchId,
-        branchName: assignment.branch.name,
-        role: assignment.role,
-      }),
-    );
+    return assignments.map((assignment) => ({
+      companyId: assignment.companyId,
+      companyName: assignment.company.name,
+      branchId: assignment.branchId,
+      branchName: assignment.branch.name,
+      role: assignment.role,
+    }));
   }
 
   async findValidAssignment(
@@ -54,7 +72,7 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
     // validUntil) es un filtro adicional fuera de la clave unica
     // compuesta (firebaseUid, companyId, branchId) - hallazgo alto
     // "asignaciones vigentes sin vigencia" de la revision PR#4.
-    const assignment = await client.userCompanyAssignment.findFirst({
+    const assignment = (await client.userCompanyAssignment.findFirst({
       where: {
         firebaseUid: input.firebaseUid,
         companyId: input.companyId,
@@ -63,10 +81,10 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
         validFrom: { lte: now },
         OR: [{ validUntil: null }, { validUntil: { gt: now } }],
       },
-    });
+    })) as unknown as AssignmentWithOrgAndRole | null;
 
     return assignment
-      ? { organizationId: assignment.organizationId, role: assignment.role as WorkerRole }
+      ? { organizationId: assignment.organizationId, role: assignment.role }
       : null;
   }
 }

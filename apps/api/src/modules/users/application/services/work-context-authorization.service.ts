@@ -1,11 +1,13 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { WorkContextRepositoryPort } from '../ports/work-context-repository.port';
+import type { WorkerRole } from '../../domain/worker-role';
 
 export interface AuthorizedWorkContext {
   organizationId: string;
   companyId: string;
   branchId: string;
+  role: WorkerRole;
 }
 
 export interface AuthorizeWorkContextInput {
@@ -28,6 +30,17 @@ export interface AuthorizeWorkContextInput {
  * la misma forma. Se extrae aqui como servicio de aplicacion reutilizable
  * (exportado desde UsersModule) para que esos modulos futuros lo
  * inyecten en vez de reimplementar la validacion cada vez.
+ *
+ * Hallazgo alto de revision PR#5 ("el rol se usa para presentacion, no
+ * para autorizacion" / "no usa el servicio central
+ * WorkContextAuthorizationService"): GetDashboardHandler (TR-06) llamaba
+ * directamente al repositorio en vez de pasar por esta politica unica,
+ * arriesgando divergencia entre endpoints. `authorize()` ahora tambien
+ * devuelve el rol (PROVISIONAL, ver domain/worker-role.ts) de la
+ * asignacion vigente, para que TR-06 y cualquier modulo futuro que
+ * necesite el rol lo obtengan siempre de esta misma validacion
+ * deny-by-default, nunca de un rol enviado por el cliente ni de una
+ * segunda consulta separada al repositorio.
  */
 @Injectable()
 export class WorkContextAuthorizationService {
@@ -56,6 +69,7 @@ export class WorkContextAuthorizationService {
       organizationId: assignment.organizationId,
       companyId: input.companyId,
       branchId: input.branchId,
+      role: assignment.role,
     };
   }
 }
