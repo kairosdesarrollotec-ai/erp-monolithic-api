@@ -8,7 +8,10 @@ import { TransactionManagerPort } from '../application/ports/transaction-manager
 export class PrismaTransactionManager implements TransactionManagerPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  run<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction((tx: Prisma.TransactionClient) => work(tx));
+  run<T>(
+    work: (tx: Prisma.TransactionClient) => Promise<T>,
+    options?: { isolationLevel?: Prisma.TransactionIsolationLevel },
+  ): Promise<T> {
+    return this.prisma.$transaction((tx: Prisma.TransactionClient) => work(tx), options);
   }
 }

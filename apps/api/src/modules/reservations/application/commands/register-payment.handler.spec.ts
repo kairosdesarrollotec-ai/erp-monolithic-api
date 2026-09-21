@@ -1,10 +1,11 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { RegisterPaymentHandler } from './register-payment.handler';
 import { RegisterPaymentCommand } from './register-payment.command';
-import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
-import { WorkContextRepositoryPort } from '../../../users/application/ports/work-context-repository.port';
+import { ReservationRepositoryPort, ReservationRecord, ReservationScope } from '../ports/reservation-repository.port';
+import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { ReservationStateConflictError } from '../../domain/reservation-errors';
 
-function buildRecord(): ReservationRecord {
+function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRecord {
   return {
     id: 'res-1', organizationId: 'org-1', operatingCompanyId: 'company-1', branchId: 'branch-1',
     inquiryId: 'inq-1', customerId: 'cust-1', customerName: 'Maria Quispe', vehicleId: 'veh-1',
@@ -12,19 +13,25 @@ function buildRecord(): ReservationRecord {
     channelMode: 'PRESENCIAL', startAt: new Date(), endAt: new Date(), requiredPaymentAmount: '300.00',
     currency: 'PEN', paymentPolicyVersion: 1, paymentValidatedAt: null, documentsCompletedAt: null,
     confirmedAt: null, createdAt: new Date(), createdBy: 'uid-1', version: 1,
+    ...overrides,
   };
 }
 
+const SCOPE: ReservationScope = { organizationId: 'org-1', operatingCompanyId: 'company-1', branchId: 'branch-1' };
+
 describe('RegisterPaymentHandler', () => {
-  function buildDeps(existing: ReservationRecord | null, assignment: any = { organizationId: 'org-1', role: 'FRONT_OFFICE' }) {
+  function buildDeps(existing: ReservationRecord | null, forbidden = false) {
     const reservations: jest.Mocked<ReservationRepositoryPort> = {
       create: jest.fn(), findById: jest.fn().mockResolvedValue(existing), list: jest.fn(),
+      findCustomerById: jest.fn(), findVehicleById: jest.fn(), findInquiryById: jest.fn(),
       registerPayment: jest.fn().mockResolvedValue({ ...(existing ?? buildRecord()), paymentValidatedAt: new Date(), version: 2 }),
       registerDocuments: jest.fn(), confirm: jest.fn(), cancel: jest.fn(),
     };
-    const workContext: jest.Mocked<WorkContextRepositoryPort> = {
-      findAssignmentsByFirebaseUid: jest.fn(), findValidAssignment: jest.fn().mockResolvedValue(assignment),
-    };
+    const workContext = {
+      authorize: forbidden
+        ? jest.fn().mockRejectedValue(new ForbiddenException())
+        : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role: 'FRONT_OFFICE' }),
+    } as unknown as jest.Mocked<WorkContextAuthorizationService>;
     return { reservations, workContext };
   }
 
@@ -32,8 +39,15 @@ describe('RegisterPaymentHandler', () => {
     const { reservations, workContext } = buildDeps(buildRecord());
     const handler = new RegisterPaymentHandler(reservations, workContext);
     const result = await handler.execute(new RegisterPaymentCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1));
-    expect(reservations.registerPayment).toHaveBeenCalledWith('res-1', 'org-1', 1);
+    expect(reservations.registerPayment).toHaveBeenCalledWith('res-1', SCOPE, 1);
     expect(result.paymentValidatedAt).not.toBeNull();
+  });
+
+  it('busca la reserva por el scope completo (organizationId + operatingCompanyId + branchId), no solo por organizationId', async () => {
+    const { reservations, workContext } = buildDeps(buildRecord());
+    const handler = new RegisterPaymentHandler(reservations, workContext);
+    await handler.execute(new RegisterPaymentCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1));
+    expect(reservations.findById).toHaveBeenCalledWith('res-1', SCOPE);
   });
 
   it('rechaza si la reserva no existe', async () => {
@@ -45,10 +59,19 @@ describe('RegisterPaymentHandler', () => {
   });
 
   it('rechaza si la asignacion no es vigente', async () => {
-    const { reservations, workContext } = buildDeps(buildRecord(), null);
+    const { reservations, workContext } = buildDeps(buildRecord(), true);
     const handler = new RegisterPaymentHandler(reservations, workContext);
     await expect(
       handler.execute(new RegisterPaymentCommand('res-1', 'uid-1', 'company-ajena', 'branch-ajena', 1)),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('rechaza si la reserva ya no esta en DRAFT (maquina de estados)', async () => {
+    const { reservations, workContext } = buildDeps(buildRecord({ status: 'CONFIRMED' }));
+    const handler = new RegisterPaymentHandler(reservations, workContext);
+    await expect(
+      handler.execute(new RegisterPaymentCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
+    ).rejects.toBeInstanceOf(ReservationStateConflictError);
+    expect(reservations.registerPayment).not.toHaveBeenCalled();
   });
 });

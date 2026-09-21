@@ -1,32 +1,37 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
-import { WorkContextRepositoryPort } from '../../../users/application/ports/work-context-repository.port';
+import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { ListReservationsQuery } from './list-reservations.query';
 
-/** RES-01 - bandeja de reservas. */
+/**
+ * RES-01 - bandeja de reservas.
+ *
+ * Hallazgo critico "bug de bandeja": `branchId` ahora viene del propio
+ * ListReservationsQuery (ya corregido en el controller, ver
+ * reservations.controller.ts) y se pasa tal cual al repositorio - ya no
+ * se reutiliza companyId como branchId.
+ */
 @Injectable()
 export class ListReservationsHandler {
   constructor(
     private readonly reservations: ReservationRepositoryPort,
-    private readonly workContext: WorkContextRepositoryPort,
+    private readonly workContext: WorkContextAuthorizationService,
   ) {}
 
   async execute(query: ListReservationsQuery): Promise<ReservationRecord[]> {
-    const assignment = await this.workContext.findValidAssignment({
+    const context = await this.workContext.authorize({
       firebaseUid: query.firebaseUid,
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    if (!assignment) {
-      throw new ForbiddenException(
-        'La combinacion de empresa/sede no es una asignacion vigente para este usuario.',
-      );
-    }
 
     return this.reservations.list({
-      organizationId: assignment.organizationId,
+      organizationId: context.organizationId,
       operatingCompanyId: query.companyId,
+      branchId: query.branchId,
       status: query.status,
+      limit: query.limit,
+      cursor: query.cursor,
     });
   }
 }

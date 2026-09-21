@@ -15,6 +15,7 @@ import {
   AuthenticatedRequest,
   FirebaseAuthGuard,
 } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import { parseVersionIfMatch } from '../../../../common/http/etag';
 import { CreateReservationHandler } from '../../application/commands/create-reservation.handler';
 import { CreateReservationCommand } from '../../application/commands/create-reservation.command';
 import { RegisterPaymentHandler } from '../../application/commands/register-payment.handler';
@@ -35,17 +36,6 @@ import { CancelReservationDto } from './dto/cancel-reservation.dto';
 import { ListReservationsQueryDto } from './dto/list-reservations-query.dto';
 import { ReservationResponse } from './dto/reservation.response';
 import { toReservationResponse } from './reservation.mapper';
-
-function parseIfMatch(ifMatch: string | undefined): number {
-  if (!ifMatch) {
-    throw new BadRequestException('Falta el header If-Match con la version vigente de la reserva.');
-  }
-  const version = Number(ifMatch.replace(/"/g, ''));
-  if (!Number.isInteger(version)) {
-    throw new BadRequestException('El header If-Match debe ser un numero de version valido.');
-  }
-  return version;
-}
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
@@ -87,16 +77,41 @@ export class ReservationsController {
     return toReservationResponse(created);
   }
 
+  /**
+   * Hallazgo critico de revision PR#6 ("bug de bandeja: companyId
+   * enviado como branchId"): antes se construia
+   * `new ListReservationsQuery(req.firebaseUid!, query.companyId,
+   * query.companyId, query.status)` - el TERCER argumento (branchId)
+   * recibia `query.companyId` de nuevo en vez de `query.branchId`, asi
+   * que la bandeja SIEMPRE quedaba vacia (ningun branchId real coincide
+   * con un companyId). `branchId` ahora es su propio parametro
+   * obligatorio (ver ListReservationsQueryDto) y se pasa tal cual.
+   */
   @Get()
   async list(
     @Req() req: AuthenticatedRequest,
     @Query() query: ListReservationsQueryDto,
   ): Promise<ReservationResponse[]> {
-    if (!query.companyId) {
-      throw new BadRequestException('companyId es requerido.');
+    const limit = query.limit ? Number(query.limit) : undefined;
+    let cursor: { createdAt: Date; id: string } | undefined;
+    if (query.cursorCreatedAt || query.cursorId) {
+      if (!query.cursorCreatedAt || !query.cursorId) {
+        throw new BadRequestException(
+          'cursorCreatedAt y cursorId deben enviarse juntos para paginar.',
+        );
+      }
+      cursor = { createdAt: new Date(query.cursorCreatedAt), id: query.cursorId };
     }
+
     const results = await this.listReservations.execute(
-      new ListReservationsQuery(req.firebaseUid!, query.companyId, query.companyId, query.status),
+      new ListReservationsQuery(
+        req.firebaseUid!,
+        query.companyId,
+        query.branchId,
+        query.status,
+        limit ?? 20,
+        cursor,
+      ),
     );
     return results.map(toReservationResponse);
   }
@@ -122,7 +137,13 @@ export class ReservationsController {
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {
     const updated = await this.registerPayment.execute(
-      new RegisterPaymentCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseIfMatch(ifMatch)),
+      new RegisterPaymentCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+      ),
     );
     return toReservationResponse(updated);
   }
@@ -135,7 +156,13 @@ export class ReservationsController {
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {
     const updated = await this.registerDocuments.execute(
-      new RegisterDocumentsCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseIfMatch(ifMatch)),
+      new RegisterDocumentsCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+      ),
     );
     return toReservationResponse(updated);
   }
@@ -148,7 +175,13 @@ export class ReservationsController {
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {
     const confirmed = await this.confirmReservation.execute(
-      new ConfirmReservationCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseIfMatch(ifMatch)),
+      new ConfirmReservationCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+      ),
     );
     return toReservationResponse(confirmed);
   }
@@ -167,7 +200,7 @@ export class ReservationsController {
         req.firebaseUid!,
         dto.companyId,
         dto.branchId,
-        parseIfMatch(ifMatch),
+        parseVersionIfMatch(ifMatch),
         dto.reason,
         dto.note,
       ),

@@ -13,10 +13,13 @@ import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 
 /**
- * HU-27 (Reserva, RES-01/RES-04/RES-05). Importa UsersModule solo para
- * reutilizar WorkContextRepositoryPort (resolucion/validacion de
- * empresa-sede, mismo patron que TR-05/TR-06) - no expone ningun
- * controller de Users adicional.
+ * HU-27 (Reserva, RES-01/RES-04/RES-05). Importa UsersModule para
+ * reutilizar WorkContextAuthorizationService (autorizacion unica de
+ * contexto empresa/sede, mismo patron que TR-05/TR-06 desde la
+ * correccion de PR#5 - hallazgo alto de revision PR#6 "no usa el
+ * servicio central") - no expone ningun controller de Users adicional.
+ * TransactionManagerPort (usado por Confirm/Cancel) se resuelve desde
+ * PrismaModule, que es @Global().
  */
 @Module({
   imports: [UsersModule, AuditModule],

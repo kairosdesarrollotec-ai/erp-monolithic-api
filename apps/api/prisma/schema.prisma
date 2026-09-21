@@ -108,8 +108,9 @@ model Company {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  branches    Branch[]
-  assignments UserCompanyAssignment[]
+  branches     Branch[]
+  assignments  UserCompanyAssignment[]
+  reservations Reservation[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -131,8 +132,9 @@ model Branch {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  company     Company                  @relation(fields: [companyId], references: [id])
-  assignments UserCompanyAssignment[]
+  company      Company                  @relation(fields: [companyId], references: [id])
+  assignments  UserCompanyAssignment[]
+  reservations Reservation[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -244,9 +246,17 @@ model Vehicle {
 /// origen (BR-CON-001: toda reserva viene de una Consulta). El modulo
 /// real de Consulta (Inquiries, HU-26) esta pausado por falta de
 /// prototipo aprobado de CON-03 - ver tarea HU-26 en ClickUp.
+///
+/// Hallazgo critico de revision PR#6 ("referencias cross-tenant al
+/// crear"): `organizationId` se agrega aqui (faltaba en el modelo
+/// original) porque CreateReservationHandler necesita poder verificar
+/// que la Inquiry citada pertenece a la misma organizacion que la
+/// asignacion validada del usuario, igual que ya se exige para Customer
+/// y Vehicle - sin este campo esa validacion era imposible de expresar.
 model Inquiry {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now()) @map("created_at")
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   reservations Reservation[]
 
@@ -272,9 +282,19 @@ enum ChannelMode {
 /// TDD-RES-001.md seccion 9.2 - bloqueo atomico unico (BR-RES-009):
 /// paymentValidatedAt y documentsCompletedAt deben estar AMBOS presentes
 /// antes de que status pueda ser CONFIRMED (validado en aplicacion, ver
-/// ConfirmReservationHandler - el CHECK de base de datos del TDD original
-/// se refuerza aqui a nivel de dominio/aplicacion, Prisma no expone
-/// CHECK constraints declarativos).
+/// ConfirmReservationHandler). Hallazgo medio de revision PR#6
+/// ("integridad solo en aplicacion"): Prisma 5 no expone CHECK
+/// constraints declarativos en el schema, asi que se agregan a mano en
+/// la migracion SQL (periodo start_at<end_at, version>=1, monto>0, y que
+/// CONFIRMED exija payment/documents/confirmedAt) ademas de la
+/// validacion de aplicacion existente - defensa en profundidad, no la
+/// reemplaza.
+///
+/// Hallazgo critico "IDOR entre sedes/empresas": `branch` ahora es una FK
+/// COMPUESTA `(branchId, operatingCompanyId)` hacia `Branch(id,
+/// companyId)` (mismo patron que UserCompanyAssignment desde PR#4) - a
+/// nivel de base de datos ya no es posible insertar una reserva cuya
+/// sede pertenezca a una empresa distinta de `operatingCompanyId`.
 model Reservation {
   id                    String             @id @default(uuid())
   organizationId        String             @map("organization_id")
@@ -300,13 +320,19 @@ model Reservation {
   createdBy             String             @map("created_by")
   version                Int               @default(1)
 
-  inquiry  Inquiry  @relation(fields: [inquiryId], references: [id])
-  customer Customer @relation(fields: [customerId], references: [id])
-  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id])
+  inquiry        Inquiry  @relation(fields: [inquiryId], references: [id])
+  customer       Customer @relation(fields: [customerId], references: [id])
+  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id])
+  operatingCompany Company @relation(fields: [operatingCompanyId], references: [id])
+  branch         Branch   @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
 
   acceptance ReservationAcceptance?
 
-  @@index([operatingCompanyId, status, createdAt])
+  // Hallazgo critico PR#6 ("IDOR entre sedes/empresas"): este indice
+  // respalda el filtro de scope completo (organizationId +
+  // operatingCompanyId + branchId) que ahora usan findById/list/las
+  // mutaciones - antes solo existia el indice por operatingCompanyId.
+  @@index([organizationId, operatingCompanyId, branchId, status, createdAt])
   @@index([customerId, createdAt])
   @@map("reservations")
 }

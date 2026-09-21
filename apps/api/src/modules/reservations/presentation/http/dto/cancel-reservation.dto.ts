@@ -1,8 +1,8 @@
-import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CancelReservationDto {
-  @IsString() @IsNotEmpty() companyId!: string;
-  @IsString() @IsNotEmpty() branchId!: string;
+  @IsUUID() companyId!: string;
+  @IsUUID() branchId!: string;
 
   @IsIn(['CUSTOMER_REQUESTED_CHANGE', 'NO_SHOW'])
   reason!: 'CUSTOMER_REQUESTED_CHANGE' | 'NO_SHOW';

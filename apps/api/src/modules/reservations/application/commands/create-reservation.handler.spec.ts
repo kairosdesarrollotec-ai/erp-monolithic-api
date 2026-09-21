@@ -1,8 +1,8 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CreateReservationHandler } from './create-reservation.handler';
 import { CreateReservationCommand } from './create-reservation.command';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
-import { WorkContextRepositoryPort } from '../../../users/application/ports/work-context-repository.port';
+import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 
 function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRecord {
   return {
@@ -34,40 +34,53 @@ function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRec
 }
 
 describe('CreateReservationHandler', () => {
-  function buildDeps(assignment: { organizationId: string; role: any } | null) {
+  function buildDeps(options: {
+    context?: { organizationId: string } | 'forbidden';
+    customerOrg?: string | null;
+    vehicleOrg?: string | null;
+    inquiryOrg?: string | null;
+  } = {}) {
+    const { context = { organizationId: 'org-1' }, customerOrg = 'org-1', vehicleOrg = 'org-1', inquiryOrg = 'org-1' } = options;
     const reservations: jest.Mocked<ReservationRepositoryPort> = {
       create: jest.fn().mockResolvedValue(buildRecord()),
       findById: jest.fn(),
       list: jest.fn(),
+      findCustomerById: jest.fn().mockResolvedValue(customerOrg ? { id: 'cust-1', organizationId: customerOrg } : null),
+      findVehicleById: jest.fn().mockResolvedValue(vehicleOrg ? { id: 'veh-1', organizationId: vehicleOrg } : null),
+      findInquiryById: jest.fn().mockResolvedValue(inquiryOrg ? { id: 'inq-1', organizationId: inquiryOrg } : null),
       registerPayment: jest.fn(),
       registerDocuments: jest.fn(),
       confirm: jest.fn(),
       cancel: jest.fn(),
     };
-    const workContext: jest.Mocked<WorkContextRepositoryPort> = {
-      findAssignmentsByFirebaseUid: jest.fn(),
-      findValidAssignment: jest.fn().mockResolvedValue(assignment),
-    };
+    const workContext = {
+      authorize:
+        context === 'forbidden'
+          ? jest.fn().mockRejectedValue(new ForbiddenException())
+          : jest.fn().mockResolvedValue({ organizationId: context.organizationId, companyId: 'company-1', branchId: 'branch-1', role: 'FRONT_OFFICE' }),
+    } as unknown as jest.Mocked<WorkContextAuthorizationService>;
     return { reservations, workContext };
   }
 
+  function command(overrides: Partial<{ startAt: Date; endAt: Date; companyId: string; branchId: string }> = {}) {
+    return new CreateReservationCommand(
+      'uid-1',
+      overrides.companyId ?? 'company-1',
+      overrides.branchId ?? 'branch-1',
+      'inq-1',
+      'cust-1',
+      'veh-1',
+      'PRESENCIAL',
+      overrides.startAt ?? new Date('2026-09-20T14:00:00Z'),
+      overrides.endAt ?? new Date('2026-09-22T14:00:00Z'),
+    );
+  }
+
   it('crea la reserva en DRAFT con el monto de deposito vigente', async () => {
-    const { reservations, workContext } = buildDeps({ organizationId: 'org-1', role: 'FRONT_OFFICE' });
+    const { reservations, workContext } = buildDeps();
     const handler = new CreateReservationHandler(reservations, workContext);
 
-    const result = await handler.execute(
-      new CreateReservationCommand(
-        'uid-1',
-        'company-1',
-        'branch-1',
-        'inq-1',
-        'cust-1',
-        'veh-1',
-        'PRESENCIAL',
-        new Date('2026-09-20T14:00:00Z'),
-        new Date('2026-09-22T14:00:00Z'),
-      ),
-    );
+    const result = await handler.execute(command());
 
     expect(reservations.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -81,44 +94,44 @@ describe('CreateReservationHandler', () => {
   });
 
   it('rechaza si la fecha de inicio no es anterior a la de fin', async () => {
-    const { reservations, workContext } = buildDeps({ organizationId: 'org-1', role: 'FRONT_OFFICE' });
+    const { reservations, workContext } = buildDeps();
     const handler = new CreateReservationHandler(reservations, workContext);
 
     await expect(
-      handler.execute(
-        new CreateReservationCommand(
-          'uid-1',
-          'company-1',
-          'branch-1',
-          'inq-1',
-          'cust-1',
-          'veh-1',
-          'PRESENCIAL',
-          new Date('2026-09-22T14:00:00Z'),
-          new Date('2026-09-20T14:00:00Z'),
-        ),
-      ),
+      handler.execute(command({ startAt: new Date('2026-09-22T14:00:00Z'), endAt: new Date('2026-09-20T14:00:00Z') })),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('rechaza si la combinacion empresa/sede no es una asignacion vigente', async () => {
-    const { reservations, workContext } = buildDeps(null);
+    const { reservations, workContext } = buildDeps({ context: 'forbidden' });
     const handler = new CreateReservationHandler(reservations, workContext);
 
     await expect(
-      handler.execute(
-        new CreateReservationCommand(
-          'uid-1',
-          'company-ajena',
-          'branch-ajena',
-          'inq-1',
-          'cust-1',
-          'veh-1',
-          'PRESENCIAL',
-          new Date('2026-09-20T14:00:00Z'),
-          new Date('2026-09-22T14:00:00Z'),
-        ),
-      ),
+      handler.execute(command({ companyId: 'company-ajena', branchId: 'branch-ajena' })),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('rechaza si el cliente no existe en la organizacion autorizada (referencia cross-tenant)', async () => {
+    const { reservations, workContext } = buildDeps({ customerOrg: 'org-ajena' });
+    const handler = new CreateReservationHandler(reservations, workContext);
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza si el vehiculo no existe en la organizacion autorizada (referencia cross-tenant)', async () => {
+    const { reservations, workContext } = buildDeps({ vehicleOrg: null });
+    const handler = new CreateReservationHandler(reservations, workContext);
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza si la consulta de origen no existe en la organizacion autorizada (referencia cross-tenant)', async () => {
+    const { reservations, workContext } = buildDeps({ inquiryOrg: 'org-ajena' });
+    const handler = new CreateReservationHandler(reservations, workContext);
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
+    expect(reservations.create).not.toHaveBeenCalled();
   });
 });

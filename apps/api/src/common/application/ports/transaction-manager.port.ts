@@ -18,7 +18,20 @@ import type { Prisma } from '@prisma/client';
  * puerto, nunca `PrismaService` directamente (TDD-KAIROS-TRANSVERSAL.md
  * seccion 6: infrastructure/persistence es la unica capa que conoce
  * Prisma).
+ *
+ * `options.isolationLevel` (hallazgo critico de revision PR#6, "cambio de
+ * estado y auditoria no son atomicos" + reuso del nivel Serializable que
+ * ConfirmReservationHandler necesita para el bloqueo atomico de vehiculo,
+ * TDD-RES-001.md seccion 10.1): antes ese nivel de aislamiento solo se
+ * podia pedir abriendo una transaccion Prisma directamente dentro del
+ * repositorio (que por eso no podia incluir la auditoria). Exponerlo
+ * aqui permite que un handler pida Serializable para todo su flujo
+ * (autorizacion + lectura + mutacion + auditoria) sin que el repositorio
+ * tenga que abrir su propia transaccion anidada.
  */
 export abstract class TransactionManagerPort {
-  abstract run<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T>;
+  abstract run<T>(
+    work: (tx: Prisma.TransactionClient) => Promise<T>,
+    options?: { isolationLevel?: Prisma.TransactionIsolationLevel },
+  ): Promise<T>;
 }
