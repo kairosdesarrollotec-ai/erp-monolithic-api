@@ -17,8 +17,35 @@ export interface AuthorizeWorkContextInput {
 }
 
 /**
- * Politica unica de autorizacion de contexto de trabajo (BR-ORG-002,
+ * Politica de autorizacion de CONTEXTO de trabajo (BR-ORG-002,
  * NFR-SEC-001), deny-by-default.
+ *
+ * ============================================================
+ * LO QUE ESTE SERVICIO ES: verifica que (firebaseUid, companyId,
+ * branchId) sea una asignacion VIGENTE (active/validFrom/validUntil) de
+ * ese usuario, y devuelve el organizationId/role reales de esa
+ * asignacion - nunca los que mande el cliente. Responde "¿este usuario
+ * puede pararse hoy en esta empresa/sede?".
+ *
+ * LO QUE ESTE SERVICIO **NO** ES (hallazgo ALTO de revision de
+ * seguimiento de PR#5, 12fc688 - "validar contexto no equivale a
+ * RBAC/ABAC"): esto NO es una politica de autorizacion por
+ * accion/recurso. `authorize()` no recibe que ACCION se quiere hacer
+ * (crear una reserva, cerrar una consulta, etc.) ni valida el `role`
+ * devuelto contra una lista de roles permitidos para esa accion - por
+ * eso los 7 roles de WorkerRole acceden hoy al mismo dashboard
+ * (get-dashboard.handler.spec.ts lo confirma explicitamente con
+ * `it.each` sobre los 7 roles). Si un modulo futuro (Reservas,
+ * Consultas, etc.) llama a `authorize()` y asume que eso alcanza para
+ * bloquear una operacion de negocio por rol, ESTA MAL - `authorize()`
+ * solo resuelve el contexto (organization/company/branch/role), nunca
+ * decide si ese rol puede ejecutar la accion. La politica real
+ * `role + action + resource + company/branch`, deny-by-default, vive en
+ * ADM-02 (Roles y permisos, PANTALLAS-V2-B-SOPORTE.md) - todavia no
+ * construida. Hasta que ADM-02 exista, ningun modulo debe presentar
+ * "llama a WorkContextAuthorizationService" como control de autorizacion
+ * por rol/accion.
+ * ============================================================
  *
  * Hallazgo medio de revision PR#4 ("logica futura duplicada"): antes esta
  * validacion vivia inline dentro de SelectWorkContextHandler. La API es
@@ -40,7 +67,9 @@ export interface AuthorizeWorkContextInput {
  * asignacion vigente, para que TR-06 y cualquier modulo futuro que
  * necesite el rol lo obtengan siempre de esta misma validacion
  * deny-by-default, nunca de un rol enviado por el cliente ni de una
- * segunda consulta separada al repositorio.
+ * segunda consulta separada al repositorio. Ver bloque de arriba: esto
+ * resuelve DE DONDE sale el rol de forma confiable, no decide QUE puede
+ * hacer ese rol.
  */
 @Injectable()
 export class WorkContextAuthorizationService {

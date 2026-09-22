@@ -9,30 +9,34 @@ import {
 import type { WorkerRole } from '../../domain/worker-role';
 
 /**
- * Nota de tipado (PROP-003/NOTA-PROP-003, docs/decision-log.md): el
- * cliente Prisma generado en los shells de Claude Code (sandbox en la
- * nube y VM Linux del dispositivo remoto) queda desactualizado respecto
- * al schema real cada vez que este cambia, porque `prisma generate` no
- * tiene salida de red hacia binaries.prisma.sh en esos entornos - solo
- * funciona en una Terminal real de macOS del usuario. Los `as unknown as`
- * de abajo son deliberados: describen la forma REAL que produce el
- * schema actual (incluye `role`, agregado al rebasar PR#5), no un intento
- * de ocultar una incompatibilidad. Cuando el usuario corra
- * `npx prisma generate` en su Terminal, el cliente real coincide con
- * estas formas sin cambios adicionales.
+ * Hallazgo MEDIO de revision de seguimiento de PR#5 (12fc688, "los casts
+ * ocultan la verificacion real del cliente Prisma"): la version anterior
+ * de este archivo usaba `as unknown as` para describir a mano la forma
+ * que el cliente Prisma "deberia" tener, sin que TypeScript verificara
+ * que select/include realmente devuelven eso. Ya se confirmo (PR#4,
+ * PR#5) que `npx prisma generate` funciona en una Terminal real y que el
+ * CI (.github/workflows/ci.yml) lo corre en cada build/test, asi que el
+ * cliente tipado real ya esta disponible - se eliminan los casts y se
+ * usan los tipos que Prisma genera con `Prisma.UserCompanyAssignmentGetPayload`,
+ * que SI falla en build si el select/include deja de coincidir con el
+ * shape usado abajo.
  */
-type AssignmentWithRoleAndNames = {
-  companyId: string;
-  branchId: string;
-  role: WorkerRole;
-  company: { name: string };
-  branch: { name: string };
-};
+type AssignmentWithRoleAndNames = Prisma.UserCompanyAssignmentGetPayload<{
+  select: {
+    companyId: true;
+    branchId: true;
+    role: true;
+    company: { select: { name: true } };
+    branch: { select: { name: true } };
+  };
+}>;
 
-type AssignmentWithOrgAndRole = {
-  organizationId: string;
-  role: WorkerRole;
-};
+type AssignmentWithOrgAndRole = Prisma.UserCompanyAssignmentGetPayload<{
+  select: {
+    organizationId: true;
+    role: true;
+  };
+}>;
 
 @Injectable()
 export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
@@ -42,16 +46,23 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
     firebaseUid: string,
   ): Promise<WorkContextAssignmentRecord[]> {
     const now = new Date();
-    const assignments = (await this.prisma.userCompanyAssignment.findMany({
-      where: {
-        firebaseUid,
-        active: true,
-        validFrom: { lte: now },
-        OR: [{ validUntil: null }, { validUntil: { gt: now } }],
-      },
-      include: { company: true, branch: true },
-      orderBy: [{ company: { name: 'asc' } }, { branch: { name: 'asc' } }],
-    })) as unknown as AssignmentWithRoleAndNames[];
+    const assignments: AssignmentWithRoleAndNames[] =
+      await this.prisma.userCompanyAssignment.findMany({
+        where: {
+          firebaseUid,
+          active: true,
+          validFrom: { lte: now },
+          OR: [{ validUntil: null }, { validUntil: { gt: now } }],
+        },
+        select: {
+          companyId: true,
+          branchId: true,
+          role: true,
+          company: { select: { name: true } },
+          branch: { select: { name: true } },
+        },
+        orderBy: [{ company: { name: 'asc' } }, { branch: { name: 'asc' } }],
+      });
 
     return assignments.map((assignment) => ({
       companyId: assignment.companyId,
@@ -72,16 +83,21 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
     // validUntil) es un filtro adicional fuera de la clave unica
     // compuesta (firebaseUid, companyId, branchId) - hallazgo alto
     // "asignaciones vigentes sin vigencia" de la revision PR#4.
-    const assignment = (await client.userCompanyAssignment.findFirst({
-      where: {
-        firebaseUid: input.firebaseUid,
-        companyId: input.companyId,
-        branchId: input.branchId,
-        active: true,
-        validFrom: { lte: now },
-        OR: [{ validUntil: null }, { validUntil: { gt: now } }],
-      },
-    })) as unknown as AssignmentWithOrgAndRole | null;
+    const assignment: AssignmentWithOrgAndRole | null =
+      await client.userCompanyAssignment.findFirst({
+        where: {
+          firebaseUid: input.firebaseUid,
+          companyId: input.companyId,
+          branchId: input.branchId,
+          active: true,
+          validFrom: { lte: now },
+          OR: [{ validUntil: null }, { validUntil: { gt: now } }],
+        },
+        select: {
+          organizationId: true,
+          role: true,
+        },
+      });
 
     return assignment
       ? { organizationId: assignment.organizationId, role: assignment.role }

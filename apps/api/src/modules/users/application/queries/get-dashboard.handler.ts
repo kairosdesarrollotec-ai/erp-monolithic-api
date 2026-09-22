@@ -35,6 +35,14 @@ export interface DashboardResult {
  * (ver estrategia de evolucion de DashboardResponse.state en
  * packages/contracts/openapi/transversal.yaml). No declarar HU-24/TR-06
  * como funcionalidad terminada mientras esto siga asi.
+ *
+ * IMPORTANTE (hallazgo ALTO de revision de seguimiento de PR#5): que
+ * este handler pase por `authorization.authorize()` NO significa que
+ * haya control de acceso por rol - los 7 roles llegan hoy al mismo
+ * tablero (ver work-context-authorization.service.ts, seccion "LO QUE
+ * ESTE SERVICIO NO ES"). El rol solo sirve para que el FRONTEND enrute a
+ * la vista correcta, no para negar la respuesta de este endpoint segun
+ * el rol.
  */
 @Injectable()
 export class GetDashboardHandler {
