@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CancelReservationHandler } from './cancel-reservation.handler';
 import { CancelReservationCommand } from './cancel-reservation.command';
 import { ReservationRepositoryPort, ReservationRecord, ReservationScope } from '../ports/reservation-repository.port';
@@ -39,7 +39,7 @@ function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRec
 const SCOPE: ReservationScope = { organizationId: 'org-1', operatingCompanyId: 'company-1', branchId: 'branch-1' };
 const FAKE_TX = { __fakeTx: true } as any;
 
-function buildDeps(existing: ReservationRecord | null) {
+function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
     create: jest.fn(),
     findById: jest.fn().mockResolvedValue(existing),
@@ -53,7 +53,7 @@ function buildDeps(existing: ReservationRecord | null) {
     cancel: jest.fn().mockResolvedValue(existing ? { ...existing, status: 'CANCELLED', version: existing.version + 1 } : undefined),
   };
   const workContext = {
-    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role: 'FRONT_OFFICE' }),
+    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
   const audit: jest.Mocked<AuditEventRepositoryPort> = {
     recordLoginAttempt: jest.fn(),
@@ -97,7 +97,8 @@ describe('CancelReservationHandler', () => {
 
   it('busca la reserva por el scope completo antes de cancelar', async () => {
     const existing = buildRecord();
-    const { reservations, workContext, audit, transactionManager } = buildDeps(existing);
+    // NO_SHOW solo lo puede ejecutar Gerencia (ver reservation-role-policy.ts) - GERENCIA aqui.
+    const { reservations, workContext, audit, transactionManager } = buildDeps(existing, 'GERENCIA');
     const handler = new CancelReservationHandler(reservations, workContext, audit, transactionManager);
 
     await handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW'));
@@ -112,7 +113,7 @@ describe('CancelReservationHandler', () => {
    */
   it.each(['CANCELLED', 'CONVERTED'] as const)('rechaza cancelar una reserva ya %s (estado terminal)', async (status) => {
     const existing = buildRecord({ status });
-    const { reservations, workContext, audit, transactionManager } = buildDeps(existing);
+    const { reservations, workContext, audit, transactionManager } = buildDeps(existing, 'GERENCIA');
     const handler = new CancelReservationHandler(reservations, workContext, audit, transactionManager);
 
     await expect(
@@ -122,11 +123,48 @@ describe('CancelReservationHandler', () => {
   });
 
   it('rechaza si la reserva no existe', async () => {
-    const { reservations, workContext, audit, transactionManager } = buildDeps(null);
+    const { reservations, workContext, audit, transactionManager } = buildDeps(null, 'GERENCIA');
     const handler = new CancelReservationHandler(reservations, workContext, audit, transactionManager);
 
     await expect(
       handler.execute(new CancelReservationCommand('res-x', 'uid-1', 'company-1', 'branch-1', 1, 'NO_SHOW')),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  // Hallazgo ALTO PR#6 ("falta autorizacion granular por rol/accion") -
+  // MATRIZ-TRAZABILIDAD-COMPLETA.md fila RES-08: cancelacion por no-show
+  // es la unica accion de Reserva restringida a un solo rol (Gerencia).
+  it('rechaza cancelar por no-show si el rol autorizado no es Gerencia', async () => {
+    const existing = buildRecord();
+    const { reservations, workContext, audit, transactionManager } = buildDeps(existing, 'FRONT_OFFICE');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, transactionManager);
+
+    await expect(
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW')),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(reservations.cancel).not.toHaveBeenCalled();
+  });
+
+  it('permite cancelar por cambio solicitado por el cliente con rol Front-office (no requiere Gerencia)', async () => {
+    const existing = buildRecord();
+    const { reservations, workContext, audit, transactionManager } = buildDeps(existing, 'FRONT_OFFICE');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, transactionManager);
+
+    const result = await handler.execute(
+      new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE'),
+    );
+
+    expect(result.status).toBe('CANCELLED');
+  });
+
+  it('rechaza cualquier cancelacion si el rol autorizado no esta en la matriz de Reserva', async () => {
+    const existing = buildRecord();
+    const { reservations, workContext, audit, transactionManager } = buildDeps(existing, 'AUDITORIA');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, transactionManager);
+
+    await expect(
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE')),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(reservations.cancel).not.toHaveBeenCalled();
   });
 });

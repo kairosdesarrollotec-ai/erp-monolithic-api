@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { isTerminalReservationStatus } from '../../domain/reservation-status';
@@ -24,6 +25,16 @@ import { CancelReservationCommand } from './cancel-reservation.command';
  * mutacion + auditoria en una unica transaccion via TransactionManagerPort.
  *
  * Hallazgo critico "IDOR entre sedes/empresas": scope completo.
+ *
+ * Hallazgo CRITICO de revision de seguimiento de PR#6 (d442508,
+ * "cancelacion vulnerable a carrera TOCTOU"): la defensa principal es
+ * el `updateMany` atomico con version+scope+estado en el where (ver
+ * PrismaReservationRepository.cancel), que no depende del nivel de
+ * aislamiento. Se pide ademas `Serializable` aqui (igual que
+ * ConfirmReservationHandler, TDD-RES-001.md seccion 10.1) como defensa
+ * adicional en profundidad para el resto de lecturas de esta
+ * transaccion (existencia, estado terminal), no como el unico
+ * mecanismo de proteccion.
  */
 @Injectable()
 export class CancelReservationHandler {
@@ -41,6 +52,15 @@ export class CancelReservationHandler {
       branchId: command.branchId,
     });
 
+    // Hallazgo ALTO PR#6 ("falta autorizacion granular por rol/accion"):
+    // MATRIZ-TRAZABILIDAD-COMPLETA.md (fila RES-08) restringe la
+    // cancelacion por no-show a Gerencia unicamente - las demas razones
+    // de cancelacion usan el allow-list operativo normal.
+    assertReservationRoleAllowed(
+      context.role,
+      command.reason === 'NO_SHOW' ? 'CANCEL_NO_SHOW' : 'CANCEL_CUSTOMER_REQUESTED_CHANGE',
+    );
+
     const scope = {
       organizationId: context.organizationId,
       operatingCompanyId: command.companyId,
@@ -55,40 +75,43 @@ export class CancelReservationHandler {
       throw new ReservationStateConflictError('cancelar', existing.status);
     }
 
-    return this.transactionManager.run(async (tx) => {
-      const current = await this.reservations.findById(command.id, scope, tx);
-      if (!current) {
-        throw new NotFoundException('Reserva no encontrada.');
-      }
-      if (isTerminalReservationStatus(current.status)) {
-        throw new ReservationStateConflictError('cancelar', current.status);
-      }
+    return this.transactionManager.run(
+      async (tx) => {
+        const current = await this.reservations.findById(command.id, scope, tx);
+        if (!current) {
+          throw new NotFoundException('Reserva no encontrada.');
+        }
+        if (isTerminalReservationStatus(current.status)) {
+          throw new ReservationStateConflictError('cancelar', current.status);
+        }
 
-      const cancelled = await this.reservations.cancel(
-        {
-          id: command.id,
-          organizationId: context.organizationId,
-          operatingCompanyId: command.companyId,
-          branchId: command.branchId,
-          expectedVersion: command.expectedVersion,
-          reason: command.reason,
-          note: command.note,
-        },
-        tx,
-      );
+        const cancelled = await this.reservations.cancel(
+          {
+            id: command.id,
+            organizationId: context.organizationId,
+            operatingCompanyId: command.companyId,
+            branchId: command.branchId,
+            expectedVersion: command.expectedVersion,
+            reason: command.reason,
+            note: command.note,
+          },
+          tx,
+        );
 
-      await this.auditRepository.recordReservationEvent(
-        {
-          organizationId: context.organizationId,
-          actorUserId: command.firebaseUid,
-          reservationId: cancelled.id,
-          action: 'RESERVATION_CANCELLED_FOR_CHANGE',
-          changes: { reason: command.reason, note: command.note ?? null },
-        },
-        tx,
-      );
+        await this.auditRepository.recordReservationEvent(
+          {
+            organizationId: context.organizationId,
+            actorUserId: command.firebaseUid,
+            reservationId: cancelled.id,
+            action: 'RESERVATION_CANCELLED_FOR_CHANGE',
+            changes: { reason: command.reason, note: command.note ?? null },
+          },
+          tx,
+        );
 
-      return cancelled;
-    });
+        return cancelled;
+      },
+      { isolationLevel: 'Serializable' },
+    );
   }
 }

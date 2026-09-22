@@ -20,7 +20,7 @@ function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRec
 const SCOPE: ReservationScope = { organizationId: 'org-1', operatingCompanyId: 'company-1', branchId: 'branch-1' };
 
 describe('RegisterPaymentHandler', () => {
-  function buildDeps(existing: ReservationRecord | null, forbidden = false) {
+  function buildDeps(existing: ReservationRecord | null, forbidden = false, role = 'FRONT_OFFICE') {
     const reservations: jest.Mocked<ReservationRepositoryPort> = {
       create: jest.fn(), findById: jest.fn().mockResolvedValue(existing), list: jest.fn(),
       findCustomerById: jest.fn(), findVehicleById: jest.fn(), findInquiryById: jest.fn(),
@@ -30,7 +30,7 @@ describe('RegisterPaymentHandler', () => {
     const workContext = {
       authorize: forbidden
         ? jest.fn().mockRejectedValue(new ForbiddenException())
-        : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role: 'FRONT_OFFICE' }),
+        : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
     return { reservations, workContext };
   }
@@ -72,6 +72,16 @@ describe('RegisterPaymentHandler', () => {
     await expect(
       handler.execute(new RegisterPaymentCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
     ).rejects.toBeInstanceOf(ReservationStateConflictError);
+    expect(reservations.registerPayment).not.toHaveBeenCalled();
+  });
+
+  // Hallazgo ALTO PR#6 ("falta autorizacion granular por rol/accion").
+  it('rechaza registrar pago si el rol autorizado no esta en la matriz de Reserva', async () => {
+    const { reservations, workContext } = buildDeps(buildRecord(), false, 'RRHH');
+    const handler = new RegisterPaymentHandler(reservations, workContext);
+    await expect(
+      handler.execute(new RegisterPaymentCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
+    ).rejects.toBeInstanceOf(ForbiddenException);
     expect(reservations.registerPayment).not.toHaveBeenCalled();
   });
 });

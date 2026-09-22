@@ -36,18 +36,37 @@ function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRec
 describe('CreateReservationHandler', () => {
   function buildDeps(options: {
     context?: { organizationId: string } | 'forbidden';
+    role?: string;
     customerOrg?: string | null;
     vehicleOrg?: string | null;
     inquiryOrg?: string | null;
+    customerCompany?: string | null;
+    vehicleCompany?: string | null;
+    inquiryCompany?: string | null;
   } = {}) {
-    const { context = { organizationId: 'org-1' }, customerOrg = 'org-1', vehicleOrg = 'org-1', inquiryOrg = 'org-1' } = options;
+    const {
+      context = { organizationId: 'org-1' },
+      role = 'FRONT_OFFICE',
+      customerOrg = 'org-1',
+      vehicleOrg = 'org-1',
+      inquiryOrg = 'org-1',
+      customerCompany = 'company-1',
+      vehicleCompany = 'company-1',
+      inquiryCompany = 'company-1',
+    } = options;
     const reservations: jest.Mocked<ReservationRepositoryPort> = {
       create: jest.fn().mockResolvedValue(buildRecord()),
       findById: jest.fn(),
       list: jest.fn(),
-      findCustomerById: jest.fn().mockResolvedValue(customerOrg ? { id: 'cust-1', organizationId: customerOrg } : null),
-      findVehicleById: jest.fn().mockResolvedValue(vehicleOrg ? { id: 'veh-1', organizationId: vehicleOrg } : null),
-      findInquiryById: jest.fn().mockResolvedValue(inquiryOrg ? { id: 'inq-1', organizationId: inquiryOrg } : null),
+      findCustomerById: jest
+        .fn()
+        .mockResolvedValue(customerOrg ? { id: 'cust-1', organizationId: customerOrg, operatingCompanyId: customerCompany } : null),
+      findVehicleById: jest
+        .fn()
+        .mockResolvedValue(vehicleOrg ? { id: 'veh-1', organizationId: vehicleOrg, operatingCompanyId: vehicleCompany } : null),
+      findInquiryById: jest
+        .fn()
+        .mockResolvedValue(inquiryOrg ? { id: 'inq-1', organizationId: inquiryOrg, operatingCompanyId: inquiryCompany } : null),
       registerPayment: jest.fn(),
       registerDocuments: jest.fn(),
       confirm: jest.fn(),
@@ -57,7 +76,7 @@ describe('CreateReservationHandler', () => {
       authorize:
         context === 'forbidden'
           ? jest.fn().mockRejectedValue(new ForbiddenException())
-          : jest.fn().mockResolvedValue({ organizationId: context.organizationId, companyId: 'company-1', branchId: 'branch-1', role: 'FRONT_OFFICE' }),
+          : jest.fn().mockResolvedValue({ organizationId: context.organizationId, companyId: 'company-1', branchId: 'branch-1', role }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
     return { reservations, workContext };
   }
@@ -132,6 +151,45 @@ describe('CreateReservationHandler', () => {
     const handler = new CreateReservationHandler(reservations, workContext);
 
     await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  // Hallazgo ALTO PR#6 ("referencias corregidas solo a nivel organizacion,
+  // no empresa/sede"): mismo organizationId, pero el cliente/vehiculo/
+  // consulta pertenece a OTRA empresa de la misma organizacion.
+  it('rechaza si el cliente pertenece a otra empresa de la misma organizacion (IDOR cross-company)', async () => {
+    const { reservations, workContext } = buildDeps({ customerCompany: 'company-ajena' });
+    const handler = new CreateReservationHandler(reservations, workContext);
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza si el vehiculo pertenece a otra empresa de la misma organizacion (IDOR cross-company)', async () => {
+    const { reservations, workContext } = buildDeps({ vehicleCompany: 'company-ajena' });
+    const handler = new CreateReservationHandler(reservations, workContext);
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza si la consulta de origen pertenece a otra empresa de la misma organizacion (IDOR cross-company)', async () => {
+    const { reservations, workContext } = buildDeps({ inquiryCompany: 'company-ajena' });
+    const handler = new CreateReservationHandler(reservations, workContext);
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  // Hallazgo ALTO PR#6 ("falta autorizacion granular por rol/accion") -
+  // matriz provisional de reservation-role-policy.ts: un rol fuera de la
+  // lista operativa (FRONT_OFFICE/GERENCIA/ADMINISTRACION) no puede crear
+  // reservas.
+  it('rechaza crear una reserva si el rol autorizado no esta en la matriz de Reserva', async () => {
+    const { reservations, workContext } = buildDeps({ role: 'AUDITORIA' });
+    const handler = new CreateReservationHandler(reservations, workContext);
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
     expect(reservations.create).not.toHaveBeenCalled();
   });
 });

@@ -41,9 +41,15 @@ CREATE TYPE "ChannelMode" AS ENUM ('PRESENCIAL', 'VIRTUAL');
 CREATE TYPE "ReservationStatus" AS ENUM ('DRAFT', 'CONFIRMED', 'PENDING_SALE_RESOLUTION', 'CONVERTED', 'CANCELLED');
 
 -- CreateTable
+-- Hallazgo ALTO "referencias corregidas solo a nivel organizacion, no
+-- empresa/sede" (revision PR#6): operating_company_id agregado para que
+-- customers pueda tener FK compuesta (id, operating_company_id) hacia
+-- companies, cerrando el cruce cross-company que antes solo se evitaba
+-- (parcialmente) a nivel de organizacion.
 CREATE TABLE "customers" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
+    "operating_company_id" TEXT NOT NULL,
     "full_name" TEXT NOT NULL,
     "document_type" TEXT NOT NULL,
     "document_number" TEXT NOT NULL,
@@ -53,9 +59,11 @@ CREATE TABLE "customers" (
 );
 
 -- CreateTable
+-- Mismo razonamiento que customers.operating_company_id arriba.
 CREATE TABLE "vehicles" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
+    "operating_company_id" TEXT NOT NULL,
     "plate" TEXT NOT NULL,
     "brand" TEXT NOT NULL,
     "model" TEXT NOT NULL,
@@ -68,10 +76,13 @@ CREATE TABLE "vehicles" (
 -- Hallazgo critico "referencias cross-tenant al crear": organization_id
 -- agregado (faltaba en el modelo original) para poder validar que la
 -- Inquiry citada pertenece a la misma organizacion que la asignacion
--- validada del usuario.
+-- validada del usuario. operating_company_id agregado ademas por el
+-- hallazgo ALTO "referencias corregidas solo a nivel organizacion, no
+-- empresa/sede" (revision PR#6) - mismo razonamiento que en customers.
 CREATE TABLE "inquiries" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
+    "operating_company_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "inquiries_pkey" PRIMARY KEY ("id")
@@ -120,6 +131,27 @@ CREATE TABLE "reservation_acceptances" (
 CREATE UNIQUE INDEX "vehicles_plate_key" ON "vehicles"("plate");
 
 -- CreateIndex
+-- Necesarias como objetivo de las FKs compuestas (id, operating_company_id)
+-- que reservations usa hacia customers/vehicles/inquiries (hallazgo ALTO
+-- "referencias corregidas solo a nivel organizacion, no empresa/sede").
+CREATE UNIQUE INDEX "customers_id_operating_company_id_key" ON "customers"("id", "operating_company_id");
+
+-- CreateIndex
+CREATE INDEX "customers_operating_company_id_idx" ON "customers"("operating_company_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "vehicles_id_operating_company_id_key" ON "vehicles"("id", "operating_company_id");
+
+-- CreateIndex
+CREATE INDEX "vehicles_operating_company_id_idx" ON "vehicles"("operating_company_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "inquiries_id_operating_company_id_key" ON "inquiries"("id", "operating_company_id");
+
+-- CreateIndex
+CREATE INDEX "inquiries_operating_company_id_idx" ON "inquiries"("operating_company_id");
+
+-- CreateIndex
 -- Hallazgo critico "IDOR entre sedes/empresas": respalda el filtro de
 -- scope completo (organization_id + operating_company_id + branch_id)
 -- que usan findById/list/las mutaciones del repositorio de Reserva.
@@ -132,16 +164,39 @@ CREATE INDEX "reservations_customer_id_created_at_idx" ON "reservations"("custom
 CREATE UNIQUE INDEX "reservation_acceptances_reservation_id_key" ON "reservation_acceptances"("reservation_id");
 
 -- AddForeignKey
-ALTER TABLE "reservations" ADD CONSTRAINT "reservations_inquiry_id_fkey" FOREIGN KEY ("inquiry_id") REFERENCES "inquiries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- Hallazgo ALTO "referencias corregidas solo a nivel organizacion, no
+-- empresa/sede" (revision PR#6): las 3 FKs siguientes pasan de simples
+-- (solo *_id) a compuestas (*_id, operating_company_id) hacia
+-- (id, operating_company_id) de cada entidad - a nivel de base de datos
+-- ya no es posible que una reserva cite una inquiry/customer/vehicle que
+-- pertenezca a una empresa distinta de la propia operating_company_id de
+-- la reserva, cerrando el IDOR cross-company que la FK simple no evitaba.
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_inquiry_id_operating_company_id_fkey" FOREIGN KEY ("inquiry_id", "operating_company_id") REFERENCES "inquiries"("id", "operating_company_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "reservations" ADD CONSTRAINT "reservations_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_customer_id_operating_company_id_fkey" FOREIGN KEY ("customer_id", "operating_company_id") REFERENCES "customers"("id", "operating_company_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "reservations" ADD CONSTRAINT "reservations_vehicle_id_fkey" FOREIGN KEY ("vehicle_id") REFERENCES "vehicles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_vehicle_id_operating_company_id_fkey" FOREIGN KEY ("vehicle_id", "operating_company_id") REFERENCES "vehicles"("id", "operating_company_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "reservations" ADD CONSTRAINT "reservations_operating_company_id_fkey" FOREIGN KEY ("operating_company_id") REFERENCES "companies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- FK compuesta (operating_company_id, organization_id) -> companies(id,
+-- organization_id): mismo patron que company/organization desde PR#4 -
+-- impide que operating_company_id pertenezca a una organizacion distinta
+-- de organization_id.
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_operating_company_id_organization_id_fkey" FOREIGN KEY ("operating_company_id", "organization_id") REFERENCES "companies"("id", "organization_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+-- FKs propias de customers/vehicles/inquiries hacia companies, requeridas
+-- para que las FKs compuestas de reservations arriba puedan referenciar
+-- (id, operating_company_id) en cada una de estas 3 tablas.
+ALTER TABLE "customers" ADD CONSTRAINT "customers_operating_company_id_fkey" FOREIGN KEY ("operating_company_id") REFERENCES "companies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "vehicles" ADD CONSTRAINT "vehicles_operating_company_id_fkey" FOREIGN KEY ("operating_company_id") REFERENCES "companies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_operating_company_id_fkey" FOREIGN KEY ("operating_company_id") REFERENCES "companies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 -- Hallazgo critico "IDOR entre sedes/empresas": FK compuesta

@@ -6,10 +6,12 @@ import {
   Headers,
   HttpCode,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   AuthenticatedRequest,
@@ -34,8 +36,10 @@ import { CreateReservationDto } from './dto/create-reservation.dto';
 import { CommandScopeDto } from './dto/command-scope.dto';
 import { CancelReservationDto } from './dto/cancel-reservation.dto';
 import { ListReservationsQueryDto } from './dto/list-reservations-query.dto';
+import { GetReservationQueryDto } from './dto/get-reservation-query.dto';
 import { ReservationResponse } from './dto/reservation.response';
 import { toReservationResponse } from './reservation.mapper';
+import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
@@ -57,6 +61,7 @@ export class ReservationsController {
   ) {}
 
   @Post()
+  @UseInterceptors(IdempotencyInterceptor)
   async create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateReservationDto,
@@ -92,7 +97,16 @@ export class ReservationsController {
     @Req() req: AuthenticatedRequest,
     @Query() query: ListReservationsQueryDto,
   ): Promise<ReservationResponse[]> {
-    const limit = query.limit ? Number(query.limit) : undefined;
+    // Hallazgo MEDIO de revision PR#6 ("sin limite maximo de pagina"):
+    // el DTO solo garantizaba que `limit` fuera un entero positivo, no que
+    // tuviera un techo - un cliente (o un bug de frontend) podia pedir
+    // `limit=999999` y traer la tabla completa en una sola respuesta.
+    const MAX_LIMIT = 100;
+    const requestedLimit = query.limit ? Number(query.limit) : undefined;
+    if (requestedLimit !== undefined && requestedLimit > MAX_LIMIT) {
+      throw new BadRequestException(`limit no puede ser mayor a ${MAX_LIMIT}.`);
+    }
+    const limit = requestedLimit;
     let cursor: { createdAt: Date; id: string } | undefined;
     if (query.cursorCreatedAt || query.cursorId) {
       if (!query.cursorCreatedAt || !query.cursorId) {
@@ -119,20 +133,20 @@ export class ReservationsController {
   @Get(':id')
   async detail(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @Query('companyId') companyId: string,
-    @Query('branchId') branchId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: GetReservationQueryDto,
   ): Promise<ReservationResponse> {
     const reservation = await this.getReservation.execute(
-      new GetReservationQuery(id, req.firebaseUid!, companyId, branchId),
+      new GetReservationQuery(id, req.firebaseUid!, query.companyId, query.branchId),
     );
     return toReservationResponse(reservation);
   }
 
   @Post(':id/commands/register-payment')
+  @UseInterceptors(IdempotencyInterceptor)
   async registerPaymentCommand(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CommandScopeDto,
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {
@@ -149,9 +163,10 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/register-documents')
+  @UseInterceptors(IdempotencyInterceptor)
   async registerDocumentsCommand(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CommandScopeDto,
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {
@@ -168,9 +183,10 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/confirm')
+  @UseInterceptors(IdempotencyInterceptor)
   async confirm(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CommandScopeDto,
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {
@@ -188,9 +204,10 @@ export class ReservationsController {
 
   @Post(':id/commands/cancel')
   @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
   async cancel(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CancelReservationDto,
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {

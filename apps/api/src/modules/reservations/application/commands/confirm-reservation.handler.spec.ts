@@ -39,7 +39,7 @@ function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRec
 const SCOPE: ReservationScope = { organizationId: 'org-1', operatingCompanyId: 'company-1', branchId: 'branch-1' };
 const FAKE_TX = { __fakeTx: true } as any;
 
-function buildDeps(existing: ReservationRecord | null, forbidden = false) {
+function buildDeps(existing: ReservationRecord | null, forbidden = false, role = 'FRONT_OFFICE') {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
     create: jest.fn(),
     findById: jest.fn().mockResolvedValue(existing),
@@ -55,7 +55,7 @@ function buildDeps(existing: ReservationRecord | null, forbidden = false) {
   const workContext = {
     authorize: forbidden
       ? jest.fn().mockRejectedValue(new ForbiddenException())
-      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role: 'FRONT_OFFICE' }),
+      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
   const audit: jest.Mocked<AuditEventRepositoryPort> = {
     recordLoginAttempt: jest.fn(),
@@ -148,5 +148,17 @@ describe('ConfirmReservationHandler', () => {
     await expect(
       handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-ajena', 'branch-ajena', 1)),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  // Hallazgo ALTO PR#6 ("falta autorizacion granular por rol/accion").
+  it('rechaza confirmar si el rol autorizado no esta en la matriz de Reserva', async () => {
+    const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
+    const { reservations, workContext, audit, transactionManager } = buildDeps(existing, false, 'FINANZAS');
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, transactionManager);
+
+    await expect(
+      handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(reservations.confirm).not.toHaveBeenCalled();
   });
 });

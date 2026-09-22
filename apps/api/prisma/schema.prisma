@@ -16,15 +16,26 @@ datasource db {
 }
 
 /// TDD-KAIROS-TRANSVERSAL.md 7.3 - deduplicacion de comandos idempotentes
+/// Hallazgo ALTO de revision PR#6 ("idempotencia no implementada"):
+/// este modelo ya existia desde el init (20260918000000) pero nunca se
+/// conecto a ningun endpoint - IdempotencyInterceptor (common/http) lo
+/// usa ahora para los comandos de escritura de Reserva.
+/// organizationId ahora es opcional (antes NOT NULL,
+/// 20260922010000_idempotency_keys_optional_org): el interceptor corre a
+/// nivel HTTP, ANTES de que el handler resuelva el contexto de trabajo
+/// autorizado (WorkContextAuthorizationService), asi que todavia no se
+/// conoce el organizationId real en el momento de guardar la clave - se
+/// guarda null y se completa mas adelante si en el futuro el
+/// interceptor se reubica despues de la autorizacion.
 model IdempotencyKey {
-  id           String   @id @default(uuid())
-  key          String   @unique
-  organizationId String @map("organization_id")
-  requestHash  String   @map("request_hash")
-  responseBody Json?    @map("response_body")
-  statusCode   Int?     @map("status_code")
-  createdAt    DateTime @default(now()) @map("created_at")
-  expiresAt    DateTime @map("expires_at")
+  id             String    @id @default(uuid())
+  key            String    @unique
+  organizationId String?   @map("organization_id")
+  requestHash    String    @map("request_hash")
+  responseBody   Json?     @map("response_body")
+  statusCode     Int?      @map("status_code")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  expiresAt      DateTime  @map("expires_at")
 
   @@map("idempotency_keys")
 }
@@ -111,6 +122,13 @@ model Company {
   branches     Branch[]
   assignments  UserCompanyAssignment[]
   reservations Reservation[]
+  // Relaciones opuestas requeridas por Prisma para las FKs compuestas
+  // (id, operatingCompanyId) -> Company(id, organizationId) agregadas en
+  // Customer/Vehicle/Inquiry (hallazgo ALTO "referencias corregidas solo
+  // a nivel organizacion, no empresa/sede", revision PR#6).
+  customers    Customer[]
+  vehicles     Vehicle[]
+  inquiries    Inquiry[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -216,13 +234,30 @@ model UserCompanyAssignment {
 model Customer {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")
+  /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508,
+  /// "referencias corregidas solo a nivel organizacion, no
+  /// empresa/sede"): sin este campo, un usuario autorizado en la sede A
+  /// podia crear una reserva citando un cliente de la sede/empresa B
+  /// dentro de la misma organizacion (Customer solo validaba
+  /// organizationId). Se agrega el nivel de scope que SI esta respaldado
+  /// por el resto de la arquitectura (BR-ORG-002: empresa es la unidad
+  /// de tenancy real). El nivel de SEDE queda deliberadamente sin
+  /// modelar aqui - no hay fuente BDD/SDD del modulo real de Clientes
+  /// (todavia no construido) que diga si un cliente pertenece a una sede
+  /// especifica o es compartido entre las sedes de una misma empresa;
+  /// inventar esa regla violaria CLAUDE.md seccion 4. Se migra cuando el
+  /// modulo real de Clientes exista.
+  operatingCompanyId String   @map("operating_company_id")
   fullName       String   @map("full_name")
   documentType   String   @map("document_type")
   documentNumber String   @map("document_number")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  reservations Reservation[]
+  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  reservations     Reservation[]
 
+  @@unique([id, operatingCompanyId])
+  @@index([operatingCompanyId])
   @@map("customers")
 }
 
@@ -232,13 +267,21 @@ model Customer {
 model Vehicle {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")
+  /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508) - mismo
+  /// razonamiento que Customer.operatingCompanyId arriba: cierra el
+  /// cruce cross-company, deja el nivel de sede como pregunta abierta
+  /// para el modulo real de Flota (todavia no construido).
+  operatingCompanyId String   @map("operating_company_id")
   plate          String   @unique
   brand          String
   model          String
   createdAt      DateTime @default(now()) @map("created_at")
 
-  reservations Reservation[]
+  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  reservations     Reservation[]
 
+  @@unique([id, operatingCompanyId])
+  @@index([operatingCompanyId])
   @@map("vehicles")
 }
 
@@ -256,10 +299,16 @@ model Vehicle {
 model Inquiry {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")
+  /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508) - mismo
+  /// razonamiento que Customer.operatingCompanyId arriba.
+  operatingCompanyId String   @map("operating_company_id")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  reservations Reservation[]
+  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  reservations     Reservation[]
 
+  @@unique([id, operatingCompanyId])
+  @@index([operatingCompanyId])
   @@map("inquiries")
 }
 
@@ -320,10 +369,24 @@ model Reservation {
   createdBy             String             @map("created_by")
   version                Int               @default(1)
 
-  inquiry        Inquiry  @relation(fields: [inquiryId], references: [id])
-  customer       Customer @relation(fields: [customerId], references: [id])
-  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id])
-  operatingCompany Company @relation(fields: [operatingCompanyId], references: [id])
+  /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508,
+  /// "referencias corregidas solo a nivel organizacion, no
+  /// empresa/sede"): inquiry/customer/vehicle ahora son FK COMPUESTAS
+  /// hacia (id, operatingCompanyId) de cada entidad - a nivel de base de
+  /// datos ya no es posible insertar una reserva cuyo cliente, vehiculo
+  /// o consulta de origen pertenezca a una empresa distinta de
+  /// `operatingCompanyId`, cerrando el cruce cross-company que antes solo
+  /// se evitaba (a medias) en la aplicacion.
+  ///
+  /// `operatingCompany` tambien pasa de FK simple a FK COMPUESTA
+  /// `(operatingCompanyId, organizationId) -> Company(id, organizationId)`
+  /// - mismo patron y mismo motivo que la FK compuesta agregada en PR#4
+  /// para UserCompanyAssignment.company (evita que organizationId
+  /// contradiga a la empresa referenciada).
+  inquiry        Inquiry  @relation(fields: [inquiryId, operatingCompanyId], references: [id, operatingCompanyId])
+  customer       Customer @relation(fields: [customerId, operatingCompanyId], references: [id, operatingCompanyId])
+  vehicle        Vehicle  @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
+  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   branch         Branch   @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
 
   acceptance ReservationAcceptance?

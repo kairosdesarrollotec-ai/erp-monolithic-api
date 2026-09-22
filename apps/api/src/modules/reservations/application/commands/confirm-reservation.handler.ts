@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { RequirementsIncompleteError, ReservationStateConflictError } from '../../domain/reservation-errors';
@@ -42,6 +43,8 @@ export class ConfirmReservationHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
+
+    assertReservationRoleAllowed(context.role, 'CONFIRM');
 
     const scope = {
       organizationId: context.organizationId,

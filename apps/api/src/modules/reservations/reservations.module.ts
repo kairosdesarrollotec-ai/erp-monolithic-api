@@ -11,6 +11,9 @@ import { ReservationRepositoryPort } from './application/ports/reservation-repos
 import { PrismaReservationRepository } from './infrastructure/persistence/prisma-reservation.repository';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
+import { IdempotencyPort } from '../../common/application/ports/idempotency.port';
+import { PrismaIdempotencyRepository } from '../../common/persistence/prisma-idempotency.repository';
+import { IdempotencyInterceptor } from '../../common/http/idempotency.interceptor';
 
 /**
  * HU-27 (Reserva, RES-01/RES-04/RES-05). Importa UsersModule para
@@ -33,6 +36,8 @@ import { AuditModule } from '../audit/audit.module';
     GetReservationHandler,
     ListReservationsHandler,
     { provide: ReservationRepositoryPort, useClass: PrismaReservationRepository },
+    { provide: IdempotencyPort, useClass: PrismaIdempotencyRepository },
+    IdempotencyInterceptor,
   ],
 })
 export class ReservationsModule {}

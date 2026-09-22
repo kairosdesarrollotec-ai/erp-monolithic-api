@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
 import { RegisterDocumentsCommand } from './register-documents.command';
 
@@ -24,6 +25,8 @@ export class RegisterDocumentsHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
+
+    assertReservationRoleAllowed(context.role, 'REGISTER_DOCUMENTS');
 
     const scope = {
       organizationId: context.organizationId,

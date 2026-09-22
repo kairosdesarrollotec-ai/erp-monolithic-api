@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   ReservationRepositoryPort,
@@ -16,43 +16,24 @@ import {
   ReservationVersionConflictError,
   VehicleNotAvailableError,
 } from '../../domain/reservation-errors';
+import { TERMINAL_RESERVATION_STATUSES } from '../../domain/reservation-status';
 
 /**
- * Nota de tipado (PROP-003/NOTA-PROP-003, docs/decision-log.md): el
- * cliente Prisma generado en los shells de Claude Code queda
- * desactualizado frente al schema real cada vez que este cambia, porque
- * `prisma generate` no tiene salida de red hacia binaries.prisma.sh en
- * esos entornos - solo funciona en la Terminal real de macOS del
- * usuario. Los `as unknown as` de este archivo describen la forma REAL
- * que produce el schema actual, no un intento de ocultar una
- * incompatibilidad.
+ * Hallazgo MEDIO de revision PR#6 ("as unknown as ocultan la
+ * verificacion real del cliente Prisma"), mismo motivo y mismo fix que
+ * ya se aplico en PrismaWorkContextRepository (PR#5, 12fc688): se
+ * confirmo que `npx prisma generate` funciona en la Terminal real del
+ * usuario y que el CI lo corre en cada build/test, asi que el cliente
+ * tipado real esta disponible - se eliminan los `as unknown as` de este
+ * archivo y se usan los tipos que Prisma genera con
+ * `Prisma.ReservationGetPayload`, que SI falla en build si el
+ * select/include deja de coincidir con el shape usado abajo.
  */
-type ReservationRow = {
-  id: string;
-  organizationId: string;
-  operatingCompanyId: string;
-  branchId: string;
-  inquiryId: string;
-  customerId: string;
-  vehicleId: string;
-  status: ReservationRecord['status'];
-  channelMode: ReservationRecord['channelMode'];
-  startAt: Date;
-  endAt: Date;
-  requiredPaymentAmount: { toString(): string };
-  currency: string;
-  paymentPolicyVersion: number;
-  paymentValidatedAt: Date | null;
-  documentsCompletedAt: Date | null;
-  confirmedAt: Date | null;
-  createdAt: Date;
-  createdBy: string;
-  version: number;
-  customer: { fullName: string };
-  vehicle: { plate: string; brand: string; model: string };
-};
+type ReservationWithRelations = Prisma.ReservationGetPayload<{
+  include: { customer: true; vehicle: true };
+}>;
 
-function toRecord(row: ReservationRow): ReservationRecord {
+function toRecord(row: ReservationWithRelations): ReservationRecord {
   return {
     id: row.id,
     organizationId: row.organizationId,
@@ -98,8 +79,8 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     input: CreateReservationInput,
     tx?: Prisma.TransactionClient,
   ): Promise<ReservationRecord> {
-    const client = (tx ?? this.prisma) as unknown as { reservation: any };
-    const created = await client.reservation.create({
+    const client = tx ?? this.prisma;
+    const created: ReservationWithRelations = await client.reservation.create({
       data: {
         organizationId: input.organizationId,
         operatingCompanyId: input.operatingCompanyId,
@@ -117,7 +98,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
       },
       include: { customer: true, vehicle: true },
     });
-    return toRecord(created as unknown as ReservationRow);
+    return toRecord(created);
   }
 
   async findById(
@@ -125,17 +106,16 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     scope: ReservationScope,
     tx?: Prisma.TransactionClient,
   ): Promise<ReservationRecord | null> {
-    const client = (tx ?? this.prisma) as unknown as { reservation: any };
-    const row = await client.reservation.findFirst({
+    const client = tx ?? this.prisma;
+    const row: ReservationWithRelations | null = await client.reservation.findFirst({
       where: scopeWhere(id, scope),
       include: { customer: true, vehicle: true },
     });
-    return row ? toRecord(row as unknown as ReservationRow) : null;
+    return row ? toRecord(row) : null;
   }
 
   async list(filter: ListReservationsFilter): Promise<ReservationRecord[]> {
-    const client = this.prisma as unknown as { reservation: any };
-    const rows = await client.reservation.findMany({
+    const rows: ReservationWithRelations[] = await this.prisma.reservation.findMany({
       where: {
         organizationId: filter.organizationId,
         operatingCompanyId: filter.operatingCompanyId,
@@ -155,24 +135,36 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
           }
         : {}),
     });
-    return (rows as unknown as ReservationRow[]).map(toRecord);
+    return rows.map(toRecord);
   }
 
+  // Hallazgo ALTO "referencias corregidas solo a nivel organizacion, no
+  // empresa/sede" (revision PR#6): select ahora incluye operatingCompanyId
+  // ademas de organizationId, para que CreateReservationHandler pueda
+  // validar tambien la empresa operadora antes de crear la reserva (no
+  // solo la organizacion, que por si sola no evitaba el cruce
+  // cross-company entre empresas de una misma organizacion).
   async findCustomerById(id: string): Promise<CustomerRecord | null> {
-    const client = this.prisma as unknown as { customer: any };
-    const row = await client.customer.findUnique({ where: { id }, select: { id: true, organizationId: true } });
+    const row = await this.prisma.customer.findUnique({
+      where: { id },
+      select: { id: true, organizationId: true, operatingCompanyId: true },
+    });
     return row ?? null;
   }
 
   async findVehicleById(id: string): Promise<VehicleRecord | null> {
-    const client = this.prisma as unknown as { vehicle: any };
-    const row = await client.vehicle.findUnique({ where: { id }, select: { id: true, organizationId: true } });
+    const row = await this.prisma.vehicle.findUnique({
+      where: { id },
+      select: { id: true, organizationId: true, operatingCompanyId: true },
+    });
     return row ?? null;
   }
 
   async findInquiryById(id: string): Promise<InquiryRecord | null> {
-    const client = this.prisma as unknown as { inquiry: any };
-    const row = await client.inquiry.findUnique({ where: { id }, select: { id: true, organizationId: true } });
+    const row = await this.prisma.inquiry.findUnique({
+      where: { id },
+      select: { id: true, organizationId: true, operatingCompanyId: true },
+    });
     return row ?? null;
   }
 
@@ -198,10 +190,10 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     id: string,
     scope: ReservationScope,
     expectedVersion: number,
-    data: Record<string, unknown>,
+    data: Prisma.ReservationUpdateInput,
     tx?: Prisma.TransactionClient,
   ): Promise<ReservationRecord> {
-    const client = (tx ?? this.prisma) as unknown as { reservation: any };
+    const client = tx ?? this.prisma;
     const result = await client.reservation.updateMany({
       where: { ...scopeWhere(id, scope), version: expectedVersion },
       data: { ...data, version: { increment: 1 } },
@@ -209,11 +201,11 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     if (result.count === 0) {
       throw new ReservationVersionConflictError();
     }
-    const updated = await client.reservation.findFirstOrThrow({
+    const updated: ReservationWithRelations = await client.reservation.findFirstOrThrow({
       where: scopeWhere(id, scope),
       include: { customer: true, vehicle: true },
     });
-    return toRecord(updated as unknown as ReservationRow);
+    return toRecord(updated);
   }
 
   /**
@@ -236,8 +228,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     expectedVersion: number,
     tx: Prisma.TransactionClient,
   ): Promise<ReservationRecord> {
-    const client = tx as unknown as { reservation: any; vehicleCommitment: any };
-    const reservation = await client.reservation.findFirst({ where: scopeWhere(id, scope) });
+    const reservation = await tx.reservation.findFirst({ where: scopeWhere(id, scope) });
     if (!reservation || reservation.version !== expectedVersion) {
       throw new ReservationVersionConflictError();
     }
@@ -247,7 +238,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
       throw new ReservationVersionConflictError();
     }
 
-    const overlapping = await client.vehicleCommitment.findFirst({
+    const overlapping = await tx.vehicleCommitment.findFirst({
       where: {
         vehicleId: reservation.vehicleId,
         status: { in: ['ACTIVE', 'CONSOLIDATED'] },
@@ -259,7 +250,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
       throw new VehicleNotAvailableError();
     }
 
-    await client.vehicleCommitment.create({
+    await tx.vehicleCommitment.create({
       data: {
         organizationId: scope.organizationId,
         vehicleId: reservation.vehicleId,
@@ -271,36 +262,79 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
       },
     });
 
-    const updated = await client.reservation.update({
-      where: { id },
+    // Hallazgo CRITICO de revision de seguimiento de PR#6 (d442508,
+    // "cancelacion vulnerable a carrera TOCTOU"): el mismo patron
+    // (leer version, mutar sin volver a filtrar por version) tambien
+    // afectaba a este metodo - se reemplaza el `update({ where: { id } })`
+    // ciego por un `updateMany` cuyo `where` exige la MISMA version que
+    // se acaba de verificar. Si otra transaccion concurrente ya
+    // modifico la fila entre la lectura de arriba y este punto (aunque
+    // aqui corra dentro de un tx Serializable, ver comentario de
+    // ConfirmReservationHandler), `count` da 0 y se lanza el conflicto
+    // de version en vez de sobreescribir en silencio.
+    const result = await tx.reservation.updateMany({
+      where: { ...scopeWhere(id, scope), version: expectedVersion },
       data: { status: 'CONFIRMED', confirmedAt: new Date(), version: { increment: 1 } },
+    });
+    if (result.count !== 1) {
+      throw new ReservationVersionConflictError();
+    }
+
+    const updated: ReservationWithRelations = await tx.reservation.findFirstOrThrow({
+      where: scopeWhere(id, scope),
       include: { customer: true, vehicle: true },
     });
-
-    return toRecord(updated as unknown as ReservationRow);
+    return toRecord(updated);
   }
 
-  /** Hallazgo critico PR#6: `tx` obligatorio, mismo motivo que `confirm` (ver comentario arriba). */
+  /**
+   * Hallazgo critico PR#6 (original): `tx` obligatorio, mismo motivo que
+   * `confirm` (ver comentario arriba).
+   *
+   * Hallazgo CRITICO de revision de seguimiento de PR#6 (d442508,
+   * "cancelacion vulnerable a carrera TOCTOU / perdida de concurrencia
+   * optimista"): la version anterior leia la fila con `findFirst`,
+   * comparaba `version` a mano, y despues ejecutaba
+   * `reservation.update({ where: { id } })` SIN version ni scope en el
+   * where - dos solicitudes concurrentes con el mismo `If-Match` podian
+   * pasar ambas la lectura (todavia no habia commit de ninguna) y
+   * ambas ejecutar el update, duplicando el efecto (doble liberacion de
+   * commitment, version incrementada dos veces por dos requests que
+   * creian estar actuando sobre la misma version). Se reemplaza por un
+   * `updateMany` atomico cuyo `where` exige scope + version esperada +
+   * que el estado NO sea ya terminal - la base de datos decide en una
+   * sola sentencia si la fila sigue siendo la que el cliente cree que
+   * es, sin depender del nivel de aislamiento de la transaccion.
+   */
   async cancel(input: CancelReservationInput, tx: Prisma.TransactionClient): Promise<ReservationRecord> {
-    const client = tx as unknown as { reservation: any; vehicleCommitment: any };
-    const reservation = await client.reservation.findFirst({ where: scopeWhere(input.id, input) });
-    if (!reservation || reservation.version !== input.expectedVersion) {
+    const reservation = await tx.reservation.findFirst({ where: scopeWhere(input.id, input) });
+    if (!reservation) {
       throw new ReservationVersionConflictError();
     }
 
     if (reservation.status === 'CONFIRMED') {
-      await client.vehicleCommitment.updateMany({
+      await tx.vehicleCommitment.updateMany({
         where: { sourceType: 'RESERVATION', sourceId: reservation.id, status: { in: ['ACTIVE', 'CONSOLIDATED'] } },
         data: { status: 'RELEASED' },
       });
     }
 
-    const updated = await client.reservation.update({
-      where: { id: input.id },
+    const result = await tx.reservation.updateMany({
+      where: {
+        ...scopeWhere(input.id, input),
+        version: input.expectedVersion,
+        status: { notIn: Array.from(TERMINAL_RESERVATION_STATUSES) },
+      },
       data: { status: 'CANCELLED', version: { increment: 1 } },
+    });
+    if (result.count !== 1) {
+      throw new ReservationVersionConflictError();
+    }
+
+    const updated: ReservationWithRelations = await tx.reservation.findFirstOrThrow({
+      where: scopeWhere(input.id, input),
       include: { customer: true, vehicle: true },
     });
-
-    return toRecord(updated as unknown as ReservationRow);
+    return toRecord(updated);
   }
 }

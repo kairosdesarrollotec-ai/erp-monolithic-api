@@ -75,19 +75,31 @@ export interface CancelReservationInput extends ReservationScope {
   note?: string;
 }
 
+/**
+ * Hallazgo ALTO "referencias corregidas solo a nivel organizacion, no
+ * empresa/sede" (revision PR#6): operatingCompanyId agregado a los 3
+ * records siguientes para que CreateReservationHandler pueda validar,
+ * antes de crear la reserva, que la entidad referenciada pertenece no
+ * solo a la organizacion correcta sino tambien a la empresa operadora
+ * correcta - organizationId por si solo no bastaba para evitar el cruce
+ * cross-company entre empresas de una misma organizacion.
+ */
 export interface CustomerRecord {
   id: string;
   organizationId: string;
+  operatingCompanyId: string;
 }
 
 export interface VehicleRecord {
   id: string;
   organizationId: string;
+  operatingCompanyId: string;
 }
 
 export interface InquiryRecord {
   id: string;
   organizationId: string;
+  operatingCompanyId: string;
 }
 
 /**
