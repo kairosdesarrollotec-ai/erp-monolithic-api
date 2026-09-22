@@ -111,6 +111,15 @@ model Company {
   branches    Branch[]
   assignments UserCompanyAssignment[]
 
+  /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
+  /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
+  /// `UserCompanyAssignment` podia contradecir al de la `Company` que
+  /// referencia (una asignacion de organization A podia apuntar a una
+  /// empresa de organization B). Junto con la FK compuesta agregada abajo
+  /// en `UserCompanyAssignment.company`, la base ya no permite guardar esa
+  /// combinacion invalida - ver migracion
+  /// 20260922000000_fix_company_organization_integrity.
+  @@unique([id, organizationId])
   @@map("companies")
 }
 
@@ -160,7 +169,15 @@ model UserCompanyAssignment {
   validUntil     DateTime? @map("valid_until")
   createdAt      DateTime  @default(now()) @map("created_at")
 
-  company Company @relation(fields: [companyId], references: [id])
+  /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
+  /// 9e33c4f): FK COMPUESTA `(companyId, organizationId)` hacia
+  /// `Company(id, organizationId)` (ver `@@unique([id, organizationId])`
+  /// en Company) - analoga a la FK compuesta de `branch` de abajo, mismo
+  /// hallazgo pero para el nivel organization/company. Antes `company`
+  /// era una FK simple por `companyId`, que no impedia guardar una
+  /// asignacion cuyo `organizationId` no coincidiera con el
+  /// `organizationId` real de esa empresa.
+  company Company @relation(fields: [companyId, organizationId], references: [id, organizationId])
   branch  Branch  @relation(fields: [branchId, companyId], references: [id, companyId])
 
   @@unique([firebaseUid, companyId, branchId])

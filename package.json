@@ -16,6 +16,7 @@
     "build:web": "npm run build --workspace apps/web",
     "test:api": "npm run test --workspace apps/api",
     "test:web": "npm run test --workspace apps/web",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "test:integration:api": "npm run test:integration --workspace apps/api"
   }
 }
