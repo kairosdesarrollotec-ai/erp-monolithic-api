@@ -50,7 +50,7 @@ export function projectReservationEvent(event: OutboxEventLike): ReservationProj
           priority: 10,
           title: `Reserva pendiente de pago/documentos`,
           detail: `Vehiculo ${payload.vehicleId}`,
-          deepLink: `/reservations/${event.aggregateId}`,
+          deepLink: `/reservas/${event.aggregateId}`,
           sourceType: 'RESERVATION',
           sourceId: event.aggregateId,
           sourceEventId: event.id,
