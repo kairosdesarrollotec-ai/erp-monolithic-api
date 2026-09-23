@@ -14,11 +14,13 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
  * ADM-02 (la matriz real, todavia no construida) - es la politica minima
  * mientras tanto.
  */
-export type AdminAction = 'MANAGE_USERS' | 'VIEW_AUDIT';
+export type AdminAction = 'MANAGE_USERS' | 'VIEW_AUDIT' | 'MANAGE_PARAMETERS' | 'MANAGE_PERMISSIONS';
 
 const ADMIN_ROLE_POLICY: Readonly<Record<AdminAction, ReadonlySet<WorkerRole>>> = {
   MANAGE_USERS: new Set(['ADMINISTRACION']),
   VIEW_AUDIT: new Set(['ADMINISTRACION', 'AUDITORIA']),
+  MANAGE_PARAMETERS: new Set(['ADMINISTRACION']),
+  MANAGE_PERMISSIONS: new Set(['ADMINISTRACION']),
 };
 
 export function assertAdminRoleAllowed(role: WorkerRole, action: AdminAction): void {

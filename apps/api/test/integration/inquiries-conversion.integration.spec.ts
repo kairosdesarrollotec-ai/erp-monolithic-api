@@ -9,6 +9,7 @@ import { ConvertToReservationCommand } from '../../src/modules/inquiries/applica
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
 import { ProvisionalQuotingGuard } from '../../src/modules/inquiries/application/services/provisional-quoting.guard';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
+import { PrismaReservationDepositPolicyRepository } from '../../src/modules/parameters/infrastructure/persistence/prisma-reservation-deposit-policy.repository';
 
 /**
  * Integracion sobre PostgreSQL REAL + cliente Prisma real (revalidacion PR#7):
@@ -61,6 +62,7 @@ describe('Consulta -> Reserva (Postgres real)', () => {
       new PrismaTransactionManager(prisma),
       guard,
       new FixedClock(),
+      new PrismaReservationDepositPolicyRepository(prisma),
     );
   }
 

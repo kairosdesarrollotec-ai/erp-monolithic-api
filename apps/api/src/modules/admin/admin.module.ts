@@ -4,12 +4,19 @@ import { ListOrganizationUsersHandler } from './application/queries/list-organiz
 import { AssignUserToCompanyHandler } from './application/commands/assign-user-to-company.handler';
 import { DeactivateAssignmentHandler } from './application/commands/deactivate-assignment.handler';
 import { ListAuditEventsHandler } from './application/queries/list-audit-events.handler';
+import { GetReservationDepositPolicyHandler } from './application/queries/get-reservation-deposit-policy.handler';
+import { UpdateReservationDepositPolicyHandler } from './application/commands/update-reservation-deposit-policy.handler';
+import { GetRolePermissionMatrixHandler } from './application/queries/get-role-permission-matrix.handler';
+import { SaveRolePermissionMatrixHandler } from './application/commands/save-role-permission-matrix.handler';
+import { RolePermissionMatrixPort } from './application/ports/role-permission-matrix.port';
+import { PrismaRolePermissionMatrixRepository } from './infrastructure/persistence/prisma-role-permission-matrix.repository';
 import { AdminUserRepositoryPort } from './application/ports/admin-user-repository.port';
 import { PrismaAdminUserRepository } from './infrastructure/persistence/prisma-admin-user.repository';
 import { IdentityLookupPort } from './application/ports/identity-lookup.port';
 import { FirebaseIdentityLookupAdapter } from './infrastructure/identity/firebase-identity-lookup.adapter';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
+import { ParametersModule } from '../parameters/parameters.module';
 
 /**
  * ADM-01 (Usuarios y asignaciones). Primera pantalla real del rol
@@ -20,15 +27,20 @@ import { AuditModule } from '../audit/audit.module';
  * Project KAIROS).
  */
 @Module({
-  imports: [UsersModule, AuditModule],
+  imports: [UsersModule, AuditModule, ParametersModule],
   controllers: [AdminController],
   providers: [
     ListOrganizationUsersHandler,
     AssignUserToCompanyHandler,
     DeactivateAssignmentHandler,
     ListAuditEventsHandler,
+    GetReservationDepositPolicyHandler,
+    UpdateReservationDepositPolicyHandler,
+    GetRolePermissionMatrixHandler,
+    SaveRolePermissionMatrixHandler,
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
+    { provide: RolePermissionMatrixPort, useClass: PrismaRolePermissionMatrixRepository },
   ],
 })
 export class AdminModule {}

@@ -21,6 +21,7 @@ import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { ReservationsModule } from '../reservations/reservations.module';
 import { OutboxModule } from '../outbox/outbox.module';
+import { ParametersModule } from '../parameters/parameters.module';
 
 /**
  * HU-26 (Consulta, CON-01..CON-04).
@@ -34,7 +35,7 @@ import { OutboxModule } from '../outbox/outbox.module';
  *   ProvisionalQuotingGuard salvo KAIROS_ALLOW_PROVISIONAL_QUOTING=true.
  */
 @Module({
-  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule],
+  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule],
   controllers: [InquiriesController],
   providers: [
     RegisterInquiryHandler,

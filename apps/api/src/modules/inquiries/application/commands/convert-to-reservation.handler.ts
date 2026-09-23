@@ -10,7 +10,7 @@ import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { ReservationRepositoryPort, ReservationRecord } from '../../../reservations/application/ports/reservation-repository.port';
 import { assertReservationRoleAllowed } from '../../../reservations/application/policies/reservation-role-policy';
-import { CURRENT_RESERVATION_DEPOSIT_POLICY } from '../../../reservations/domain/reservation-deposit-policy';
+import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
 import { ConvertToReservationCommand } from './convert-to-reservation.command';
 
 export interface ConvertToReservationResult {
@@ -60,6 +60,7 @@ export class ConvertToReservationHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly quotingGuard: ProvisionalQuotingGuard,
     private readonly clock: ClockPort,
+    private readonly depositPolicy: ReservationDepositPolicyPort,
   ) {}
 
   async execute(command: ConvertToReservationCommand): Promise<ConvertToReservationResult> {
@@ -91,6 +92,10 @@ export class ConvertToReservationHandler {
     }
     this.assertConvertible(existing);
 
+    // ADM-03 - lee la version vigente del parametro (ya no un valor fijo
+    // en codigo, ver ReservationDepositPolicyPort).
+    const depositPolicy = await this.depositPolicy.getCurrent(scope.organizationId);
+
     return this.transactionManager.run(
       async (tx) => {
         const current = await this.inquiries.findById(command.id, scope, tx);
@@ -120,9 +125,9 @@ export class ConvertToReservationHandler {
             channelMode: command.channelMode,
             startAt,
             endAt,
-            requiredPaymentAmount: CURRENT_RESERVATION_DEPOSIT_POLICY.amount,
-            currency: CURRENT_RESERVATION_DEPOSIT_POLICY.currency,
-            paymentPolicyVersion: CURRENT_RESERVATION_DEPOSIT_POLICY.version,
+            requiredPaymentAmount: depositPolicy.amount,
+            currency: depositPolicy.currency,
+            paymentPolicyVersion: depositPolicy.version,
             createdBy: command.firebaseUid,
           },
           tx,

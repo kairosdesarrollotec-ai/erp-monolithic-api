@@ -53,6 +53,11 @@ function build(options: {
   const rateCards = { productionReady: false } as any;
   const guard = new ProvisionalQuotingGuard(fleet, rateCards, { production: options.production ?? false, allowProvisional: false });
   const clock = new FixedClock(options.now ?? NOW);
+  const depositPolicy = {
+    getCurrent: jest.fn().mockResolvedValue({ version: 1, amount: '300.00', currency: 'PEN', effectiveFrom: null }),
+    listHistory: jest.fn(),
+    createVersion: jest.fn(),
+  };
   const handler = new ConvertToReservationHandler(
     inquiries,
     reservations,
@@ -62,8 +67,9 @@ function build(options: {
     transactions,
     guard,
     clock,
+    depositPolicy,
   );
-  return { handler, inquiries, reservations, audit, outbox, transactions, clock };
+  return { handler, inquiries, reservations, audit, outbox, transactions, clock, depositPolicy };
 }
 
 const command = (startAt: Date = START) =>
