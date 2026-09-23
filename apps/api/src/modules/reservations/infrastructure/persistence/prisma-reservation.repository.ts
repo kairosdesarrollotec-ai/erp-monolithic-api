@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   ReservationRepositoryPort,
@@ -8,11 +8,9 @@ import {
   CreateReservationInput,
   ListReservationsFilter,
   CancelReservationInput,
-  CustomerRecord,
-  VehicleRecord,
-  InquiryRecord,
 } from '../../application/ports/reservation-repository.port';
 import {
+  InquiryAlreadyHasReservationError,
   ReservationVersionConflictError,
   VehicleNotAvailableError,
 } from '../../domain/reservation-errors';
@@ -80,24 +78,38 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     tx?: Prisma.TransactionClient,
   ): Promise<ReservationRecord> {
     const client = tx ?? this.prisma;
-    const created: ReservationWithRelations = await client.reservation.create({
-      data: {
-        organizationId: input.organizationId,
-        operatingCompanyId: input.operatingCompanyId,
-        branchId: input.branchId,
-        inquiryId: input.inquiryId,
-        customerId: input.customerId,
-        vehicleId: input.vehicleId,
-        channelMode: input.channelMode,
-        startAt: input.startAt,
-        endAt: input.endAt,
-        requiredPaymentAmount: input.requiredPaymentAmount,
-        currency: input.currency,
-        paymentPolicyVersion: input.paymentPolicyVersion,
-        createdBy: input.createdBy,
-      },
-      include: { customer: true, vehicle: true },
-    });
+    let created: ReservationWithRelations;
+    try {
+      created = await client.reservation.create({
+        data: {
+          organizationId: input.organizationId,
+          operatingCompanyId: input.operatingCompanyId,
+          branchId: input.branchId,
+          inquiryId: input.inquiryId,
+          customerId: input.customerId,
+          vehicleId: input.vehicleId,
+          channelMode: input.channelMode,
+          startAt: input.startAt,
+          endAt: input.endAt,
+          requiredPaymentAmount: input.requiredPaymentAmount,
+          currency: input.currency,
+          paymentPolicyVersion: input.paymentPolicyVersion,
+          createdBy: input.createdBy,
+        },
+        include: { customer: true, vehicle: true },
+      });
+    } catch (error) {
+      // UNIQUE reservations.inquiry_id (revalidacion PR#7): una consulta
+      // se convierte a lo sumo una vez - la base gana cualquier carrera.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002' &&
+        /inquiry_?id/i.test(JSON.stringify(error.meta?.target ?? ''))
+      ) {
+        throw new InquiryAlreadyHasReservationError();
+      }
+      throw error;
+    }
     return toRecord(created);
   }
 
@@ -136,36 +148,6 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
         : {}),
     });
     return rows.map(toRecord);
-  }
-
-  // Hallazgo ALTO "referencias corregidas solo a nivel organizacion, no
-  // empresa/sede" (revision PR#6): select ahora incluye operatingCompanyId
-  // ademas de organizationId, para que CreateReservationHandler pueda
-  // validar tambien la empresa operadora antes de crear la reserva (no
-  // solo la organizacion, que por si sola no evitaba el cruce
-  // cross-company entre empresas de una misma organizacion).
-  async findCustomerById(id: string): Promise<CustomerRecord | null> {
-    const row = await this.prisma.customer.findUnique({
-      where: { id },
-      select: { id: true, organizationId: true, operatingCompanyId: true },
-    });
-    return row ?? null;
-  }
-
-  async findVehicleById(id: string): Promise<VehicleRecord | null> {
-    const row = await this.prisma.vehicle.findUnique({
-      where: { id },
-      select: { id: true, organizationId: true, operatingCompanyId: true },
-    });
-    return row ?? null;
-  }
-
-  async findInquiryById(id: string): Promise<InquiryRecord | null> {
-    const row = await this.prisma.inquiry.findUnique({
-      where: { id },
-      select: { id: true, organizationId: true, operatingCompanyId: true },
-    });
-    return row ?? null;
   }
 
   async registerPayment(

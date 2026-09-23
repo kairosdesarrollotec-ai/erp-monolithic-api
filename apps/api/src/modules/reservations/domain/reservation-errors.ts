@@ -89,3 +89,36 @@ export class ReservationStateConflictError extends ConflictException {
     });
   }
 }
+
+/**
+ * Hallazgo CRITICO de revalidacion PR#7 ("cardinalidad Inquiry ->
+ * Reservation no garantizada"): la base rechaza (UNIQUE
+ * reservations.inquiry_id) una segunda reserva para la misma consulta -
+ * p.ej. dos conversiones concurrentes. Se traduce a 409 con codigo propio
+ * en vez de un 500 generico.
+ */
+export class InquiryAlreadyHasReservationError extends ConflictException {
+  constructor() {
+    super({
+      code: 'INQUIRY_ALREADY_CONVERTED',
+      detail: 'La consulta ya tiene una reserva asociada - una consulta se convierte a lo sumo una vez.',
+    });
+  }
+}
+
+/**
+ * Hallazgo CRITICO de revalidacion PR#7 - caso de uso unico: una Reserva
+ * solo se crea desde una Consulta COTIZADA via
+ * `POST /inquiries/{id}/commands/convert-to-reservation`, que transiciona
+ * la Consulta a CONVERTIDA en la misma transaccion. `POST /reservations`
+ * permitia crear una reserva citando una consulta en cualquier estado
+ * (incluso cerrada) sin transicionarla - ver docs/conflicts/CONFLICT-CON-001.md.
+ */
+export class InquiryConversionRequiredError extends ConflictException {
+  constructor(inquiryId: string) {
+    super({
+      code: 'INQUIRY_CONVERSION_REQUIRED',
+      detail: `Las reservas se crean convirtiendo la consulta: POST /inquiries/${inquiryId}/commands/convert-to-reservation.`,
+    });
+  }
+}

@@ -44,9 +44,6 @@ function buildDeps(existing: ReservationRecord | null, forbidden = false, role =
     create: jest.fn(),
     findById: jest.fn().mockResolvedValue(existing),
     list: jest.fn(),
-    findCustomerById: jest.fn(),
-    findVehicleById: jest.fn(),
-    findInquiryById: jest.fn(),
     registerPayment: jest.fn(),
     registerDocuments: jest.fn(),
     confirm: jest.fn().mockResolvedValue(existing ? { ...existing, status: 'CONFIRMED', version: existing.version + 1 } : undefined),
@@ -61,6 +58,7 @@ function buildDeps(existing: ReservationRecord | null, forbidden = false, role =
     recordLoginAttempt: jest.fn(),
     recordWorkContextSelection: jest.fn(),
     recordReservationEvent: jest.fn(),
+    recordInquiryEvent: jest.fn(),
   };
   const transactionManager: jest.Mocked<TransactionManagerPort> = {
     run: jest.fn((work: any) => work(FAKE_TX)),

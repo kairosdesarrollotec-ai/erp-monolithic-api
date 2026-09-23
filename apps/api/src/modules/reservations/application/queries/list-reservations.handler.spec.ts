@@ -7,7 +7,6 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 function buildDeps(forbidden = false) {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
     create: jest.fn(), findById: jest.fn(), list: jest.fn().mockResolvedValue([]),
-    findCustomerById: jest.fn(), findVehicleById: jest.fn(), findInquiryById: jest.fn(),
     registerPayment: jest.fn(), registerDocuments: jest.fn(), confirm: jest.fn(), cancel: jest.fn(),
   };
   const workContext = {

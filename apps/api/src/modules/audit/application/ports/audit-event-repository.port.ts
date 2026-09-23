@@ -23,6 +23,14 @@ export interface RecordReservationEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordInquiryEventInput {
+  organizationId: string;
+  actorUserId: string;
+  inquiryId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -52,6 +60,19 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordReservationEvent(
     input: RecordReservationEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * HU-26 (Consulta) - TDD-CON-001.md seccion 17: solo `close` y
+   * `convert-to-*` auditan. `tx` opcional, mismo criterio que
+   * `recordReservationEvent` (hallazgo critico de revision PR#7 "auditoria
+   * no atomica": cierre/conversion se confirmaban antes de insertar el
+   * evento de auditoria) - el llamador abre la transaccion y le pasa `tx`
+   * para que un fallo de auditoria revierta tambien la mutacion.
+   */
+  abstract recordInquiryEvent(
+    input: RecordInquiryEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

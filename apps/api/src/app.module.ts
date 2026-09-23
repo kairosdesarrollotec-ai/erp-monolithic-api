@@ -4,16 +4,20 @@ import { HealthModule } from './modules/health/health.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { UsersModule } from './modules/users/users.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
+import { InquiriesModule } from './modules/inquiries/inquiries.module';
 import { PrismaModule } from './common/persistence/prisma.module';
+import { IdempotencyModule } from './common/http/idempotency.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    IdempotencyModule,
     HealthModule,
     AuditModule,
     UsersModule,
     ReservationsModule,
+    InquiriesModule,
   ],
 })
 export class AppModule {}

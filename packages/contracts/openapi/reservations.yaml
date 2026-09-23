@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.2.0
+  version: 0.3.0
   description: >
     Contrato del modulo Reserva (HU-27, TDD-RES-001.md seccion 11).
     Primer corte: crear, registrar pago/documentos, confirmar (bloqueo
@@ -26,7 +26,17 @@ paths:
   /reservations:
     post:
       operationId: createReservation
-      summary: Crea una reserva en DRAFT (RES-P01-P04)
+      deprecated: true
+      summary: 'DESHABILITADO - crear una reserva se hace con POST /inquiries/{id}/commands/convert-to-reservation'
+      description: >
+        Revalidacion PR#7 (hallazgo CRITICO "cardinalidad Inquiry ->
+        Reservation"): este endpoint permitia crear una reserva citando
+        una consulta en cualquier estado sin transicionarla (varias
+        reservas por consulta, reservas de consultas cerradas). Decision
+        interina (docs/conflicts/CONFLICT-CON-001.md, pendiente de
+        aprobacion): la unica via es convert-to-reservation de Consulta.
+        Este endpoint conserva autenticacion, contexto y rol y responde 409
+        INQUIRY_CONVERSION_REQUIRED.
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -34,21 +44,10 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateReservationRequest' }
       responses:
-        '201':
-          description: Reserva creada en DRAFT
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ReservationResponse' }
-        '400':
-          description: Periodo invalido (INVALID_PERIOD)
         '403':
-          description: Empresa/sede no autorizada para el usuario
-        '404':
-          description: >
-            Cliente, vehiculo o consulta de origen no existen en la
-            organizacion autorizada (CUSTOMER_NOT_FOUND, VEHICLE_NOT_FOUND,
-            INQUIRY_NOT_FOUND - hallazgo critico "referencias cross-tenant
-            al crear")
+          description: Empresa/sede no autorizada, o ROLE_NOT_ALLOWED
+        '409':
+          description: 'INQUIRY_CONVERSION_REQUIRED - usar POST /inquiries/{inquiryId}/commands/convert-to-reservation'
     get:
       operationId: listReservations
       summary: Bandeja de reservas (RES-01)

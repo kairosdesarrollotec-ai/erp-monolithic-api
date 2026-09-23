@@ -6,6 +6,7 @@ import {
   RecordLoginAttemptInput,
   RecordWorkContextSelectionInput,
   RecordReservationEventInput,
+  RecordInquiryEventInput,
 } from '../../application/ports/audit-event-repository.port';
 
 @Injectable()
@@ -53,6 +54,19 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort {
         actorUserId: input.actorUserId,
         entityType: 'reservation',
         entityId: input.reservationId,
+        action: input.action,
+        changes: input.changes as any,
+      },
+    });
+  }
+
+  async recordInquiryEvent(input: RecordInquiryEventInput): Promise<void> {
+    await this.prisma.auditEvent.create({
+      data: {
+        organizationId: input.organizationId,
+        actorUserId: null,
+        entityType: 'inquiry',
+        entityId: input.inquiryId,
         action: input.action,
         changes: input.changes as any,
       },

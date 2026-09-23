@@ -1,0 +1,4 @@
+# Falso positivo revisado (revalidacion PR#7, 23 sep 2026): clave TOTP de
+# DEMOSTRACION escrita a mano dentro del mock HTML generado por Stitch para el
+# prototipo aprobado TR-02 paso 2 (movil). No es un secreto real.
+26b8a6f28743599f30a5946c1f49b3d29623bda0:docs/prototypes/approved/stitch_veloxrent_prototipo_b/activa_tu_cuenta_paso_2_de_2_m_vil_veloxrent/code.html:generic-api-key:279
