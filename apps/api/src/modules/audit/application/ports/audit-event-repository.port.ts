@@ -23,6 +23,14 @@ export interface RecordReservationEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordAdminEventInput {
+  organizationId: string;
+  actorUserId: string;
+  targetFirebaseUid: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 export interface RecordInquiryEventInput {
   organizationId: string;
   actorUserId: string;
@@ -73,6 +81,17 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordInquiryEvent(
     input: RecordInquiryEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * ADM-01/ADM-04 (PANTALLAS-V2-B-SOPORTE.md) - alta, baja o cambio de
+   * asignacion de un usuario. `tx` opcional, mismo criterio que
+   * recordReservationEvent: la escritura de auditoria participa de la
+   * misma transaccion que la mutacion de la asignacion.
+   */
+  abstract recordAdminEvent(
+    input: RecordAdminEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

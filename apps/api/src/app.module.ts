@@ -5,6 +5,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { UsersModule } from './modules/users/users.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { InquiriesModule } from './modules/inquiries/inquiries.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { PrismaModule } from './common/persistence/prisma.module';
 import { IdempotencyModule } from './common/http/idempotency.module';
 
@@ -18,6 +19,7 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     UsersModule,
     ReservationsModule,
     InquiriesModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
