@@ -15,6 +15,10 @@ import { GetRolePermissionMatrixHandler } from '../../application/queries/get-ro
 import { GetRolePermissionMatrixQuery } from '../../application/queries/get-role-permission-matrix.query';
 import { SaveRolePermissionMatrixHandler } from '../../application/commands/save-role-permission-matrix.handler';
 import { SaveRolePermissionMatrixCommand } from '../../application/commands/save-role-permission-matrix.command';
+import { GetNotificationTemplatesHandler } from '../../application/queries/get-notification-templates.handler';
+import { GetNotificationTemplatesQuery } from '../../application/queries/get-notification-templates.query';
+import { SaveNotificationTemplateHandler } from '../../application/commands/save-notification-template.handler';
+import { SaveNotificationTemplateCommand } from '../../application/commands/save-notification-template.command';
 import {
   AuthenticatedRequest,
   FirebaseAuthGuard,
@@ -31,6 +35,9 @@ import { ReservationDepositPolicyResponse } from './dto/reservation-deposit-poli
 import { GetRolePermissionMatrixQueryDto } from './dto/get-role-permission-matrix-query.dto';
 import { SaveRolePermissionMatrixDto } from './dto/save-role-permission-matrix.dto';
 import { RolePermissionMatrixResponse } from './dto/role-permission-matrix.response';
+import { GetNotificationTemplatesQueryDto } from './dto/get-notification-templates-query.dto';
+import { SaveNotificationTemplateDto } from './dto/save-notification-template.dto';
+import { NotificationTemplatesResponse } from './dto/notification-templates.response';
 
 /**
  * ADM-01 (Usuarios y asignaciones, PANTALLAS-V2-B-SOPORTE.md). Solo rol
@@ -49,6 +56,8 @@ export class AdminController {
     private readonly updateReservationDepositPolicy: UpdateReservationDepositPolicyHandler,
     private readonly getRolePermissionMatrix: GetRolePermissionMatrixHandler,
     private readonly saveRolePermissionMatrix: SaveRolePermissionMatrixHandler,
+    private readonly getNotificationTemplates: GetNotificationTemplatesHandler,
+    private readonly saveNotificationTemplate: SaveNotificationTemplateHandler,
   ) {}
 
   @Get('users')
@@ -145,6 +154,23 @@ export class AdminController {
   async savePermissions(@Req() req: AuthenticatedRequest, @Body() dto: SaveRolePermissionMatrixDto) {
     return this.saveRolePermissionMatrix.execute(
       new SaveRolePermissionMatrixCommand(req.firebaseUid!, dto.companyId, dto.branchId, dto.entries),
+    );
+  }
+
+  @Get('notification-templates')
+  async notificationTemplates(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: GetNotificationTemplatesQueryDto,
+  ): Promise<NotificationTemplatesResponse> {
+    return this.getNotificationTemplates.execute(
+      new GetNotificationTemplatesQuery(req.firebaseUid!, query.companyId, query.branchId),
+    );
+  }
+
+  @Post('notification-templates')
+  async saveNotificationTemplateEndpoint(@Req() req: AuthenticatedRequest, @Body() dto: SaveNotificationTemplateDto) {
+    return this.saveNotificationTemplate.execute(
+      new SaveNotificationTemplateCommand(req.firebaseUid!, dto.companyId, dto.branchId, dto.eventType, dto.channels, dto.body),
     );
   }
 }

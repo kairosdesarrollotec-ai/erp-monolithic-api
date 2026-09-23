@@ -9,6 +9,8 @@ import { UpdateReservationDepositPolicyHandler } from './application/commands/up
 import { GetRolePermissionMatrixHandler } from './application/queries/get-role-permission-matrix.handler';
 import { SaveRolePermissionMatrixHandler } from './application/commands/save-role-permission-matrix.handler';
 import { RolePermissionMatrixPort } from './application/ports/role-permission-matrix.port';
+import { GetNotificationTemplatesHandler } from './application/queries/get-notification-templates.handler';
+import { SaveNotificationTemplateHandler } from './application/commands/save-notification-template.handler';
 import { PrismaRolePermissionMatrixRepository } from './infrastructure/persistence/prisma-role-permission-matrix.repository';
 import { AdminUserRepositoryPort } from './application/ports/admin-user-repository.port';
 import { PrismaAdminUserRepository } from './infrastructure/persistence/prisma-admin-user.repository';
@@ -17,6 +19,7 @@ import { FirebaseIdentityLookupAdapter } from './infrastructure/identity/firebas
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { ParametersModule } from '../parameters/parameters.module';
+import { NotificationTemplatesModule } from '../notification-templates/notification-templates.module';
 
 /**
  * ADM-01 (Usuarios y asignaciones). Primera pantalla real del rol
@@ -27,7 +30,7 @@ import { ParametersModule } from '../parameters/parameters.module';
  * Project KAIROS).
  */
 @Module({
-  imports: [UsersModule, AuditModule, ParametersModule],
+  imports: [UsersModule, AuditModule, ParametersModule, NotificationTemplatesModule],
   controllers: [AdminController],
   providers: [
     ListOrganizationUsersHandler,
@@ -38,6 +41,8 @@ import { ParametersModule } from '../parameters/parameters.module';
     UpdateReservationDepositPolicyHandler,
     GetRolePermissionMatrixHandler,
     SaveRolePermissionMatrixHandler,
+    GetNotificationTemplatesHandler,
+    SaveNotificationTemplateHandler,
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
     { provide: RolePermissionMatrixPort, useClass: PrismaRolePermissionMatrixRepository },

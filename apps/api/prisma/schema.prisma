@@ -104,6 +104,32 @@ model RolePermissionMatrixVersion {
   @@map("role_permission_matrix_versions")
 }
 
+/// ADM-05 (PANTALLAS-V2-B-SOPORTE.md) - plantilla de notificacion por
+/// evento de dominio, versionada (misma disciplina que
+/// ReservationDepositPolicyVersion / RolePermissionMatrixVersion:
+/// nunca se edita/borra una version, se inserta la siguiente).
+///
+/// ALCANCE REAL: esto configura el TEXTO y el/los canal(es) de una
+/// plantilla - no envia nada todavia. El envio real (TR-07, outbox de
+/// notificaciones) sigue sin construirse; ver
+/// claude/Diseno_Agregador_Transversal_TR-06-07-08.md. `eventType` solo
+/// admite eventos que YA se publican de verdad en outbox_events
+/// (ReservationCreated/Confirmed/Cancelled) - no se inventan eventos
+/// que el sistema no emite.
+model NotificationTemplateVersion {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  eventType      String   @map("event_type")
+  version        Int
+  channels       String[]
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  createdBy      String   @map("created_by")
+
+  @@unique([organizationId, eventType, version])
+  @@map("notification_template_versions")
+}
+
 model AuditEvent {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")
