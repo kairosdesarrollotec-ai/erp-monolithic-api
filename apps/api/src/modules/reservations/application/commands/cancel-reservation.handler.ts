@@ -4,6 +4,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
+import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { isTerminalReservationStatus } from '../../domain/reservation-status';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
 import { CancelReservationCommand } from './cancel-reservation.command';
@@ -35,6 +36,10 @@ import { CancelReservationCommand } from './cancel-reservation.command';
  * adicional en profundidad para el resto de lecturas de esta
  * transaccion (existencia, estado terminal), no como el unico
  * mecanismo de proteccion.
+ *
+ * Hallazgo real 23 sep 2026: se agrega la publicacion a outbox_events
+ * (mismo criterio que ConfirmReservationHandler) - la cancelacion no
+ * publicaba ningun evento pese a que el modelo ya existia.
  */
 @Injectable()
 export class CancelReservationHandler {
@@ -42,6 +47,7 @@ export class CancelReservationHandler {
     private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
   ) {}
 
@@ -105,6 +111,23 @@ export class CancelReservationHandler {
             reservationId: cancelled.id,
             action: 'RESERVATION_CANCELLED_FOR_CHANGE',
             changes: { reason: command.reason, note: command.note ?? null },
+          },
+          tx,
+        );
+
+        await this.outboxRepository.publish(
+          {
+            aggregateType: 'Reservation',
+            aggregateId: cancelled.id,
+            eventType: 'ReservationCancelled',
+            payload: {
+              organizationId: context.organizationId,
+              operatingCompanyId: command.companyId,
+              branchId: command.branchId,
+              reason: command.reason,
+              note: command.note ?? null,
+              cancelledBy: command.firebaseUid,
+            },
           },
           tx,
         );

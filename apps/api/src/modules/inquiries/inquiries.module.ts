@@ -20,6 +20,7 @@ import { ProvisionalRateCardAdapter } from './infrastructure/pricing/provisional
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { ReservationsModule } from '../reservations/reservations.module';
+import { OutboxModule } from '../outbox/outbox.module';
 
 /**
  * HU-26 (Consulta, CON-01..CON-04).
@@ -33,7 +34,7 @@ import { ReservationsModule } from '../reservations/reservations.module';
  *   ProvisionalQuotingGuard salvo KAIROS_ALLOW_PROVISIONAL_QUOTING=true.
  */
 @Module({
-  imports: [UsersModule, AuditModule, ReservationsModule],
+  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule],
   controllers: [InquiriesController],
   providers: [
     RegisterInquiryHandler,

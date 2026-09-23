@@ -6,6 +6,7 @@ import { InquiryNotTransitionableError, QuotationExpiredError } from '../../doma
 import { ReservationRepositoryPort } from '../../../reservations/application/ports/reservation-repository.port';
 import { InquiryAlreadyHasReservationError } from '../../../reservations/domain/reservation-errors';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
+import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import {
   BRANCH,
   COMPANY,
@@ -46,6 +47,7 @@ function build(options: {
     create: jest.fn().mockResolvedValue({ id: 'res-1', inquiryId: 'inq-1', status: 'DRAFT' }),
   } as unknown as jest.Mocked<ReservationRepositoryPort>;
   const audit = { recordInquiryEvent: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AuditEventRepositoryPort>;
+  const outbox = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxEventRepositoryPort>;
   const transactions = buildTransactionManager();
   const fleet = { productionReady: false } as any;
   const rateCards = { productionReady: false } as any;
@@ -56,11 +58,12 @@ function build(options: {
     reservations,
     buildWorkContext(options.role),
     audit,
+    outbox,
     transactions,
     guard,
     clock,
   );
-  return { handler, inquiries, reservations, audit, transactions, clock };
+  return { handler, inquiries, reservations, audit, outbox, transactions, clock };
 }
 
 const command = (startAt: Date = START) =>
@@ -68,7 +71,7 @@ const command = (startAt: Date = START) =>
 
 describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', () => {
   it('en UNA transaccion Serializable: transiciona a CONVERTIDA, crea la reserva desde la cotizacion vigente y audita', async () => {
-    const { handler, inquiries, reservations, audit, transactions } = build();
+    const { handler, inquiries, reservations, audit, outbox, transactions } = build();
 
     const result = await handler.execute(command());
 
@@ -90,6 +93,10 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
     );
     expect(audit.recordInquiryEvent).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'INQUIRY_CONVERTED_TO_RESERVATION', changes: expect.objectContaining({ quotationId: 'quo-new', reservationId: 'res-1' }) }),
+      transactions.tx,
+    );
+    expect(outbox.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ aggregateType: 'Reservation', aggregateId: 'res-1', eventType: 'ReservationCreated' }),
       transactions.tx,
     );
     expect(result.reservation.id).toBe('res-1');

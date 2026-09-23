@@ -11,6 +11,7 @@ import { ReservationRepositoryPort } from './application/ports/reservation-repos
 import { PrismaReservationRepository } from './infrastructure/persistence/prisma-reservation.repository';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
+import { OutboxModule } from '../outbox/outbox.module';
 
 /**
  * HU-27 (Reserva, RES-01/RES-04/RES-05). Importa UsersModule para
@@ -24,7 +25,7 @@ import { AuditModule } from '../audit/audit.module';
  * Consulta desde la revalidacion de PR#7).
  */
 @Module({
-  imports: [UsersModule, AuditModule],
+  imports: [UsersModule, AuditModule, OutboxModule],
   controllers: [ReservationsController],
   providers: [
     CreateReservationHandler,

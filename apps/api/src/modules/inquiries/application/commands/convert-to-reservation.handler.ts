@@ -4,6 +4,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
+import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
 import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
@@ -55,6 +56,7 @@ export class ConvertToReservationHandler {
     private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
     private readonly quotingGuard: ProvisionalQuotingGuard,
     private readonly clock: ClockPort,
@@ -138,6 +140,26 @@ export class ConvertToReservationHandler {
               vehicleId: quotation.vehicleId,
               startAt,
               endAt,
+            },
+          },
+          tx,
+        );
+
+        await this.outboxRepository.publish(
+          {
+            aggregateType: 'Reservation',
+            aggregateId: reservation.id,
+            eventType: 'ReservationCreated',
+            payload: {
+              organizationId: scope.organizationId,
+              operatingCompanyId: scope.operatingCompanyId,
+              branchId: scope.branchId,
+              customerId: reservation.customerId,
+              vehicleId: reservation.vehicleId,
+              inquiryId: command.id,
+              startAt,
+              endAt,
+              createdBy: command.firebaseUid,
             },
           },
           tx,

@@ -4,6 +4,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
+import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { RequirementsIncompleteError, ReservationStateConflictError } from '../../domain/reservation-errors';
 import { ConfirmReservationCommand } from './confirm-reservation.command';
 
@@ -27,6 +28,16 @@ import { ConfirmReservationCommand } from './confirm-reservation.command';
  *
  * Hallazgo critico "IDOR entre sedes/empresas": scope completo en vez de
  * solo organizationId.
+ *
+ * Hallazgo real 23 sep 2026 (revision de erp-api-local contra
+ * TDD-KAIROS-TRANSVERSAL.md 7.3, ADR-KAI-003): la confirmacion no
+ * publicaba ningun evento a outbox_events pese a que el modelo Prisma ya
+ * existia - sin esto no hay ningun evento real para que el agregador
+ * transversal de TR-06/TR-07/TR-08 consuma (ver
+ * claude/Diseno_Agregador_Transversal_TR-06-07-08.md en el Project). Se
+ * publica dentro de la misma transaccion Serializable que la mutacion y
+ * la auditoria, mismo criterio de atomicidad ya aplicado a
+ * AuditEventRepositoryPort.
  */
 @Injectable()
 export class ConfirmReservationHandler {
@@ -34,6 +45,7 @@ export class ConfirmReservationHandler {
     private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
   ) {}
 
@@ -81,6 +93,25 @@ export class ConfirmReservationHandler {
             reservationId: confirmed.id,
             action: 'RESERVATION_CONFIRMED',
             changes: { vehicleId: confirmed.vehicleId, startAt: confirmed.startAt, endAt: confirmed.endAt },
+          },
+          tx,
+        );
+
+        await this.outboxRepository.publish(
+          {
+            aggregateType: 'Reservation',
+            aggregateId: confirmed.id,
+            eventType: 'ReservationConfirmed',
+            payload: {
+              organizationId: confirmed.organizationId,
+              operatingCompanyId: confirmed.operatingCompanyId,
+              branchId: confirmed.branchId,
+              customerId: confirmed.customerId,
+              vehicleId: confirmed.vehicleId,
+              startAt: confirmed.startAt,
+              endAt: confirmed.endAt,
+              confirmedBy: command.firebaseUid,
+            },
           },
           tx,
         );

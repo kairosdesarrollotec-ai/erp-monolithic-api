@@ -6,6 +6,7 @@ import { PrismaInquiryRepository } from '../../src/modules/inquiries/infrastruct
 import { PrismaReservationRepository } from '../../src/modules/reservations/infrastructure/persistence/prisma-reservation.repository';
 import { ConvertToReservationHandler } from '../../src/modules/inquiries/application/commands/convert-to-reservation.handler';
 import { ConvertToReservationCommand } from '../../src/modules/inquiries/application/commands/convert-to-reservation.command';
+import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
 import { ProvisionalQuotingGuard } from '../../src/modules/inquiries/application/services/provisional-quoting.guard';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 
@@ -56,6 +57,7 @@ describe('Consulta -> Reserva (Postgres real)', () => {
       new PrismaReservationRepository(prisma),
       workContext,
       audit,
+      new PrismaOutboxEventRepository(prisma),
       new PrismaTransactionManager(prisma),
       guard,
       new FixedClock(),
