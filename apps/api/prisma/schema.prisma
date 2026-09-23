@@ -558,3 +558,48 @@ model ReservationAcceptance {
 
   @@map("reservation_acceptances")
 }
+
+/// TR-06 (SDD-KAIROS-TRANSVERSAL.md 18.2, HU-24) - proyeccion de lectura
+/// del Tablero por rol, construida a partir de outbox_events (TDD-
+/// KAIROS-TRANSVERSAL.md 7.3, ADR-KAI-003). No reemplaza outbox_events ni
+/// las tablas de dominio de cada modulo - es una tabla de lectura propia
+/// de UI, alimentada por un proyector (ver DashboardEventProjectorService,
+/// modulo dashboard-projections) que consume eventos ya publicados
+/// (ReservationCreated/Confirmed/Cancelled hoy; se agregan mas fuentes
+/// cuando Rentals/Returns/Recruitment/HR-Administration existan).
+///
+/// Se ancla a organizationId/operatingCompanyId/branchId/role en vez de a
+/// un userId especifico: el modelo de autorizacion actual
+/// (WorkContextAuthorizationService) resuelve rol + empresa/sede, no
+/// "asignado a mi" - los 7 roles comparten tablero por sede
+/// (GetDashboardHandler ya funciona asi desde HU-24). Cuando exista
+/// asignacion individual real (ADM-02), se agrega un userId opcional sin
+/// romper este modelo.
+///
+/// PROVISIONAL, igual que DashboardResponse en el OpenAPI: `itemType`,
+/// `priority` y `deepLink` siguen el diseno de
+/// claude/Diseno_Agregador_Transversal_TR-06-07-08.md (Project KAIROS),
+/// pendiente de contraste formal cuando el resto de fuentes (Rentals,
+/// Returns, etc.) existan.
+model DashboardItem {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  operatingCompanyId String    @map("operating_company_id")
+  branchId           String    @map("branch_id")
+  role               WorkerRole
+  itemType           String    @map("item_type") // 'TASK' | 'ALERT' | 'DRAFT' | 'ACTIVITY'
+  priority           Int       @default(0)
+  title              String
+  detail             String?
+  deepLink           String    @map("deep_link")
+  sourceType         String    @map("source_type") // 'RESERVATION' | 'RENTAL' | 'RETURN' | 'INQUIRY' | 'RECRUITMENT' | 'HR'
+  sourceId           String    @map("source_id")
+  sourceEventId      String    @map("source_event_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  expiresAt          DateTime? @map("expires_at")
+  dismissedAt        DateTime? @map("dismissed_at")
+
+  @@unique([sourceEventId, itemType])
+  @@index([organizationId, operatingCompanyId, branchId, role, dismissedAt, priority])
+  @@map("dashboard_items")
+}

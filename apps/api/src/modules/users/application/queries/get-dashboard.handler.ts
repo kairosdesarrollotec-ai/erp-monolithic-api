@@ -2,11 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { WorkContextAuthorizationService } from '../services/work-context-authorization.service';
 import { GetDashboardQuery } from './get-dashboard.query';
 import type { WorkerRole } from '../../domain/worker-role';
+import { DashboardItemRepositoryPort } from '../../../dashboard-projections/application/ports/dashboard-item-repository.port';
 
-export interface DashboardResult {
-  role: WorkerRole;
-  state: 'EMPTY';
+export interface DashboardTaskItemResult {
+  id: string;
+  itemType: string;
+  priority: number;
+  title: string;
+  detail: string | null;
+  deepLink: string;
 }
+
+export type DashboardResult =
+  | { role: WorkerRole; state: 'EMPTY' }
+  | { role: WorkerRole; state: 'READY'; tasks: DashboardTaskItemResult[] };
 
 /**
  * TR-06 (HU-24): punto de entrada del tablero por rol. Igual que TR-05
@@ -46,7 +55,10 @@ export interface DashboardResult {
  */
 @Injectable()
 export class GetDashboardHandler {
-  constructor(private readonly authorization: WorkContextAuthorizationService) {}
+  constructor(
+    private readonly authorization: WorkContextAuthorizationService,
+    private readonly dashboardItems: DashboardItemRepositoryPort,
+  ) {}
 
   async execute(query: GetDashboardQuery): Promise<DashboardResult> {
     const context = await this.authorization.authorize({
@@ -55,6 +67,28 @@ export class GetDashboardHandler {
       branchId: query.branchId,
     });
 
-    return { role: context.role, state: 'EMPTY' };
+    const items = await this.dashboardItems.listActive({
+      organizationId: context.organizationId,
+      operatingCompanyId: context.companyId,
+      branchId: context.branchId,
+      role: context.role,
+    });
+
+    if (items.length === 0) {
+      return { role: context.role, state: 'EMPTY' };
+    }
+
+    return {
+      role: context.role,
+      state: 'READY',
+      tasks: items.map((item) => ({
+        id: item.id,
+        itemType: item.itemType,
+        priority: item.priority,
+        title: item.title,
+        detail: item.detail,
+        deepLink: item.deepLink,
+      })),
+    };
   }
 }

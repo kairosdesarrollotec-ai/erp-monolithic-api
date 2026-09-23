@@ -3,6 +3,7 @@ import { GetDashboardHandler } from './get-dashboard.handler';
 import { GetDashboardQuery } from './get-dashboard.query';
 import { WorkContextAuthorizationService } from '../services/work-context-authorization.service';
 import type { WorkerRole } from '../../domain/worker-role';
+import { DashboardItemRepositoryPort, DashboardItemRecord } from '../../../dashboard-projections/application/ports/dashboard-item-repository.port';
 
 describe('GetDashboardHandler', () => {
   function buildAuthorization(
@@ -17,6 +18,15 @@ describe('GetDashboardHandler', () => {
           : jest.fn().mockResolvedValue(context),
     };
     return authorization as unknown as WorkContextAuthorizationService;
+  }
+
+  function buildDashboardItems(items: DashboardItemRecord[] = []) {
+    const repo: jest.Mocked<DashboardItemRepositoryPort> = {
+      upsertFromEvent: jest.fn(),
+      dismissBySource: jest.fn(),
+      listActive: jest.fn().mockResolvedValue(items),
+    };
+    return repo;
   }
 
   // Hallazgo alto de revision PR#5 ("el rol se usa para presentacion, no
@@ -38,7 +48,8 @@ describe('GetDashboardHandler', () => {
       branchId: 'branch-1',
       role,
     });
-    const handler = new GetDashboardHandler(authorization);
+    const dashboardItems = buildDashboardItems([]);
+    const handler = new GetDashboardHandler(authorization, dashboardItems);
 
     const result = await handler.execute(new GetDashboardQuery('uid-1', 'company-1', 'branch-1'));
 
@@ -46,6 +57,12 @@ describe('GetDashboardHandler', () => {
       firebaseUid: 'uid-1',
       companyId: 'company-1',
       branchId: 'branch-1',
+    });
+    expect(dashboardItems.listActive).toHaveBeenCalledWith({
+      organizationId: 'org-1',
+      operatingCompanyId: 'company-1',
+      branchId: 'branch-1',
+      role,
     });
     expect(result).toEqual({ role, state: 'EMPTY' });
   });
@@ -56,10 +73,50 @@ describe('GetDashboardHandler', () => {
         'La combinacion empresa/sede no es una asignacion vigente para este usuario.',
       ),
     );
-    const handler = new GetDashboardHandler(authorization);
+    const handler = new GetDashboardHandler(authorization, buildDashboardItems([]));
 
     await expect(
       handler.execute(new GetDashboardQuery('uid-1', 'company-ajena', 'branch-ajena')),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('devuelve READY con las tareas activas del rol cuando la proyeccion tiene items (HU-24, extension 23 sep 2026)', async () => {
+    const authorization = buildAuthorization({
+      organizationId: 'org-1',
+      companyId: 'company-1',
+      branchId: 'branch-1',
+      role: 'FRONT_OFFICE',
+    });
+    const dashboardItems = buildDashboardItems([
+      {
+        id: 'item-1',
+        itemType: 'TASK',
+        priority: 10,
+        title: 'Reserva pendiente de pago/documentos',
+        detail: 'Vehiculo veh-1',
+        deepLink: '/reservations/res-1',
+        sourceType: 'RESERVATION',
+        sourceId: 'res-1',
+        createdAt: new Date('2026-09-23T10:00:00Z'),
+      },
+    ]);
+    const handler = new GetDashboardHandler(authorization, dashboardItems);
+
+    const result = await handler.execute(new GetDashboardQuery('uid-1', 'company-1', 'branch-1'));
+
+    expect(result).toEqual({
+      role: 'FRONT_OFFICE',
+      state: 'READY',
+      tasks: [
+        {
+          id: 'item-1',
+          itemType: 'TASK',
+          priority: 10,
+          title: 'Reserva pendiente de pago/documentos',
+          detail: 'Vehiculo veh-1',
+          deepLink: '/reservations/res-1',
+        },
+      ],
+    });
   });
 });
