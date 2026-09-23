@@ -130,6 +130,40 @@ model NotificationTemplateVersion {
   @@map("notification_template_versions")
 }
 
+/// TR-07 (Centro de notificaciones, PANTALLAS-V2-B-TRANSVERSAL.md) -
+/// proyeccion de lectura de notificaciones por usuario, consumida desde
+/// el mismo outbox transaccional que TR-06 (ver
+/// claude/Diseno_Agregador_Transversal_TR-06-07-08.md). Idempotente por
+/// sourceEventId - reprocesar el mismo evento no duplica la fila.
+///
+/// ALCANCE REAL: el destinatario (`recipientFirebaseUid`) es siempre
+/// quien ejecuto la accion que genero el evento (createdBy/confirmedBy/
+/// cancelledBy en el payload de Reservation) - es una bitacora personal
+/// de "lo que hiciste", no todavia una notificacion dirigida a un
+/// tercero (ej. avisarle a Finanzas que una reserva se confirmo)
+/// porque el sistema no modela destinatarios distintos del actor para
+/// estos eventos hoy. `isEscalated` queda siempre en false: el contrato
+/// pide distinguir visualmente una notificacion "escalada" pero ninguna
+/// regla real define ese criterio todavia - la columna existe para que
+/// la UI ya soporte esa distincion cuando una regla real la produzca.
+model NotificationReadModel {
+  id                   String    @id @default(uuid())
+  organizationId       String    @map("organization_id")
+  companyId            String    @map("company_id")
+  branchId             String    @map("branch_id")
+  recipientFirebaseUid String    @map("recipient_firebase_uid")
+  notificationType     String    @map("notification_type")
+  isEscalated          Boolean   @default(false) @map("is_escalated")
+  title                String
+  deepLink             String    @map("deep_link")
+  readAt               DateTime? @map("read_at")
+  sourceEventId        String    @unique @map("source_event_id")
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  @@index([recipientFirebaseUid, readAt, createdAt])
+  @@map("notifications_read_model")
+}
+
 model AuditEvent {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")

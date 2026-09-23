@@ -2,10 +2,15 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { PrismaService } from '../../../common/persistence/prisma.service';
 import { DashboardItemRepositoryPort } from '../application/ports/dashboard-item-repository.port';
 import { projectReservationEvent } from '../application/projectors/reservation-event.projector';
+import { NotificationReadModelPort } from '../../notifications/application/ports/notification-read-model.port';
+import { NotificationTemplatePort } from '../../notification-templates/application/ports/notification-template.port';
+import { projectNotificationEvent } from '../../notifications/domain/notification-event-projector';
 
 /**
  * Consumidor del outbox transaccional (TDD-KAIROS-TRANSVERSAL.md 7.3,
- * ADR-KAI-003) para TR-06. El diseno de referencia
+ * ADR-KAI-003) para TR-06 y, desde el 23 sep 2026, tambien para TR-07
+ * (ver ALCANCE REAL en dashboard-projections.module.ts sobre por que
+ * ambas proyecciones comparten un unico relay). El diseno de referencia
  * (claude/Diseno_Agregador_Transversal_TR-06-07-08.md, Project KAIROS)
  * propone un worker separado sobre Cloud Tasks (apps/worker) - ese
  * paquete no existe todavia en este repo y agregar la infraestructura de
@@ -20,10 +25,11 @@ import { projectReservationEvent } from '../application/projectors/reservation-e
  * Limitacion conocida, documentada en vez de ocultada: OutboxEvent (tal
  * como esta modelado hoy en schema.prisma) no tiene columnas de
  * `attempts`/`last_error` (a diferencia de la tabla de referencia del
- * TDD) - un evento que falla al proyectarse queda con `processedAt` en
- * null y se reintenta en el siguiente ciclo indefinidamente, sin backoff
- * ni limite. Aceptable para el volumen actual (Reservations es el unico
- * emisor); revisar antes de sumar mas modulos emisores de eventos.
+ * TDD) - un evento que falla al proyectarse (en CUALQUIERA de las 2
+ * proyecciones) queda con `processedAt` en null y se reintenta en el
+ * siguiente ciclo indefinidamente, sin backoff ni limite. Aceptable
+ * para el volumen actual (Reservations es el unico emisor); revisar
+ * antes de sumar mas modulos emisores de eventos.
  */
 @Injectable()
 export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
@@ -34,6 +40,8 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly prisma: PrismaService,
     private readonly dashboardItems: DashboardItemRepositoryPort,
+    private readonly notifications: NotificationReadModelPort,
+    private readonly notificationTemplates: NotificationTemplatePort,
   ) {}
 
   onModuleInit(): void {
@@ -59,12 +67,15 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
 
       for (const event of pending) {
         try {
-          const result = projectReservationEvent(event);
-          if (result.action === 'UPSERT') {
-            await this.dashboardItems.upsertFromEvent(result.item);
-          } else if (result.action === 'DISMISS') {
-            await this.dashboardItems.dismissBySource(result.sourceType, result.sourceId);
+          const dashboardResult = projectReservationEvent(event);
+          if (dashboardResult.action === 'UPSERT') {
+            await this.dashboardItems.upsertFromEvent(dashboardResult.item);
+          } else if (dashboardResult.action === 'DISMISS') {
+            await this.dashboardItems.dismissBySource(dashboardResult.sourceType, dashboardResult.sourceId);
           }
+
+          await this.projectNotification(event);
+
           await this.prisma.outboxEvent.update({
             where: { id: event.id },
             data: { processedAt: new Date() },
@@ -78,6 +89,30 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
       }
     } finally {
       this.running = false;
+    }
+  }
+
+  /**
+   * TR-07 - usa la plantilla vigente de ADM-05 para el evento (si el
+   * admin guardo una); si nunca se guardo ninguna, projectNotificationEvent
+   * cae a su texto generico de respaldo (ver
+   * notification-event-projector.ts) en vez de dejar al usuario sin
+   * notificacion.
+   */
+  private async projectNotification(event: {
+    id: string;
+    aggregateId: string;
+    eventType: string;
+    payload: unknown;
+    organizationId?: string;
+  }): Promise<void> {
+    const payload = event.payload as { organizationId?: string };
+    const organizationId = payload.organizationId;
+    const template = organizationId ? await this.notificationTemplates.getCurrent(organizationId, event.eventType) : null;
+
+    const result = projectNotificationEvent(event, template?.body ?? null);
+    if (result.action === 'CREATE') {
+      await this.notifications.create(result.item);
     }
   }
 }
