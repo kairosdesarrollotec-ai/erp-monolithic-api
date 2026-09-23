@@ -9,9 +9,14 @@ import {
   RecordInquiryEventInput,
   RecordAdminEventInput,
 } from '../../application/ports/audit-event-repository.port';
+import {
+  AuditEventQueryPort,
+  AuditEventRecord,
+  ListAuditEventsFilter,
+} from '../../application/ports/audit-event-query.port';
 
 @Injectable()
-export class PrismaAuditEventRepository implements AuditEventRepositoryPort {
+export class PrismaAuditEventRepository implements AuditEventRepositoryPort, AuditEventQueryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async recordLoginAttempt(input: RecordLoginAttemptInput): Promise<void> {
@@ -86,5 +91,41 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort {
         changes: input.changes as any,
       },
     });
+  }
+
+  /**
+   * ADM-04 - lectura de audit_events con filtros opcionales (actor,
+   * tipo de entidad, rango de fechas). Orden mas reciente primero (la
+   * pantalla de auditoria muestra el historial mas nuevo arriba).
+   */
+  async listEvents(filter: ListAuditEventsFilter): Promise<AuditEventRecord[]> {
+    const events = await this.prisma.auditEvent.findMany({
+      where: {
+        organizationId: filter.organizationId,
+        ...(filter.actorUserId ? { actorUserId: filter.actorUserId } : {}),
+        ...(filter.entityType ? { entityType: filter.entityType } : {}),
+        ...(filter.dateFrom || filter.dateTo
+          ? {
+              createdAt: {
+                ...(filter.dateFrom ? { gte: filter.dateFrom } : {}),
+                ...(filter.dateTo ? { lte: filter.dateTo } : {}),
+              },
+            }
+          : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: filter.limit ?? 100,
+    });
+
+    return events.map((event) => ({
+      id: event.id,
+      organizationId: event.organizationId,
+      actorUserId: event.actorUserId,
+      entityType: event.entityType,
+      entityId: event.entityId,
+      action: event.action,
+      changes: (event.changes as Record<string, unknown> | null) ?? null,
+      createdAt: event.createdAt,
+    }));
   }
 }

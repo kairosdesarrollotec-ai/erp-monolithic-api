@@ -3,6 +3,7 @@ import { AdminController } from './presentation/http/admin.controller';
 import { ListOrganizationUsersHandler } from './application/queries/list-organization-users.handler';
 import { AssignUserToCompanyHandler } from './application/commands/assign-user-to-company.handler';
 import { DeactivateAssignmentHandler } from './application/commands/deactivate-assignment.handler';
+import { ListAuditEventsHandler } from './application/queries/list-audit-events.handler';
 import { AdminUserRepositoryPort } from './application/ports/admin-user-repository.port';
 import { PrismaAdminUserRepository } from './infrastructure/persistence/prisma-admin-user.repository';
 import { IdentityLookupPort } from './application/ports/identity-lookup.port';
@@ -25,6 +26,7 @@ import { AuditModule } from '../audit/audit.module';
     ListOrganizationUsersHandler,
     AssignUserToCompanyHandler,
     DeactivateAssignmentHandler,
+    ListAuditEventsHandler,
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
   ],
