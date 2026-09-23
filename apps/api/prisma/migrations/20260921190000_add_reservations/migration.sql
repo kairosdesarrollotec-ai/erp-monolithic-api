@@ -179,6 +179,18 @@ ALTER TABLE "reservations" ADD CONSTRAINT "reservations_customer_id_operating_co
 -- AddForeignKey
 ALTER TABLE "reservations" ADD CONSTRAINT "reservations_vehicle_id_operating_company_id_fkey" FOREIGN KEY ("vehicle_id", "operating_company_id") REFERENCES "vehicles"("id", "operating_company_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
+-- CreateIndex
+-- Correccion (revalidacion PR#7, 23 sep 2026): esta FK compuesta
+-- referencia companies(id, organization_id), cuya clave unica la crea
+-- 20260922000000_fix_company_organization_integrity - que corre DESPUES
+-- que esta migracion por orden de timestamp. En una base limpia (CI,
+-- entorno nuevo) `prisma migrate deploy` fallaba aqui con "there is no
+-- unique constraint matching given keys for referenced table
+-- companies". Se crea la clave aqui (IF NOT EXISTS) y la migracion
+-- posterior tambien pasa a IF NOT EXISTS, asi la cadena funciona tanto
+-- en una base limpia como en una que ya aplico ambas.
+CREATE UNIQUE INDEX IF NOT EXISTS "companies_id_organization_id_key" ON "companies"("id", "organization_id");
+
 -- AddForeignKey
 -- FK compuesta (operating_company_id, organization_id) -> companies(id,
 -- organization_id): mismo patron que company/organization desde PR#4 -
