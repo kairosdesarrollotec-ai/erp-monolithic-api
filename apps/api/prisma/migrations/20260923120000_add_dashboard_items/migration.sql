@@ -41,4 +41,4 @@ CREATE TABLE "dashboard_items" (
 CREATE UNIQUE INDEX "dashboard_items_source_event_id_item_type_key" ON "dashboard_items"("source_event_id", "item_type");
 
 -- CreateIndex
-CREATE INDEX "dashboard_items_organization_id_operating_company_id_branch_idx" ON "dashboard_items"("organization_id", "operating_company_id", "branch_id", "role", "dismissed_at", "priority");
+CREATE INDEX "dashboard_items_organization_id_operating_company_id_branc_idx" ON "dashboard_items"("organization_id", "operating_company_id", "branch_id", "role", "dismissed_at", "priority");
