@@ -4,7 +4,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { RolePermissionMatrixPort, RolePermissionMatrixSnapshot } from '../ports/role-permission-matrix.port';
 import { actionKey, INCOMPATIBLE_ACTION_PAIRS, PERMISSION_ACTION_CATALOG } from '../../domain/permission-action-catalog';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { SaveRolePermissionMatrixCommand } from './save-role-permission-matrix.command';
 import { WORKER_ROLES } from '../../../users/domain/worker-role';
 
@@ -28,6 +28,7 @@ import { WORKER_ROLES } from '../../../users/domain/worker-role';
 export class SaveRolePermissionMatrixHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly matrix: RolePermissionMatrixPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
@@ -39,7 +40,7 @@ export class SaveRolePermissionMatrixHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertAdminRoleAllowed(context.role, 'MANAGE_PERMISSIONS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_PERMISSIONS');
 
     this.assertCompleteMatrix(command.entries);
     this.assertNoIncompatibleCombinations(command.entries);

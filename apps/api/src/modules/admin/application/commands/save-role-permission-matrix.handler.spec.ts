@@ -7,6 +7,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { PERMISSION_ACTION_CATALOG } from '../../domain/permission-action-catalog';
 import { WORKER_ROLES, WorkerRole } from '../../../users/domain/worker-role';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 
 function buildCompleteEntries(
   overrides?: { role: WorkerRole; module: RolePermissionEntry['module']; action: string; allowed: boolean }[],
@@ -33,6 +34,12 @@ function buildDeps(role: WorkerRole = 'ADMINISTRACION') {
     authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
   } as unknown as WorkContextAuthorizationService;
 
+  const adminAuthorization: jest.Mocked<AdminMatrixAuthorizationService> = {
+    assertAllowed: jest.fn().mockImplementation(async () => {
+      if (role !== 'ADMINISTRACION') throw new ForbiddenException();
+    }),
+  } as any;
+
   const matrix: jest.Mocked<RolePermissionMatrixPort> = {
     getCurrentVersion: jest.fn().mockResolvedValue({ version: 3, entries: [] }),
     saveNewVersion: jest.fn().mockResolvedValue({ version: 4, entries: [] }),
@@ -46,13 +53,13 @@ function buildDeps(role: WorkerRole = 'ADMINISTRACION') {
     run: jest.fn().mockImplementation(async (work: (tx: unknown) => Promise<unknown>) => work({})),
   };
 
-  return { authorization, matrix, auditRepository, transactionManager };
+  return { authorization, adminAuthorization, matrix, auditRepository, transactionManager };
 }
 
 describe('SaveRolePermissionMatrixHandler', () => {
   it('guarda una nueva version y registra el evento de auditoria', async () => {
-    const { authorization, matrix, auditRepository, transactionManager } = buildDeps();
-    const handler = new SaveRolePermissionMatrixHandler(authorization, matrix, auditRepository, transactionManager);
+    const { authorization, adminAuthorization, matrix, auditRepository, transactionManager } = buildDeps();
+    const handler = new SaveRolePermissionMatrixHandler(authorization, adminAuthorization, matrix, auditRepository, transactionManager);
 
     const result = await handler.execute(
       new SaveRolePermissionMatrixCommand('uid-admin', 'company-1', 'branch-1', buildCompleteEntries()),
@@ -67,8 +74,8 @@ describe('SaveRolePermissionMatrixHandler', () => {
   });
 
   it('rechaza cuando el rol autorizado no es ADMINISTRACION', async () => {
-    const { authorization, matrix, auditRepository, transactionManager } = buildDeps('FRONT_OFFICE');
-    const handler = new SaveRolePermissionMatrixHandler(authorization, matrix, auditRepository, transactionManager);
+    const { authorization, adminAuthorization, matrix, auditRepository, transactionManager } = buildDeps('FRONT_OFFICE');
+    const handler = new SaveRolePermissionMatrixHandler(authorization, adminAuthorization, matrix, auditRepository, transactionManager);
 
     await expect(
       handler.execute(new SaveRolePermissionMatrixCommand('uid-1', 'company-1', 'branch-1', buildCompleteEntries())),
@@ -77,8 +84,8 @@ describe('SaveRolePermissionMatrixHandler', () => {
   });
 
   it('rechaza una matriz incompleta', async () => {
-    const { authorization, matrix, auditRepository, transactionManager } = buildDeps();
-    const handler = new SaveRolePermissionMatrixHandler(authorization, matrix, auditRepository, transactionManager);
+    const { authorization, adminAuthorization, matrix, auditRepository, transactionManager } = buildDeps();
+    const handler = new SaveRolePermissionMatrixHandler(authorization, adminAuthorization, matrix, auditRepository, transactionManager);
     const incomplete = buildCompleteEntries().slice(1);
 
     await expect(
@@ -88,8 +95,8 @@ describe('SaveRolePermissionMatrixHandler', () => {
   });
 
   it('rechaza combinaciones incompatibles de segregacion de funciones', async () => {
-    const { authorization, matrix, auditRepository, transactionManager } = buildDeps();
-    const handler = new SaveRolePermissionMatrixHandler(authorization, matrix, auditRepository, transactionManager);
+    const { authorization, adminAuthorization, matrix, auditRepository, transactionManager } = buildDeps();
+    const handler = new SaveRolePermissionMatrixHandler(authorization, adminAuthorization, matrix, auditRepository, transactionManager);
     const conflicting = buildCompleteEntries([
       { role: 'FRONT_OFFICE', module: 'RESERVATION', action: 'REGISTER_PAYMENT', allowed: true },
       { role: 'FRONT_OFFICE', module: 'RESERVATION', action: 'CONFIRM', allowed: true },

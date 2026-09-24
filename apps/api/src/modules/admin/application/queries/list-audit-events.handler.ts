@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { AuditEventQueryPort } from '../../../audit/application/ports/audit-event-query.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { ListAuditEventsQuery } from './list-audit-events.query';
 
 export interface AuditEventResult {
@@ -35,6 +35,7 @@ export interface AuditEventResult {
 export class ListAuditEventsHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly auditEvents: AuditEventQueryPort,
     private readonly identity: IdentityLookupPort,
   ) {}
@@ -45,7 +46,7 @@ export class ListAuditEventsHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    assertAdminRoleAllowed(context.role, 'VIEW_AUDIT');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'VIEW_AUDIT');
 
     const events = await this.auditEvents.listEvents({
       organizationId: context.organizationId,

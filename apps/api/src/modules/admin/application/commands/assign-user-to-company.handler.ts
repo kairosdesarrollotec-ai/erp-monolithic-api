@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
 import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
@@ -22,6 +22,7 @@ import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
 export class AssignUserToCompanyHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly adminUsers: AdminUserRepositoryPort,
     private readonly identity: IdentityLookupPort,
     private readonly auditRepository: AuditEventRepositoryPort,
@@ -34,7 +35,7 @@ export class AssignUserToCompanyHandler {
       companyId: command.actorCompanyId,
       branchId: command.actorBranchId,
     });
-    assertAdminRoleAllowed(context.role, 'MANAGE_USERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_USERS');
 
     const targetUid = await this.identity.findUidByEmail(command.targetEmail);
     if (!targetUid) {

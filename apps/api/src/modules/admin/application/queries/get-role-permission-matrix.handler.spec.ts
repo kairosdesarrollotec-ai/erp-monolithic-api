@@ -3,12 +3,21 @@ import { GetRolePermissionMatrixHandler } from './get-role-permission-matrix.han
 import { GetRolePermissionMatrixQuery } from './get-role-permission-matrix.query';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { RolePermissionMatrixPort } from '../ports/role-permission-matrix.port';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
 function buildAuthorization(role: WorkerRole = 'ADMINISTRACION') {
   return {
     authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
   } as unknown as WorkContextAuthorizationService;
+}
+
+function buildAdminAuthorization(allowed = true) {
+  return {
+    assertAllowed: jest.fn().mockImplementation(async () => {
+      if (!allowed) throw new ForbiddenException();
+    }),
+  } as unknown as AdminMatrixAuthorizationService;
 }
 
 function buildMatrix() {
@@ -26,7 +35,7 @@ describe('GetRolePermissionMatrixHandler', () => {
   it('devuelve la matriz vigente junto con el catalogo de acciones', async () => {
     const authorization = buildAuthorization();
     const matrix = buildMatrix();
-    const handler = new GetRolePermissionMatrixHandler(authorization, matrix);
+    const handler = new GetRolePermissionMatrixHandler(authorization, buildAdminAuthorization(true), matrix);
 
     const result = await handler.execute(new GetRolePermissionMatrixQuery('uid-admin', 'company-1', 'branch-1'));
 
@@ -38,7 +47,7 @@ describe('GetRolePermissionMatrixHandler', () => {
 
   it('rechaza cuando el rol autorizado no es ADMINISTRACION', async () => {
     const authorization = buildAuthorization('FRONT_OFFICE');
-    const handler = new GetRolePermissionMatrixHandler(authorization, buildMatrix());
+    const handler = new GetRolePermissionMatrixHandler(authorization, buildAdminAuthorization(false), buildMatrix());
 
     await expect(
       handler.execute(new GetRolePermissionMatrixQuery('uid-1', 'company-1', 'branch-1')),

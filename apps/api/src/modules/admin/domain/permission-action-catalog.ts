@@ -26,6 +26,8 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'ADMIN', action: 'MANAGE_USERS', label: 'Administración: gestionar usuarios' },
   { module: 'ADMIN', action: 'VIEW_AUDIT', label: 'Administración: ver auditoría' },
   { module: 'ADMIN', action: 'MANAGE_PARAMETERS', label: 'Administración: gestionar parámetros' },
+  { module: 'ADMIN', action: 'MANAGE_PERMISSIONS', label: 'Administración: gestionar permisos' },
+  { module: 'ADMIN', action: 'MANAGE_NOTIFICATIONS', label: 'Administración: gestionar notificaciones' },
 ];
 
 /**

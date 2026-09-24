@@ -4,6 +4,7 @@ import { ListAuditEventsQuery } from './list-audit-events.query';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { AuditEventQueryPort, AuditEventRecord } from '../../../audit/application/ports/audit-event-query.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
 function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error) {
@@ -12,6 +13,14 @@ function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error
       ? jest.fn().mockRejectedValue(rejects)
       : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
   } as unknown as WorkContextAuthorizationService;
+}
+
+function buildAdminAuthorization(allowed = true) {
+  return {
+    assertAllowed: jest.fn().mockImplementation(async () => {
+      if (!allowed) throw new ForbiddenException();
+    }),
+  } as unknown as AdminMatrixAuthorizationService;
 }
 
 function buildAuditEvents(records: AuditEventRecord[] = []) {
@@ -44,7 +53,7 @@ describe('ListAuditEventsHandler', () => {
     };
     const auditEvents = buildAuditEvents([record]);
     const identity = buildIdentity({ 'uid-1': 'admin@veloxrent.pe' });
-    const handler = new ListAuditEventsHandler(authorization, auditEvents, identity);
+    const handler = new ListAuditEventsHandler(authorization, buildAdminAuthorization(true), auditEvents, identity);
 
     const result = await handler.execute(new ListAuditEventsQuery('uid-admin', 'company-1', 'branch-1'));
 
@@ -74,7 +83,7 @@ describe('ListAuditEventsHandler', () => {
     const authorization = buildAuthorization();
     const auditEvents = buildAuditEvents([]);
     const identity = buildIdentity();
-    const handler = new ListAuditEventsHandler(authorization, auditEvents, identity);
+    const handler = new ListAuditEventsHandler(authorization, buildAdminAuthorization(true), auditEvents, identity);
 
     await handler.execute(
       new ListAuditEventsQuery(
@@ -99,7 +108,7 @@ describe('ListAuditEventsHandler', () => {
 
   it('permite el rol Auditoria ademas de Administracion (VIEW_AUDIT)', async () => {
     const authorization = buildAuthorization('AUDITORIA');
-    const handler = new ListAuditEventsHandler(authorization, buildAuditEvents([]), buildIdentity());
+    const handler = new ListAuditEventsHandler(authorization, buildAdminAuthorization(true), buildAuditEvents([]), buildIdentity());
 
     await expect(
       handler.execute(new ListAuditEventsQuery('uid-1', 'company-1', 'branch-1')),
@@ -108,7 +117,7 @@ describe('ListAuditEventsHandler', () => {
 
   it('rechaza cuando el rol autorizado no es Administracion ni Auditoria', async () => {
     const authorization = buildAuthorization('FRONT_OFFICE');
-    const handler = new ListAuditEventsHandler(authorization, buildAuditEvents([]), buildIdentity());
+    const handler = new ListAuditEventsHandler(authorization, buildAdminAuthorization(false), buildAuditEvents([]), buildIdentity());
 
     await expect(
       handler.execute(new ListAuditEventsQuery('uid-1', 'company-1', 'branch-1')),
@@ -119,7 +128,7 @@ describe('ListAuditEventsHandler', () => {
     const authorization = buildAuthorization();
     const auditEvents = buildAuditEvents([]);
     const identity = buildIdentity();
-    const handler = new ListAuditEventsHandler(authorization, auditEvents, identity);
+    const handler = new ListAuditEventsHandler(authorization, buildAdminAuthorization(true), auditEvents, identity);
 
     const result = await handler.execute(new ListAuditEventsQuery('uid-admin', 'company-1', 'branch-1'));
 
@@ -141,7 +150,7 @@ describe('ListAuditEventsHandler', () => {
     };
     const auditEvents = buildAuditEvents([record]);
     const identity = buildIdentity();
-    const handler = new ListAuditEventsHandler(authorization, auditEvents, identity);
+    const handler = new ListAuditEventsHandler(authorization, buildAdminAuthorization(true), auditEvents, identity);
 
     const result = await handler.execute(new ListAuditEventsQuery('uid-admin', 'company-1', 'branch-1'));
 

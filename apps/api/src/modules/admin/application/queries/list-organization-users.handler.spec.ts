@@ -4,6 +4,7 @@ import { ListOrganizationUsersQuery } from './list-organization-users.query';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { AdminUserRepositoryPort, AdminAssignmentRecord } from '../ports/admin-user-repository.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
 function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error) {
@@ -14,12 +15,21 @@ function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error
   } as unknown as WorkContextAuthorizationService;
 }
 
+function buildAdminAuthorization(allowed = true) {
+  return {
+    assertAllowed: jest.fn().mockImplementation(async () => {
+      if (!allowed) throw new ForbiddenException();
+    }),
+  } as unknown as AdminMatrixAuthorizationService;
+}
+
 function buildAdminUsers(records: AdminAssignmentRecord[] = []) {
   const repo: jest.Mocked<AdminUserRepositoryPort> = {
     listAssignmentsByOrganization: jest.fn().mockResolvedValue(records),
     findCompanyBranchOwnership: jest.fn(),
     createOrReactivateAssignment: jest.fn(),
     deactivateAssignment: jest.fn(),
+    countActiveByRole: jest.fn(),
   };
   return repo;
 }
@@ -48,7 +58,7 @@ describe('ListOrganizationUsersHandler', () => {
     };
     const adminUsers = buildAdminUsers([record]);
     const identity = buildIdentity({ 'uid-1': 'usuario@veloxrent.pe' });
-    const handler = new ListOrganizationUsersHandler(authorization, adminUsers, identity);
+    const handler = new ListOrganizationUsersHandler(authorization, buildAdminAuthorization(true), adminUsers, identity);
 
     const result = await handler.execute(new ListOrganizationUsersQuery('uid-admin', 'company-1', 'branch-1'));
 
@@ -72,7 +82,7 @@ describe('ListOrganizationUsersHandler', () => {
 
   it('rechaza cuando el rol autorizado no es ADMINISTRACION', async () => {
     const authorization = buildAuthorization('FRONT_OFFICE');
-    const handler = new ListOrganizationUsersHandler(authorization, buildAdminUsers(), buildIdentity());
+    const handler = new ListOrganizationUsersHandler(authorization, buildAdminAuthorization(false), buildAdminUsers(), buildIdentity());
 
     await expect(
       handler.execute(new ListOrganizationUsersQuery('uid-1', 'company-1', 'branch-1')),
@@ -81,7 +91,7 @@ describe('ListOrganizationUsersHandler', () => {
 
   it('propaga el 403 de la autorizacion cuando la combinacion empresa/sede no es vigente', async () => {
     const authorization = buildAuthorization('ADMINISTRACION', new ForbiddenException());
-    const handler = new ListOrganizationUsersHandler(authorization, buildAdminUsers(), buildIdentity());
+    const handler = new ListOrganizationUsersHandler(authorization, buildAdminAuthorization(true), buildAdminUsers(), buildIdentity());
 
     await expect(
       handler.execute(new ListOrganizationUsersQuery('uid-1', 'company-ajena', 'branch-ajena')),
@@ -92,7 +102,7 @@ describe('ListOrganizationUsersHandler', () => {
     const authorization = buildAuthorization();
     const adminUsers = buildAdminUsers([]);
     const identity = buildIdentity();
-    const handler = new ListOrganizationUsersHandler(authorization, adminUsers, identity);
+    const handler = new ListOrganizationUsersHandler(authorization, buildAdminAuthorization(true), adminUsers, identity);
 
     const result = await handler.execute(new ListOrganizationUsersQuery('uid-admin', 'company-1', 'branch-1'));
 

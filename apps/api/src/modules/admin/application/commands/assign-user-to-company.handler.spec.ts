@@ -6,6 +6,7 @@ import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
 const FAKE_TX = { __fakeTx: true } as any;
@@ -24,11 +25,18 @@ function buildDeps(opts: {
       : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
+  const adminAuthorization: jest.Mocked<AdminMatrixAuthorizationService> = {
+    assertAllowed: jest.fn().mockImplementation(async () => {
+      if (role !== 'ADMINISTRACION') throw new ForbiddenException();
+    }),
+  } as any;
+
   const adminUsers: jest.Mocked<AdminUserRepositoryPort> = {
     listAssignmentsByOrganization: jest.fn(),
     findCompanyBranchOwnership: jest.fn().mockResolvedValue(ownership),
     createOrReactivateAssignment: jest.fn().mockResolvedValue({ id: 'assign-1' }),
     deactivateAssignment: jest.fn(),
+    countActiveByRole: jest.fn(),
   };
 
   const identity: jest.Mocked<IdentityLookupPort> = {
@@ -48,7 +56,7 @@ function buildDeps(opts: {
     run: jest.fn((work: any) => work(FAKE_TX)),
   };
 
-  return { workContext, adminUsers, identity, audit, transactionManager };
+  return { workContext, adminAuthorization, adminUsers, identity, audit, transactionManager };
 }
 
 function buildCommand(overrides: Partial<AssignUserToCompanyCommand> = {}) {
@@ -65,8 +73,8 @@ function buildCommand(overrides: Partial<AssignUserToCompanyCommand> = {}) {
 
 describe('AssignUserToCompanyHandler', () => {
   it('crea o reactiva la asignacion y registra la auditoria administrativa dentro de la misma transaccion', async () => {
-    const { workContext, adminUsers, identity, audit, transactionManager } = buildDeps();
-    const handler = new AssignUserToCompanyHandler(workContext, adminUsers, identity, audit, transactionManager);
+    const { workContext, adminAuthorization, adminUsers, identity, audit, transactionManager } = buildDeps();
+    const handler = new AssignUserToCompanyHandler(workContext, adminAuthorization, adminUsers, identity, audit, transactionManager);
 
     const result = await handler.execute(buildCommand());
 
@@ -95,23 +103,23 @@ describe('AssignUserToCompanyHandler', () => {
   });
 
   it('rechaza cuando el rol autorizado no es ADMINISTRACION', async () => {
-    const { workContext, adminUsers, identity, audit, transactionManager } = buildDeps({ role: 'FRONT_OFFICE' });
-    const handler = new AssignUserToCompanyHandler(workContext, adminUsers, identity, audit, transactionManager);
+    const { workContext, adminAuthorization, adminUsers, identity, audit, transactionManager } = buildDeps({ role: 'FRONT_OFFICE' });
+    const handler = new AssignUserToCompanyHandler(workContext, adminAuthorization, adminUsers, identity, audit, transactionManager);
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(ForbiddenException);
     expect(adminUsers.createOrReactivateAssignment).not.toHaveBeenCalled();
   });
 
   it('propaga el 403 de autorizacion cuando la empresa/sede del actor no es vigente', async () => {
-    const { workContext, adminUsers, identity, audit, transactionManager } = buildDeps({ forbidden: true });
-    const handler = new AssignUserToCompanyHandler(workContext, adminUsers, identity, audit, transactionManager);
+    const { workContext, adminAuthorization, adminUsers, identity, audit, transactionManager } = buildDeps({ forbidden: true });
+    const handler = new AssignUserToCompanyHandler(workContext, adminAuthorization, adminUsers, identity, audit, transactionManager);
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('rechaza con USER_NOT_FOUND_IN_IDENTITY_PROVIDER si el correo no existe en Firebase', async () => {
-    const { workContext, adminUsers, identity, audit, transactionManager } = buildDeps({ targetUid: null });
-    const handler = new AssignUserToCompanyHandler(workContext, adminUsers, identity, audit, transactionManager);
+    const { workContext, adminAuthorization, adminUsers, identity, audit, transactionManager } = buildDeps({ targetUid: null });
+    const handler = new AssignUserToCompanyHandler(workContext, adminAuthorization, adminUsers, identity, audit, transactionManager);
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(NotFoundException);
     expect(adminUsers.findCompanyBranchOwnership).not.toHaveBeenCalled();
@@ -119,8 +127,8 @@ describe('AssignUserToCompanyHandler', () => {
   });
 
   it('rechaza con COMPANY_BRANCH_NOT_IN_ORGANIZATION si la empresa/sede destino no pertenece a la organizacion (IDOR)', async () => {
-    const { workContext, adminUsers, identity, audit, transactionManager } = buildDeps({ ownership: null });
-    const handler = new AssignUserToCompanyHandler(workContext, adminUsers, identity, audit, transactionManager);
+    const { workContext, adminAuthorization, adminUsers, identity, audit, transactionManager } = buildDeps({ ownership: null });
+    const handler = new AssignUserToCompanyHandler(workContext, adminAuthorization, adminUsers, identity, audit, transactionManager);
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(BadRequestException);
     expect(adminUsers.createOrReactivateAssignment).not.toHaveBeenCalled();

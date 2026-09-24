@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { GetReservationDepositPolicyQuery } from './get-reservation-deposit-policy.query';
 
 export interface ReservationDepositPolicyResult {
@@ -20,6 +20,7 @@ export interface ReservationDepositPolicyResult {
 export class GetReservationDepositPolicyHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly depositPolicy: ReservationDepositPolicyPort,
   ) {}
 
@@ -31,7 +32,7 @@ export class GetReservationDepositPolicyHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    assertAdminRoleAllowed(context.role, 'MANAGE_PARAMETERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_PARAMETERS');
 
     const [current, history] = await Promise.all([
       this.depositPolicy.getCurrent(context.organizationId),

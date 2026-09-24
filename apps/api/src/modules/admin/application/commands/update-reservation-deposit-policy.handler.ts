@@ -3,7 +3,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { UpdateReservationDepositPolicyCommand } from './update-reservation-deposit-policy.command';
 import { ReservationDepositPolicyResult } from '../queries/get-reservation-deposit-policy.handler';
 
@@ -21,6 +21,7 @@ import { ReservationDepositPolicyResult } from '../queries/get-reservation-depos
 export class UpdateReservationDepositPolicyHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly depositPolicy: ReservationDepositPolicyPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
@@ -32,7 +33,7 @@ export class UpdateReservationDepositPolicyHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertAdminRoleAllowed(context.role, 'MANAGE_PARAMETERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_PARAMETERS');
 
     const amount = Number(command.amount);
     if (!Number.isFinite(amount) || amount <= 0) {

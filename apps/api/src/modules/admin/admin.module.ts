@@ -20,6 +20,7 @@ import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { ParametersModule } from '../parameters/parameters.module';
 import { NotificationTemplatesModule } from '../notification-templates/notification-templates.module';
+import { AdminMatrixAuthorizationService } from './application/services/admin-matrix-authorization.service';
 
 /**
  * ADM-01 (Usuarios y asignaciones). Primera pantalla real del rol
@@ -43,6 +44,7 @@ import { NotificationTemplatesModule } from '../notification-templates/notificat
     SaveRolePermissionMatrixHandler,
     GetNotificationTemplatesHandler,
     SaveNotificationTemplateHandler,
+    AdminMatrixAuthorizationService,
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
     { provide: RolePermissionMatrixPort, useClass: PrismaRolePermissionMatrixRepository },

@@ -3,7 +3,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { NotificationTemplatePort, NotificationTemplateSnapshot } from '../../../notification-templates/application/ports/notification-template.port';
 import { NOTIFICATION_EVENT_CATALOG } from '../../../notification-templates/domain/notification-event-catalog';
 import { ALLOWED_NOTIFICATION_VARIABLES, NOTIFICATION_CHANNELS } from '../../../notification-templates/domain/notification-variable-catalog';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { GetNotificationTemplatesQuery } from './get-notification-templates.query';
 
 export interface NotificationTemplateResult {
@@ -29,6 +29,7 @@ export interface NotificationTemplatesResult {
 export class GetNotificationTemplatesHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly templates: NotificationTemplatePort,
   ) {}
 
@@ -38,7 +39,7 @@ export class GetNotificationTemplatesHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    assertAdminRoleAllowed(context.role, 'MANAGE_NOTIFICATIONS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_NOTIFICATIONS');
 
     const templates = await Promise.all(
       NOTIFICATION_EVENT_CATALOG.map(async (descriptor) => {

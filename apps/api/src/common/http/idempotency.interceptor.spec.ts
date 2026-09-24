@@ -136,4 +136,16 @@ describe('IdempotencyInterceptor', () => {
 
     expect(port.claim).toHaveBeenCalledWith(expect.objectContaining({ key: 'uid-2:key-1' }));
   });
+
+  it('si el comando tiene exito pero complete() falla, NO libera la clave (evita duplicar el efecto en un reintento) y de todas formas responde con exito al cliente', async () => {
+    const port = buildPort({ status: 'CLAIMED' });
+    port.complete.mockRejectedValue(new Error('fallo de base de datos al completar'));
+    const next = { handle: jest.fn().mockReturnValue(of({ id: 'res-1' })) };
+
+    const ctx = buildContext({ headers: { 'idempotency-key': 'key-1' } });
+    const result = await firstValueFrom(await new IdempotencyInterceptor(port).intercept(ctx, next as any));
+
+    expect(result).toEqual({ id: 'res-1' });
+    expect(port.release).not.toHaveBeenCalled();
+  });
 });

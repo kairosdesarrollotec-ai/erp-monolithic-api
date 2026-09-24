@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
 import { ListOrganizationUsersQuery } from './list-organization-users.query';
@@ -29,6 +29,7 @@ export interface OrganizationUserAssignmentResult {
 export class ListOrganizationUsersHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly adminUsers: AdminUserRepositoryPort,
     private readonly identity: IdentityLookupPort,
   ) {}
@@ -39,7 +40,7 @@ export class ListOrganizationUsersHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    assertAdminRoleAllowed(context.role, 'MANAGE_USERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_USERS');
 
     const assignments = await this.adminUsers.listAssignmentsByOrganization(context.organizationId);
     if (assignments.length === 0) return [];

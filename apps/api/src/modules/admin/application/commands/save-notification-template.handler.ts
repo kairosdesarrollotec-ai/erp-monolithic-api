@@ -5,7 +5,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { NotificationTemplatePort, NotificationTemplateSnapshot } from '../../../notification-templates/application/ports/notification-template.port';
 import { isKnownEventType } from '../../../notification-templates/domain/notification-event-catalog';
 import { findUnsafeVariables } from '../../../notification-templates/domain/notification-variable-catalog';
-import { assertAdminRoleAllowed } from '../policies/admin-role-policy';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { SaveNotificationTemplateCommand } from './save-notification-template.command';
 
 /**
@@ -26,6 +26,7 @@ import { SaveNotificationTemplateCommand } from './save-notification-template.co
 export class SaveNotificationTemplateHandler {
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly templates: NotificationTemplatePort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
@@ -37,7 +38,7 @@ export class SaveNotificationTemplateHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertAdminRoleAllowed(context.role, 'MANAGE_NOTIFICATIONS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_NOTIFICATIONS');
 
     if (!isKnownEventType(command.eventType)) {
       throw new BadRequestException({

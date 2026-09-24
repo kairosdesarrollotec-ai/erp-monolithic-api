@@ -1,6 +1,6 @@
-import { CallHandler, ConflictException, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ConflictException, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable, from, of, throwError } from 'rxjs';
-import { catchError, concatMap } from 'rxjs/operators';
+import { catchError, concatMap, map } from 'rxjs/operators';
 import { createHash } from 'crypto';
 import { IdempotencyPort } from '../application/ports/idempotency.port';
 
@@ -37,6 +37,8 @@ export const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000; // 24h - cubre reintentos
  */
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(IdempotencyInterceptor.name);
+
   constructor(private readonly idempotency: IdempotencyPort) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
@@ -72,19 +74,21 @@ export class IdempotencyInterceptor implements NestInterceptor {
     }
 
     return next.handle().pipe(
-      concatMap((responseBody) =>
-        from(
-          this.idempotency
-            .complete({
-              key: scopedKey,
-              statusCode: context.switchToHttp().getResponse().statusCode ?? 200,
-              responseBody,
-            })
-            .then(() => responseBody),
-        ),
-      ),
-      catchError((error) =>
-        from(this.idempotency.release(scopedKey)).pipe(concatMap(() => throwError(() => error))),
+      concatMap((responseBody) => {
+        const statusCode = context.switchToHttp().getResponse().statusCode ?? 200;
+        return from(this.idempotency.complete({ key: scopedKey, statusCode, responseBody })).pipe(
+          map(() => responseBody),
+          catchError((completeError) => {
+            this.logger.error(
+              `No se pudo completar la clave de idempotencia ${scopedKey} tras ejecutar el comando con exito - la clave NO se libera para evitar un reintento duplicado. Requiere reconciliacion manual.`,
+              completeError as Error,
+            );
+            return of(responseBody);
+          }),
+        );
+      }),
+      catchError((handlerError) =>
+        from(this.idempotency.release(scopedKey)).pipe(concatMap(() => throwError(() => handlerError))),
       ),
     );
   }

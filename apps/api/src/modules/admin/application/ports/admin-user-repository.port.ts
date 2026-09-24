@@ -74,5 +74,20 @@ export abstract class AdminUserRepositoryPort {
     id: string,
     organizationId: string,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ firebaseUid: string } | null>;
+  ): Promise<{ firebaseUid: string; role: WorkerRole } | null>;
+
+  /**
+   * Cuenta las asignaciones activas con el rol dado en la organizacion
+   * (hallazgo ALTO de revalidacion PR#7, "ultimo administrador"): antes
+   * de dar de baja una asignacion ADMINISTRACION hay que saber si es la
+   * unica que queda, para no dejar la organizacion sin nadie que pueda
+   * gestionar usuarios/permisos. Debe leerse dentro de la misma
+   * transaccion Serializable que la baja, para evitar la carrera de dos
+   * bajas concurrentes dejando 0 administradores.
+   */
+  abstract countActiveByRole(
+    organizationId: string,
+    role: WorkerRole,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number>;
 }

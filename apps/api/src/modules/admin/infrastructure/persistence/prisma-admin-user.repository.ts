@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
+import type { WorkerRole } from '../../../users/domain/worker-role';
 import {
   AdminAssignmentRecord,
   AdminUserRepositoryPort,
@@ -110,11 +111,11 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
     id: string,
     organizationId: string,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ firebaseUid: string } | null> {
+  ): Promise<{ firebaseUid: string; role: WorkerRole } | null> {
     const client = tx ?? this.prisma;
     const existing = await client.userCompanyAssignment.findFirst({
       where: { id, organizationId },
-      select: { firebaseUid: true },
+      select: { firebaseUid: true, role: true },
     });
     if (!existing) return null;
 
@@ -122,6 +123,13 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
       where: { id, organizationId },
       data: { active: false, validUntil: new Date() },
     });
-    return { firebaseUid: existing.firebaseUid };
+    return { firebaseUid: existing.firebaseUid, role: existing.role };
+  }
+
+  async countActiveByRole(organizationId: string, role: WorkerRole, tx?: Prisma.TransactionClient): Promise<number> {
+    const client = tx ?? this.prisma;
+    return client.userCompanyAssignment.count({
+      where: { organizationId, role, active: true },
+    });
   }
 }

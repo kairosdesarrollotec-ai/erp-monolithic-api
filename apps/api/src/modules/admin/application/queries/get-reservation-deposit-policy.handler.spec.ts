@@ -3,6 +3,7 @@ import { GetReservationDepositPolicyHandler } from './get-reservation-deposit-po
 import { GetReservationDepositPolicyQuery } from './get-reservation-deposit-policy.query';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
+import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
 function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error) {
@@ -11,6 +12,14 @@ function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error
       ? jest.fn().mockRejectedValue(rejects)
       : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
   } as unknown as WorkContextAuthorizationService;
+}
+
+function buildAdminAuthorization(allowed = true) {
+  return {
+    assertAllowed: jest.fn().mockImplementation(async () => {
+      if (!allowed) throw new ForbiddenException();
+    }),
+  } as unknown as AdminMatrixAuthorizationService;
 }
 
 function buildDepositPolicy() {
@@ -29,7 +38,7 @@ describe('GetReservationDepositPolicyHandler', () => {
   it('devuelve la version vigente y el historial completo', async () => {
     const authorization = buildAuthorization();
     const depositPolicy = buildDepositPolicy();
-    const handler = new GetReservationDepositPolicyHandler(authorization, depositPolicy);
+    const handler = new GetReservationDepositPolicyHandler(authorization, buildAdminAuthorization(true), depositPolicy);
 
     const result = await handler.execute(new GetReservationDepositPolicyQuery('uid-admin', 'company-1', 'branch-1'));
 
@@ -42,7 +51,7 @@ describe('GetReservationDepositPolicyHandler', () => {
 
   it('rechaza cuando el rol autorizado no es ADMINISTRACION', async () => {
     const authorization = buildAuthorization('FRONT_OFFICE');
-    const handler = new GetReservationDepositPolicyHandler(authorization, buildDepositPolicy());
+    const handler = new GetReservationDepositPolicyHandler(authorization, buildAdminAuthorization(false), buildDepositPolicy());
 
     await expect(
       handler.execute(new GetReservationDepositPolicyQuery('uid-1', 'company-1', 'branch-1')),
