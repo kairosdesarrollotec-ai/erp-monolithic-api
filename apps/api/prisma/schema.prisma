@@ -50,7 +50,23 @@ model OutboxEvent {
   createdAt     DateTime  @default(now()) @map("created_at")
   processedAt   DateTime? @map("processed_at")
 
+  /// Hallazgo ALTO de revalidacion PR#7 ("outbox sin fiabilidad real",
+  /// ver migracion 20260924020000_outbox_event_reliability): `attempts`
+  /// respalda el backoff exponencial, `lockedUntil` es el arriendo
+  /// (lease) que hace seguro reclamar eventos entre replicas (claim
+  /// atomico via SQL crudo, no expuesto como metodo tipado de Prisma
+  /// Client todavia), `lastError` es el motivo del ultimo fallo (para
+  /// diagnostico manual) y `deadLetteredAt` marca un evento que agoto
+  /// sus reintentos - deja de reclamarse pero NUNCA se borra (requiere
+  /// intervencion manual, mismo criterio de nunca perder historial que
+  /// el resto del backend).
+  attempts       Int       @default(0)
+  lockedUntil    DateTime? @map("locked_until")
+  lastError      String?   @map("last_error")
+  deadLetteredAt DateTime? @map("dead_lettered_at")
+
   @@index([processedAt])
+  @@index([aggregateType, processedAt, deadLetteredAt, lockedUntil, createdAt], map: "outbox_events_claim_idx")
   @@map("outbox_events")
 }
 
