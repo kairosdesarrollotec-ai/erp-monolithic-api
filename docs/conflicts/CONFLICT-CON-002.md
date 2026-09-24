@@ -1,0 +1,11 @@
+# CONFLICT-CON-002
+
+- Fuentes en conflicto: [TDD-CON-001 v2.0 secciones 9.2 y 11.1 (tabla `inquiries` y body de `POST /inquiries` solo con canal, cliente opcional y uso turistico), BDD-CON-001 v1.8 seccion 8.3 (DAT-CON-002 nacionalidad y DAT-CON-003 destino/tiempo estimado: obligatorios "siempre") + PANTALLAS-V3-B-CONSULTA.md CON-02 punto 6 (captura nombre, documento, nacionalidad, uso, destino, periodo, personas) y punto 15 ("todo lo que aqui se ingresa se hereda hacia adelante sin volver a pedirse") + SC-CON-001.03 (fecha de ingreso al pais para extranjeros)]
+- Descripcion: el modelo fisico y el contrato HTTP del TDD no persisten datos que el BDD declara obligatorios y que CON-02 captura. Sin persistirlos, CON-04 no puede reconstruir la consulta y se rompe la trazabilidad UX-BDD-TDD. Hallazgo ALTO de la revalidacion de PR#7 (`d7a6124`): "persiste la brecha contractual con CON-02 ... resolver formalmente la contradiccion y persistir el snapshot".
+- Alcance afectado: `inquiries` (schema.prisma + migracion 20260923000000), RegisterInquiryDto, inquiries.yaml (RegisterInquiryRequest, InquirySummaryResponse), erp-portal-web CON-02 (hoy guarda esos datos solo en un borrador local).
+- Pregunta concreta: ¿Se aprueba actualizar TDD-CON-001 9.2/11.1 para incluir el snapshot de CON-02 tal como quedo implementado (prospect_name, prospect_document_type/number, nationality, destination, estimated_days, travel_start_date, party_size, country_entry_date), o el snapshot debe vivir en otra entidad (p.ej. un prospecto/cliente de Customers)?
+- Alternativas y consecuencias:
+  1. (Aplicada en PR#7, siguiendo la jerarquia de CLAUDE.md: el BDD gobierna los datos obligatorios y UX/UI los campos) Snapshot como columnas de `inquiries`, obligatorio para consultas nuevas via CHECK `inquiries_con02_snapshot_check`; el tercer requisito documental (BR-CON-004) se deriva de la nacionalidad, no se guarda. Consecuencia: TDD-CON-001 debe actualizarse para reflejarlo.
+  2. Snapshot en una entidad de prospecto del futuro modulo Customers. Consecuencia: depende de un modulo no construido; la migracion de datos seria posterior.
+- Estado: OPEN (implementacion interina aplicada, falta la actualizacion formal del TDD)
+- Resolucion (si aplica): pendiente de aprobacion de Eder Ramos (Tech Lead) - registrar en docs/decision-log.md.

@@ -18,10 +18,8 @@
 -- empresa referenciada ahora es un error de integridad referencial a
 -- nivel de base de datos, no solo una validacion de aplicacion.
 
--- CreateIndex (soporte de la FK compuesta de abajo). IF NOT EXISTS desde
--- el 23 sep 2026: 20260921190000_add_reservations ya la crea antes (ver
--- nota alli) para que la cadena funcione en una base limpia.
-CREATE UNIQUE INDEX IF NOT EXISTS "companies_id_organization_id_key" ON "companies"("id", "organization_id");
+-- CreateIndex (soporte de la FK compuesta de abajo)
+CREATE UNIQUE INDEX "companies_id_organization_id_key" ON "companies"("id", "organization_id");
 
 -- DropForeignKey (FK simple insuficiente que esta migracion reemplaza)
 ALTER TABLE "user_company_assignments" DROP CONSTRAINT "user_company_assignments_company_id_fkey";

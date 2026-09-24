@@ -28,14 +28,14 @@ datasource db {
 /// guarda null y se completa mas adelante si en el futuro el
 /// interceptor se reubica despues de la autorizacion.
 model IdempotencyKey {
-  id             String    @id @default(uuid())
-  key            String    @unique
-  organizationId String?   @map("organization_id")
-  requestHash    String    @map("request_hash")
-  responseBody   Json?     @map("response_body")
-  statusCode     Int?      @map("status_code")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  expiresAt      DateTime  @map("expires_at")
+  id             String   @id @default(uuid())
+  key            String   @unique
+  organizationId String?  @map("organization_id")
+  requestHash    String   @map("request_hash")
+  responseBody   Json?    @map("response_body")
+  statusCode     Int?     @map("status_code")
+  createdAt      DateTime @default(now()) @map("created_at")
+  expiresAt      DateTime @map("expires_at")
 
   @@map("idempotency_keys")
 }
@@ -50,12 +50,136 @@ model OutboxEvent {
   createdAt     DateTime  @default(now()) @map("created_at")
   processedAt   DateTime? @map("processed_at")
 
+  /// Hallazgo ALTO de revalidacion PR#7 ("outbox sin fiabilidad real",
+  /// ver migracion 20260924020000_outbox_event_reliability): `attempts`
+  /// respalda el backoff exponencial, `lockedUntil` es el arriendo
+  /// (lease) que hace seguro reclamar eventos entre replicas (claim
+  /// atomico via SQL crudo, no expuesto como metodo tipado de Prisma
+  /// Client todavia), `lastError` es el motivo del ultimo fallo (para
+  /// diagnostico manual) y `deadLetteredAt` marca un evento que agoto
+  /// sus reintentos - deja de reclamarse pero NUNCA se borra (requiere
+  /// intervencion manual, mismo criterio de nunca perder historial que
+  /// el resto del backend).
+  attempts       Int       @default(0)
+  lockedUntil    DateTime? @map("locked_until")
+  lastError      String?   @map("last_error")
+  deadLetteredAt DateTime? @map("dead_lettered_at")
+
   @@index([processedAt])
+  @@index([aggregateType, processedAt, deadLetteredAt, lockedUntil, createdAt], map: "outbox_events_claim_idx")
   @@map("outbox_events")
 }
 
 /// TDD-KAIROS-TRANSVERSAL.md 7.3 - bitacora de auditoria, reutilizada por
 /// los 6 modulos (no se duplica una tabla de auditoria por modulo)
+/// ADM-03 (Catalogos y parametros, PANTALLAS-V2-B-SOPORTE.md) - primera
+/// version real de un parametro versionado: reemplaza el valor fijo en
+/// codigo documentado en reservation-deposit-policy.ts (BR-RES-001,
+/// docs/decision-log.md PROP-005). "Solo una version vigente a la vez"
+/// (contrato ADM-03 punto 8): la vigente es la de mayor `version` para
+/// la organizacion - nunca se edita ni se borra una fila existente, cada
+/// cambio inserta una version nueva (contrato punto 11, historial).
+model ReservationDepositPolicyVersion {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  version        Int
+  amount         Decimal  @db.Decimal(12, 2)
+  currency       String   @db.Char(3)
+  effectiveFrom  DateTime @default(now()) @map("effective_from")
+  createdAt      DateTime @default(now()) @map("created_at")
+  createdBy      String   @map("created_by")
+
+  @@unique([organizationId, version])
+  @@map("reservation_deposit_policy_versions")
+}
+
+/// ADM-02 (Roles y permisos, PANTALLAS-V2-B-SOPORTE.md) - primera
+/// version real de una matriz rol-accion versionada. Persiste una foto
+/// completa (todas las celdas) por cada version guardada - "solo una
+/// version vigente a la vez" (contrato punto 9, READY/DIRTY/SAVING):
+/// la vigente es la de mayor `version` para la organizacion.
+///
+/// IMPORTANTE (alcance real, ver role-permission-matrix.port.ts): esta
+/// tabla es hoy de solo VISUALIZACION Y AUDITORIA del cambio - los
+/// archivos `*-role-policy.ts` (reservation-role-policy.ts,
+/// inquiry-role-policy.ts, admin-role-policy.ts) siguen siendo el punto
+/// real de enforcement en cada handler. Reemplazarlos por una consulta a
+/// esta tabla es trabajo futuro (requiere revisar cada handler uno por
+/// uno, no se hace en el mismo corte que la pantalla).
+model RolePermissionMatrixVersion {
+  id             String     @id @default(uuid())
+  organizationId String     @map("organization_id")
+  version        Int
+  role           WorkerRole
+  action         String
+  allowed        Boolean
+  createdAt      DateTime   @default(now()) @map("created_at")
+  createdBy      String     @map("created_by")
+
+  @@unique([organizationId, version, role, action])
+  @@map("role_permission_matrix_versions")
+}
+
+/// ADM-05 (PANTALLAS-V2-B-SOPORTE.md) - plantilla de notificacion por
+/// evento de dominio, versionada (misma disciplina que
+/// ReservationDepositPolicyVersion / RolePermissionMatrixVersion:
+/// nunca se edita/borra una version, se inserta la siguiente).
+///
+/// ALCANCE REAL: esto configura el TEXTO y el/los canal(es) de una
+/// plantilla - no envia nada todavia. El envio real (TR-07, outbox de
+/// notificaciones) sigue sin construirse; ver
+/// claude/Diseno_Agregador_Transversal_TR-06-07-08.md. `eventType` solo
+/// admite eventos que YA se publican de verdad en outbox_events
+/// (ReservationCreated/Confirmed/Cancelled) - no se inventan eventos
+/// que el sistema no emite.
+model NotificationTemplateVersion {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  eventType      String   @map("event_type")
+  version        Int
+  channels       String[]
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  createdBy      String   @map("created_by")
+
+  @@unique([organizationId, eventType, version])
+  @@map("notification_template_versions")
+}
+
+/// TR-07 (Centro de notificaciones, PANTALLAS-V2-B-TRANSVERSAL.md) -
+/// proyeccion de lectura de notificaciones por usuario, consumida desde
+/// el mismo outbox transaccional que TR-06 (ver
+/// claude/Diseno_Agregador_Transversal_TR-06-07-08.md). Idempotente por
+/// sourceEventId - reprocesar el mismo evento no duplica la fila.
+///
+/// ALCANCE REAL: el destinatario (`recipientFirebaseUid`) es siempre
+/// quien ejecuto la accion que genero el evento (createdBy/confirmedBy/
+/// cancelledBy en el payload de Reservation) - es una bitacora personal
+/// de "lo que hiciste", no todavia una notificacion dirigida a un
+/// tercero (ej. avisarle a Finanzas que una reserva se confirmo)
+/// porque el sistema no modela destinatarios distintos del actor para
+/// estos eventos hoy. `isEscalated` queda siempre en false: el contrato
+/// pide distinguir visualmente una notificacion "escalada" pero ninguna
+/// regla real define ese criterio todavia - la columna existe para que
+/// la UI ya soporte esa distincion cuando una regla real la produzca.
+model NotificationReadModel {
+  id                   String    @id @default(uuid())
+  organizationId       String    @map("organization_id")
+  companyId            String    @map("company_id")
+  branchId             String    @map("branch_id")
+  recipientFirebaseUid String    @map("recipient_firebase_uid")
+  notificationType     String    @map("notification_type")
+  isEscalated          Boolean   @default(false) @map("is_escalated")
+  title                String
+  deepLink             String    @map("deep_link")
+  readAt               DateTime? @map("read_at")
+  sourceEventId        String    @unique @map("source_event_id")
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  @@index([recipientFirebaseUid, readAt, createdAt])
+  @@map("notifications_read_model")
+}
+
 model AuditEvent {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")
@@ -78,7 +202,7 @@ model VehicleCommitment {
   vehicleId      String   @map("vehicle_id")
   sourceType     String   @map("source_type") // RESERVATION | RENTAL | MAINTENANCE
   sourceId       String   @map("source_id")
-  status         String   // ACTIVE | CONSOLIDATED | RELEASED | EXPIRED
+  status         String // ACTIVE | CONSOLIDATED | RELEASED | EXPIRED
   startsAt       DateTime @map("starts_at")
   endsAt         DateTime @map("ends_at")
   createdAt      DateTime @default(now()) @map("created_at")
@@ -150,9 +274,10 @@ model Branch {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  company      Company                  @relation(fields: [companyId], references: [id])
+  company      Company                 @relation(fields: [companyId], references: [id])
   assignments  UserCompanyAssignment[]
   reservations Reservation[]
+  inquiries    Inquiry[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -198,17 +323,17 @@ enum WorkerRole {
 }
 
 model UserCompanyAssignment {
-  id             String    @id @default(uuid())
-  organizationId String    @map("organization_id")
-  firebaseUid    String    @map("firebase_uid")
-  companyId      String    @map("company_id")
-  branchId       String    @map("branch_id")
+  id             String     @id @default(uuid())
+  organizationId String     @map("organization_id")
+  firebaseUid    String     @map("firebase_uid")
+  companyId      String     @map("company_id")
+  branchId       String     @map("branch_id")
   /// PROVISIONAL - ver nota arriba del modelo.
   role           WorkerRole
-  active         Boolean   @default(true)
-  validFrom      DateTime  @default(now()) @map("valid_from")
-  validUntil     DateTime? @map("valid_until")
-  createdAt      DateTime  @default(now()) @map("created_at")
+  active         Boolean    @default(true)
+  validFrom      DateTime   @default(now()) @map("valid_from")
+  validUntil     DateTime?  @map("valid_until")
+  createdAt      DateTime   @default(now()) @map("created_at")
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): FK COMPUESTA `(companyId, organizationId)` hacia
@@ -232,8 +357,8 @@ model UserCompanyAssignment {
 /// El modulo real de Clientes (Customers, ver SDD-RES-001 seccion 3.3)
 /// no esta construido todavia. Se migra cuando exista.
 model Customer {
-  id             String   @id @default(uuid())
-  organizationId String   @map("organization_id")
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
   /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508,
   /// "referencias corregidas solo a nivel organizacion, no
   /// empresa/sede"): sin este campo, un usuario autorizado en la sede A
@@ -248,13 +373,14 @@ model Customer {
   /// inventar esa regla violaria CLAUDE.md seccion 4. Se migra cuando el
   /// modulo real de Clientes exista.
   operatingCompanyId String   @map("operating_company_id")
-  fullName       String   @map("full_name")
-  documentType   String   @map("document_type")
-  documentNumber String   @map("document_number")
-  createdAt      DateTime @default(now()) @map("created_at")
+  fullName           String   @map("full_name")
+  documentType       String   @map("document_type")
+  documentNumber     String   @map("document_number")
+  createdAt          DateTime @default(now()) @map("created_at")
 
-  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   reservations     Reservation[]
+  inquiries        Inquiry[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
@@ -265,51 +391,184 @@ model Customer {
 /// campos que Reserva necesita leer/mostrar. El modulo real de Flota
 /// (Fleet, ver SDD-RES-001 seccion 3.3) no esta construido todavia.
 model Vehicle {
-  id             String   @id @default(uuid())
-  organizationId String   @map("organization_id")
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
   /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508) - mismo
   /// razonamiento que Customer.operatingCompanyId arriba: cierra el
   /// cruce cross-company, deja el nivel de sede como pregunta abierta
   /// para el modulo real de Flota (todavia no construido).
   operatingCompanyId String   @map("operating_company_id")
-  plate          String   @unique
-  brand          String
-  model          String
-  createdAt      DateTime @default(now()) @map("created_at")
+  plate              String   @unique
+  brand              String
+  model              String
+  createdAt          DateTime @default(now()) @map("created_at")
 
-  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   reservations     Reservation[]
+  quotations       Quotation[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
   @@map("vehicles")
 }
 
-/// PROVISIONAL (HU-27/RES, PROP-005): referencia minima a la Consulta de
-/// origen (BR-CON-001: toda reserva viene de una Consulta). El modulo
-/// real de Consulta (Inquiries, HU-26) esta pausado por falta de
-/// prototipo aprobado de CON-03 - ver tarea HU-26 en ClickUp.
-///
-/// Hallazgo critico de revision PR#6 ("referencias cross-tenant al
-/// crear"): `organizationId` se agrega aqui (faltaba en el modelo
-/// original) porque CreateReservationHandler necesita poder verificar
-/// que la Inquiry citada pertenece a la misma organizacion que la
-/// asignacion validada del usuario, igual que ya se exige para Customer
-/// y Vehicle - sin este campo esa validacion era imposible de expresar.
-model Inquiry {
-  id             String   @id @default(uuid())
-  organizationId String   @map("organization_id")
-  /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508) - mismo
-  /// razonamiento que Customer.operatingCompanyId arriba.
-  operatingCompanyId String   @map("operating_company_id")
-  createdAt      DateTime @default(now()) @map("created_at")
+/// TDD-CON-001.md DAT-CON-004 / BDD-CON-001.md 8.3 - canal de contacto
+/// (enum informal "WhatsApp/llamada/presencial/web/redes"). Distinto de
+/// `ChannelMode` (modalidad de exhibicion PRESENCIAL/VIRTUAL de Reserva).
+enum InquiryChannel {
+  WHATSAPP
+  LLAMADA
+  PRESENCIAL
+  WEB
+  REDES
+}
 
-  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+/// TDD-CON-001.md seccion 8 - 4 estados del modelo fisico (seccion 9):
+/// REGISTRADA -> COTIZADA -> CONVERTIDA | CERRADA_SIN_CONVERSION
+/// (terminales, BR-CON-002: nunca ambos a la vez).
+enum InquiryStatus {
+  REGISTRADA
+  COTIZADA
+  CONVERTIDA
+  CERRADA_SIN_CONVERSION
+}
+
+/// BDD-CON-001.md DAT-CON-002 (obligatoria, siempre) - determina el
+/// tercer requisito documental (BR-CON-004).
+enum InquiryNationality {
+  PERUANO
+  EXTRANJERO
+}
+
+/// Hallazgo CRITICO de revalidacion PR#7 (d7a6124, "migracion insegura
+/// sobre datos existentes"): distingue las consultas capturadas por
+/// CON-02 (`CON02`, snapshot completo obligatorio) de los stubs minimos
+/// que PR#6 (PROP-005) creaba solo para respaldar la FK de Reserva
+/// (`LEGACY_STUB`, backfilleados por la migracion
+/// 20260923000000_inquiries_expand_backfill_contract sin inventar datos
+/// que nunca se capturaron). Marcador EXPLICITO y documentado, mismo
+/// criterio que el backfill 'FRONT_OFFICE' de WorkerRole (PR#5).
+enum InquiryDataOrigin {
+  CON02
+  LEGACY_STUB
+}
+
+/// HU-26 (Consulta) - agregado `Inquiry` del modulo `Inquiries`
+/// (TDD-CON-001.md secciones 7-9).
+///
+/// Hallazgo ALTO de revalidacion PR#7 ("brecha contractual con
+/// CON-02"): ademas del DDL literal del TDD seccion 9, persiste el
+/// snapshot de lo capturado en CON-02 (PANTALLAS-V3-B-CONSULTA.md punto
+/// 6: canal, cliente -nombre, documento, nacionalidad-, uso, destino,
+/// periodo, personas) para que CON-04 pueda reconstruir la consulta y la
+/// trazabilidad UX-BDD-TDD quede cerrada (DAT-CON-001/002/003, BR-CON-004,
+/// SC-CON-001.03 "fecha de ingreso al pais"). Las columnas del snapshot
+/// son NULLABLE en la base solo para admitir los stubs `LEGACY_STUB`;
+/// para `CON02` su obligatoriedad se exige con un CHECK
+/// (`inquiries_con02_snapshot_check`, ver migracion) ademas de la
+/// validacion de aplicacion - Prisma 5 no expone CHECK declarativos.
+model Inquiry {
+  id                     String              @id @default(uuid())
+  organizationId         String              @map("organization_id")
+  operatingCompanyId     String              @map("operating_company_id")
+  branchId               String              @map("branch_id")
+  customerId             String?             @map("customer_id")
+  /// DAT-CON-004. NULL solo en `LEGACY_STUB` (sin fuente de la que
+  /// derivarlo) - obligatorio para `CON02` via CHECK.
+  channel                InquiryChannel?
+  /// DAT-CON-001.
+  touristUse             Boolean             @map("tourist_use")
+  /// CON-P02 - nombre del prospecto cuando todavia no es un Customer
+  /// formal (CON-02: "puede ser un prospecto sin cliente formal").
+  prospectName           String?             @map("prospect_name")
+  prospectDocumentType   String?             @map("prospect_document_type")
+  prospectDocumentNumber String?             @map("prospect_document_number")
+  /// DAT-CON-002.
+  nationality            InquiryNationality?
+  /// DAT-CON-003 - destino y tiempo estimado (condicionan el vehiculo
+  /// elegible, BR-CON-005).
+  destination            String?
+  estimatedDays          Int?                @map("estimated_days")
+  /// CON-02 "periodo" / "fecha" y "personas" (opcionales en el contrato).
+  travelStartDate        DateTime?           @map("travel_start_date") @db.Date
+  partySize              Int?                @map("party_size")
+  /// SC-CON-001.03 - solo para EXTRANJERO (CHECK en la migracion).
+  countryEntryDate       DateTime?           @map("country_entry_date") @db.Date
+  dataOrigin             InquiryDataOrigin   @default(CON02) @map("data_origin")
+  status                 InquiryStatus       @default(REGISTRADA)
+  /// CHECK `inquiries_closed_reason_check` (TDD seccion 9).
+  closedReason           String?             @map("closed_reason")
+  createdAt              DateTime            @default(now()) @map("created_at")
+  createdBy              String              @map("created_by")
+  version                Int                 @default(1)
+
+  /// FK COMPUESTA hacia Company(id, organizationId) - mismo patron que
+  /// Reservation/UserCompanyAssignment (PR#4/PR#6).
+  operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  /// FK COMPUESTA hacia Branch(id, companyId): la sede siempre pertenece
+  /// a la misma empresa de la consulta.
+  branch           Branch        @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
+  /// FK simple (Prisma no admite una relacion opcional sobre una FK
+  /// compuesta con una columna obligatoria). El aislamiento por empresa
+  /// del cliente se exige en la aplicacion (RegisterInquiryHandler) - ver
+  /// hallazgo ALTO "aislamiento de cliente y vehiculo".
+  customer         Customer?     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  interactions     Interaction[]
+  quotations       Quotation[]
   reservations     Reservation[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
+  /// Hallazgo MEDIO de revalidacion PR#7 ("keyset real createdAt/id"):
+  /// respalda el filtro de scope + orden (created_at DESC, id DESC) de la
+  /// bandeja paginada.
+  @@index([organizationId, operatingCompanyId, branchId, createdAt(sort: Desc), id(sort: Desc)])
+  @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)])
   @@map("inquiries")
+}
+
+/// TDD-CON-001.md seccion 9 - registro append-only de cada contacto.
+model Interaction {
+  id         String         @id @default(uuid())
+  inquiryId  String         @map("inquiry_id")
+  channel    InquiryChannel
+  occurredAt DateTime       @default(now()) @map("occurred_at")
+  outcome    String?
+  note       String?
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id])
+
+  @@index([inquiryId])
+  @@map("interactions")
+}
+
+/// TDD-CON-001.md seccion 9 - snapshot versionado del tarifario al
+/// cotizar. `rateCardVersionId` sigue siendo PROVISIONAL (tarifario
+/// versionado en codigo, ver RateCardPort/PROP-007).
+///
+/// Hallazgo ALTO de revalidacion PR#7 ("aislamiento de cliente y
+/// vehiculo incompleto"): `operatingCompanyId` se agrega para que
+/// inquiry y vehicle sean FKs COMPUESTAS hacia (id, operatingCompanyId)
+/// - a nivel de base de datos ya no es posible cotizar un vehiculo de
+/// otra empresa (mismo patron que Reservation desde PR#6).
+model Quotation {
+  id                 String   @id @default(uuid())
+  inquiryId          String   @map("inquiry_id")
+  operatingCompanyId String   @map("operating_company_id")
+  vehicleId          String   @map("vehicle_id")
+  rateCardVersionId  String   @map("rate_card_version_id")
+  destination        String
+  estimatedDays      Int      @map("estimated_days")
+  amount             Decimal  @db.Decimal(12, 2)
+  currency           String   @db.Char(3)
+  validUntil         DateTime @map("valid_until")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  inquiry Inquiry @relation(fields: [inquiryId, operatingCompanyId], references: [id, operatingCompanyId])
+  vehicle Vehicle @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
+
+  @@index([inquiryId, createdAt(sort: Desc)])
+  @@map("quotations")
 }
 
 /// TDD-RES-001.md seccion 8.1 - 5 estados reales (corregido 31 ago 2026:
@@ -345,29 +604,35 @@ enum ChannelMode {
 /// nivel de base de datos ya no es posible insertar una reserva cuya
 /// sede pertenezca a una empresa distinta de `operatingCompanyId`.
 model Reservation {
-  id                    String             @id @default(uuid())
-  organizationId        String             @map("organization_id")
-  operatingCompanyId    String             @map("operating_company_id")
-  branchId              String             @map("branch_id")
-  inquiryId             String             @map("inquiry_id")
-  customerId            String             @map("customer_id")
-  vehicleId             String             @map("vehicle_id")
-  status                ReservationStatus  @default(DRAFT)
-  channelMode           ChannelMode        @map("channel_mode")
-  startAt               DateTime           @map("start_at")
-  endAt                 DateTime           @map("end_at")
+  id                    String            @id @default(uuid())
+  organizationId        String            @map("organization_id")
+  operatingCompanyId    String            @map("operating_company_id")
+  branchId              String            @map("branch_id")
+  /// Hallazgo CRITICO de revalidacion PR#7 ("cardinalidad Inquiry ->
+  /// Reservation no garantizada"): UNIQUE - una consulta se convierte a
+  /// lo sumo UNA vez (TDD-CON-001.md 7.3 inv. 2 / 8.1: CONVERTIDA es
+  /// terminal; BR-CON-003: un nuevo pedido del mismo cliente pasa por
+  /// una nueva Consulta). La unicidad vive en la base, no solo en el
+  /// caso de uso ConvertToReservationHandler.
+  inquiryId             String            @unique @map("inquiry_id")
+  customerId            String            @map("customer_id")
+  vehicleId             String            @map("vehicle_id")
+  status                ReservationStatus @default(DRAFT)
+  channelMode           ChannelMode       @map("channel_mode")
+  startAt               DateTime          @map("start_at")
+  endAt                 DateTime          @map("end_at")
   /// BR-RES-001 - parametro versionado; PROVISIONAL: valor vigente fijo
   /// en codigo (S/300, version 1) - ver docs/decision-log.md PROP-005.
   /// Se migra a una tabla de parametros versionada real cuando exista.
-  requiredPaymentAmount Decimal            @map("required_payment_amount") @db.Decimal(12, 2)
-  currency              String             @db.Char(3)
-  paymentPolicyVersion  Int                @map("payment_policy_version")
-  paymentValidatedAt    DateTime?          @map("payment_validated_at")
-  documentsCompletedAt  DateTime?          @map("documents_completed_at")
-  confirmedAt           DateTime?          @map("confirmed_at")
-  createdAt             DateTime           @default(now()) @map("created_at")
-  createdBy             String             @map("created_by")
-  version                Int               @default(1)
+  requiredPaymentAmount Decimal           @map("required_payment_amount") @db.Decimal(12, 2)
+  currency              String            @db.Char(3)
+  paymentPolicyVersion  Int               @map("payment_policy_version")
+  paymentValidatedAt    DateTime?         @map("payment_validated_at")
+  documentsCompletedAt  DateTime?         @map("documents_completed_at")
+  confirmedAt           DateTime?         @map("confirmed_at")
+  createdAt             DateTime          @default(now()) @map("created_at")
+  createdBy             String            @map("created_by")
+  version               Int               @default(1)
 
   /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508,
   /// "referencias corregidas solo a nivel organizacion, no
@@ -383,11 +648,11 @@ model Reservation {
   /// - mismo patron y mismo motivo que la FK compuesta agregada en PR#4
   /// para UserCompanyAssignment.company (evita que organizationId
   /// contradiga a la empresa referenciada).
-  inquiry        Inquiry  @relation(fields: [inquiryId, operatingCompanyId], references: [id, operatingCompanyId])
-  customer       Customer @relation(fields: [customerId, operatingCompanyId], references: [id, operatingCompanyId])
-  vehicle        Vehicle  @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
-  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
-  branch         Branch   @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
+  inquiry          Inquiry  @relation(fields: [inquiryId, operatingCompanyId], references: [id, operatingCompanyId])
+  customer         Customer @relation(fields: [customerId, operatingCompanyId], references: [id, operatingCompanyId])
+  vehicle          Vehicle  @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
+  operatingCompany Company  @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  branch           Branch   @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
 
   acceptance ReservationAcceptance?
 
@@ -416,4 +681,49 @@ model ReservationAcceptance {
   reservation Reservation @relation(fields: [reservationId], references: [id])
 
   @@map("reservation_acceptances")
+}
+
+/// TR-06 (SDD-KAIROS-TRANSVERSAL.md 18.2, HU-24) - proyeccion de lectura
+/// del Tablero por rol, construida a partir de outbox_events (TDD-
+/// KAIROS-TRANSVERSAL.md 7.3, ADR-KAI-003). No reemplaza outbox_events ni
+/// las tablas de dominio de cada modulo - es una tabla de lectura propia
+/// de UI, alimentada por un proyector (ver DashboardEventProjectorService,
+/// modulo dashboard-projections) que consume eventos ya publicados
+/// (ReservationCreated/Confirmed/Cancelled hoy; se agregan mas fuentes
+/// cuando Rentals/Returns/Recruitment/HR-Administration existan).
+///
+/// Se ancla a organizationId/operatingCompanyId/branchId/role en vez de a
+/// un userId especifico: el modelo de autorizacion actual
+/// (WorkContextAuthorizationService) resuelve rol + empresa/sede, no
+/// "asignado a mi" - los 7 roles comparten tablero por sede
+/// (GetDashboardHandler ya funciona asi desde HU-24). Cuando exista
+/// asignacion individual real (ADM-02), se agrega un userId opcional sin
+/// romper este modelo.
+///
+/// PROVISIONAL, igual que DashboardResponse en el OpenAPI: `itemType`,
+/// `priority` y `deepLink` siguen el diseno de
+/// claude/Diseno_Agregador_Transversal_TR-06-07-08.md (Project KAIROS),
+/// pendiente de contraste formal cuando el resto de fuentes (Rentals,
+/// Returns, etc.) existan.
+model DashboardItem {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  operatingCompanyId String    @map("operating_company_id")
+  branchId           String    @map("branch_id")
+  role               WorkerRole
+  itemType           String    @map("item_type") // 'TASK' | 'ALERT' | 'DRAFT' | 'ACTIVITY'
+  priority           Int       @default(0)
+  title              String
+  detail             String?
+  deepLink           String    @map("deep_link")
+  sourceType         String    @map("source_type") // 'RESERVATION' | 'RENTAL' | 'RETURN' | 'INQUIRY' | 'RECRUITMENT' | 'HR'
+  sourceId           String    @map("source_id")
+  sourceEventId      String    @map("source_event_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  expiresAt          DateTime? @map("expires_at")
+  dismissedAt        DateTime? @map("dismissed_at")
+
+  @@unique([sourceEventId, itemType])
+  @@index([organizationId, operatingCompanyId, branchId, role, dismissedAt, priority])
+  @@map("dashboard_items")
 }

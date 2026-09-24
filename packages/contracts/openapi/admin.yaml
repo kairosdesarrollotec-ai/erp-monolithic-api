@@ -1,0 +1,417 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Administracion API
+  version: 0.1.0
+  description: >
+    Contrato del modulo Administracion (ADM-01..05, TR-07,
+    PANTALLAS-V2-B-SOPORTE.md). Cierra el hallazgo ALTO de revalidacion
+    PR#7 ("falta documentacion OpenAPI de Administracion") - hasta esta
+    version el modulo no tenia ningun archivo de contrato, a diferencia
+    de Reservas/Consultas/Transversal.
+
+    Todas las rutas requieren `Authorization: Bearer <Firebase ID token>`
+    y ademas exigen contexto vigente empresa/sede (companyId/branchId) -
+    deny-by-default: sin una asignacion activa en esa empresa/sede, 403.
+
+    ADM-02 (permisos): a partir de esta version, la matriz de
+    roles/permisos SI se aplica de verdad para las 5 acciones de
+    Administracion (MANAGE_USERS, VIEW_AUDIT, MANAGE_PARAMETERS,
+    MANAGE_PERMISSIONS, MANAGE_NOTIFICATIONS) - ver
+    AdminMatrixAuthorizationService. Reservas/Consultas siguen en sus
+    policies estaticas (alcance de una iteracion siguiente).
+
+    ADM-05/TR-07: guardar una plantilla de notificacion NO dispara ningun
+    envio real todavia (TR-07 sigue sin construirse) - alcance
+    deliberadamente acotado a texto/canal + versionado.
+paths:
+  /admin/users:
+    get:
+      operationId: listOrganizationUsers
+      summary: ADM-01 - Bandeja de usuarios y asignaciones de la organizacion
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Todas las asignaciones (activas e inactivas) de la organizacion del admin
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [users]
+                properties:
+                  users:
+                    type: array
+                    items: { $ref: '#/components/schemas/OrganizationUser' }
+        '403':
+          description: Sin contexto vigente en esa empresa/sede, o rol sin MANAGE_USERS segun la matriz de permisos vigente
+  /admin/assignments:
+    post:
+      operationId: assignUserToCompany
+      summary: ADM-01 - Agregar usuario (asigna empresa/sede/rol a una cuenta de Firebase ya existente)
+      description: >
+        Unica via para darle a un usuario cualquier permiso en KAIROS. No
+        crea cuentas nuevas - el correo debe existir ya en Firebase
+        Authentication.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssignUserRequest' }
+      responses:
+        '201':
+          description: Asignacion creada o reactivada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties: { id: { type: string, format: uuid } }
+        '400':
+          description: 'COMPANY_BRANCH_NOT_IN_ORGANIZATION - la empresa/sede destino no pertenece a la organizacion del admin (IDOR)'
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_USERS
+        '404':
+          description: 'USER_NOT_FOUND_IN_IDENTITY_PROVIDER - no existe una cuenta de Firebase con ese correo'
+  /admin/assignments/{id}/deactivate:
+    post:
+      operationId: deactivateAssignment
+      summary: ADM-01 - Dar de baja una asignacion (nunca borra la fila, conserva el historial de auditoria)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [companyId, branchId]
+              properties:
+                companyId: { type: string, format: uuid }
+                branchId: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Asignacion dada de baja
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_USERS
+        '404':
+          description: La asignacion no existe o no pertenece a la organizacion del admin (IDOR)
+        '409':
+          description: >
+            LAST_ADMINISTRATOR_CANNOT_BE_DEACTIVATED - es la unica
+            asignacion con rol ADMINISTRACION activa en la organizacion;
+            dejarla sin ninguna dejaria la organizacion sin nadie que
+            pueda gestionar usuarios/permisos (hallazgo ALTO de
+            revalidacion PR#7, "ultimo administrador").
+  /admin/audit-events:
+    get:
+      operationId: listAuditEvents
+      summary: ADM-04 - Auditoria administrativa (solo lectura)
+      description: >
+        Accesible a Administracion Y Auditoria (VIEW_AUDIT). `changes` es
+        el `Json` libre tal como lo escribio cada modulo (Reservas,
+        Consultas, ADM-01) - no un diff campo-a-campo estructurado, ese
+        detalle no existe hoy en los eventos ya guardados.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: actorUid, in: query, required: false, schema: { type: string } }
+        - { name: entityType, in: query, required: false, schema: { type: string } }
+        - { name: dateFrom, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: dateTo, in: query, required: false, schema: { type: string, format: date-time } }
+      responses:
+        '200':
+          description: Eventos de auditoria de la organizacion, filtrados
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events]
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditEvent' }
+        '403':
+          description: Sin contexto vigente, o rol sin VIEW_AUDIT (ni Administracion ni Auditoria)
+  /admin/parameters/reservation-deposit-policy:
+    get:
+      operationId: getReservationDepositPolicy
+      summary: ADM-03 - Version vigente + historial del monto de reserva
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Version vigente y su historial completo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReservationDepositPolicyResponse' }
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_PARAMETERS
+    post:
+      operationId: updateReservationDepositPolicy
+      summary: ADM-03 - Guardar cambios (siempre INSERTA una version nueva, nunca edita la anterior)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateReservationDepositPolicyRequest' }
+      responses:
+        '201':
+          description: Version nueva creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReservationDepositPolicyItem' }
+        '400':
+          description: 'INVALID_AMOUNT - el monto debe ser un numero positivo'
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_PARAMETERS
+  /admin/permissions:
+    get:
+      operationId: getRolePermissionMatrix
+      summary: ADM-02 - Matriz de roles/permisos vigente + catalogo de acciones
+      description: >
+        Si la organizacion nunca guardo una version propia, devuelve la
+        version 0 implicita construida a partir de las policies estaticas
+        existentes (`*-role-policy.ts`) - lo que el sistema ya hace hoy,
+        no una matriz vacia.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Matriz vigente + catalogo de acciones
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RolePermissionMatrixResponse' }
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_PERMISSIONS
+    post:
+      operationId: saveRolePermissionMatrix
+      summary: ADM-02 - Guardar una foto completa nueva de la matriz (siempre INSERTA, nunca edita filas existentes)
+      description: >
+        Valida que la matriz enviada sea completa (una entrada por cada
+        combinacion rol x accion del catalogo) y que no habilite a la vez
+        un par de acciones incompatibles (segregacion de funciones,
+        INCOMPATIBLE_ACTION_PAIRS). A partir de esta version, esta
+        matriz SI se consulta en tiempo real para autorizar las 5
+        acciones de Administracion (antes solo se guardaba/visualizaba).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaveRolePermissionMatrixRequest' }
+      responses:
+        '201':
+          description: Nueva version guardada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RolePermissionMatrixResponse' }
+        '400':
+          description: 'INCOMPLETE_MATRIX - falta una entrada rol x accion del catalogo'
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_PERMISSIONS
+        '409':
+          description: 'INCOMPATIBLE_PERMISSION_COMBINATION - segregacion de funciones violada'
+  /admin/notification-templates:
+    get:
+      operationId: getNotificationTemplates
+      summary: ADM-05 - Plantillas de notificacion (vigente + historial) por evento del catalogo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Una entrada por cada evento del catalogo, con variables y canales permitidos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationTemplatesResponse' }
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_NOTIFICATIONS
+    post:
+      operationId: saveNotificationTemplate
+      summary: ADM-05 - Guardar plantilla (siempre INSERTA una version nueva)
+      description: >
+        Rechaza cualquier variable `{...}` que no este en la lista
+        blanca (sin datos sensibles en logs ni mensajes). ALCANCE REAL:
+        solo guarda texto/canal - no dispara ningun envio (TR-07
+        pendiente).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaveNotificationTemplateRequest' }
+      responses:
+        '201':
+          description: Version nueva creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationTemplateItem' }
+        '400':
+          description: 'UNKNOWN_EVENT_TYPE | NO_CHANNEL_SELECTED | variable no permitida en el cuerpo'
+        '403':
+          description: Sin contexto vigente, o rol sin MANAGE_NOTIFICATIONS
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: 'Firebase ID token' }
+  schemas:
+    WorkerRole:
+      type: string
+      enum: [ADMINISTRACION, AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA, RRHH]
+    OrganizationUser:
+      type: object
+      required: [id, firebaseUid, email, companyId, companyName, branchId, branchName, role, active, mfaEnrolled]
+      properties:
+        id: { type: string, format: uuid }
+        firebaseUid: { type: string }
+        email: { type: [string, 'null'] }
+        companyId: { type: string, format: uuid }
+        companyName: { type: string }
+        branchId: { type: string, format: uuid }
+        branchName: { type: string }
+        role: { $ref: '#/components/schemas/WorkerRole' }
+        active: { type: boolean }
+        mfaEnrolled: { type: boolean }
+    AssignUserRequest:
+      type: object
+      required: [companyId, branchId, targetEmail, targetCompanyId, targetBranchId, targetRole]
+      properties:
+        companyId: { type: string, format: uuid, description: 'Empresa vigente del admin (contexto de trabajo)' }
+        branchId: { type: string, format: uuid, description: 'Sede vigente del admin (contexto de trabajo)' }
+        targetEmail: { type: string, format: email }
+        targetCompanyId: { type: string, format: uuid, description: 'Empresa destino de la asignacion' }
+        targetBranchId: { type: string, format: uuid, description: 'Sede destino de la asignacion' }
+        targetRole: { $ref: '#/components/schemas/WorkerRole' }
+    AuditEvent:
+      type: object
+      required: [id, actorFirebaseUid, actorEmail, entityType, entityId, action, changes, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        actorFirebaseUid: { type: [string, 'null'] }
+        actorEmail: { type: [string, 'null'] }
+        entityType: { type: string }
+        entityId: { type: string }
+        action: { type: string }
+        changes: { type: [object, 'null'] }
+        createdAt: { type: string, format: date-time }
+    ReservationDepositPolicyItem:
+      type: object
+      required: [version, amount, currency, effectiveFrom]
+      properties:
+        version: { type: integer }
+        amount: { type: string, description: 'Numero decimal como string, ej. "350.00"' }
+        currency: { type: string, enum: [PEN, USD] }
+        effectiveFrom: { type: [string, 'null'], format: date-time }
+    ReservationDepositPolicyResponse:
+      type: object
+      required: [current, history]
+      properties:
+        current: { $ref: '#/components/schemas/ReservationDepositPolicyItem' }
+        history:
+          type: array
+          items: { $ref: '#/components/schemas/ReservationDepositPolicyItem' }
+    UpdateReservationDepositPolicyRequest:
+      type: object
+      required: [companyId, branchId, amount, currency]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        amount: { type: string }
+        currency: { type: string, enum: [PEN, USD] }
+    PermissionModule:
+      type: string
+      enum: [RESERVATION, INQUIRY, ADMIN]
+    RolePermissionEntry:
+      type: object
+      required: [role, module, action, allowed]
+      properties:
+        role: { $ref: '#/components/schemas/WorkerRole' }
+        module: { $ref: '#/components/schemas/PermissionModule' }
+        action: { type: string }
+        allowed: { type: boolean }
+    PermissionActionDescriptor:
+      type: object
+      required: [module, action, label]
+      properties:
+        module: { $ref: '#/components/schemas/PermissionModule' }
+        action: { type: string }
+        label: { type: string }
+    RolePermissionMatrixResponse:
+      type: object
+      required: [version, entries, actionCatalog]
+      properties:
+        version: { type: integer }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/RolePermissionEntry' }
+        actionCatalog:
+          type: array
+          items: { $ref: '#/components/schemas/PermissionActionDescriptor' }
+    SaveRolePermissionMatrixRequest:
+      type: object
+      required: [companyId, branchId, entries]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        entries:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/RolePermissionEntry' }
+    NotificationChannel:
+      type: string
+      enum: [EMAIL, PUSH, SMS]
+    NotificationTemplateItem:
+      type: object
+      required: [eventType, version, channels, body]
+      properties:
+        eventType: { type: string }
+        version: { type: integer }
+        channels:
+          type: array
+          items: { $ref: '#/components/schemas/NotificationChannel' }
+        body: { type: string, maxLength: 500 }
+    NotificationTemplateEntry:
+      type: object
+      required: [eventType, label, current, history]
+      properties:
+        eventType: { type: string }
+        label: { type: string }
+        current: { oneOf: [{ $ref: '#/components/schemas/NotificationTemplateItem' }, { type: 'null' }] }
+        history:
+          type: array
+          items: { $ref: '#/components/schemas/NotificationTemplateItem' }
+    NotificationTemplatesResponse:
+      type: object
+      required: [templates, allowedVariables, channels]
+      properties:
+        templates:
+          type: array
+          items: { $ref: '#/components/schemas/NotificationTemplateEntry' }
+        allowedVariables:
+          type: array
+          items: { type: string }
+        channels:
+          type: array
+          items: { $ref: '#/components/schemas/NotificationChannel' }
+    SaveNotificationTemplateRequest:
+      type: object
+      required: [companyId, branchId, eventType, channels, body]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        eventType: { type: string }
+        channels:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/NotificationChannel' }
+        body: { type: string, maxLength: 500 }

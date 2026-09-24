@@ -11,9 +11,10 @@ import { WorkContextRepositoryPort } from './application/ports/work-context-repo
 import { PrismaUserProfileRepository } from './infrastructure/persistence/prisma-user-profile.repository';
 import { PrismaWorkContextRepository } from './infrastructure/persistence/prisma-work-context.repository';
 import { AuditModule } from '../audit/audit.module';
+import { DashboardProjectionsModule } from '../dashboard-projections/dashboard-projections.module';
 
 @Module({
-  imports: [AuditModule],
+  imports: [AuditModule, DashboardProjectionsModule],
   controllers: [UsersController],
   providers: [
     GetActivationStatusHandler,

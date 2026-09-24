@@ -1,195 +1,66 @@
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException } from '@nestjs/common';
 import { CreateReservationHandler } from './create-reservation.handler';
 import { CreateReservationCommand } from './create-reservation.command';
-import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 
-function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRecord {
-  return {
-    id: 'res-1',
-    organizationId: 'org-1',
-    operatingCompanyId: 'company-1',
-    branchId: 'branch-1',
-    inquiryId: 'inq-1',
-    customerId: 'cust-1',
-    customerName: 'Maria Quispe',
-    vehicleId: 'veh-1',
-    vehiclePlate: 'D0Y-704',
-    vehicleLabel: 'Toyota Hilux - D0Y-704',
-    status: 'DRAFT',
-    channelMode: 'PRESENCIAL',
-    startAt: new Date('2026-09-20T14:00:00Z'),
-    endAt: new Date('2026-09-22T14:00:00Z'),
-    requiredPaymentAmount: '300.00',
-    currency: 'PEN',
-    paymentPolicyVersion: 1,
-    paymentValidatedAt: null,
-    documentsCompletedAt: null,
-    confirmedAt: null,
-    createdAt: new Date(),
-    createdBy: 'uid-1',
-    version: 1,
-    ...overrides,
-  };
-}
-
+/**
+ * Revalidacion PR#7 (hallazgo CRITICO "cardinalidad Inquiry -> Reservation"):
+ * `POST /reservations` ya no crea reservas - la unica via es
+ * convert-to-reservation (CONFLICT-CON-001). Estos tests fijan que el
+ * endpoint conserva autenticacion/contexto/rol y NUNCA persiste.
+ */
 describe('CreateReservationHandler', () => {
-  function buildDeps(options: {
-    context?: { organizationId: string } | 'forbidden';
-    role?: string;
-    customerOrg?: string | null;
-    vehicleOrg?: string | null;
-    inquiryOrg?: string | null;
-    customerCompany?: string | null;
-    vehicleCompany?: string | null;
-    inquiryCompany?: string | null;
-  } = {}) {
-    const {
-      context = { organizationId: 'org-1' },
-      role = 'FRONT_OFFICE',
-      customerOrg = 'org-1',
-      vehicleOrg = 'org-1',
-      inquiryOrg = 'org-1',
-      customerCompany = 'company-1',
-      vehicleCompany = 'company-1',
-      inquiryCompany = 'company-1',
-    } = options;
-    const reservations: jest.Mocked<ReservationRepositoryPort> = {
-      create: jest.fn().mockResolvedValue(buildRecord()),
-      findById: jest.fn(),
-      list: jest.fn(),
-      findCustomerById: jest
-        .fn()
-        .mockResolvedValue(customerOrg ? { id: 'cust-1', organizationId: customerOrg, operatingCompanyId: customerCompany } : null),
-      findVehicleById: jest
-        .fn()
-        .mockResolvedValue(vehicleOrg ? { id: 'veh-1', organizationId: vehicleOrg, operatingCompanyId: vehicleCompany } : null),
-      findInquiryById: jest
-        .fn()
-        .mockResolvedValue(inquiryOrg ? { id: 'inq-1', organizationId: inquiryOrg, operatingCompanyId: inquiryCompany } : null),
-      registerPayment: jest.fn(),
-      registerDocuments: jest.fn(),
-      confirm: jest.fn(),
-      cancel: jest.fn(),
-    };
-    const workContext = {
-      authorize:
-        context === 'forbidden'
-          ? jest.fn().mockRejectedValue(new ForbiddenException())
-          : jest.fn().mockResolvedValue({ organizationId: context.organizationId, companyId: 'company-1', branchId: 'branch-1', role }),
-    } as unknown as jest.Mocked<WorkContextAuthorizationService>;
-    return { reservations, workContext };
-  }
-
-  function command(overrides: Partial<{ startAt: Date; endAt: Date; companyId: string; branchId: string }> = {}) {
+  function buildCommand() {
     return new CreateReservationCommand(
       'uid-1',
-      overrides.companyId ?? 'company-1',
-      overrides.branchId ?? 'branch-1',
+      'company-1',
+      'branch-1',
       'inq-1',
       'cust-1',
       'veh-1',
       'PRESENCIAL',
-      overrides.startAt ?? new Date('2026-09-20T14:00:00Z'),
-      overrides.endAt ?? new Date('2026-09-22T14:00:00Z'),
+      new Date('2026-10-20T14:00:00Z'),
+      new Date('2026-10-22T14:00:00Z'),
     );
   }
 
-  it('crea la reserva en DRAFT con el monto de deposito vigente', async () => {
-    const { reservations, workContext } = buildDeps();
-    const handler = new CreateReservationHandler(reservations, workContext);
+  function buildWorkContext(result: { role: string } | 'forbidden') {
+    return {
+      authorize:
+        result === 'forbidden'
+          ? jest.fn().mockRejectedValue(new ForbiddenException())
+          : jest.fn().mockResolvedValue({
+              organizationId: 'org-1',
+              companyId: 'company-1',
+              branchId: 'branch-1',
+              role: result.role,
+            }),
+    } as unknown as jest.Mocked<WorkContextAuthorizationService>;
+  }
 
-    const result = await handler.execute(command());
+  it('responde 409 INQUIRY_CONVERSION_REQUIRED y apunta al comando de conversion (caso de uso unico)', async () => {
+    const handler = new CreateReservationHandler(buildWorkContext({ role: 'FRONT_OFFICE' }));
 
-    expect(reservations.create).toHaveBeenCalledWith(
+    const error = await handler.execute(buildCommand()).catch((e) => e);
+
+    expect(error).toBeInstanceOf(ConflictException);
+    expect(error.getResponse()).toEqual(
       expect.objectContaining({
-        organizationId: 'org-1',
-        requiredPaymentAmount: '300.00',
-        currency: 'PEN',
-        paymentPolicyVersion: 1,
+        code: 'INQUIRY_CONVERSION_REQUIRED',
+        detail: expect.stringContaining('/inquiries/inq-1/commands/convert-to-reservation'),
       }),
     );
-    expect(result.status).toBe('DRAFT');
   });
 
-  it('rechaza si la fecha de inicio no es anterior a la de fin', async () => {
-    const { reservations, workContext } = buildDeps();
-    const handler = new CreateReservationHandler(reservations, workContext);
+  it('sigue exigiendo un contexto empresa/sede vigente (403 antes de revelar nada)', async () => {
+    const handler = new CreateReservationHandler(buildWorkContext('forbidden'));
 
-    await expect(
-      handler.execute(command({ startAt: new Date('2026-09-22T14:00:00Z'), endAt: new Date('2026-09-20T14:00:00Z') })),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('rechaza si la combinacion empresa/sede no es una asignacion vigente', async () => {
-    const { reservations, workContext } = buildDeps({ context: 'forbidden' });
-    const handler = new CreateReservationHandler(reservations, workContext);
+  it('sigue aplicando la politica rol-accion CREATE (403 para un rol sin permiso)', async () => {
+    const handler = new CreateReservationHandler(buildWorkContext({ role: 'CAMPO' }));
 
-    await expect(
-      handler.execute(command({ companyId: 'company-ajena', branchId: 'branch-ajena' })),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-  });
-
-  it('rechaza si el cliente no existe en la organizacion autorizada (referencia cross-tenant)', async () => {
-    const { reservations, workContext } = buildDeps({ customerOrg: 'org-ajena' });
-    const handler = new CreateReservationHandler(reservations, workContext);
-
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
-    expect(reservations.create).not.toHaveBeenCalled();
-  });
-
-  it('rechaza si el vehiculo no existe en la organizacion autorizada (referencia cross-tenant)', async () => {
-    const { reservations, workContext } = buildDeps({ vehicleOrg: null });
-    const handler = new CreateReservationHandler(reservations, workContext);
-
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
-    expect(reservations.create).not.toHaveBeenCalled();
-  });
-
-  it('rechaza si la consulta de origen no existe en la organizacion autorizada (referencia cross-tenant)', async () => {
-    const { reservations, workContext } = buildDeps({ inquiryOrg: 'org-ajena' });
-    const handler = new CreateReservationHandler(reservations, workContext);
-
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
-    expect(reservations.create).not.toHaveBeenCalled();
-  });
-
-  // Hallazgo ALTO PR#6 ("referencias corregidas solo a nivel organizacion,
-  // no empresa/sede"): mismo organizationId, pero el cliente/vehiculo/
-  // consulta pertenece a OTRA empresa de la misma organizacion.
-  it('rechaza si el cliente pertenece a otra empresa de la misma organizacion (IDOR cross-company)', async () => {
-    const { reservations, workContext } = buildDeps({ customerCompany: 'company-ajena' });
-    const handler = new CreateReservationHandler(reservations, workContext);
-
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
-    expect(reservations.create).not.toHaveBeenCalled();
-  });
-
-  it('rechaza si el vehiculo pertenece a otra empresa de la misma organizacion (IDOR cross-company)', async () => {
-    const { reservations, workContext } = buildDeps({ vehicleCompany: 'company-ajena' });
-    const handler = new CreateReservationHandler(reservations, workContext);
-
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
-    expect(reservations.create).not.toHaveBeenCalled();
-  });
-
-  it('rechaza si la consulta de origen pertenece a otra empresa de la misma organizacion (IDOR cross-company)', async () => {
-    const { reservations, workContext } = buildDeps({ inquiryCompany: 'company-ajena' });
-    const handler = new CreateReservationHandler(reservations, workContext);
-
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(NotFoundException);
-    expect(reservations.create).not.toHaveBeenCalled();
-  });
-
-  // Hallazgo ALTO PR#6 ("falta autorizacion granular por rol/accion") -
-  // matriz provisional de reservation-role-policy.ts: un rol fuera de la
-  // lista operativa (FRONT_OFFICE/GERENCIA/ADMINISTRACION) no puede crear
-  // reservas.
-  it('rechaza crear una reserva si el rol autorizado no esta en la matriz de Reserva', async () => {
-    const { reservations, workContext } = buildDeps({ role: 'AUDITORIA' });
-    const handler = new CreateReservationHandler(reservations, workContext);
-
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
-    expect(reservations.create).not.toHaveBeenCalled();
+    await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

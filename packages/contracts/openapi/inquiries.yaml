@@ -1,0 +1,375 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Inquiries API
+  version: 0.3.0
+  description: >
+    Contrato del modulo Consulta (HU-26, TDD-CON-001.md seccion 11):
+    registrar (con el snapshot de CON-02), cotizar, cerrar sin conversion,
+    convertir a reserva (caso de uso unico, crea la Reservation en la misma
+    transaccion) y las consultas de bandeja (CON-01) y detalle (CON-04). No
+    incluye convert-to-rental (depende de HU-28). No expone `PATCH status`.
+
+
+    Cambios 0.3.0 (revalidacion PR#7, d7a6124):
+    - RegisterInquiryRequest incluye el snapshot de CON-02 (prospecto,
+      nacionalidad, destino, dias, periodo, personas, fecha de ingreso) -
+      hallazgo ALTO "brecha contractual con CON-02" (CONFLICT-CON-002).
+    - La bandeja devuelve InquirySummaryResponse (sin historial), limit
+      maximo 100 aplicado tambien en runtime, cursor keyset (createdAt, id).
+    - Idempotency-Key documentado en los 4 comandos, con 409
+      IDEMPOTENCY_KEY_REUSED / IDEMPOTENCY_KEY_IN_PROGRESS.
+    - 403 ROLE_NOT_ALLOWED (politica rol-accion), 409 QUOTATION_EXPIRED,
+      409 INQUIRY_ALREADY_CONVERTED, 422 VEHICLE_NOT_ELIGIBLE y 503
+      QUOTING_NOT_PRODUCTION_READY.
+    - `inquiries-openapi.contract.spec.ts` (apps/api) verifica que este
+      archivo coincide con los DTO/constantes del backend.
+paths:
+  /inquiries:
+    post:
+      operationId: registerInquiry
+      summary: Registra una consulta en REGISTRADA (CON-P01..P05, BR-CON-001/003/004/005)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterInquiryRequest' }
+      responses:
+        '201':
+          description: Consulta registrada en REGISTRADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InquiryResponse' }
+        '400': { description: 'Validacion - PROSPECT_NAME_REQUIRED (sin customerId), COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS' }
+        '403': { description: 'Empresa/sede no autorizada, o ROLE_NOT_ALLOWED (solo FRONT_OFFICE registra)' }
+        '404': { description: 'CUSTOMER_NOT_FOUND - el cliente no existe en la empresa autorizada' }
+        '409': { $ref: '#/components/responses/IdempotencyConflict' }
+    get:
+      operationId: listInquiries
+      summary: Bandeja de consultas (CON-01) - proyeccion de resumen
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: customerId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: channel, in: query, required: false, schema: { $ref: '#/components/schemas/InquiryChannel' } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/InquiryStatus' } }
+        - { name: createdFrom, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: createdTo, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - name: cursorCreatedAt
+          in: query
+          required: false
+          schema: { type: string, format: date-time }
+          description: >
+            Keyset: createdAt de la ULTIMA fila de la pagina anterior. Se
+            envia junto con cursorId. La pagina siguiente contiene las filas
+            con (createdAt, id) estrictamente menor, en orden createdAt DESC,
+            id DESC.
+        - { name: cursorId, in: query, required: false, schema: { type: string, format: uuid }, description: 'id de la ULTIMA fila de la pagina anterior' }
+      responses:
+        '200':
+          description: Pagina de consultas (sin interactions/quotations)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/InquirySummaryResponse' }
+        '400': { description: 'INVALID_LIMIT (fuera de 1..100), INVALID_DATE_RANGE, o cursorCreatedAt/cursorId enviados por separado' }
+        '403': { description: 'Empresa/sede no autorizada, o ROLE_NOT_ALLOWED (lectura: FRONT_OFFICE, GERENCIA, AUDITORIA, ADMINISTRACION)' }
+  /inquiries/{id}:
+    get:
+      operationId: getInquiry
+      summary: Detalle de una consulta, con interactions/quotations (CON-04)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/InquiryId' }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Consulta encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InquiryResponse' }
+        '400': { description: 'id, companyId o branchId no son UUID' }
+        '403': { description: 'Empresa/sede no autorizada, o ROLE_NOT_ALLOWED' }
+        '404': { description: 'Consulta no encontrada en el scope (una consulta de otra sede/empresa tambien responde 404)' }
+  /inquiries/{id}/commands/quote:
+    post:
+      operationId: quoteInquiry
+      summary: Cotiza un vehiculo elegible - snapshot del tarifario versionado (CON-P07, BR-CON-005)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/InquiryId' }
+        - { $ref: '#/components/parameters/IfMatch' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuoteRequest' }
+      responses:
+        '200': { description: Consulta cotizada, content: { application/json: { schema: { $ref: '#/components/schemas/InquiryResponse' } } } }
+        '400': { description: INVALID_ESTIMATED_DAYS }
+        '403': { description: 'Empresa/sede no autorizada, o ROLE_NOT_ALLOWED (solo FRONT_OFFICE)' }
+        '404': { description: Consulta no encontrada en el scope }
+        '409': { $ref: '#/components/responses/IdempotencyConflict' }
+        '412': { description: INQUIRY_VERSION_CONFLICT }
+        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE, o VEHICLE_NOT_ELIGIBLE (no existe en la empresa / no elegible segun Flota)' }
+        '428': { description: IF_MATCH_REQUIRED }
+        '503': { $ref: '#/components/responses/QuotingNotProductionReady' }
+  /inquiries/{id}/commands/close:
+    post:
+      operationId: closeInquiry
+      summary: Cierra sin conversion, con motivo obligatorio (CON-P09, BR-CON-002)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/InquiryId' }
+        - { $ref: '#/components/parameters/IfMatch' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloseInquiryRequest' }
+      responses:
+        '200': { description: Consulta cerrada sin conversion, content: { application/json: { schema: { $ref: '#/components/schemas/InquiryResponse' } } } }
+        '403': { description: 'Empresa/sede no autorizada, o ROLE_NOT_ALLOWED (solo FRONT_OFFICE)' }
+        '404': { description: Consulta no encontrada en el scope }
+        '409': { $ref: '#/components/responses/IdempotencyConflict' }
+        '412': { description: INQUIRY_VERSION_CONFLICT }
+        '422': { description: INQUIRY_NOT_TRANSITIONABLE }
+        '428': { description: IF_MATCH_REQUIRED }
+  /inquiries/{id}/commands/convert-to-reservation:
+    post:
+      operationId: convertInquiryToReservation
+      summary: Convierte la consulta y crea la Reservation vinculada en una sola transaccion (CON-P08/P09, BR-CON-002)
+      description: >
+        CASO DE USO UNICO para crear una Reserva desde una Consulta
+        (CONFLICT-CON-001; POST /reservations responde 409
+        INQUIRY_CONVERSION_REQUIRED). En una transaccion Serializable:
+        transiciona COTIZADA -> CONVERTIDA, crea la Reservation con
+        vehiculo/monto de la cotizacion VIGENTE mas reciente (nunca del
+        payload) y audita. Una consulta se convierte a lo sumo una vez
+        (UNIQUE reservations.inquiry_id). Precondiciones: COTIZADA, cliente
+        formal asociado, cotizacion vigente (validUntil posterior a ahora) y
+        startAt futuro (una salida inmediata corresponde a Alquiler,
+        BDD-CON-001 10.4). endAt = startAt + estimatedDays de la cotizacion.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/InquiryId' }
+        - { $ref: '#/components/parameters/IfMatch' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConvertToReservationRequest' }
+      responses:
+        '200':
+          description: Consulta convertida y reserva creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConvertToReservationResponse' }
+        '400': { description: 'CUSTOMER_REQUIRED_FOR_CONVERSION, RESERVATION_START_NOT_IN_FUTURE' }
+        '403': { description: 'Empresa/sede no autorizada, o ROLE_NOT_ALLOWED (CONVERT_TO_RESERVATION de Consulta y CREATE de Reserva)' }
+        '404': { description: Consulta no encontrada en el scope }
+        '409':
+          description: >
+            QUOTATION_EXPIRED (volver a cotizar), INQUIRY_ALREADY_CONVERTED
+            (la base ya tiene una reserva para esta consulta),
+            TRANSACTION_CONFLICT (conflicto concurrente persistente,
+            reintentar), IDEMPOTENCY_KEY_REUSED o IDEMPOTENCY_KEY_IN_PROGRESS
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '412': { description: INQUIRY_VERSION_CONFLICT }
+        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE - la consulta no esta COTIZADA' }
+        '428': { description: IF_MATCH_REQUIRED }
+        '503': { $ref: '#/components/responses/QuotingNotProductionReady' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: 'Firebase ID token' }
+  parameters:
+    InquiryId:
+      { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    IfMatch:
+      { name: If-Match, in: header, required: true, schema: { type: string }, description: 'ETag fuerte con la version vigente, ej. "3"' }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, maxLength: 200 }
+      description: >
+        TDD-CON-001.md 15. Opcional mientras erp-portal-web no lo envie en
+        todos los comandos. Si llega: se reserva atomicamente antes de
+        ejecutar; un reintento identico ya completado devuelve la respuesta
+        guardada sin re-ejecutar; una clave aun en curso -> 409
+        IDEMPOTENCY_KEY_IN_PROGRESS; misma clave con otro cuerpo -> 409
+        IDEMPOTENCY_KEY_REUSED. Validez 24 h.
+  responses:
+    IdempotencyConflict:
+      description: IDEMPOTENCY_KEY_REUSED o IDEMPOTENCY_KEY_IN_PROGRESS
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    QuotingNotProductionReady:
+      description: >
+        QUOTING_NOT_PRODUCTION_READY - Flota (FleetAvailabilityPort) o el
+        tarifario (RateCardPort) siguen siendo provisionales y la API corre
+        en produccion sin KAIROS_ALLOW_PROVISIONAL_QUOTING=true.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      properties:
+        code: { type: string }
+        detail: { type: string }
+    InquiryStatus:
+      type: string
+      enum: [REGISTRADA, COTIZADA, CONVERTIDA, CERRADA_SIN_CONVERSION]
+    InquiryChannel:
+      type: string
+      enum: [WHATSAPP, LLAMADA, PRESENCIAL, WEB, REDES]
+    InquiryNationality:
+      type: string
+      description: DAT-CON-002
+      enum: [PERUANO, EXTRANJERO]
+    ThirdRequiredDocument:
+      type: string
+      description: 'BR-CON-004 - derivado de la nacionalidad: PERUANO -> RECIBO_AGUA_O_LUZ, EXTRANJERO -> CONSTANCIA_HOSPEDAJE'
+      enum: [RECIBO_AGUA_O_LUZ, CONSTANCIA_HOSPEDAJE]
+    InquiryDataOrigin:
+      type: string
+      description: 'CON02 = registrada por CON-02 (snapshot completo); LEGACY_STUB = stub heredado de PR#6, sin snapshot'
+      enum: [CON02, LEGACY_STUB]
+    ChannelMode:
+      type: string
+      enum: [PRESENCIAL, VIRTUAL]
+    CommandScopeRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+    RegisterInquiryRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [channel, touristUse, nationality, destination, estimatedDays]
+          properties:
+            channel: { $ref: '#/components/schemas/InquiryChannel' }
+            customerId: { type: string, format: uuid, description: 'Cliente formal, si existe (debe ser de la misma empresa)' }
+            touristUse: { type: boolean, description: DAT-CON-001 }
+            prospectName: { type: string, maxLength: 200, description: 'CON-P02 - obligatorio si no se envia customerId' }
+            prospectDocumentType: { type: string, maxLength: 30 }
+            prospectDocumentNumber: { type: string, maxLength: 30 }
+            nationality: { $ref: '#/components/schemas/InquiryNationality' }
+            destination: { type: string, minLength: 1, maxLength: 200, description: DAT-CON-003 }
+            estimatedDays: { type: integer, minimum: 1, description: 'DAT-CON-003 - tiempo estimado' }
+            travelStartDate: { type: string, format: date, description: 'CON-02 periodo (opcional)' }
+            partySize: { type: integer, minimum: 1, description: 'CON-02 personas (opcional)' }
+            countryEntryDate: { type: string, format: date, description: 'SC-CON-001.03 - solo si nationality = EXTRANJERO' }
+    QuoteRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [vehicleId, destination, estimatedDays]
+          properties:
+            vehicleId: { type: string, format: uuid }
+            destination: { type: string }
+            estimatedDays: { type: integer, minimum: 1 }
+    CloseInquiryRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [reason]
+          properties:
+            reason: { type: string }
+            note: { type: string }
+    ConvertToReservationRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [channelMode, startAt]
+          properties:
+            channelMode: { $ref: '#/components/schemas/ChannelMode' }
+            startAt: { type: string, format: date-time, description: 'Debe ser futura' }
+    InquirySummaryResponse:
+      type: object
+      required:
+        [id, companyId, branchId, status, channel, touristUse, customerId, prospectName, prospectDocumentType,
+         prospectDocumentNumber, nationality, destination, estimatedDays, travelStartDate, partySize,
+         countryEntryDate, thirdRequiredDocument, dataOrigin, closedReason, version, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/InquiryStatus' }
+        channel:
+          oneOf: [{ $ref: '#/components/schemas/InquiryChannel' }, { type: 'null' }]
+          description: null solo en LEGACY_STUB
+        touristUse: { type: boolean }
+        customerId: { type: [string, 'null'], format: uuid }
+        prospectName: { type: [string, 'null'] }
+        prospectDocumentType: { type: [string, 'null'] }
+        prospectDocumentNumber: { type: [string, 'null'] }
+        nationality:
+          oneOf: [{ $ref: '#/components/schemas/InquiryNationality' }, { type: 'null' }]
+        destination: { type: [string, 'null'] }
+        estimatedDays: { type: [integer, 'null'] }
+        travelStartDate: { type: [string, 'null'], format: date }
+        partySize: { type: [integer, 'null'] }
+        countryEntryDate: { type: [string, 'null'], format: date }
+        thirdRequiredDocument:
+          oneOf: [{ $ref: '#/components/schemas/ThirdRequiredDocument' }, { type: 'null' }]
+        dataOrigin: { $ref: '#/components/schemas/InquiryDataOrigin' }
+        closedReason: { type: [string, 'null'] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+    InquiryResponse:
+      allOf:
+        - { $ref: '#/components/schemas/InquirySummaryResponse' }
+        - type: object
+          required: [interactions, quotations]
+          properties:
+            interactions:
+              type: array
+              items:
+                type: object
+                required: [id, channel, occurredAt, outcome, note]
+                properties:
+                  id: { type: string, format: uuid }
+                  channel: { $ref: '#/components/schemas/InquiryChannel' }
+                  occurredAt: { type: string, format: date-time }
+                  outcome: { type: [string, 'null'] }
+                  note: { type: [string, 'null'] }
+            quotations:
+              type: array
+              description: Ordenadas de la mas reciente a la mas antigua; la primera es la vigente si validUntil es futuro
+              items:
+                type: object
+                required: [id, vehicleId, rateCardVersionId, destination, estimatedDays, amount, currency, validUntil, createdAt]
+                properties:
+                  id: { type: string, format: uuid }
+                  vehicleId: { type: string, format: uuid }
+                  rateCardVersionId: { type: string }
+                  destination: { type: string }
+                  estimatedDays: { type: integer }
+                  amount: { type: string }
+                  currency: { type: string }
+                  validUntil: { type: string, format: date-time }
+                  createdAt: { type: string, format: date-time }
+    ConvertToReservationResponse:
+      type: object
+      required: [inquiry, reservation]
+      properties:
+        inquiry: { $ref: '#/components/schemas/InquiryResponse' }
+        reservation:
+          description: 'Ver packages/contracts/openapi/reservations.yaml#/components/schemas/ReservationResponse'
+          type: object

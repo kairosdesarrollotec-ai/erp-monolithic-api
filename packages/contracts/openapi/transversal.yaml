@@ -279,10 +279,47 @@ components:
         state:
           type: string
           description: >
-            PROVISIONAL: unico valor soportado hoy. Ver descripcion de
-            DashboardResponse para la estrategia de evolucion y su
-            aclaracion sobre compatibilidad de clientes.
-          enum: [EMPTY]
+            EXTENDIDO 23 sep 2026 (HU-24, TR-06): se agrega READY de forma
+            aditiva, exactamente como preveia esta misma descripcion -
+            EMPTY no se remueve ni cambia de significado. Ver
+            DashboardResponse para la aclaracion sobre compatibilidad de
+            clientes (un switch exhaustivo sin default se rompe con este
+            valor nuevo).
+          enum: [EMPTY, READY]
+        tasks:
+          type: array
+          description: >
+            Presente solo cuando state=READY. Alcance real de esta
+            primera version: solo se calculan tareas de Reservations
+            (ReservationCreated -> pendiente de pago/documentos,
+            descartada al confirmar o cancelar) para el rol FRONT_OFFICE.
+            Los demas roles y fuentes (Rentals, Returns, Recruitment,
+            HR-Administration) se agregan cuando esos modulos existan -
+            ver claude/Diseno_Agregador_Transversal_TR-06-07-08.md
+            (Project KAIROS).
+          items:
+            $ref: '#/components/schemas/DashboardTaskItem'
+    DashboardTaskItem:
+      type: object
+      required: [id, itemType, priority, title, detail, deepLink]
+      properties:
+        id:
+          type: string
+          format: uuid
+        itemType:
+          type: string
+          enum: [TASK, ALERT, DRAFT, ACTIVITY]
+        priority:
+          type: integer
+          description: Mayor valor = mas urgente. El frontend ordena por esto, no reimplementa la regla de negocio.
+        title:
+          type: string
+        detail:
+          type: string
+          nullable: true
+        deepLink:
+          type: string
+          description: Lleva directo al paso exacto (ej. la reserva especifica), nunca al inicio generico del flujo.
     SelectWorkContextRequest:
       type: object
       required: [companyId, branchId]

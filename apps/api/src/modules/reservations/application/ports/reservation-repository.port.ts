@@ -76,33 +76,6 @@ export interface CancelReservationInput extends ReservationScope {
 }
 
 /**
- * Hallazgo ALTO "referencias corregidas solo a nivel organizacion, no
- * empresa/sede" (revision PR#6): operatingCompanyId agregado a los 3
- * records siguientes para que CreateReservationHandler pueda validar,
- * antes de crear la reserva, que la entidad referenciada pertenece no
- * solo a la organizacion correcta sino tambien a la empresa operadora
- * correcta - organizationId por si solo no bastaba para evitar el cruce
- * cross-company entre empresas de una misma organizacion.
- */
-export interface CustomerRecord {
-  id: string;
-  organizationId: string;
-  operatingCompanyId: string;
-}
-
-export interface VehicleRecord {
-  id: string;
-  organizationId: string;
-  operatingCompanyId: string;
-}
-
-export interface InquiryRecord {
-  id: string;
-  organizationId: string;
-  operatingCompanyId: string;
-}
-
-/**
  * TDD-RES-001.md secciones 9-12 - puerto de persistencia de Reserva.
  *
  * Hallazgo critico "cambio de estado y auditoria no son atomicos": las
@@ -115,10 +88,11 @@ export interface InquiryRecord {
  * auditoria revierte tambien la mutacion. El repositorio ya no abre su
  * propia transaccion anidada.
  *
- * Hallazgo critico "referencias cross-tenant al crear": findCustomerById/
- * findVehicleById/findInquiryById existen para que CreateReservationHandler
- * pueda resolver estas entidades bajo el scope autorizado ANTES de crear
- * la reserva, en vez de confiar ciegamente en los IDs del payload.
+ * Revalidacion PR#7: `findCustomerById`/`findVehicleById`/`findInquiryById`
+ * se eliminaron - solo los usaba CreateReservationHandler, que ya no crea
+ * reservas (la unica via es convert-to-reservation de Consulta, que valida
+ * cliente/vehiculo/consulta bajo el scope y las FKs compuestas lo
+ * garantizan en la base; ver CONFLICT-CON-001).
  */
 export abstract class ReservationRepositoryPort {
   abstract create(
@@ -134,9 +108,6 @@ export abstract class ReservationRepositoryPort {
 
   abstract list(filter: ListReservationsFilter): Promise<ReservationRecord[]>;
 
-  abstract findCustomerById(id: string): Promise<CustomerRecord | null>;
-  abstract findVehicleById(id: string): Promise<VehicleRecord | null>;
-  abstract findInquiryById(id: string): Promise<InquiryRecord | null>;
 
   abstract registerPayment(
     id: string,

@@ -1,9 +1,15 @@
 /**
- * Hallazgo ALTO de revision PR#6 ("idempotencia no implementada" -
- * TDD-RES-001.md seccion 15: "un reintento del mismo Idempotency-Key
- * nunca debe crear un segundo vehicle_commitment"). Puerto minimo para
- * que IdempotencyInterceptor pueda guardar/recuperar la respuesta
- * asociada a una clave, sin acoplarse a Prisma directamente.
+ * Deduplicacion de comandos idempotentes (TDD-KAIROS-TRANSVERSAL.md 7.3,
+ * TDD-RES-001.md seccion 15, TDD-CON-001.md seccion 15).
+ *
+ * Hallazgo ALTO de revalidacion PR#7 ("reintentos pueden duplicar
+ * efectos" - deduplicacion transaccional): la version anterior (PR#6)
+ * hacia `findByKey` -> ejecutar -> `save`. Dos solicitudes concurrentes
+ * con la MISMA clave pasaban ambas el `findByKey` y AMBAS ejecutaban el
+ * comando. Ahora la clave se RESERVA atomicamente ANTES de ejecutar
+ * (`claim`, respaldado por la restriccion UNIQUE de
+ * `idempotency_keys.key`): solo una solicitud gana la reserva; la otra
+ * recibe la respuesta ya guardada, o 409 si la primera sigue en curso.
  */
 export interface IdempotencyRecord {
   requestHash: string;
@@ -11,16 +17,31 @@ export interface IdempotencyRecord {
   responseBody: unknown;
 }
 
-export interface SaveIdempotencyRecordInput {
+export type IdempotencyClaimResult =
+  /** Clave nueva (o vencida): esta solicitud debe ejecutar el comando. */
+  | { status: 'CLAIMED' }
+  /** Misma clave y mismo contenido, ya completada: devolver la respuesta guardada. */
+  | { status: 'REPLAY'; record: IdempotencyRecord }
+  /** Misma clave y mismo contenido, todavia en ejecucion por otra solicitud. */
+  | { status: 'IN_PROGRESS' }
+  /** Misma clave con contenido DISTINTO: uso invalido del header. */
+  | { status: 'MISMATCH' };
+
+export interface ClaimIdempotencyKeyInput {
   key: string;
-  organizationId: string | null;
   requestHash: string;
-  statusCode: number;
-  responseBody: unknown;
   ttlMs: number;
 }
 
+export interface CompleteIdempotencyKeyInput {
+  key: string;
+  statusCode: number;
+  responseBody: unknown;
+}
+
 export abstract class IdempotencyPort {
-  abstract findByKey(key: string): Promise<IdempotencyRecord | null>;
-  abstract save(input: SaveIdempotencyRecordInput): Promise<void>;
+  abstract claim(input: ClaimIdempotencyKeyInput): Promise<IdempotencyClaimResult>;
+  abstract complete(input: CompleteIdempotencyKeyInput): Promise<void>;
+  /** Libera una reserva cuyo comando fallo, para que el cliente pueda reintentar. */
+  abstract release(key: string): Promise<void>;
 }

@@ -8,6 +8,8 @@ describe('RecordLoginAttemptHandler', () => {
       recordLoginAttempt: jest.fn().mockResolvedValue(undefined),
       recordWorkContextSelection: jest.fn().mockResolvedValue(undefined),
       recordReservationEvent: jest.fn().mockResolvedValue(undefined),
+      recordInquiryEvent: jest.fn().mockResolvedValue(undefined),
+      recordAdminEvent: jest.fn().mockResolvedValue(undefined),
     };
     const handler = new RecordLoginAttemptHandler(repository);
 
@@ -29,6 +31,8 @@ describe('RecordLoginAttemptHandler', () => {
       recordLoginAttempt: jest.fn().mockResolvedValue(undefined),
       recordWorkContextSelection: jest.fn().mockResolvedValue(undefined),
       recordReservationEvent: jest.fn().mockResolvedValue(undefined),
+      recordInquiryEvent: jest.fn().mockResolvedValue(undefined),
+      recordAdminEvent: jest.fn().mockResolvedValue(undefined),
     };
     const handler = new RecordLoginAttemptHandler(repository);
 

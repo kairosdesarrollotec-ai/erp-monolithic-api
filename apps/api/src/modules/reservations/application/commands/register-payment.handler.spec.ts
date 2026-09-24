@@ -23,7 +23,6 @@ describe('RegisterPaymentHandler', () => {
   function buildDeps(existing: ReservationRecord | null, forbidden = false, role = 'FRONT_OFFICE') {
     const reservations: jest.Mocked<ReservationRepositoryPort> = {
       create: jest.fn(), findById: jest.fn().mockResolvedValue(existing), list: jest.fn(),
-      findCustomerById: jest.fn(), findVehicleById: jest.fn(), findInquiryById: jest.fn(),
       registerPayment: jest.fn().mockResolvedValue({ ...(existing ?? buildRecord()), paymentValidatedAt: new Date(), version: 2 }),
       registerDocuments: jest.fn(), confirm: jest.fn(), cancel: jest.fn(),
     };

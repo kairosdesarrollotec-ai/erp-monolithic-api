@@ -20,7 +20,6 @@ const SCOPE: ReservationScope = { organizationId: 'org-1', operatingCompanyId: '
 function buildDeps(record: ReservationRecord | null, forbidden = false) {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
     create: jest.fn(), findById: jest.fn().mockResolvedValue(record), list: jest.fn(),
-    findCustomerById: jest.fn(), findVehicleById: jest.fn(), findInquiryById: jest.fn(),
     registerPayment: jest.fn(), registerDocuments: jest.fn(), confirm: jest.fn(), cancel: jest.fn(),
   };
   const workContext = {

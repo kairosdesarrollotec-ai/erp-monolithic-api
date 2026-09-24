@@ -1,0 +1,14 @@
+# Revalidacion PR#7 (supply chain): las acciones estan fijadas por SHA; Dependabot
+# abre PRs semanales para actualizarlas (y las dependencias npm), siempre sujetas
+# a revision humana.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
