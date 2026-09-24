@@ -1,0 +1,12 @@
+# CONFLICT-CON-001
+
+- Fuentes en conflicto: [TDD-RES-001 v2.0 seccion 11.1 (`POST /api/v1/reservations` crea una Reserva citando `inquiryId`), TDD-CON-001 v2.0 secciones 7.3/8.2/12 (`convert-to-reservation` transiciona la Consulta COTIZADA -> CONVERTIDA, estado terminal; "una consulta puede convertirse en Reserva o en Alquiler, nunca en ambos")]
+- Descripcion: las dos fuentes definen DOS caminos para crear una Reserva a partir de una Consulta. `POST /reservations` no exige que la Consulta este COTIZADA ni la transiciona, por lo que permitia (a) varias reservas para la misma consulta, (b) reservas colgando de una consulta CERRADA_SIN_CONVERSION y (c) consultas que siguen "abiertas" despues de haber generado una reserva - contradice BR-CON-002 y la cardinalidad implicita de TDD-CON-001 8.1 (CONVERTIDA terminal). Hallazgo CRITICO de la revalidacion de PR#7 (`d7a6124`): "Reservation.inquiryId continua sin unicidad y el endpoint general de reservas puede crear mas de una reserva para la misma consulta".
+- Alcance afectado: `POST /reservations` (CreateReservationHandler, reservations.yaml), `POST /inquiries/{id}/commands/convert-to-reservation`, pantalla RES-04 (todavia no implementada en erp-portal-web).
+- Pregunta concreta: ¿La creacion de una Reserva desde una Consulta se hace SOLO con `convert-to-reservation` (Consulta como duena de la transicion), o `POST /reservations` debe seguir existiendo y ejecutar internamente la misma conversion?
+- Alternativas y consecuencias:
+  1. (Aplicada de forma INTERINA en PR#7) Caso de uso unico `convert-to-reservation`; `POST /reservations` conserva autenticacion/contexto/rol y responde 409 `INQUIRY_CONVERSION_REQUIRED`. Consecuencia: TDD-RES-001 11.1 queda desactualizado hasta que se corrija; ningun cliente usa hoy ese endpoint.
+  2. `POST /reservations` delega en el mismo caso de uso (mismo resultado, dos rutas HTTP). Consecuencia: mas superficie de contrato a mantener; el cuerpo de 11.1 (endAt explicito, vehicleId) puede contradecir la cotizacion vigente y habria que definir que gana.
+  En ambos casos la base ya garantiza la cardinalidad 1:1 (UNIQUE `reservations.inquiry_id`, migracion 20260923000000).
+- Estado: OPEN
+- Resolucion (si aplica): pendiente de decision de Eder Ramos (Tech Lead) - registrar en docs/decision-log.md.

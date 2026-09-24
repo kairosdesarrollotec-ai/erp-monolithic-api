@@ -1,0 +1,141 @@
+name: CI
+
+# Revalidacion PR#7 (d7a6124), hallazgos sobre el CI:
+# - supply chain: acciones fijadas por SHA completo (con el tag como
+#   comentario); Dependabot (.github/dependabot.yml) propone las
+#   actualizaciones.
+# - el CI anterior no levantaba PostgreSQL ni ejecutaba migraciones: el job
+#   `database` aplica TODAS las migraciones sobre una base limpia, verifica
+#   que no haya drift schema.prisma <-> migraciones, corre la prueba de
+#   upgrade sobre datos poblados y los tests de integracion (concurrencia,
+#   aislamiento cross-company/cross-branch).
+# - contract tests OpenAPI: `inquiries-openapi.contract.spec.ts` corre con los
+#   tests unitarios.
+# - SCA (npm audit) y secret scanning (gitleaks) en el job `security`.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: Typecheck, build y tests unitarios/contrato
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prisma validate + generate
+        env:
+          DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
+        run: |
+          npx prisma validate --schema=apps/api/prisma/schema.prisma
+          npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+      - name: Typecheck (src + test)
+        run: npx tsc --noEmit -p apps/api/tsconfig.json
+
+      - name: Build (apps/api)
+        run: npm run build:api
+
+      - name: Tests unitarios y de contrato OpenAPI (apps/api)
+        run: npm run test:api
+
+  database:
+    name: Migraciones, drift, upgrade e integracion (PostgreSQL real)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: kairos
+          POSTGRES_PASSWORD: kairos
+          POSTGRES_DB: kairos_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U kairos" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://kairos:kairos@localhost:5432/kairos_ci
+      SHADOW_DATABASE_URL: postgresql://kairos:kairos@localhost:5432/kairos_ci_shadow
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: kairos
+      PGPASSWORD: kairos
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cliente PostgreSQL
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+
+      - name: Prisma generate
+        run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+      - name: Todas las migraciones sobre una base LIMPIA
+        run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+
+      - name: Sin drift entre migraciones y schema.prisma
+        run: |
+          psql -d postgres -c "CREATE DATABASE kairos_ci_shadow"
+          npx prisma migrate diff \
+            --from-migrations apps/api/prisma/migrations \
+            --to-schema-datamodel apps/api/prisma/schema.prisma \
+            --shadow-database-url "$SHADOW_DATABASE_URL" \
+            --exit-code
+
+      - name: Prueba de upgrade de Consulta sobre datos poblados
+        run: bash apps/api/test/migrations/inquiries-upgrade.test.sh
+
+      - name: Tests de integracion (concurrencia y aislamiento)
+        run: npm run test:integration:api
+
+  security:
+    name: SCA y secret scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      # SCA. Bloquea con severidad CRITICAL. Las 3 vulnerabilidades HIGH
+      # conocidas (multer/body-parser via @nestjs/platform-express, lodash via
+      # @nestjs/config) solo se corrigen con un upgrade MAYOR de NestJS, que
+      # requiere autorizacion (CLAUDE.md seccion 15) - se reportan sin
+      # bloquear hasta esa decision (SLA KAIROS para HIGH: 7 dias).
+      - name: npm audit (bloqueante - critical)
+        run: npm audit --omit=dev --audit-level=critical
+      - name: npm audit (informativo - high)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
+
+      # Secret scanning: binario oficial de gitleaks verificado por checksum
+      # (sin action de terceros, que ademas exige licencia para orgs).
+      - name: gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          curl -sSfL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks git --no-banner --redact --exit-code 1 .

@@ -3699,9 +3699,9 @@ screens:
   supersedes: null
   note: venta de vehiculo reservado
   is_reference_asset: false
-- proto_id: PROTO-FLO-01-ADVERTENCIA-ACTUALIZACION-1
-  ux_id: FLO-01
-  module: soporte
+- proto_id: PROTO-CON-03-ADVERTENCIA-ACTUALIZACION-1
+  ux_id: CON-03
+  module: consulta
   source: stitch_veloxrent_prototipo_b
   folder: veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_1
   files:
@@ -3721,11 +3721,11 @@ screens:
   sha256: 9932d455d64cba0f5142efac1ed6b3a7e8c98448ff703d0de15f1b295718c35c
   bytes: 924871
   supersedes: null
-  note: advertencia actualizacion 1
+  note: CON-03 exhibicion y cotizacion - advertencia actualizacion 1 (reetiquetado desde FLO-01, 17 sep 2026)
   is_reference_asset: false
-- proto_id: PROTO-FLO-01-ADVERTENCIA-ACTUALIZACION-2
-  ux_id: FLO-01
-  module: soporte
+- proto_id: PROTO-CON-03-ADVERTENCIA-ACTUALIZACION-2
+  ux_id: CON-03
+  module: consulta
   source: stitch_veloxrent_prototipo_b
   folder: veh_culos_disponibles_advertencia_de_actualizaci_n_veloxrent_2
   files:
@@ -3745,11 +3745,11 @@ screens:
   sha256: eba80336aa39fdf507fe40469eae32e58ddb87eab4cbd596bde54607664087cd
   bytes: 834456
   supersedes: null
-  note: advertencia actualizacion 2
+  note: CON-03 exhibicion y cotizacion - advertencia actualizacion 2 (reetiquetado desde FLO-01, 17 sep 2026)
   is_reference_asset: false
-- proto_id: PROTO-FLO-01-AYACUCHO-04-07-SEP-1
-  ux_id: FLO-01
-  module: soporte
+- proto_id: PROTO-CON-03-AYACUCHO-04-07-SEP-1
+  ux_id: CON-03
+  module: consulta
   source: stitch_veloxrent_prototipo_b
   folder: veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_1
   files:
@@ -3769,11 +3769,11 @@ screens:
   sha256: 9b5242ea0838135912a118c13ff931552b93097bc9dfe61bef5aaf46d404f382
   bytes: 7822
   supersedes: null
-  note: ayacucho 04-07 sep 1
+  note: CON-03 exhibicion y cotizacion - ayacucho 04-07 sep 1 (reetiquetado desde FLO-01, 17 sep 2026)
   is_reference_asset: false
-- proto_id: PROTO-FLO-01-AYACUCHO-04-07-SEP-2
-  ux_id: FLO-01
-  module: soporte
+- proto_id: PROTO-CON-03-AYACUCHO-04-07-SEP-2
+  ux_id: CON-03
+  module: consulta
   source: stitch_veloxrent_prototipo_b
   folder: veh_culos_disponibles_ayacucho_04_07_sep_veloxrent_2
   files:
@@ -3793,11 +3793,11 @@ screens:
   sha256: b1a522a1605ddbe560f247f550094db53e060ac87c1bd8d9f34af6976e884277
   bytes: 916980
   supersedes: null
-  note: ayacucho 04-07 sep 2
+  note: CON-03 exhibicion y cotizacion - ayacucho 04-07 sep 2 (reetiquetado desde FLO-01, 17 sep 2026)
   is_reference_asset: false
-- proto_id: PROTO-FLO-01-CATALOGO-DISPONIBILIDAD-MOVIL
-  ux_id: FLO-01
-  module: soporte
+- proto_id: PROTO-CON-03-CATALOGO-COTIZACION-MOVIL
+  ux_id: CON-03
+  module: consulta
   source: stitch_veloxrent_prototipo_b
   folder: veh_culos_disponibles_m_vil_veloxrent
   files:
@@ -3817,5 +3817,5 @@ screens:
   sha256: bff6ea4bcb0d1b265564e493601ea51b38ec7c86a7a44f0dbeb9e5356e55ce2b
   bytes: 539141
   supersedes: null
-  note: catalogo disponibilidad movil
+  note: CON-03 exhibicion y cotizacion - movil (reetiquetado desde FLO-01, 17 sep 2026)
   is_reference_asset: false
