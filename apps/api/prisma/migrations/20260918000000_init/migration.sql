@@ -8,23 +8,15 @@
 -- integridad empresa/sede y vigencia de asignaciones).
 --
 -- Generada y probada a mano contra un Postgres 16 real (no `prisma migrate
--- dev`): el sandbox de desarrollo donde se escribio originalmente no
--- tiene salida de red hacia binaries.prisma.sh (motor de Prisma), asi
--- que `prisma generate`/`prisma migrate dev` no se podian ejecutar ahi.
---
--- ACTUALIZACION (hallazgo ALTO de revision de seguimiento de PR#4,
--- revalidacion de 9e33c4f): esta nota quedo desactualizada y
--- contradecia la respuesta del autor en esa misma revision - el CI
--- (.github/workflows/ci.yml) SI corre `npx prisma generate` en un
--- entorno con red completa antes de build/test, asi que el cliente
--- Prisma usado en la aplicacion y en los tests es el tipado real
--- (`PrismaClient` generado), nunca el stub `any` que describia esta
--- nota. Las migraciones posteriores a esta (ver 20260921191500 y
--- 20260921201500) se corrigieron precisamente comparando contra
--- `prisma migrate diff` corrido en un entorno con esa red, y el
--- procedimiento de baseline para una base ya existente (creada antes
--- con `db push`, como advertia el hallazgo ALTO original) esta
--- documentado en docs/migraciones-baseline.md.
+-- dev`): este entorno sandbox no tiene salida de red hacia
+-- binaries.prisma.sh (motor de Prisma), asi que `prisma generate`/
+-- `prisma migrate dev` no se pudieron ejecutar aqui - el mismo limite que
+-- ya reconocia la descripcion original del PR. Antes de mergear, correr
+-- en un entorno con red completa (ver instrucciones en el PR):
+--   npx prisma generate
+--   npx prisma migrate dev --name init
+-- para que Prisma re-valide/re-genere esta migracion oficialmente y el
+-- cliente deje de ser el stub `any` actual.
 
 -- CreateTable
 CREATE TABLE "idempotency_keys" (
