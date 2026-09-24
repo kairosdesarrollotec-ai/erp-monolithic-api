@@ -135,3 +135,15 @@ ALTER TABLE "reservations" DROP CONSTRAINT "reservations_vehicle_id_fkey";
 ALTER TABLE "reservations" ADD CONSTRAINT "reservations_inquiry_id_operating_company_id_fkey" FOREIGN KEY ("inquiry_id", "operating_company_id") REFERENCES "inquiries"("id", "operating_company_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "reservations" ADD CONSTRAINT "reservations_customer_id_operating_company_id_fkey" FOREIGN KEY ("customer_id", "operating_company_id") REFERENCES "customers"("id", "operating_company_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "reservations" ADD CONSTRAINT "reservations_vehicle_id_operating_company_id_fkey" FOREIGN KEY ("vehicle_id", "operating_company_id") REFERENCES "vehicles"("id", "operating_company_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- Correccion (revalidacion PR#7, 23 sep 2026, restaurada aqui tras
+-- volver 20260921190000_add_reservations a su forma historica d442508):
+-- reservations.operating_company_id tambien pasa de FK simple hacia
+-- companies(id) a FK compuesta (operating_company_id, organization_id)
+-- hacia companies(id, organization_id) - mismo patron y mismo hallazgo
+-- que las FKs de customers/vehicles/inquiries de arriba, pero esta ya
+-- estaba corregida en PR#7 antes de este seguimiento; se restaura aqui
+-- como forward-only en vez de quedar perdida al revertir add_reservations.
+ALTER TABLE "reservations" DROP CONSTRAINT "reservations_operating_company_id_fkey";
+
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_operating_company_id_organization_id_fkey" FOREIGN KEY ("operating_company_id", "organization_id") REFERENCES "companies"("id", "organization_id") ON DELETE RESTRICT ON UPDATE CASCADE;
