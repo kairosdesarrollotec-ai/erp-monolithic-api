@@ -90,6 +90,7 @@ Ambos conflictos tienen implementación interina aplicada en `main` (no bloquean
 | 1 | Dependabot PRs (#8–#10 mergeados; #11–#14 cerrados → issue #17) | ✅ Cerrado | — | — |
 | CI-A | Contract tests OpenAPI: Reservations, Admin, Transversal (PR#18) | ✅ Cerrado | — | — |
 | CI-B.3 | SBOM CycloneDX en CI (PR#19) | ✅ Cerrado | — | — |
+| CI-C | CD pipeline: Docker, Cloud Run, Prisma migrate deploy (PR#20) | ✅ Mergeado 25-sep-2026 | Setup GCP + secrets | — |
 | 2 | ADM-02 — enforcement extendido | Pendiente | — | Parte frontend de ADM-02 |
 | 3 | TR-07 — envío externo real | Pendiente | — | Parte frontend de TR-07 (si cambia contrato) |
 | 4 | Migración NestJS 10→12 (issue #17) | Pendiente | Decisión formal | — |
