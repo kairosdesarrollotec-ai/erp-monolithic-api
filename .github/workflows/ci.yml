@@ -9,8 +9,8 @@ name: CI
 #   que no haya drift schema.prisma <-> migraciones, corre la prueba de
 #   upgrade sobre datos poblados y los tests de integracion (concurrencia,
 #   aislamiento cross-company/cross-branch).
-# - contract tests OpenAPI: `inquiries-openapi.contract.spec.ts` corre con los
-#   tests unitarios.
+# - contract tests OpenAPI: `*-openapi.contract.spec.ts` (Inquiries, Reservations,
+#   Admin, Transversal) corren con los tests unitarios.
 # - SCA (npm audit) y secret scanning (gitleaks) en el job `security`.
 
 on:
