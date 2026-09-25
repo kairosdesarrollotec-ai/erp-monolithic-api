@@ -8,10 +8,8 @@ import { GetReservationDepositPolicyHandler } from './application/queries/get-re
 import { UpdateReservationDepositPolicyHandler } from './application/commands/update-reservation-deposit-policy.handler';
 import { GetRolePermissionMatrixHandler } from './application/queries/get-role-permission-matrix.handler';
 import { SaveRolePermissionMatrixHandler } from './application/commands/save-role-permission-matrix.handler';
-import { RolePermissionMatrixPort } from './application/ports/role-permission-matrix.port';
 import { GetNotificationTemplatesHandler } from './application/queries/get-notification-templates.handler';
 import { SaveNotificationTemplateHandler } from './application/commands/save-notification-template.handler';
-import { PrismaRolePermissionMatrixRepository } from './infrastructure/persistence/prisma-role-permission-matrix.repository';
 import { AdminUserRepositoryPort } from './application/ports/admin-user-repository.port';
 import { PrismaAdminUserRepository } from './infrastructure/persistence/prisma-admin-user.repository';
 import { IdentityLookupPort } from './application/ports/identity-lookup.port';
@@ -20,6 +18,7 @@ import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { ParametersModule } from '../parameters/parameters.module';
 import { NotificationTemplatesModule } from '../notification-templates/notification-templates.module';
+import { AuthorizationModule } from '../authorization/authorization.module';
 import { AdminMatrixAuthorizationService } from './application/services/admin-matrix-authorization.service';
 
 /**
@@ -31,7 +30,7 @@ import { AdminMatrixAuthorizationService } from './application/services/admin-ma
  * Project KAIROS).
  */
 @Module({
-  imports: [UsersModule, AuditModule, ParametersModule, NotificationTemplatesModule],
+  imports: [UsersModule, AuditModule, ParametersModule, NotificationTemplatesModule, AuthorizationModule],
   controllers: [AdminController],
   providers: [
     ListOrganizationUsersHandler,
@@ -47,7 +46,6 @@ import { AdminMatrixAuthorizationService } from './application/services/admin-ma
     AdminMatrixAuthorizationService,
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
-    { provide: RolePermissionMatrixPort, useClass: PrismaRolePermissionMatrixRepository },
   ],
 })
 export class AdminModule {}
