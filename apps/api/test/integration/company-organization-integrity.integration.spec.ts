@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { getTestDatabase, TestDatabase } from '../helpers/test-database';
 
 /**
  * Test de integridad a nivel de base de datos REAL (Postgres), no un
@@ -9,28 +10,22 @@ import { randomUUID } from 'crypto';
  * la FK compuesta company_id+organization_id agregada en la migracion
  * 20260922000000_fix_company_organization_integrity.
  *
- * No corre junto a los tests unitarios (`npm run test`) ni en el CI
- * actual (.github/workflows/ci.yml) - necesita un Postgres real
- * levantado (docker-compose.yml de la raiz del repo) y el cliente
- * Prisma generado contra el schema actualizado, cosa que este sandbox
- * de desarrollo no puede hacer (sin red hacia binaries.prisma.sh, ver
- * nota en prisma/migrations/20260918000000_init/migration.sql). Correr
- * a mano (o agregar como job de CI aparte con Postgres de servicio):
- *
- *   docker compose up -d
- *   npm run prisma:generate --workspace=apps/api
- *   npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
- *   npm run test:integration --workspace=apps/api
- *
- * Esta es la evidencia automatizada que la revision de PR#4 senala como
- * pendiente ("Verificacion requerida"); documentado tambien en
- * docs/migraciones-baseline.md.
+ * Utiliza Testcontainers para garantizar un PostgreSQL efímero y limpio,
+ * o el PostgreSQL de servicio provisto en CI.
  */
 describe('Integridad company/organization (Postgres real)', () => {
-  const prisma = new PrismaClient();
+  let db: TestDatabase;
+  let prisma: PrismaClient;
+
+  beforeAll(async () => {
+    db = await getTestDatabase();
+    prisma = db.prisma;
+  }, 60000);
 
   afterAll(async () => {
-    await prisma.$disconnect();
+    if (db) {
+      await db.stop();
+    }
   });
 
   it('la base RECHAZA una asignacion cuyo organizationId no coincide con el de la company referenciada', async () => {
