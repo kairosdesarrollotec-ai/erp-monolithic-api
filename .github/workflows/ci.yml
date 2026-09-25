@@ -38,6 +38,7 @@ jobs:
       - name: Prisma validate + generate
         env:
           DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
+          DIRECT_URL: postgresql://unused:unused@localhost:5432/unused
         run: |
           npx prisma validate --schema=apps/api/prisma/schema.prisma
           npx prisma generate --schema=apps/api/prisma/schema.prisma
@@ -66,6 +67,9 @@ jobs:
           --health-cmd "pg_isready -U kairos" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgresql://kairos:kairos@localhost:5432/kairos_ci
+      # En CI no hay PgBouncer: DIRECT_URL es la misma conexion que DATABASE_URL.
+      # directUrl se usa solo en produccion (Supabase) para migraciones DDL.
+      DIRECT_URL: postgresql://kairos:kairos@localhost:5432/kairos_ci
       SHADOW_DATABASE_URL: postgresql://kairos:kairos@localhost:5432/kairos_ci_shadow
       PGHOST: localhost
       PGPORT: '5432'
