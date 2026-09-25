@@ -4,7 +4,7 @@ Consolida lo pendiente en `erp-monolithic-api` tras el cierre de la cadena de me
 
 Documento equivalente para el frontend: `../erp-portal-web/docs/plan-implementacion-pendientes-2026-09-24.md`.
 
-Última actualización: 25-sep-2026 (Bloque CI-A cerrado).
+Última actualización: 25-sep-2026 (Bloques CI-A y CI-B.3 cerrados).
 
 ---
 
@@ -89,6 +89,7 @@ Ambos conflictos tienen implementación interina aplicada en `main` (no bloquean
 |---|------|--------|-----------|-----------|
 | 1 | Dependabot PRs (#8–#10 mergeados; #11–#14 cerrados → issue #17) | ✅ Cerrado | — | — |
 | CI-A | Contract tests OpenAPI: Reservations, Admin, Transversal (PR#18) | ✅ Cerrado | — | — |
+| CI-B.3 | SBOM CycloneDX en CI (PR#19) | ✅ Cerrado | — | — |
 | 2 | ADM-02 — enforcement extendido | Pendiente | — | Parte frontend de ADM-02 |
 | 3 | TR-07 — envío externo real | Pendiente | — | Parte frontend de TR-07 (si cambia contrato) |
 | 4 | Migración NestJS 10→12 (issue #17) | Pendiente | Decisión formal | — |
