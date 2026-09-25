@@ -16,26 +16,23 @@ Documento equivalente para el frontend: `../erp-portal-web/docs/plan-implementac
 
 ---
 
-## Bloque 1 — Dependabot PRs (dependencias) 🔄 EN PROGRESO
+## Bloque 1 — Dependabot PRs (dependencias) ✅ CERRADO
 
-Los siguientes PRs de Dependabot están abiertos y requieren análisis antes de mergear:
+| PR | Bump | Estado |
+|----|------|--------|
+| #8  | `actions/checkout` 4.2.2 → 7.0.1 | ✅ Mergeado 25-sep-2026 |
+| #9  | `actions/setup-node` 4.4.0 → 7.0.0 | ✅ Mergeado 25-sep-2026 |
+| #10 | `class-validator` 0.14.4 → 0.15.1 | ✅ Mergeado 25-sep-2026 |
+| #11 | `@nestjs/testing` 10.4.22 → 12.0.4 | ❌ Cerrado — migración coordinada requerida |
+| #12 | `@nestjs/config` 3.3.0 → 12.0.0 | ❌ Cerrado — migración coordinada requerida |
+| #13 | `@nestjs/platform-express` 10.4.22 → 12.0.4 | ❌ Cerrado — migración coordinada requerida |
+| #14 | `@nestjs/common` 10.4.22 → 12.0.4 | ❌ Cerrado — migración coordinada requerida |
 
-| PR | Bump | Tipo | Riesgo |
-|----|------|------|--------|
-| #14 | `@nestjs/common` 10.4.22 → 12.0.4 | Runtime | ⚠️ Major — breaking changes NestJS 11/12 |
-| #13 | `@nestjs/platform-express` 10.4.22 → 12.0.4 | Runtime | ⚠️ Major — breaking changes NestJS |
-| #12 | `@nestjs/config` 3.3.0 → 12.0.0 | Runtime | ⚠️ Major — breaking changes NestJS |
-| #11 | `@nestjs/testing` 10.4.22 → 12.0.4 | Dev | ⚠️ Major — solo pruebas |
-| #10 | `class-validator` 0.14.4 → 0.15.1 | Runtime | Minor — revisar decoradores críticos |
-| #9  | `actions/setup-node` 4.4.0 → 7.0.0 | CI | ⚠️ Major — revisar `.github/workflows/` |
-| #8  | `actions/checkout` 4.2.2 → 7.0.1 | CI | ⚠️ Major — revisar `.github/workflows/` |
+Los PRs #11–#14 (NestJS 10→12) fueron cerrados porque los merges individuales fallan por:
+1. **Dual-version en npm workspace** — TypeScript ve dos instancias de `DynamicModule` incompatibles (TS2322).
+2. **ESM-only en Jest** — `@nestjs/common` v12 arrastra `file-type` v22 y `load-esm` (ESM-only); Jest en CommonJS no puede procesarlos.
 
-**Criterio de decisión:** los bumps de NestJS 10→12 requieren una decisión arquitectónica aprobada (CLAUDE.md sección 7: no cambiar versiones del stack sin autorización). Los de `actions/` son independientes del stack de producto y tienen menor riesgo. `class-validator` Minor puede evaluarse aisladamente.
-
-**Orden de evaluación recomendado:**
-1. `actions/checkout` + `actions/setup-node` — solo afectan CI, bajo riesgo de regresión en producción.
-2. `class-validator` 0.14→0.15 — revisar changelog de decoradores usados (`@IsString`, `@IsEnum`, etc.).
-3. NestJS 10→12 — evaluar migration guide oficial; requiere decisión formal antes de proceder.
+La migración NestJS 10→12 debe hacerse como unidad coordinada. Ver issue [#17](https://github.com/kairosdesarrollotec-ai/erp-monolithic-api/issues/17).
 
 ---
 
@@ -55,7 +52,13 @@ Los siguientes PRs de Dependabot están abiertos y requieren análisis antes de 
 3. **TR-04, TR-08, TR-09, TR-10** ("Transversal restante", HU-38) — sin empezar.
    - Revisar BDD/SDD/TDD transversales y contratos en `PANTALLAS-V3-B-TRANSVERSAL.md` para determinar qué parte requiere endpoint o lógica de backend (algunos pueden ser solo frontend).
 
-4. **Confirmar `npx prisma migrate deploy`** — verificar que las migraciones quedaron aplicadas correctamente en el entorno local tras el incidente de `migrate dev` de la sesión anterior. Verificación rápida, no bloquea nada.
+4. **Migración NestJS 10 → 12** — issue [#17](https://github.com/kairosdesarrollotec-ai/erp-monolithic-api/issues/17). Requiere:
+   - Actualizar todos los paquetes NestJS en un único commit (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/config`, `@nestjs/testing`).
+   - Resolver ESM en Jest (`transformIgnorePatterns` o `--experimental-vm-modules`).
+   - Verificar breaking changes en APIs usadas (`ModuleRef`, `HttpException`, `ValidationPipe`).
+   - Registrar decisión formal en `docs/decision-log.md` (exigido por CLAUDE.md sección 7).
+
+5. **Confirmar `npx prisma migrate deploy`** — verificar que las migraciones quedaron aplicadas correctamente en el entorno local tras el incidente de `migrate dev` de la sesión anterior. Verificación rápida, no bloquea nada.
 
 ---
 
@@ -74,8 +77,9 @@ Ambos conflictos tienen implementación interina aplicada en `main` (no bloquean
 
 | # | Item | Estado | Depende de | Bloquea a |
 |---|------|--------|-----------|-----------|
-| 1 | Dependabot PRs | 🔄 En progreso | — | — |
+| 1 | Dependabot PRs (#8–#10 mergeados; #11–#14 cerrados → issue #17) | ✅ Cerrado | — | — |
 | 2 | ADM-02 — enforcement extendido | Pendiente | — | Parte frontend de ADM-02 |
 | 3 | TR-07 — envío externo real | Pendiente | — | Parte frontend de TR-07 (si cambia contrato) |
-| 4 | TR-04/08/09/10 | Pendiente | Definir alcance backend vs. frontend | — |
-| 5 | Confirmar `prisma migrate deploy` | Pendiente | — | — |
+| 4 | Migración NestJS 10→12 (issue #17) | Pendiente | Decisión formal | — |
+| 5 | TR-04/08/09/10 | Pendiente | Definir alcance backend vs. frontend | — |
+| 6 | Confirmar `prisma migrate deploy` | Pendiente | — | — |
