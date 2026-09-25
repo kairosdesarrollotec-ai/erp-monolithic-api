@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
 import { RegisterDocumentsCommand } from './register-documents.command';
 
@@ -17,6 +17,7 @@ export class RegisterDocumentsHandler {
   constructor(
     private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(command: RegisterDocumentsCommand): Promise<ReservationRecord> {
@@ -26,7 +27,7 @@ export class RegisterDocumentsHandler {
       branchId: command.branchId,
     });
 
-    assertReservationRoleAllowed(context.role, 'REGISTER_DOCUMENTS');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'REGISTER_DOCUMENTS');
 
     const scope = {
       organizationId: context.organizationId,
