@@ -4,7 +4,7 @@ Consolida lo pendiente en `erp-monolithic-api` tras el cierre de la cadena de me
 
 Documento equivalente para el frontend: `../erp-portal-web/docs/plan-implementacion-pendientes-2026-09-24.md`.
 
-Última actualización: 25-sep-2026.
+Última actualización: 25-sep-2026 (Bloque CI-A cerrado).
 
 ---
 
@@ -33,6 +33,16 @@ Los PRs #11–#14 (NestJS 10→12) fueron cerrados porque los merges individuale
 2. **ESM-only en Jest** — `@nestjs/common` v12 arrastra `file-type` v22 y `load-esm` (ESM-only); Jest en CommonJS no puede procesarlos.
 
 La migración NestJS 10→12 debe hacerse como unidad coordinada. Ver issue [#17](https://github.com/kairosdesarrollotec-ai/erp-monolithic-api/issues/17).
+
+---
+
+## Bloque CI-A — Contract tests OpenAPI ✅ CERRADO
+
+- [x] `reservations-openapi.contract.spec.ts`: 8 tests — rutas, códigos HTTP (skip deprecated), IdempotencyInterceptor en todos los POST, If-Match/428/412 en comandos, 3 DTOs, límites paginación, 2 enums Prisma, forma del mapper (commit incluido en PR#18).
+- [x] `admin-openapi.contract.spec.ts`: 6 tests — rutas, códigos HTTP, 4 DTOs, 3 enums (commit incluido en PR#18).
+- [x] `transversal-openapi.contract.spec.ts`: 5 tests — rutas de AuditController + UsersController, códigos HTTP, 2 DTOs, WorkerRole enum. Nota: `notifications.yaml` faltante → STOP `MISSING_API_CONTRACT` pendiente (commit incluido en PR#18).
+- [x] Fix real detectado por los tests: `@HttpCode(200)` faltaba en 3 comandos POST de `ReservationsController` (register-payment, register-documents, confirm) que NestJS devolvía 201 en vez de 200 (commit incluido en PR#18).
+- [x] PR#18 mergeado a `main` (25-sep-2026), CI verde.
 
 ---
 
@@ -78,6 +88,7 @@ Ambos conflictos tienen implementación interina aplicada en `main` (no bloquean
 | # | Item | Estado | Depende de | Bloquea a |
 |---|------|--------|-----------|-----------|
 | 1 | Dependabot PRs (#8–#10 mergeados; #11–#14 cerrados → issue #17) | ✅ Cerrado | — | — |
+| CI-A | Contract tests OpenAPI: Reservations, Admin, Transversal (PR#18) | ✅ Cerrado | — | — |
 | 2 | ADM-02 — enforcement extendido | Pendiente | — | Parte frontend de ADM-02 |
 | 3 | TR-07 — envío externo real | Pendiente | — | Parte frontend de TR-07 (si cambia contrato) |
 | 4 | Migración NestJS 10→12 (issue #17) | Pendiente | Decisión formal | — |
