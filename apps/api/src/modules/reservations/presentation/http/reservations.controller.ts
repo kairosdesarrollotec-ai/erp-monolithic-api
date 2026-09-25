@@ -40,6 +40,7 @@ import { GetReservationQueryDto } from './dto/get-reservation-query.dto';
 import { ReservationResponse } from './dto/reservation.response';
 import { toReservationResponse } from './reservation.mapper';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
+import { RESERVATION_LIST_MAX_LIMIT } from '../../domain/reservation-pagination';
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
@@ -101,7 +102,7 @@ export class ReservationsController {
     // el DTO solo garantizaba que `limit` fuera un entero positivo, no que
     // tuviera un techo - un cliente (o un bug de frontend) podia pedir
     // `limit=999999` y traer la tabla completa en una sola respuesta.
-    const MAX_LIMIT = 100;
+    const MAX_LIMIT = RESERVATION_LIST_MAX_LIMIT;
     const requestedLimit = query.limit ? Number(query.limit) : undefined;
     if (requestedLimit !== undefined && requestedLimit > MAX_LIMIT) {
       throw new BadRequestException(`limit no puede ser mayor a ${MAX_LIMIT}.`);
@@ -143,6 +144,7 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/register-payment')
+  @HttpCode(200)
   @UseInterceptors(IdempotencyInterceptor)
   async registerPaymentCommand(
     @Req() req: AuthenticatedRequest,
@@ -163,6 +165,7 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/register-documents')
+  @HttpCode(200)
   @UseInterceptors(IdempotencyInterceptor)
   async registerDocumentsCommand(
     @Req() req: AuthenticatedRequest,
@@ -183,6 +186,7 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/confirm')
+  @HttpCode(200)
   @UseInterceptors(IdempotencyInterceptor)
   async confirm(
     @Req() req: AuthenticatedRequest,
