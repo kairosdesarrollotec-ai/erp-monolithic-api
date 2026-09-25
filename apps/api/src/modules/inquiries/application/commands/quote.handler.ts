@@ -4,7 +4,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
 import { RateCardPort } from '../ports/rate-card.port';
-import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { InquiryNotTransitionableError, VehicleNotEligibleError } from '../../domain/inquiry-errors';
 import { QuoteCommand } from './quote.command';
@@ -35,6 +35,7 @@ export class QuoteHandler {
     private readonly rateCards: RateCardPort,
     private readonly quotingGuard: ProvisionalQuotingGuard,
     private readonly clock: ClockPort,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(command: QuoteCommand): Promise<InquiryRecord> {
@@ -50,7 +51,7 @@ export class QuoteHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertInquiryRoleAllowed(context.role, 'QUOTE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'QUOTE');
     this.quotingGuard.assertReady();
 
     const scope = {

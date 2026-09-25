@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { RegisterInquiryHandler } from './register-inquiry.handler';
 import { RegisterInquiryCommand, RegisterInquirySnapshot } from './register-inquiry.command';
-import { BRANCH, COMPANY, ORG, buildInquiryRepository, buildWorkContext } from '../../testing/inquiry-test-fixtures';
+import { BRANCH, COMPANY, ORG, buildInquiryRepository, buildWorkContext, buildMatrixAuth } from '../../testing/inquiry-test-fixtures';
 
 const SNAPSHOT: RegisterInquirySnapshot = {
   nationality: 'PERUANO',
@@ -21,7 +21,7 @@ function command(overrides: Partial<RegisterInquirySnapshot> = {}, customerId?: 
 describe('RegisterInquiryHandler', () => {
   it('persiste el snapshot completo de CON-02 (prospecto, nacionalidad, destino, dias, periodo, personas) - hallazgo ALTO CON-02', async () => {
     const inquiries = buildInquiryRepository();
-    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
 
     await handler.execute(command());
 
@@ -47,7 +47,7 @@ describe('RegisterInquiryHandler', () => {
 
   it('exige el nombre del prospecto cuando no hay cliente formal (CON-P02)', async () => {
     const inquiries = buildInquiryRepository();
-    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
 
     const error = await handler.execute(command({ prospectName: '   ' })).catch((e) => e);
 
@@ -58,7 +58,7 @@ describe('RegisterInquiryHandler', () => {
 
   it('acepta un cliente formal sin nombre de prospecto', async () => {
     const inquiries = buildInquiryRepository();
-    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
 
     await handler.execute(command({ prospectName: undefined }, 'cust-1'));
 
@@ -67,7 +67,7 @@ describe('RegisterInquiryHandler', () => {
 
   it('acepta la fecha de ingreso al pais para un EXTRANJERO (SC-CON-001.03)', async () => {
     const inquiries = buildInquiryRepository();
-    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
     const entry = new Date('2026-09-01T00:00:00Z');
 
     await handler.execute(command({ nationality: 'EXTRANJERO', countryEntryDate: entry }));
@@ -79,7 +79,7 @@ describe('RegisterInquiryHandler', () => {
 
   it('rechaza la fecha de ingreso al pais para un PERUANO', async () => {
     const inquiries = buildInquiryRepository();
-    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
 
     const error = await handler.execute(command({ countryEntryDate: new Date() })).catch((e) => e);
 
@@ -90,7 +90,7 @@ describe('RegisterInquiryHandler', () => {
     it('rechaza con 404 un cliente de OTRA empresa de la misma organizacion (cross-company)', async () => {
       const inquiries = buildInquiryRepository();
       inquiries.findCustomerById.mockResolvedValue({ id: 'cust-9', organizationId: ORG, operatingCompanyId: 'company-2' });
-      const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+      const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
 
       await expect(handler.execute(command({}, 'cust-9'))).rejects.toBeInstanceOf(NotFoundException);
       expect(inquiries.create).not.toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe('RegisterInquiryHandler', () => {
     it('rechaza con 404 un cliente de otra organizacion', async () => {
       const inquiries = buildInquiryRepository();
       inquiries.findCustomerById.mockResolvedValue({ id: 'cust-9', organizationId: 'org-2', operatingCompanyId: COMPANY });
-      const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+      const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
 
       await expect(handler.execute(command({}, 'cust-9'))).rejects.toBeInstanceOf(NotFoundException);
     });
@@ -107,7 +107,7 @@ describe('RegisterInquiryHandler', () => {
     it('rechaza con 404 un cliente inexistente', async () => {
       const inquiries = buildInquiryRepository();
       inquiries.findCustomerById.mockResolvedValue(null);
-      const handler = new RegisterInquiryHandler(inquiries, buildWorkContext());
+      const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
 
       await expect(handler.execute(command({}, 'cust-x'))).rejects.toBeInstanceOf(NotFoundException);
     });
@@ -118,7 +118,7 @@ describe('RegisterInquiryHandler', () => {
       'rechaza registrar con rol %s (solo Front-office gestiona Consultas)',
       async (role) => {
         const inquiries = buildInquiryRepository();
-        const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(role));
+        const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(role), buildMatrixAuth());
 
         await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
         expect(inquiries.create).not.toHaveBeenCalled();
@@ -126,9 +126,19 @@ describe('RegisterInquiryHandler', () => {
     );
 
     it('rechaza si la combinacion empresa/sede no es una asignacion vigente', async () => {
-      const handler = new RegisterInquiryHandler(buildInquiryRepository(), buildWorkContext('forbidden'));
+      const handler = new RegisterInquiryHandler(buildInquiryRepository(), buildWorkContext('forbidden'), buildMatrixAuth());
 
       await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('consulta MatrixAuthorizationService para assertAllowed con modulo INQUIRY y accion REGISTER', async () => {
+      const inquiries = buildInquiryRepository();
+      const matrixAuth = buildMatrixAuth();
+      const handler = new RegisterInquiryHandler(inquiries, buildWorkContext('FRONT_OFFICE'), matrixAuth);
+
+      await handler.execute(command());
+
+      expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'REGISTER');
     });
   });
 });

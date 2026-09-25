@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { InquiryConversionRequiredError } from '../../domain/reservation-errors';
 import { CreateReservationCommand } from './create-reservation.command';
 
@@ -26,7 +26,10 @@ import { CreateReservationCommand } from './create-reservation.command';
  */
 @Injectable()
 export class CreateReservationHandler {
-  constructor(private readonly workContext: WorkContextAuthorizationService) {}
+  constructor(
+    private readonly workContext: WorkContextAuthorizationService,
+    private readonly matrixAuth: MatrixAuthorizationService,
+  ) {}
 
   async execute(command: CreateReservationCommand): Promise<ReservationRecord> {
     const context = await this.workContext.authorize({
@@ -34,7 +37,7 @@ export class CreateReservationHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertReservationRoleAllowed(context.role, 'CREATE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'CREATE');
 
     throw new InquiryConversionRequiredError(command.inquiryId);
   }

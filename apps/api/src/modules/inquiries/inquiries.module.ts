@@ -22,10 +22,12 @@ import { AuditModule } from '../audit/audit.module';
 import { ReservationsModule } from '../reservations/reservations.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { ParametersModule } from '../parameters/parameters.module';
+import { AuthorizationModule } from '../authorization/authorization.module';
 
 /**
  * HU-26 (Consulta, CON-01..CON-04).
  * - UsersModule: WorkContextAuthorizationService (contexto empresa/sede).
+ * - AuthorizationModule: MatrixAuthorizationService (enforcement versionado ADM-02).
  * - ReservationsModule: ReservationRepositoryPort, para crear la Reserva
  *   dentro de la misma transaccion de la conversion (caso de uso unico).
  * - PrismaModule/IdempotencyModule (@Global): TransactionManagerPort,
@@ -35,7 +37,7 @@ import { ParametersModule } from '../parameters/parameters.module';
  *   ProvisionalQuotingGuard salvo KAIROS_ALLOW_PROVISIONAL_QUOTING=true.
  */
 @Module({
-  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule],
+  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule, AuthorizationModule],
   controllers: [InquiriesController],
   providers: [
     RegisterInquiryHandler,

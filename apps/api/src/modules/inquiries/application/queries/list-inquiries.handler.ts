@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InquiryRepositoryPort, InquirySummaryRecord } from '../ports/inquiry-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { INQUIRY_LIST_MAX_LIMIT } from '../../domain/inquiry-pagination';
 import { ListInquiriesQuery } from './list-inquiries.query';
 
@@ -22,6 +22,7 @@ export class ListInquiriesHandler {
   constructor(
     private readonly inquiries: InquiryRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(query: ListInquiriesQuery): Promise<InquirySummaryRecord[]> {
@@ -43,7 +44,7 @@ export class ListInquiriesHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    assertInquiryRoleAllowed(context.role, 'READ');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'READ');
 
     return this.inquiries.list({
       organizationId: context.organizationId,

@@ -6,19 +6,22 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import {
   BRANCH,
   COMPANY,
+  ORG,
   SCOPE,
   buildInquiry,
   buildInquiryRepository,
   buildTransactionManager,
   buildWorkContext,
+  buildMatrixAuth,
 } from '../../testing/inquiry-test-fixtures';
 
 function build(existing: ReturnType<typeof buildInquiry> | null = buildInquiry(), role: Parameters<typeof buildWorkContext>[0] = 'FRONT_OFFICE') {
   const inquiries = buildInquiryRepository(existing);
   const audit = { recordInquiryEvent: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AuditEventRepositoryPort>;
   const transactions = buildTransactionManager();
-  const handler = new CloseInquiryHandler(inquiries, buildWorkContext(role), audit, transactions);
-  return { handler, inquiries, audit, transactions };
+  const matrixAuth = buildMatrixAuth();
+  const handler = new CloseInquiryHandler(inquiries, buildWorkContext(role), audit, transactions, matrixAuth);
+  return { handler, inquiries, audit, transactions, matrixAuth };
 }
 
 const command = () => new CloseInquiryCommand('inq-1', 'uid-1', COMPANY, BRANCH, 1, 'CLIENTE_NO_CONTINUA', 'Precio');
@@ -64,5 +67,13 @@ describe('CloseInquiryHandler', () => {
     const { handler } = build(buildInquiry(), 'forbidden');
 
     await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('consulta MatrixAuthorizationService para assertAllowed con modulo INQUIRY y accion CLOSE', async () => {
+    const { handler, matrixAuth } = build();
+
+    await handler.execute(command());
+
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'CLOSE');
   });
 });

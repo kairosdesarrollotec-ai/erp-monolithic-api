@@ -18,6 +18,7 @@ import {
   buildQuotation,
   buildTransactionManager,
   buildWorkContext,
+  buildMatrixAuth,
 } from '../../testing/inquiry-test-fixtures';
 
 const NOW = new Date('2026-09-23T15:00:00Z');
@@ -58,6 +59,7 @@ function build(options: {
     listHistory: jest.fn(),
     createVersion: jest.fn(),
   };
+  const matrixAuth = buildMatrixAuth();
   const handler = new ConvertToReservationHandler(
     inquiries,
     reservations,
@@ -68,8 +70,9 @@ function build(options: {
     guard,
     clock,
     depositPolicy,
+    matrixAuth,
   );
-  return { handler, inquiries, reservations, audit, outbox, transactions, clock, depositPolicy };
+  return { handler, inquiries, reservations, audit, outbox, transactions, clock, depositPolicy, matrixAuth };
 }
 
 const command = (startAt: Date = START) =>
@@ -205,6 +208,27 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
     const { handler, transactions } = build({ production: true });
 
     await expect(handler.execute(command())).rejects.toBeInstanceOf(ServiceUnavailableException);
+    expect(transactions.run).not.toHaveBeenCalled();
+  });
+
+  it('consulta MatrixAuthorizationService para INQUIRY.CONVERT_TO_RESERVATION y RESERVATION.CREATE', async () => {
+    const { handler, matrixAuth } = build();
+
+    await handler.execute(command());
+
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'CONVERT_TO_RESERVATION');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'RESERVATION', 'CREATE');
+  });
+
+  it('rechaza si el rol no tiene permiso RESERVATION.CREATE aunque tenga INQUIRY.CONVERT_TO_RESERVATION', async () => {
+    const { handler, matrixAuth, transactions } = build();
+    matrixAuth.assertAllowed.mockImplementation(async (_org, _role, module, action) => {
+      if (module === 'RESERVATION' && action === 'CREATE') {
+        throw new ForbiddenException();
+      }
+    });
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
     expect(transactions.run).not.toHaveBeenCalled();
   });
 });
