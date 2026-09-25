@@ -1,0 +1,112 @@
+name: CD
+
+# Pipeline de despliegue continuo para erp-monolithic-api.
+#
+# Mapeo rama → ambiente → aprobacion:
+#   develop → development  (automatico)
+#   qa      → qa           (automatico)
+#   uat     → uat          (requiere aprobacion manual: falconxtreme2024)
+#   main    → production   (requiere aprobacion manual: falconxtreme2024)
+#
+# Variables de repositorio requeridas (Settings > Secrets and variables > Actions > Variables):
+#   GCP_PROJECT_ID         — ID del proyecto GCP
+#   GCP_REGION             — Region de Cloud Run (ej. us-central1)
+#   GCP_ARTIFACT_REGISTRY  — Host de Artifact Registry (ej. us-central1-docker.pkg.dev)
+#   GCP_AR_REPO            — Nombre del repositorio en Artifact Registry (ej. erp-backend)
+#
+# Secretos de repositorio requeridos (Settings > Secrets and variables > Actions > Secrets):
+#   GCP_SA_KEY             — Service account JSON codificado en base64 (Cloud Run + AR)
+#
+# Variables de ambiente requeridas (Settings > Environments > <nombre> > Variables):
+#   CLOUD_RUN_SERVICE      — Nombre del servicio Cloud Run (ej. erp-api-development)
+#
+# Secretos de ambiente requeridos (Settings > Environments > <nombre> > Secrets):
+#   DATABASE_URL           — URL de conexion pooled a Supabase para ese ambiente
+#   DIRECT_URL             — URL de conexion directa a Supabase para migraciones DDL
+
+on:
+  push:
+    branches: [develop, qa, uat, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: >-
+      Deploy →
+      ${{ github.ref_name == 'main' && 'production'
+       || github.ref_name == 'uat'  && 'uat'
+       || github.ref_name == 'qa'   && 'qa'
+       || 'development' }}
+    runs-on: ubuntu-latest
+
+    # La resolucion del ambiente activa la cola de aprobacion para uat y production.
+    # Las variables y secretos de BD se inyectan desde el ambiente correspondiente.
+    environment: >-
+      ${{ github.ref_name == 'main' && 'production'
+       || github.ref_name == 'uat'  && 'uat'
+       || github.ref_name == 'qa'   && 'qa'
+       || 'development' }}
+
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ vars.GCP_REGION }}
+      GCP_ARTIFACT_REGISTRY: ${{ vars.GCP_ARTIFACT_REGISTRY }}
+      GCP_AR_REPO: ${{ vars.GCP_AR_REPO }}
+      CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # --- Autenticacion GCP ---
+      # La SA key llega como JSON codificado en base64.
+      # Permisos minimos necesarios: Artifact Registry Writer + Cloud Run Developer.
+      - name: Auth GCP
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > /tmp/sa.json
+          gcloud auth activate-service-account --key-file=/tmp/sa.json
+          gcloud config set project "$GCP_PROJECT_ID"
+          gcloud auth configure-docker "$GCP_ARTIFACT_REGISTRY" --quiet
+          rm -f /tmp/sa.json
+
+      # --- Build y push de la imagen Docker ---
+      - name: Build y push imagen Docker
+        run: |
+          IMAGE="${GCP_ARTIFACT_REGISTRY}/${GCP_PROJECT_ID}/${GCP_AR_REPO}/${CLOUD_RUN_SERVICE}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
+
+      # --- Prisma migrate deploy ---
+      # Corre ANTES del deploy de Cloud Run: garantiza que el schema de BD
+      # esta actualizado antes de que el nuevo codigo arranque.
+      # Usa DIRECT_URL (conexion directa a Supabase) porque las migraciones
+      # DDL no funcionan sobre PgBouncer en modo transaction.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+
+      # --- Deploy a Cloud Run ---
+      # DATABASE_URL se inyecta como variable de entorno de Cloud Run.
+      # Mejora pendiente: migrar a GCP Secret Manager para produccion.
+      - name: Deploy a Cloud Run
+        run: |
+          gcloud run deploy "$CLOUD_RUN_SERVICE" \
+            --image="$IMAGE" \
+            --region="$GCP_REGION" \
+            --platform=managed \
+            --set-env-vars="NODE_ENV=production,DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --allow-unauthenticated \
+            --quiet

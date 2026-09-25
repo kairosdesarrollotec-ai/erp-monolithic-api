@@ -1,0 +1,26 @@
+# Control de versiones y CI
+.git
+.github
+.gitignore
+
+# Dependencias (se instalan en la imagen)
+node_modules
+apps/api/node_modules
+
+# Artefactos de compilacion
+apps/api/dist
+apps/api/coverage
+
+# Documentacion y artefactos de proyecto (no necesarios en produccion)
+docs
+artifacts
+*.md
+CLAUDE.md
+
+# Framework Claude Code
+.claude
+
+# Datos de prueba y configuracion local
+apps/api/test
+.env
+.env.*
