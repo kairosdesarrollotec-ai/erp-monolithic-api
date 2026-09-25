@@ -144,6 +144,7 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/register-payment')
+  @HttpCode(200)
   @UseInterceptors(IdempotencyInterceptor)
   async registerPaymentCommand(
     @Req() req: AuthenticatedRequest,
@@ -164,6 +165,7 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/register-documents')
+  @HttpCode(200)
   @UseInterceptors(IdempotencyInterceptor)
   async registerDocumentsCommand(
     @Req() req: AuthenticatedRequest,
@@ -184,6 +186,7 @@ export class ReservationsController {
   }
 
   @Post(':id/commands/confirm')
+  @HttpCode(200)
   @UseInterceptors(IdempotencyInterceptor)
   async confirm(
     @Req() req: AuthenticatedRequest,
