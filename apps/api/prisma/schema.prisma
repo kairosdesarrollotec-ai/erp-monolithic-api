@@ -11,8 +11,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl se usa exclusivamente para migraciones DDL que no pueden
+  // correr sobre PgBouncer en modo transaction (requerido por Supabase).
+  directUrl = env("DIRECT_URL")
 }
 
 /// TDD-KAIROS-TRANSVERSAL.md 7.3 - deduplicacion de comandos idempotentes
