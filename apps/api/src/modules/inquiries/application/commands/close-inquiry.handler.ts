@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InquiryRepositoryPort, InquiryRecord } from '../ports/inquiry-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { InquiryNotTransitionableError } from '../../domain/inquiry-errors';
-import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
 import { CloseInquiryCommand } from './close-inquiry.command';
 
 /**
@@ -30,6 +30,7 @@ export class CloseInquiryHandler {
     private readonly workContext: WorkContextAuthorizationService,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(command: CloseInquiryCommand): Promise<InquiryRecord> {
@@ -38,7 +39,7 @@ export class CloseInquiryHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertInquiryRoleAllowed(context.role, 'CLOSE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'CLOSE');
 
     const scope = {
       organizationId: context.organizationId,

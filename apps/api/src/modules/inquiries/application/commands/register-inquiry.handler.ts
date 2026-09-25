@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InquiryRepositoryPort, InquiryRecord } from '../ports/inquiry-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { RegisterInquiryCommand } from './register-inquiry.command';
 
 /**
@@ -10,7 +10,7 @@ import { RegisterInquiryCommand } from './register-inquiry.command';
  *
  * Controles (revalidacion PR#7, d7a6124):
  * - ALTO "RBAC pendiente": tras resolver el contexto autorizado se aplica
- *   la politica rol-accion (`REGISTER`, deny-by-default).
+ *   la politica rol-accion (`REGISTER`, deny-by-default) via MatrixAuthorizationService.
  * - ALTO "aislamiento de cliente": `customerId`, si llega, debe pertenecer
  *   a la MISMA organizacion y empresa del contexto autorizado (antes solo
  *   se comparaba organizacion). 404 si no - no se revela si existe en otra
@@ -26,6 +26,7 @@ export class RegisterInquiryHandler {
   constructor(
     private readonly inquiries: InquiryRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(command: RegisterInquiryCommand): Promise<InquiryRecord> {
@@ -48,7 +49,7 @@ export class RegisterInquiryHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertInquiryRoleAllowed(context.role, 'REGISTER');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'REGISTER');
 
     if (command.customerId) {
       const customer = await this.inquiries.findCustomerById(command.customerId);
