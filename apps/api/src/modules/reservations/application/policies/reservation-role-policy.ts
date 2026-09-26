@@ -53,6 +53,7 @@ const RESERVATION_ROLE_POLICY: Readonly<Record<ReservationAction, ReadonlySet<Wo
 };
 
 export function assertReservationRoleAllowed(role: WorkerRole, action: ReservationAction): void {
+  if (role === 'PLATFORM_ADMIN') return;
   if (!RESERVATION_ROLE_POLICY[action].has(role)) {
     throw new ForbiddenException({
       code: 'ROLE_NOT_ALLOWED',
