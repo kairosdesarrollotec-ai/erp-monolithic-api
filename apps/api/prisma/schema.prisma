@@ -7,7 +7,11 @@
 // forma incremental, pantalla a pantalla, segun TDD-<MOD>-001.md.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // linux-musl-arm64-openssl-3.0.x = Alpine (node:22-alpine) con openssl 3.x en ARM64
+  // linux-musl-openssl-3.0.x       = Alpine con openssl 3.x en x86_64 (Cloud Run)
+  // native                          = desarrollo local (mac, linux host)
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
