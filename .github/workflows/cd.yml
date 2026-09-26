@@ -102,14 +102,35 @@ jobs:
         run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 
       # --- Deploy a Cloud Run ---
-      # Las variables de entorno de la app se pasan via --set-env-vars.
+      # Las vars se escriben a un YAML via Python para manejar correctamente
+      # caracteres especiales en FIREBASE_PRIVATE_KEY (\n, =, etc.).
       # Mejora pendiente: migrar a GCP Secret Manager para produccion.
       - name: Deploy a Cloud Run
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
         run: |
+          python3 - << 'PYEOF'
+          import os, json
+          rows = {
+              "NODE_ENV": "production",
+              "DATABASE_URL": os.environ["DATABASE_URL"],
+              "FIREBASE_PROJECT_ID": os.environ["FIREBASE_PROJECT_ID"],
+              "FIREBASE_CLIENT_EMAIL": os.environ["FIREBASE_CLIENT_EMAIL"],
+              "FIREBASE_PRIVATE_KEY": os.environ["FIREBASE_PRIVATE_KEY"],
+          }
+          with open("/tmp/env-vars.yaml", "w") as f:
+              for k, v in rows.items():
+                  f.write(f"{k}: {json.dumps(v)}\n")
+          PYEOF
+
           gcloud run deploy "$CLOUD_RUN_SERVICE" \
             --image="$IMAGE" \
             --region="$GCP_REGION" \
             --platform=managed \
-            --set-env-vars="NODE_ENV=production,DATABASE_URL=${{ secrets.DATABASE_URL }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }},FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" \
+            --env-vars-file=/tmp/env-vars.yaml \
             --allow-unauthenticated \
             --quiet
+          rm -f /tmp/env-vars.yaml
