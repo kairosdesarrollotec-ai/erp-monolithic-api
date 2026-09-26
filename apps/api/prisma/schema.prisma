@@ -326,6 +326,7 @@ enum WorkerRole {
   FINANZAS
   FRONT_OFFICE
   GERENCIA
+  PLATFORM_ADMIN
   RRHH
 }
 

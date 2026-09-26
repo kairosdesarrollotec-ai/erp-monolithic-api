@@ -37,6 +37,7 @@ export class AdminMatrixAuthorizationService {
   constructor(private readonly matrix: RolePermissionMatrixPort) {}
 
   async assertAllowed(organizationId: string, role: WorkerRole, action: AdminAction): Promise<void> {
+    if (role === 'PLATFORM_ADMIN') return;
     const snapshot = await this.matrix.getCurrentVersion(organizationId);
     const entry = snapshot.entries.find(
       (candidate) => candidate.role === role && candidate.module === 'ADMIN' && candidate.action === action,

@@ -37,6 +37,7 @@ const INQUIRY_ROLE_POLICY: Readonly<Record<InquiryAction, ReadonlySet<WorkerRole
 };
 
 export function isInquiryRoleAllowed(role: WorkerRole, action: InquiryAction): boolean {
+  if (role === 'PLATFORM_ADMIN') return true;
   return INQUIRY_ROLE_POLICY[action]?.has(role) ?? false;
 }
 

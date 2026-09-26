@@ -25,6 +25,7 @@ const ADMIN_ROLE_POLICY: Readonly<Record<AdminAction, ReadonlySet<WorkerRole>>> 
 };
 
 export function assertAdminRoleAllowed(role: WorkerRole, action: AdminAction): void {
+  if (role === 'PLATFORM_ADMIN') return;
   if (!ADMIN_ROLE_POLICY[action].has(role)) {
     throw new ForbiddenException({
       code: 'ROLE_NOT_ALLOWED',
