@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsUUID } from 'class-validator';
+import { IsEmail, IsIn, IsString, IsUUID, MinLength } from 'class-validator';
 import { WORKER_ROLES, WorkerRole } from '../../../../users/domain/worker-role';
 
 export class AssignUserDto {
@@ -19,4 +19,8 @@ export class AssignUserDto {
 
   @IsIn(WORKER_ROLES)
   targetRole!: WorkerRole;
+
+  @IsString()
+  @MinLength(8)
+  initialPassword!: string;
 }

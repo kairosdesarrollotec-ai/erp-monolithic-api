@@ -9,6 +9,7 @@ export interface UserProfileRecord {
 export interface CreateProfileInput {
   firebaseUid: string;
   organizationId: string;
+  requiresPasswordChange?: boolean;
 }
 
 /**

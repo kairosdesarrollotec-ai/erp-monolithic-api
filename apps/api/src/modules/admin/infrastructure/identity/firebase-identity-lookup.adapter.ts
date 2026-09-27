@@ -15,13 +15,12 @@ export class FirebaseIdentityLookupAdapter implements IdentityLookupPort {
     }
   }
 
-  async provisionUser(email: string): Promise<{ uid: string; passwordResetLink: string }> {
+  async provisionUser(email: string, password: string): Promise<{ uid: string }> {
     initFirebaseAdmin();
     const auth = getAuth();
-    let uid: string;
     try {
-      const created = await auth.createUser({ email, emailVerified: false });
-      uid = created.uid;
+      const created = await auth.createUser({ email, emailVerified: false, password });
+      return { uid: created.uid };
     } catch (err: unknown) {
       const code = (err as { errorInfo?: { code?: string } }).errorInfo?.code;
       if (code === 'auth/email-already-exists') {
@@ -32,8 +31,6 @@ export class FirebaseIdentityLookupAdapter implements IdentityLookupPort {
       }
       throw err;
     }
-    const passwordResetLink = await auth.generatePasswordResetLink(email);
-    return { uid, passwordResetLink };
   }
 
   async findEmailsByUids(uids: string[]): Promise<Record<string, string | null>> {

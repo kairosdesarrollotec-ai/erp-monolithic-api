@@ -75,7 +75,7 @@ export class AdminController {
   async assign(
     @Req() req: AuthenticatedRequest,
     @Body() dto: AssignUserDto,
-  ): Promise<{ id: string; passwordResetLink: string | null }> {
+  ): Promise<{ id: string }> {
     return this.assignUserToCompany.execute(
       new AssignUserToCompanyCommand(
         req.firebaseUid!,
@@ -85,6 +85,7 @@ export class AdminController {
         dto.targetCompanyId,
         dto.targetBranchId,
         dto.targetRole,
+        dto.initialPassword,
       ),
     );
   }

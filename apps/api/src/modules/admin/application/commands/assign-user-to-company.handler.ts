@@ -12,13 +12,12 @@ import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
  * ADM-01 (Usuarios y asignaciones) - "Agregar usuario" / asignar
  * empresa-sede-rol.
  *
- * Si el correo no existe en Firebase, se crea la cuenta automaticamente
- * (provisionUser) y se retorna un passwordResetLink que el administrador
- * comparte con el usuario para que establezca su contrasena. El usuario
- * luego completa el enrolamiento MFA en TR-02.
+ * Si el correo no existe en Firebase, se crea la cuenta con la contraseña
+ * inicial proporcionada (initialPassword) y requiresPasswordChange=true.
+ * Al primer login, TR-02 obliga al usuario a cambiar la contraseña y
+ * enrolar MFA antes de acceder a las rutas protegidas.
  *
- * Si el correo ya existe, se reutiliza el uid y no se emite nuevo enlace
- * (passwordResetLink: null en la respuesta).
+ * Si el correo ya existe, se reutiliza el uid existente.
  *
  * Atomicidad: asignacion + auditoria corren en la misma transaccion.
  */
@@ -34,7 +33,7 @@ export class AssignUserToCompanyHandler {
     private readonly transactionManager: TransactionManagerPort,
   ) {}
 
-  async execute(command: AssignUserToCompanyCommand): Promise<{ id: string; passwordResetLink: string | null }> {
+  async execute(command: AssignUserToCompanyCommand): Promise<{ id: string }> {
     const context = await this.workContext.authorize({
       firebaseUid: command.actorFirebaseUid,
       companyId: command.actorCompanyId,
@@ -55,15 +54,14 @@ export class AssignUserToCompanyHandler {
     }
 
     let targetUid = await this.identity.findUidByEmail(command.targetEmail);
-    let passwordResetLink: string | null = null;
 
     if (!targetUid) {
-      const provisioned = await this.identity.provisionUser(command.targetEmail);
+      const provisioned = await this.identity.provisionUser(command.targetEmail, command.initialPassword);
       targetUid = provisioned.uid;
-      passwordResetLink = provisioned.passwordResetLink;
       await this.userProfiles.createProfile({
         firebaseUid: targetUid,
         organizationId: context.organizationId,
+        requiresPasswordChange: true,
       });
     }
 
@@ -84,7 +82,7 @@ export class AssignUserToCompanyHandler {
           organizationId: context.organizationId,
           actorUserId: command.actorFirebaseUid,
           targetFirebaseUid: targetUid,
-          action: passwordResetLink ? 'USER_PROVISIONED_AND_ASSIGNED' : 'USER_ASSIGNMENT_CREATED_OR_REACTIVATED',
+          action: 'USER_ASSIGNMENT_CREATED_OR_REACTIVATED',
           changes: {
             targetEmail: command.targetEmail,
             companyId: command.targetCompanyId,
@@ -98,6 +96,6 @@ export class AssignUserToCompanyHandler {
       return result;
     });
 
-    return { id: assignment.id, passwordResetLink };
+    return { id: assignment.id };
   }
 }
