@@ -8,6 +8,8 @@ import {
   CreateReservationInput,
   ListReservationsFilter,
   CancelReservationInput,
+  ReservationCustomerRecord,
+  ReservationVehicleRecord,
 } from '../../application/ports/reservation-repository.port';
 import {
   InquiryAlreadyHasReservationError,
@@ -72,6 +74,33 @@ function scopeWhere(id: string, scope: ReservationScope) {
 @Injectable()
 export class PrismaReservationRepository implements ReservationRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findCustomerById(id: string): Promise<ReservationCustomerRecord | null> {
+    return this.prisma.customer.findUnique({
+      where: { id },
+      select: { id: true, organizationId: true, operatingCompanyId: true },
+    });
+  }
+
+  async findVehicleById(id: string): Promise<ReservationVehicleRecord | null> {
+    return this.prisma.vehicle.findUnique({
+      where: { id },
+      select: { id: true, operatingCompanyId: true },
+    });
+  }
+
+  async isVehicleAvailable(vehicleId: string, startAt: Date, endAt: Date): Promise<boolean> {
+    const conflict = await this.prisma.reservation.findFirst({
+      where: {
+        vehicleId,
+        status: { notIn: Array.from(TERMINAL_RESERVATION_STATUSES) },
+        startAt: { lt: endAt },
+        endAt: { gt: startAt },
+      },
+      select: { id: true },
+    });
+    return conflict === null;
+  }
 
   async create(
     input: CreateReservationInput,

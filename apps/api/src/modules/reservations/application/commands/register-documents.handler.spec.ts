@@ -23,6 +23,7 @@ const SCOPE: ReservationScope = { organizationId: 'org-1', operatingCompanyId: '
 
 function buildDeps(existing: ReservationRecord | null, forbidden = false, role = 'FRONT_OFFICE') {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
+    findCustomerById: jest.fn(), findVehicleById: jest.fn(), isVehicleAvailable: jest.fn(),
     create: jest.fn(), findById: jest.fn().mockResolvedValue(existing), list: jest.fn(),
     registerPayment: jest.fn(),
     registerDocuments: jest.fn().mockResolvedValue(existing ? { ...existing, documentsCompletedAt: new Date(), version: 2 } : undefined),

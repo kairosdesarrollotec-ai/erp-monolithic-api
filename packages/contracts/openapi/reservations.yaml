@@ -202,14 +202,17 @@ components:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
         - type: object
-          required: [inquiryId, customerId, vehicleId, channelMode, startAt, endAt]
+          required: [customerId, vehicleId, channelMode, startAt, endAt, requiredPaymentAmount, currency, paymentPolicyVersion]
           properties:
-            inquiryId: { type: string, format: uuid }
+            inquiryId: { type: string, format: uuid, description: 'CONFLICT-CON-001: opcional. Si se omite, se crea una reserva directa sin consulta previa.' }
             customerId: { type: string, format: uuid }
             vehicleId: { type: string, format: uuid }
             channelMode: { $ref: '#/components/schemas/ChannelMode' }
             startAt: { type: string, format: date-time }
             endAt: { type: string, format: date-time }
+            requiredPaymentAmount: { type: string, description: 'Importe de pago requerido en formato decimal (ej. "300.00")' }
+            currency: { type: string }
+            paymentPolicyVersion: { type: integer, minimum: 1 }
     CancelReservationRequest:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }

@@ -261,20 +261,25 @@ components:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
         - type: object
-          required: [channel, touristUse, nationality, destination, estimatedDays]
+          required: [channel, touristUse, destination, estimatedDays]
           properties:
             channel: { $ref: '#/components/schemas/InquiryChannel' }
-            customerId: { type: string, format: uuid, description: 'Cliente formal, si existe (debe ser de la misma empresa)' }
+            customerId: { type: string, format: uuid, description: 'Cliente formal existente (debe pertenecer a la misma empresa). Mutuamente excluyente con prospect.' }
             touristUse: { type: boolean, description: DAT-CON-001 }
-            prospectName: { type: string, maxLength: 200, description: 'CON-P02 - obligatorio si no se envia customerId' }
-            prospectDocumentType: { type: string, maxLength: 30 }
-            prospectDocumentNumber: { type: string, maxLength: 30 }
-            nationality: { $ref: '#/components/schemas/InquiryNationality' }
+            prospect:
+              type: object
+              description: 'CONFLICT-CON-002: identidad del nuevo prospecto. Obligatorio si no se envia customerId.'
+              required: [fullName, documentType, documentNumber, nationality]
+              properties:
+                fullName: { type: string, maxLength: 200 }
+                documentType: { type: string, maxLength: 30 }
+                documentNumber: { type: string, maxLength: 30 }
+                nationality: { $ref: '#/components/schemas/InquiryNationality' }
+                countryEntryDate: { type: string, format: date, description: 'SC-CON-001.03 - solo si nationality = EXTRANJERO' }
             destination: { type: string, minLength: 1, maxLength: 200, description: DAT-CON-003 }
             estimatedDays: { type: integer, minimum: 1, description: 'DAT-CON-003 - tiempo estimado' }
             travelStartDate: { type: string, format: date, description: 'CON-02 periodo (opcional)' }
             partySize: { type: integer, minimum: 1, description: 'CON-02 personas (opcional)' }
-            countryEntryDate: { type: string, format: date, description: 'SC-CON-001.03 - solo si nationality = EXTRANJERO' }
     QuoteRequest:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
@@ -303,9 +308,9 @@ components:
     InquirySummaryResponse:
       type: object
       required:
-        [id, companyId, branchId, status, channel, touristUse, customerId, prospectName, prospectDocumentType,
-         prospectDocumentNumber, nationality, destination, estimatedDays, travelStartDate, partySize,
-         countryEntryDate, thirdRequiredDocument, dataOrigin, closedReason, version, createdAt]
+        [id, companyId, branchId, status, channel, touristUse, customerId,
+         destination, estimatedDays, travelStartDate, partySize,
+         dataOrigin, closedReason, version, createdAt]
       properties:
         id: { type: string, format: uuid }
         companyId: { type: string, format: uuid }
@@ -316,18 +321,10 @@ components:
           description: null solo en LEGACY_STUB
         touristUse: { type: boolean }
         customerId: { type: [string, 'null'], format: uuid }
-        prospectName: { type: [string, 'null'] }
-        prospectDocumentType: { type: [string, 'null'] }
-        prospectDocumentNumber: { type: [string, 'null'] }
-        nationality:
-          oneOf: [{ $ref: '#/components/schemas/InquiryNationality' }, { type: 'null' }]
         destination: { type: [string, 'null'] }
         estimatedDays: { type: [integer, 'null'] }
         travelStartDate: { type: [string, 'null'], format: date }
         partySize: { type: [integer, 'null'] }
-        countryEntryDate: { type: [string, 'null'], format: date }
-        thirdRequiredDocument:
-          oneOf: [{ $ref: '#/components/schemas/ThirdRequiredDocument' }, { type: 'null' }]
         dataOrigin: { $ref: '#/components/schemas/InquiryDataOrigin' }
         closedReason: { type: [string, 'null'] }
         version: { type: integer }

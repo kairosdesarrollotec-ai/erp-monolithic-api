@@ -1,5 +1,4 @@
 import { InquiryRecord, InquirySummaryRecord } from '../../application/ports/inquiry-repository.port';
-import { thirdRequiredDocument } from '../../domain/inquiry-nationality';
 import { InquiryResponse, InquirySummaryResponse } from './dto/inquiry.response';
 
 function toDateOnly(value: Date | null): string | null {
@@ -15,16 +14,10 @@ export function toInquirySummaryResponse(record: InquirySummaryRecord): InquiryS
     channel: record.channel,
     touristUse: record.touristUse,
     customerId: record.customerId,
-    prospectName: record.prospectName,
-    prospectDocumentType: record.prospectDocumentType,
-    prospectDocumentNumber: record.prospectDocumentNumber,
-    nationality: record.nationality,
     destination: record.destination,
     estimatedDays: record.estimatedDays,
     travelStartDate: toDateOnly(record.travelStartDate),
     partySize: record.partySize,
-    countryEntryDate: toDateOnly(record.countryEntryDate),
-    thirdRequiredDocument: record.nationality ? thirdRequiredDocument(record.nationality) : null,
     dataOrigin: record.dataOrigin,
     closedReason: record.closedReason,
     version: record.version,

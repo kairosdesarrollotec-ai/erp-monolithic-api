@@ -72,12 +72,15 @@ export class ReservationsController {
         req.firebaseUid!,
         dto.companyId,
         dto.branchId,
-        dto.inquiryId,
         dto.customerId,
         dto.vehicleId,
         dto.channelMode,
         new Date(dto.startAt),
         new Date(dto.endAt),
+        dto.requiredPaymentAmount,
+        dto.currency,
+        dto.paymentPolicyVersion,
+        dto.inquiryId,
       ),
     );
     return toReservationResponse(created);

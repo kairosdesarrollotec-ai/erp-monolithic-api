@@ -7,6 +7,7 @@ import {
   InquirySummaryRecord,
   InquiryScope,
   CreateInquiryInput,
+  CreateCustomerInput,
   ListInquiriesFilter,
   QuoteInquiryInput,
   CloseInquiryInput,
@@ -39,15 +40,10 @@ function toSummary(row: InquiryRow): InquirySummaryRecord {
     customerId: row.customerId,
     channel: row.channel,
     touristUse: row.touristUse,
-    prospectName: row.prospectName,
-    prospectDocumentType: row.prospectDocumentType,
-    prospectDocumentNumber: row.prospectDocumentNumber,
-    nationality: row.nationality,
     destination: row.destination,
     estimatedDays: row.estimatedDays,
     travelStartDate: row.travelStartDate,
     partySize: row.partySize,
-    countryEntryDate: row.countryEntryDate,
     dataOrigin: row.dataOrigin,
     status: row.status,
     closedReason: row.closedReason,
@@ -103,15 +99,10 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
         customerId: input.customerId,
         channel: input.channel,
         touristUse: input.touristUse,
-        prospectName: input.prospectName,
-        prospectDocumentType: input.prospectDocumentType,
-        prospectDocumentNumber: input.prospectDocumentNumber,
-        nationality: input.nationality,
         destination: input.destination,
         estimatedDays: input.estimatedDays,
         travelStartDate: input.travelStartDate,
         partySize: input.partySize,
-        countryEntryDate: input.countryEntryDate,
         dataOrigin: 'CON02',
         createdBy: input.createdBy,
       },
@@ -167,8 +158,26 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
   async findCustomerById(id: string): Promise<CustomerRecord | null> {
     return this.prisma.customer.findUnique({
       where: { id },
-      select: { id: true, organizationId: true, operatingCompanyId: true },
+      select: { id: true, organizationId: true, operatingCompanyId: true, fullName: true, nationality: true, countryEntryDate: true },
     });
+  }
+
+  async createCustomer(input: CreateCustomerInput): Promise<CustomerRecord> {
+    const { randomUUID } = await import('crypto');
+    const created = await this.prisma.customer.create({
+      data: {
+        id: randomUUID(),
+        organizationId: input.organizationId,
+        operatingCompanyId: input.operatingCompanyId,
+        fullName: input.fullName,
+        documentType: input.documentType,
+        documentNumber: input.documentNumber,
+        nationality: input.nationality,
+        countryEntryDate: input.countryEntryDate,
+      },
+      select: { id: true, organizationId: true, operatingCompanyId: true, fullName: true, nationality: true, countryEntryDate: true },
+    });
+    return created;
   }
 
   /**

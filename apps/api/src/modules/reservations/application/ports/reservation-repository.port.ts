@@ -7,7 +7,7 @@ export interface ReservationRecord {
   organizationId: string;
   operatingCompanyId: string;
   branchId: string;
-  inquiryId: string;
+  inquiryId: string | null;
   customerId: string;
   customerName: string;
   vehicleId: string;
@@ -32,7 +32,7 @@ export interface CreateReservationInput {
   organizationId: string;
   operatingCompanyId: string;
   branchId: string;
-  inquiryId: string;
+  inquiryId?: string;
   customerId: string;
   vehicleId: string;
   channelMode: ChannelMode;
@@ -42,6 +42,17 @@ export interface CreateReservationInput {
   currency: string;
   paymentPolicyVersion: number;
   createdBy: string;
+}
+
+export interface ReservationCustomerRecord {
+  id: string;
+  organizationId: string;
+  operatingCompanyId: string;
+}
+
+export interface ReservationVehicleRecord {
+  id: string;
+  operatingCompanyId: string;
 }
 
 /**
@@ -88,13 +99,15 @@ export interface CancelReservationInput extends ReservationScope {
  * auditoria revierte tambien la mutacion. El repositorio ya no abre su
  * propia transaccion anidada.
  *
- * Revalidacion PR#7: `findCustomerById`/`findVehicleById`/`findInquiryById`
- * se eliminaron - solo los usaba CreateReservationHandler, que ya no crea
- * reservas (la unica via es convert-to-reservation de Consulta, que valida
- * cliente/vehiculo/consulta bajo el scope y las FKs compuestas lo
- * garantizan en la base; ver CONFLICT-CON-001).
+ * CONFLICT-CON-001 (resuelto): se reintroducen findCustomerById y
+ * findVehicleById para que CreateReservationHandler pueda validar scope
+ * en la creacion directa.
  */
 export abstract class ReservationRepositoryPort {
+  abstract findCustomerById(id: string): Promise<ReservationCustomerRecord | null>;
+  abstract findVehicleById(id: string): Promise<ReservationVehicleRecord | null>;
+  abstract isVehicleAvailable(vehicleId: string, startAt: Date, endAt: Date): Promise<boolean>;
+
   abstract create(
     input: CreateReservationInput,
     tx?: Prisma.TransactionClient,

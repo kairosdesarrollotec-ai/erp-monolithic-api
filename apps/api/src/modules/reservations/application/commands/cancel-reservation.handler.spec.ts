@@ -44,6 +44,9 @@ const FAKE_TX = { __fakeTx: true } as any;
 
 function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
+    findCustomerById: jest.fn(),
+    findVehicleById: jest.fn(),
+    isVehicleAvailable: jest.fn(),
     create: jest.fn(),
     findById: jest.fn().mockResolvedValue(existing),
     list: jest.fn(),

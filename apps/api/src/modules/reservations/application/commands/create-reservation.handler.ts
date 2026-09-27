@@ -1,32 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { ReservationRecord } from '../ports/reservation-repository.port';
+import { ReservationRepositoryPort } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
-import { InquiryConversionRequiredError } from '../../domain/reservation-errors';
 import { CreateReservationCommand } from './create-reservation.command';
 
 /**
  * RES-P01..P04 - `POST /reservations` (TDD-RES-001.md 11.1).
  *
- * Hallazgo CRITICO de revalidacion PR#7 (d7a6124, "cardinalidad Inquiry ->
- * Reservation no garantizada"): este endpoint creaba una Reserva citando
- * CUALQUIER consulta de la empresa - en cualquier estado, incluso ya
- * cerrada o ya convertida - sin transicionarla. Eso permitia varias
- * reservas por consulta y reservas colgando de consultas
- * CERRADA_SIN_CONVERSION (viola BR-CON-002 "nunca ambos").
+ * CONFLICT-CON-001 (resuelto): este endpoint crea una Reserva directamente
+ * (sin consulta previa). La via desde una Consulta COTIZADA sigue siendo
+ * `POST /inquiries/{id}/commands/convert-to-reservation`.
  *
- * Decision interina (docs/conflicts/CONFLICT-CON-001.md, pendiente de
- * aprobacion): la unica via para crear una Reserva desde una Consulta es
- * `POST /inquiries/{id}/commands/convert-to-reservation`, que valida la
- * cotizacion vigente y transiciona la Consulta en la misma transaccion.
- * Este endpoint conserva autenticacion, contexto y rol (para no revelar
- * nada a quien no tiene permiso) y luego responde 409
- * INQUIRY_CONVERSION_REQUIRED. Ningun cliente lo usa hoy (erp-portal-web
- * no implementa la creacion de reservas).
+ * Validaciones:
+ * - Rol RESERVATION.CREATE via matriz.
+ * - Cliente pertenece a la empresa del contexto.
+ * - Vehículo pertenece a la empresa del contexto y está disponible en el intervalo.
+ * - Si inquiryId presente, pertenece a la empresa del contexto.
  */
 @Injectable()
 export class CreateReservationHandler {
   constructor(
+    private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
     private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
@@ -39,6 +35,48 @@ export class CreateReservationHandler {
     });
     await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'CREATE');
 
-    throw new InquiryConversionRequiredError(command.inquiryId);
+    const customer = await this.reservations.findCustomerById(command.customerId);
+    if (
+      !customer ||
+      customer.organizationId !== context.organizationId ||
+      customer.operatingCompanyId !== context.companyId
+    ) {
+      throw new NotFoundException({
+        code: 'CUSTOMER_NOT_FOUND',
+        detail: 'El cliente indicado no existe en esta empresa.',
+      });
+    }
+
+    const vehicle = await this.reservations.findVehicleById(command.vehicleId);
+    if (!vehicle || vehicle.operatingCompanyId !== context.companyId) {
+      throw new NotFoundException({
+        code: 'VEHICLE_NOT_FOUND',
+        detail: 'El vehículo indicado no existe en esta empresa.',
+      });
+    }
+
+    const available = await this.reservations.isVehicleAvailable(command.vehicleId, command.startAt, command.endAt);
+    if (!available) {
+      throw new UnprocessableEntityException({
+        code: 'VEHICLE_NOT_AVAILABLE',
+        detail: 'El vehículo ya no está disponible para el intervalo solicitado.',
+      });
+    }
+
+    return this.reservations.create({
+      organizationId: context.organizationId,
+      operatingCompanyId: context.companyId,
+      branchId: context.branchId,
+      inquiryId: command.inquiryId,
+      customerId: command.customerId,
+      vehicleId: command.vehicleId,
+      channelMode: command.channelMode,
+      startAt: command.startAt,
+      endAt: command.endAt,
+      requiredPaymentAmount: command.requiredPaymentAmount,
+      currency: command.currency,
+      paymentPolicyVersion: command.paymentPolicyVersion,
+      createdBy: command.firebaseUid,
+    });
   }
 }
