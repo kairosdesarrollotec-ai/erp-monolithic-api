@@ -9,17 +9,14 @@ export abstract class IdentityLookupPort {
   abstract findUidByEmail(email: string): Promise<string | null>;
 
   /**
-   * Crea una cuenta en Firebase Authentication para el correo dado y
-   * retorna el uid asignado junto con un enlace de restablecimiento de
-   * contrasena que el administrador comparte con el usuario. El usuario
-   * usa ese enlace para establecer su contrasena antes de su primer
-   * acceso; luego completa el enrolamiento MFA en TR-02.
+   * Crea una cuenta en Firebase Authentication con la contraseña inicial
+   * dada (mínimo 8 caracteres). El usuario inicia sesión con esa contraseña
+   * y el guard TR-02 lo redirige a /activar-cuenta donde debe cambiarla
+   * obligatoriamente (requiresPasswordChange: true) y enrolar MFA.
    *
-   * Si la cuenta ya existe en Firebase, lanza ConflictException para que
-   * el caller la maneje: en ADM-01 se usa el uid existente y no se
-   * re-emite el enlace.
+   * Si la cuenta ya existe en Firebase, lanza ConflictException.
    */
-  abstract provisionUser(email: string): Promise<{ uid: string; passwordResetLink: string }>;
+  abstract provisionUser(email: string, password: string): Promise<{ uid: string }>;
 
   /**
    * Resuelve el correo de cada uid dado, para mostrarlo en la bandeja de

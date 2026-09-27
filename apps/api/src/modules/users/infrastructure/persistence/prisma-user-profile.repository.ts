@@ -20,7 +20,7 @@ export class PrismaUserProfileRepository implements UserProfileRepositoryPort {
       create: {
         firebaseUid: input.firebaseUid,
         organizationId: input.organizationId,
-        requiresPasswordChange: false,
+        requiresPasswordChange: input.requiresPasswordChange ?? true,
         mfaEnrolledAt: null,
       },
       update: {},

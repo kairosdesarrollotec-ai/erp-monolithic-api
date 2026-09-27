@@ -42,7 +42,7 @@ function buildDeps(opts: {
 
   const identity: jest.Mocked<IdentityLookupPort> = {
     findUidByEmail: jest.fn().mockResolvedValue(targetUid),
-    provisionUser: jest.fn().mockResolvedValue({ uid: 'uid-new', passwordResetLink: 'https://reset.link/abc' }),
+    provisionUser: jest.fn().mockResolvedValue({ uid: 'uid-new' }),
     findEmailsByUids: jest.fn(),
   };
 
@@ -88,6 +88,7 @@ function buildCommand(overrides: Partial<AssignUserToCompanyCommand> = {}) {
     overrides.targetCompanyId ?? 'company-2',
     overrides.targetBranchId ?? 'branch-2',
     overrides.targetRole ?? 'FRONT_OFFICE',
+    overrides.initialPassword ?? 'Temporal@123',
   );
 }
 
@@ -120,26 +121,30 @@ describe('AssignUserToCompanyHandler', () => {
       }),
       FAKE_TX,
     );
-    expect(result).toEqual({ id: 'assign-1', passwordResetLink: null });
+    expect(result).toEqual({ id: 'assign-1' });
   });
 
-  it('provisionUser crea cuenta Firebase y UserProfile cuando el correo no existe, retorna passwordResetLink', async () => {
+  it('provisionUser crea cuenta Firebase y UserProfile cuando el correo no existe, exige cambio de contraseña', async () => {
     const deps = buildDeps({ targetUid: null });
     const handler = buildHandler(deps);
 
     const result = await handler.execute(buildCommand());
 
-    expect(deps.identity.provisionUser).toHaveBeenCalledWith('nuevo@veloxrent.pe');
-    expect(deps.userProfiles.createProfile).toHaveBeenCalledWith({ firebaseUid: 'uid-new', organizationId: 'org-1' });
+    expect(deps.identity.provisionUser).toHaveBeenCalledWith('nuevo@veloxrent.pe', 'Temporal@123');
+    expect(deps.userProfiles.createProfile).toHaveBeenCalledWith({
+      firebaseUid: 'uid-new',
+      organizationId: 'org-1',
+      requiresPasswordChange: true,
+    });
     expect(deps.adminUsers.createOrReactivateAssignment).toHaveBeenCalledWith(
       expect.objectContaining({ firebaseUid: 'uid-new' }),
       FAKE_TX,
     );
     expect(deps.audit.recordAdminEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'USER_PROVISIONED_AND_ASSIGNED' }),
+      expect.objectContaining({ action: 'USER_ASSIGNMENT_CREATED_OR_REACTIVATED' }),
       FAKE_TX,
     );
-    expect(result).toEqual({ id: 'assign-1', passwordResetLink: 'https://reset.link/abc' });
+    expect(result).toEqual({ id: 'assign-1' });
   });
 
   it('rechaza cuando el rol autorizado no es ADMINISTRACION', async () => {
