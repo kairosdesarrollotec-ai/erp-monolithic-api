@@ -35,7 +35,7 @@ END $$;
 -- 1) EXPAND - nuevas columnas en customers (NULLABLE)
 -- ============================================================
 ALTER TABLE "customers"
-  ADD COLUMN IF NOT EXISTS "nationality" TEXT,
+  ADD COLUMN IF NOT EXISTS "nationality" "InquiryNationality",
   ADD COLUMN IF NOT EXISTS "country_entry_date" DATE;
 
 -- ============================================================

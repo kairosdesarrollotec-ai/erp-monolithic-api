@@ -26,5 +26,5 @@ ALTER TABLE "reservations"
   ADD CONSTRAINT "reservations_inquiry_id_fkey"
   FOREIGN KEY ("inquiry_id")
   REFERENCES "inquiries"("id")
-  ON DELETE RESTRICT
+  ON DELETE SET NULL
   ON UPDATE CASCADE;

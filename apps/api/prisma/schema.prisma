@@ -659,7 +659,7 @@ model Reservation {
   /// FK simple (inquiryId nullable): Prisma no admite relacion opcional
   /// sobre FK compuesta cuando uno de los campos es NOT NULL. El aislamiento
   /// empresa<>consulta se valida en el handler (cuando inquiryId presente).
-  inquiry          Inquiry?  @relation(fields: [inquiryId], references: [id])
+  inquiry          Inquiry?  @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
   customer         Customer @relation(fields: [customerId, operatingCompanyId], references: [id, operatingCompanyId])
   vehicle          Vehicle  @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
   operatingCompany Company  @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
