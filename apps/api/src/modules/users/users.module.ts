@@ -32,6 +32,6 @@ import { DashboardProjectionsModule } from '../dashboard-projections/dashboard-p
   // "no usa el servicio central") lo reutilicen importando UsersModule,
   // en vez de reimplementar su propia version de esta politica o llamar
   // directamente a WorkContextRepositoryPort.
-  exports: [WorkContextAuthorizationService],
+  exports: [WorkContextAuthorizationService, UserProfileRepositoryPort],
 })
 export class UsersModule {}
