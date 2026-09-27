@@ -12,6 +12,7 @@ describe('GetActivationStatusHandler', () => {
         requiresPasswordChange: true,
         mfaEnrolledAt: null,
       }),
+      createProfile: jest.fn(),
       completeActivation: jest.fn(),
     };
     const handler = new GetActivationStatusHandler(repository);
@@ -30,6 +31,7 @@ describe('GetActivationStatusHandler', () => {
         requiresPasswordChange: false,
         mfaEnrolledAt: new Date('2026-01-01'),
       }),
+      createProfile: jest.fn(),
       completeActivation: jest.fn(),
     };
     const handler = new GetActivationStatusHandler(repository);
@@ -42,6 +44,7 @@ describe('GetActivationStatusHandler', () => {
   it('asume que no requiere activacion si no existe UserProfile todavia', async () => {
     const repository: jest.Mocked<UserProfileRepositoryPort> = {
       findByFirebaseUid: jest.fn().mockResolvedValue(null),
+      createProfile: jest.fn(),
       completeActivation: jest.fn(),
     };
     const handler = new GetActivationStatusHandler(repository);

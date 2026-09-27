@@ -6,6 +6,7 @@ describe('CompleteActivationHandler', () => {
   it('delega en el repositorio marcar la activacion como completa', async () => {
     const repository: jest.Mocked<UserProfileRepositoryPort> = {
       findByFirebaseUid: jest.fn(),
+      createProfile: jest.fn(),
       completeActivation: jest.fn().mockResolvedValue(undefined),
     };
     const handler = new CompleteActivationHandler(repository);
