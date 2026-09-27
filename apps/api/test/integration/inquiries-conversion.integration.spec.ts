@@ -157,15 +157,15 @@ describe('Consulta -> Reserva (Postgres real)', () => {
   });
 
   it('una consulta de OTRA sede de la misma empresa no es visible desde el scope propio (cross-branch)', async () => {
+    // Fixture de aislamiento: se inserta como LEGACY_STUB para no requerir
+    // customerId (el CHECK lo exime); el contenido no importa, solo la sede.
     const other = await prisma.inquiry.create({
       data: {
         organizationId: org,
         operatingCompanyId: company,
         branchId: otherBranch,
-        channel: 'WEB',
-        touristUse: true,
-        destination: 'Huanta',
-        estimatedDays: 1,
+        dataOrigin: 'LEGACY_STUB',
+        touristUse: false,
         createdBy: 'uid-integration',
       },
     });
