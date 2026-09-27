@@ -1,19 +1,22 @@
 /**
  * Seed script: crea un superusuario PLATFORM_ADMIN en Firebase y en la base
- * de datos para cualquier ambiente.
+ * de datos, y lo asigna a las 4 empresas del Grupo KAIROS.
+ *
+ * EMPRESAS CREADAS (si no existen):
+ *   - VeloxRent
+ *   - Casa del Auto
+ *   - Motrix
+ *   - RENOVA
  *
  * USO:
  *   cd apps/erp-monolithic-api
  *   npx ts-node -P apps/api/tsconfig.json scripts/seed-platform-admin.ts \
  *     --email admin@example.com \
  *     --password "S3cur3P@ss" \
- *     --org-id "uuid-del-grupo" \
- *     --company-name "VeloxRent" \
- *     --branch-name "Casa Central"
+ *     --org-id "uuid-del-grupo"
  *
  * O con variables de entorno equivalentes (útil en CI):
- *   SEED_EMAIL=... SEED_PASSWORD=... SEED_ORG_ID=... \
- *   SEED_COMPANY_NAME=... SEED_BRANCH_NAME=... npx ts-node ...
+ *   SEED_EMAIL=... SEED_PASSWORD=... SEED_ORG_ID=... npx ts-node ...
  *
  * Credenciales Firebase Admin SDK (requeridas — igual que el backend):
  *   FIREBASE_PROJECT_ID  /  FIREBASE_CLIENT_EMAIL  /  FIREBASE_PRIVATE_KEY
@@ -32,6 +35,22 @@ import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
 // ---------------------------------------------------------------------------
+// Constantes del negocio — empresas del Grupo KAIROS
+// ---------------------------------------------------------------------------
+
+interface CompanySeed {
+  name: string;
+  branchName: string;
+}
+
+const KAIROS_COMPANIES: CompanySeed[] = [
+  { name: 'VeloxRent', branchName: 'Casa Central VeloxRent' },
+  { name: 'Casa del Auto', branchName: 'Casa Central Casa del Auto' },
+  { name: 'Motrix', branchName: 'Casa Central Motrix' },
+  { name: 'RENOVA', branchName: 'Casa Central RENOVA' },
+];
+
+// ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 
@@ -39,8 +58,6 @@ interface SeedConfig {
   email: string;
   password: string;
   organizationId: string;
-  companyName: string;
-  branchName: string;
 }
 
 function parseArgs(): SeedConfig {
@@ -54,14 +71,10 @@ function parseArgs(): SeedConfig {
   const email = get('--email', 'SEED_EMAIL');
   const password = get('--password', 'SEED_PASSWORD');
   const organizationId = get('--org-id', 'SEED_ORG_ID') ?? randomUUID();
-  const companyName = get('--company-name', 'SEED_COMPANY_NAME');
-  const branchName = get('--branch-name', 'SEED_BRANCH_NAME');
 
   const missing: string[] = [];
   if (!email) missing.push('--email / SEED_EMAIL');
   if (!password) missing.push('--password / SEED_PASSWORD');
-  if (!companyName) missing.push('--company-name / SEED_COMPANY_NAME');
-  if (!branchName) missing.push('--branch-name / SEED_BRANCH_NAME');
 
   if (missing.length) {
     console.error('Faltan parámetros requeridos:\n  ' + missing.join('\n  '));
@@ -72,8 +85,6 @@ function parseArgs(): SeedConfig {
     email: email!,
     password: password!,
     organizationId,
-    companyName: companyName!,
-    branchName: branchName!,
   };
 }
 
@@ -109,8 +120,7 @@ async function main(): Promise<void> {
   console.log('\n=== seed-platform-admin ===');
   console.log(`email          : ${config.email}`);
   console.log(`organizationId : ${config.organizationId}`);
-  console.log(`company        : ${config.companyName}`);
-  console.log(`branch         : ${config.branchName}`);
+  console.log(`empresas       : ${KAIROS_COMPANIES.map((c) => c.name).join(', ')}`);
   console.log('');
 
   // 1. Firebase: crear o reutilizar usuario
@@ -157,26 +167,10 @@ async function main(): Promise<void> {
       return;
     }
 
-    // 3b. Crear en transacción: Company → Branch → UserProfile → UserCompanyAssignment
+    // 3b. Crear en transacción:
+    //     - UserProfile
+    //     - Para cada empresa: Company → Branch → UserCompanyAssignment
     await prisma.$transaction(async (tx) => {
-      const company = await tx.company.create({
-        data: {
-          id: randomUUID(),
-          organizationId: config.organizationId,
-          name: config.companyName,
-        },
-      });
-      console.log(`DB: Company creada (id=${company.id})`);
-
-      const branch = await tx.branch.create({
-        data: {
-          id: randomUUID(),
-          companyId: company.id,
-          name: config.branchName,
-        },
-      });
-      console.log(`DB: Branch creada (id=${branch.id})`);
-
       const profile = await tx.userProfile.create({
         data: {
           id: randomUUID(),
@@ -187,18 +181,38 @@ async function main(): Promise<void> {
       });
       console.log(`DB: UserProfile creado (id=${profile.id})`);
 
-      const assignment = await tx.userCompanyAssignment.create({
-        data: {
-          id: randomUUID(),
-          organizationId: config.organizationId,
-          firebaseUid,
-          companyId: company.id,
-          branchId: branch.id,
-          role: 'PLATFORM_ADMIN',
-          active: true,
-        },
-      });
-      console.log(`DB: UserCompanyAssignment creado (id=${assignment.id})`);
+      for (const companySeed of KAIROS_COMPANIES) {
+        const company = await tx.company.create({
+          data: {
+            id: randomUUID(),
+            organizationId: config.organizationId,
+            name: companySeed.name,
+          },
+        });
+        console.log(`DB: Company creada — ${company.name} (id=${company.id})`);
+
+        const branch = await tx.branch.create({
+          data: {
+            id: randomUUID(),
+            companyId: company.id,
+            name: companySeed.branchName,
+          },
+        });
+        console.log(`DB: Branch creada — ${branch.name} (id=${branch.id})`);
+
+        const assignment = await tx.userCompanyAssignment.create({
+          data: {
+            id: randomUUID(),
+            organizationId: config.organizationId,
+            firebaseUid,
+            companyId: company.id,
+            branchId: branch.id,
+            role: 'PLATFORM_ADMIN',
+            active: true,
+          },
+        });
+        console.log(`DB: UserCompanyAssignment creado — ${companySeed.name} (id=${assignment.id})`);
+      }
     });
 
     console.log('\n✓ Seed completado exitosamente.');
@@ -206,6 +220,10 @@ async function main(): Promise<void> {
     console.log(`  Email    : ${config.email}`);
     console.log(`  Password : (la que ingresaste)`);
     console.log(`  Org ID   : ${config.organizationId}`);
+    console.log(`\nEmpresas asignadas:`);
+    for (const c of KAIROS_COMPANIES) {
+      console.log(`  • ${c.name}`);
+    }
   } finally {
     await prisma.$disconnect();
     await admin.app().delete();

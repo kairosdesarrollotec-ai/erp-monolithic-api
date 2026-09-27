@@ -10,6 +10,10 @@ import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastruc
 import { ProvisionalQuotingGuard } from '../../src/modules/inquiries/application/services/provisional-quoting.guard';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 import { PrismaReservationDepositPolicyRepository } from '../../src/modules/parameters/infrastructure/persistence/prisma-reservation-deposit-policy.repository';
+import { MatrixAuthorizationService } from '../../src/modules/authorization/matrix-authorization.service';
+import { PrismaRolePermissionMatrixRepository } from '../../src/modules/admin/infrastructure/persistence/prisma-role-permission-matrix.repository';
+import { getTestDatabase, TestDatabase } from '../helpers/test-database';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Integracion sobre PostgreSQL REAL + cliente Prisma real (revalidacion PR#7):
@@ -20,14 +24,11 @@ import { PrismaReservationDepositPolicyRepository } from '../../src/modules/para
  *   scope de la sede propia; la base rechaza cotizar un vehiculo de otra
  *   empresa (FK compuesta).
  *
- * Requiere Postgres con todas las migraciones aplicadas y `prisma generate`
- * (ver job `integration` de .github/workflows/ci.yml). Localmente:
- *   docker compose up -d
- *   npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
- *   npm run test:integration --workspace=apps/api
+ * Utiliza Testcontainers para un PostgreSQL efímero y limpio o el provisto por CI.
  */
 describe('Consulta -> Reserva (Postgres real)', () => {
-  const prisma = new PrismaService();
+  let db: TestDatabase;
+  let prisma: PrismaClient;
   const org = randomUUID();
   const company = randomUUID();
   const otherCompany = randomUUID();
@@ -53,16 +54,19 @@ describe('Consulta -> Reserva (Postgres real)', () => {
       { production: false, allowProvisional: false },
     );
     const audit = { recordInquiryEvent: async () => undefined } as any;
+    const matrixRepo = new PrismaRolePermissionMatrixRepository(prisma as unknown as PrismaService);
+    const matrixAuth = new MatrixAuthorizationService(matrixRepo);
     return new ConvertToReservationHandler(
-      new PrismaInquiryRepository(prisma),
-      new PrismaReservationRepository(prisma),
+      new PrismaInquiryRepository(prisma as unknown as PrismaService),
+      new PrismaReservationRepository(prisma as unknown as PrismaService),
       workContext,
       audit,
-      new PrismaOutboxEventRepository(prisma),
-      new PrismaTransactionManager(prisma),
+      new PrismaOutboxEventRepository(prisma as unknown as PrismaService),
+      new PrismaTransactionManager(prisma as unknown as PrismaService),
       guard,
       new FixedClock(),
-      new PrismaReservationDepositPolicyRepository(prisma),
+      new PrismaReservationDepositPolicyRepository(prisma as unknown as PrismaService),
+      matrixAuth,
     );
   }
 
@@ -75,7 +79,6 @@ describe('Consulta -> Reserva (Postgres real)', () => {
         customerId: customer,
         channel: 'WHATSAPP',
         touristUse: true,
-        nationality: 'PERUANO',
         destination: 'Vilcashuaman',
         estimatedDays: 2,
         status: 'COTIZADA',
@@ -100,6 +103,9 @@ describe('Consulta -> Reserva (Postgres real)', () => {
   }
 
   beforeAll(async () => {
+    db = await getTestDatabase();
+    prisma = db.prisma;
+
     await prisma.company.createMany({
       data: [
         { id: company, organizationId: org, name: 'Empresa IT' },
@@ -121,19 +127,12 @@ describe('Consulta -> Reserva (Postgres real)', () => {
         { id: foreignVehicle, organizationId: org, operatingCompanyId: otherCompany, plate: `IT-${foreignVehicle.slice(0, 6)}`, brand: 'Kia', model: 'Rio' },
       ],
     });
-  });
+  }, 60000);
 
   afterAll(async () => {
-    const inquiries = await prisma.inquiry.findMany({ where: { organizationId: org }, select: { id: true } });
-    const ids = inquiries.map((i) => i.id);
-    await prisma.reservation.deleteMany({ where: { inquiryId: { in: ids } } });
-    await prisma.quotation.deleteMany({ where: { inquiryId: { in: ids } } });
-    await prisma.inquiry.deleteMany({ where: { id: { in: ids } } });
-    await prisma.vehicle.deleteMany({ where: { id: { in: [vehicle, foreignVehicle] } } });
-    await prisma.customer.deleteMany({ where: { id: customer } });
-    await prisma.branch.deleteMany({ where: { id: { in: [branch, otherBranch] } } });
-    await prisma.company.deleteMany({ where: { id: { in: [company, otherCompany] } } });
-    await prisma.$disconnect();
+    if (db) {
+      await db.stop();
+    }
   });
 
   it('dos conversiones concurrentes de la misma consulta crean exactamente UNA reserva', async () => {
@@ -163,17 +162,15 @@ describe('Consulta -> Reserva (Postgres real)', () => {
         organizationId: org,
         operatingCompanyId: company,
         branchId: otherBranch,
-        prospectName: 'Prospecto otra sede',
         channel: 'WEB',
         touristUse: true,
-        nationality: 'EXTRANJERO',
         destination: 'Huanta',
         estimatedDays: 1,
         createdBy: 'uid-integration',
       },
     });
 
-    const repo = new PrismaInquiryRepository(prisma);
+    const repo = new PrismaInquiryRepository(prisma as unknown as PrismaService);
     await expect(repo.findById(other.id, { organizationId: org, operatingCompanyId: company, branchId: branch })).resolves.toBeNull();
     await expect(repo.findById(other.id, { organizationId: org, operatingCompanyId: company, branchId: otherBranch })).resolves.not.toBeNull();
   });

@@ -5,6 +5,9 @@ import { WorkContextAuthorizationService } from '../../users/application/service
 import type { WorkerRole } from '../../users/domain/worker-role';
 import { TransactionManagerPort } from '../../../common/application/ports/transaction-manager.port';
 import { ClockPort } from '../../../common/application/ports/clock.port';
+import { MatrixAuthorizationService } from '../../authorization/matrix-authorization.service';
+import { assertInquiryRoleAllowed, InquiryAction } from '../application/policies/inquiry-role-policy';
+import { assertReservationRoleAllowed, ReservationAction } from '../../reservations/application/policies/reservation-role-policy';
 
 /** Fixtures compartidas por los tests unitarios del modulo Inquiries (no se usan en runtime). */
 export const ORG = 'org-1';
@@ -36,15 +39,10 @@ export function buildInquiry(overrides: Partial<InquiryRecord> = {}): InquiryRec
     customerId: 'cust-1',
     channel: 'WHATSAPP',
     touristUse: true,
-    prospectName: null,
-    prospectDocumentType: null,
-    prospectDocumentNumber: null,
-    nationality: 'PERUANO',
     destination: 'Vilcashuaman',
     estimatedDays: 3,
     travelStartDate: null,
     partySize: null,
-    countryEntryDate: null,
     dataOrigin: 'CON02',
     status: 'REGISTRADA',
     closedReason: null,
@@ -62,7 +60,22 @@ export function buildInquiryRepository(existing: InquiryRecord | null = buildInq
     create: jest.fn().mockImplementation(async (input) => buildInquiry({ ...input })),
     findById: jest.fn().mockResolvedValue(existing),
     list: jest.fn().mockResolvedValue([]),
-    findCustomerById: jest.fn().mockResolvedValue({ id: 'cust-1', organizationId: ORG, operatingCompanyId: COMPANY }),
+    findCustomerById: jest.fn().mockResolvedValue({
+      id: 'cust-1',
+      organizationId: ORG,
+      operatingCompanyId: COMPANY,
+      fullName: 'Ana Prospecto',
+      nationality: 'PERUANO',
+      countryEntryDate: null,
+    }),
+    createCustomer: jest.fn().mockResolvedValue({
+      id: 'cust-new',
+      organizationId: ORG,
+      operatingCompanyId: COMPANY,
+      fullName: 'Ana Prospecto',
+      nationality: 'PERUANO',
+      countryEntryDate: null,
+    }),
     quote: jest.fn().mockImplementation(async () => buildInquiry({ status: 'COTIZADA', version: 2 })),
     close: jest.fn().mockImplementation(async () => buildInquiry({ status: 'CERRADA_SIN_CONVERSION', version: 2 })),
     convertToReservation: jest.fn().mockImplementation(async () => buildInquiry({ status: 'CONVERTIDA', version: 3 })),
@@ -98,4 +111,17 @@ export class FixedClock extends ClockPort {
   set(instant: Date): void {
     this.instant = instant;
   }
+}
+
+export function buildMatrixAuth(): jest.Mocked<MatrixAuthorizationService> {
+  return {
+    isAllowed: jest.fn().mockResolvedValue(true),
+    assertAllowed: jest.fn().mockImplementation(async (_orgId: string, role: WorkerRole, module: 'INQUIRY' | 'RESERVATION', action: any) => {
+      if (module === 'INQUIRY') {
+        assertInquiryRoleAllowed(role, action as InquiryAction);
+      } else if (module === 'RESERVATION') {
+        assertReservationRoleAllowed(role, action as ReservationAction);
+      }
+    }),
+  } as unknown as jest.Mocked<MatrixAuthorizationService>;
 }

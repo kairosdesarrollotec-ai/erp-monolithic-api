@@ -8,11 +8,13 @@ import { InquiryNotTransitionableError, VehicleNotEligibleError } from '../../do
 import {
   BRANCH,
   COMPANY,
+  ORG,
   FixedClock,
   SCOPE,
   buildInquiry,
   buildInquiryRepository,
   buildWorkContext,
+  buildMatrixAuth,
 } from '../../testing/inquiry-test-fixtures';
 
 const NOW = new Date('2026-09-23T15:00:00Z');
@@ -41,8 +43,9 @@ function build(options: { role?: Parameters<typeof buildWorkContext>[0]; eligibl
     production: options.production ?? false,
     allowProvisional: options.allow ?? false,
   });
-  const handler = new QuoteHandler(inquiries, buildWorkContext(options.role), fleet, rateCards, guard, new FixedClock(NOW));
-  return { handler, inquiries, fleet, rateCards };
+  const matrixAuth = buildMatrixAuth();
+  const handler = new QuoteHandler(inquiries, buildWorkContext(options.role), fleet, rateCards, guard, new FixedClock(NOW), matrixAuth);
+  return { handler, inquiries, fleet, rateCards, matrixAuth };
 }
 
 const command = (estimatedDays = 3) =>
@@ -110,6 +113,14 @@ describe('QuoteHandler', () => {
 
     await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
     expect(inquiries.findById).not.toHaveBeenCalled();
+  });
+
+  it('consulta MatrixAuthorizationService para assertAllowed con modulo INQUIRY y accion QUOTE', async () => {
+    const { handler, matrixAuth } = build();
+
+    await handler.execute(command());
+
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'QUOTE');
   });
 
   describe('adaptadores provisionales en produccion (hallazgo ALTO Fleet/tarifario)', () => {

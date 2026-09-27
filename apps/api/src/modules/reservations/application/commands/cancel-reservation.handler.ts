@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
@@ -49,6 +49,7 @@ export class CancelReservationHandler {
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(command: CancelReservationCommand): Promise<ReservationRecord> {
@@ -62,8 +63,10 @@ export class CancelReservationHandler {
     // MATRIZ-TRAZABILIDAD-COMPLETA.md (fila RES-08) restringe la
     // cancelacion por no-show a Gerencia unicamente - las demas razones
     // de cancelacion usan el allow-list operativo normal.
-    assertReservationRoleAllowed(
+    await this.matrixAuth.assertAllowed(
+      context.organizationId,
       context.role,
+      'RESERVATION',
       command.reason === 'NO_SHOW' ? 'CANCEL_NO_SHOW' : 'CANCEL_CUSTOMER_REQUESTED_CHANGE',
     );
 

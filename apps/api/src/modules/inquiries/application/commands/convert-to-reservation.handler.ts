@@ -1,15 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InquiryRepositoryPort, InquiryRecord, QuotationRecord } from '../ports/inquiry-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
-import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { ReservationRepositoryPort, ReservationRecord } from '../../../reservations/application/ports/reservation-repository.port';
-import { assertReservationRoleAllowed } from '../../../reservations/application/policies/reservation-role-policy';
 import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
 import { ConvertToReservationCommand } from './convert-to-reservation.command';
 
@@ -61,6 +60,7 @@ export class ConvertToReservationHandler {
     private readonly quotingGuard: ProvisionalQuotingGuard,
     private readonly clock: ClockPort,
     private readonly depositPolicy: ReservationDepositPolicyPort,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(command: ConvertToReservationCommand): Promise<ConvertToReservationResult> {
@@ -69,8 +69,8 @@ export class ConvertToReservationHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    assertInquiryRoleAllowed(context.role, 'CONVERT_TO_RESERVATION');
-    assertReservationRoleAllowed(context.role, 'CREATE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'CONVERT_TO_RESERVATION');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'CREATE');
     this.quotingGuard.assertReady();
 
     if (command.startAt.getTime() <= this.clock.now().getTime()) {

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
@@ -47,6 +47,7 @@ export class ConfirmReservationHandler {
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(command: ConfirmReservationCommand): Promise<ReservationRecord> {
@@ -56,7 +57,7 @@ export class ConfirmReservationHandler {
       branchId: command.branchId,
     });
 
-    assertReservationRoleAllowed(context.role, 'CONFIRM');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'CONFIRM');
 
     const scope = {
       organizationId: context.organizationId,

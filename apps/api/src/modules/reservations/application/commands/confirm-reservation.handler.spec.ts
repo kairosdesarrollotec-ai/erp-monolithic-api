@@ -3,6 +3,8 @@ import { ConfirmReservationHandler } from './confirm-reservation.handler';
 import { ConfirmReservationCommand } from './confirm-reservation.command';
 import { ReservationRepositoryPort, ReservationRecord, ReservationScope } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
@@ -42,6 +44,9 @@ const FAKE_TX = { __fakeTx: true } as any;
 
 function buildDeps(existing: ReservationRecord | null, forbidden = false, role = 'FRONT_OFFICE') {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
+    findCustomerById: jest.fn(),
+    findVehicleById: jest.fn(),
+    isVehicleAvailable: jest.fn(),
     create: jest.fn(),
     findById: jest.fn().mockResolvedValue(existing),
     list: jest.fn(),
@@ -68,14 +73,20 @@ function buildDeps(existing: ReservationRecord | null, forbidden = false, role =
   const transactionManager: jest.Mocked<TransactionManagerPort> = {
     run: jest.fn((work: any) => work(FAKE_TX)),
   };
-  return { reservations, workContext, audit, outbox, transactionManager };
+  const matrixAuth = {
+    assertAllowed: jest.fn().mockImplementation(async (_orgId, r, _mod, action) => {
+      assertReservationRoleAllowed(r, action);
+    }),
+    isAllowed: jest.fn().mockResolvedValue(true),
+  } as unknown as MatrixAuthorizationService;
+  return { reservations, workContext, audit, outbox, transactionManager, matrixAuth };
 }
 
 describe('ConfirmReservationHandler', () => {
   it('confirma cuando pago y documentos estan ambos completos', async () => {
     const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing);
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     const result = await handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1));
 
@@ -99,8 +110,8 @@ describe('ConfirmReservationHandler', () => {
    */
   it('abre la transaccion con aislamiento Serializable', async () => {
     const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing);
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1));
 
@@ -109,8 +120,8 @@ describe('ConfirmReservationHandler', () => {
 
   it('rechaza con REQUIREMENTS_INCOMPLETE si falta el pago', async () => {
     const existing = buildRecord({ paymentValidatedAt: null, documentsCompletedAt: new Date() });
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing);
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
@@ -120,8 +131,8 @@ describe('ConfirmReservationHandler', () => {
 
   it('rechaza con REQUIREMENTS_INCOMPLETE si faltan los documentos', async () => {
     const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: null });
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing);
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
@@ -130,8 +141,8 @@ describe('ConfirmReservationHandler', () => {
 
   it('rechaza si la reserva ya no esta en DRAFT (maquina de estados)', async () => {
     const existing = buildRecord({ status: 'CANCELLED', paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing);
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
@@ -140,8 +151,8 @@ describe('ConfirmReservationHandler', () => {
   });
 
   it('rechaza si la reserva no existe', async () => {
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(null);
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(null);
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new ConfirmReservationCommand('res-x', 'uid-1', 'company-1', 'branch-1', 1)),
@@ -149,8 +160,8 @@ describe('ConfirmReservationHandler', () => {
   });
 
   it('rechaza si la combinacion empresa/sede no es valida', async () => {
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(buildRecord(), true);
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(buildRecord(), true);
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-ajena', 'branch-ajena', 1)),
@@ -160,12 +171,37 @@ describe('ConfirmReservationHandler', () => {
   // Hallazgo ALTO PR#6 ("falta autorizacion granular por rol/accion").
   it('rechaza confirmar si el rol autorizado no esta en la matriz de Reserva', async () => {
     const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, false, 'FINANZAS');
-    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, false, 'FINANZAS');
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
     ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(reservations.confirm).not.toHaveBeenCalled();
+  });
+
+  it('rechaza confirmar si la matriz personalizada versionada revoca CONFIRM', async () => {
+    const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
+    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, false, 'FRONT_OFFICE');
+    const matrixAuth = {
+      assertAllowed: jest.fn().mockRejectedValue(
+        new ForbiddenException({
+          code: 'ROLE_NOT_ALLOWED',
+          detail: 'El rol FRONT_OFFICE no tiene permiso para realizar la accion CONFIRM sobre una Reserva segun la matriz vigente (version 2).',
+        }),
+      ),
+      isAllowed: jest.fn().mockResolvedValue(false),
+    } as unknown as MatrixAuthorizationService;
+
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+    await expect(
+      handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'ROLE_NOT_ALLOWED',
+      },
+    });
     expect(reservations.confirm).not.toHaveBeenCalled();
   });
 });

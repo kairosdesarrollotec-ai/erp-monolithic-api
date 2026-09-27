@@ -2,21 +2,27 @@ import { InquiryChannel } from '../../domain/inquiry-channel';
 import { InquiryNationality } from '../../domain/inquiry-nationality';
 
 /**
- * CON-02 (PANTALLAS-V3-B-CONSULTA.md punto 6) - canal, cliente (formal o
- * prospecto: nombre, documento, nacionalidad), uso, destino, periodo,
- * personas. Hallazgo ALTO de revalidacion PR#7 ("brecha contractual con
- * CON-02"): antes solo viajaban canal/cliente/uso y el resto se perdia.
+ * CONFLICT-CON-002 (resuelto): la identidad del prospecto se separa en
+ * `ProspectInput`. Cuando no llega `customerId`, el handler crea primero
+ * el Customer con estos datos y usa el id resultante.
+ */
+export interface ProspectInput {
+  fullName: string;
+  documentType: string;
+  documentNumber: string;
+  nationality: InquiryNationality;
+  countryEntryDate?: Date;
+}
+
+/**
+ * Contexto del viaje capturado en CON-02 (DAT-CON-003).
+ * Ya no incluye identidad del prospecto (esa va en ProspectInput / Customer).
  */
 export interface RegisterInquirySnapshot {
-  nationality: InquiryNationality;
   destination: string;
   estimatedDays: number;
-  prospectName?: string;
-  prospectDocumentType?: string;
-  prospectDocumentNumber?: string;
   travelStartDate?: Date;
   partySize?: number;
-  countryEntryDate?: Date;
 }
 
 export class RegisterInquiryCommand {
@@ -28,5 +34,6 @@ export class RegisterInquiryCommand {
     public readonly touristUse: boolean,
     public readonly snapshot: RegisterInquirySnapshot,
     public readonly customerId?: string,
+    public readonly prospect?: ProspectInput,
   ) {}
 }

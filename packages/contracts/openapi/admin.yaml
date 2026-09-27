@@ -267,7 +267,7 @@ components:
   schemas:
     WorkerRole:
       type: string
-      enum: [ADMINISTRACION, AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA, RRHH]
+      enum: [ADMINISTRACION, AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA, PLATFORM_ADMIN, RRHH]
     OrganizationUser:
       type: object
       required: [id, firebaseUid, email, companyId, companyName, branchId, branchName, role, active, mfaEnrolled]

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InquiryRepositoryPort, InquiryRecord } from '../ports/inquiry-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertInquiryRoleAllowed } from '../policies/inquiry-role-policy';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { GetInquiryQuery } from './get-inquiry.query';
 
 /**
@@ -15,6 +15,7 @@ export class GetInquiryHandler {
   constructor(
     private readonly inquiries: InquiryRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(query: GetInquiryQuery): Promise<InquiryRecord> {
@@ -23,7 +24,7 @@ export class GetInquiryHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    assertInquiryRoleAllowed(context.role, 'READ');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'READ');
 
     const inquiry = await this.inquiries.findById(query.id, {
       organizationId: context.organizationId,

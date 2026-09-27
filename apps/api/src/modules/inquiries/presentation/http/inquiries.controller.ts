@@ -81,17 +81,21 @@ export class InquiriesController {
         dto.channel,
         dto.touristUse,
         {
-          nationality: dto.nationality,
           destination: dto.destination,
           estimatedDays: dto.estimatedDays,
-          prospectName: dto.prospectName,
-          prospectDocumentType: dto.prospectDocumentType,
-          prospectDocumentNumber: dto.prospectDocumentNumber,
           travelStartDate: toUtcDate(dto.travelStartDate),
           partySize: dto.partySize,
-          countryEntryDate: toUtcDate(dto.countryEntryDate),
         },
         dto.customerId,
+        dto.prospect
+          ? {
+              fullName: dto.prospect.fullName,
+              documentType: dto.prospect.documentType,
+              documentNumber: dto.prospect.documentNumber,
+              nationality: dto.prospect.nationality,
+              countryEntryDate: toUtcDate(dto.prospect.countryEntryDate),
+            }
+          : undefined,
       ),
     );
     return toInquiryResponse(created);

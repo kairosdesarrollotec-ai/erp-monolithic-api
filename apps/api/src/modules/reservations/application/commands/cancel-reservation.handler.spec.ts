@@ -3,6 +3,8 @@ import { CancelReservationHandler } from './cancel-reservation.handler';
 import { CancelReservationCommand } from './cancel-reservation.command';
 import { ReservationRepositoryPort, ReservationRecord, ReservationScope } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
@@ -42,6 +44,9 @@ const FAKE_TX = { __fakeTx: true } as any;
 
 function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
   const reservations: jest.Mocked<ReservationRepositoryPort> = {
+    findCustomerById: jest.fn(),
+    findVehicleById: jest.fn(),
+    isVehicleAvailable: jest.fn(),
     create: jest.fn(),
     findById: jest.fn().mockResolvedValue(existing),
     list: jest.fn(),
@@ -66,14 +71,20 @@ function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
   const transactionManager: jest.Mocked<TransactionManagerPort> = {
     run: jest.fn((work: any) => work(FAKE_TX)),
   };
-  return { reservations, workContext, audit, outbox, transactionManager };
+  const matrixAuth = {
+    assertAllowed: jest.fn().mockImplementation(async (_orgId, r, _mod, action) => {
+      assertReservationRoleAllowed(r, action);
+    }),
+    isAllowed: jest.fn().mockResolvedValue(true),
+  } as unknown as MatrixAuthorizationService;
+  return { reservations, workContext, audit, outbox, transactionManager, matrixAuth };
 }
 
 describe('CancelReservationHandler', () => {
   it('cancela por cambio solicitado por el cliente y audita la razon (BR-RES-003)', async () => {
     const existing = buildRecord();
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing);
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     const result = await handler.execute(
       new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE', 'Cambio de fecha'),
@@ -105,8 +116,8 @@ describe('CancelReservationHandler', () => {
   it('busca la reserva por el scope completo antes de cancelar', async () => {
     const existing = buildRecord();
     // NO_SHOW solo lo puede ejecutar Gerencia (ver reservation-role-policy.ts) - GERENCIA aqui.
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, 'GERENCIA');
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'GERENCIA');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW'));
 
@@ -120,8 +131,8 @@ describe('CancelReservationHandler', () => {
    */
   it.each(['CANCELLED', 'CONVERTED'] as const)('rechaza cancelar una reserva ya %s (estado terminal)', async (status) => {
     const existing = buildRecord({ status });
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, 'GERENCIA');
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'GERENCIA');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW')),
@@ -130,8 +141,8 @@ describe('CancelReservationHandler', () => {
   });
 
   it('rechaza si la reserva no existe', async () => {
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(null, 'GERENCIA');
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(null, 'GERENCIA');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new CancelReservationCommand('res-x', 'uid-1', 'company-1', 'branch-1', 1, 'NO_SHOW')),
@@ -143,8 +154,8 @@ describe('CancelReservationHandler', () => {
   // es la unica accion de Reserva restringida a un solo rol (Gerencia).
   it('rechaza cancelar por no-show si el rol autorizado no es Gerencia', async () => {
     const existing = buildRecord();
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, 'FRONT_OFFICE');
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'FRONT_OFFICE');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW')),
@@ -154,8 +165,8 @@ describe('CancelReservationHandler', () => {
 
   it('permite cancelar por cambio solicitado por el cliente con rol Front-office (no requiere Gerencia)', async () => {
     const existing = buildRecord();
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, 'FRONT_OFFICE');
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'FRONT_OFFICE');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     const result = await handler.execute(
       new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE'),
@@ -164,10 +175,37 @@ describe('CancelReservationHandler', () => {
     expect(result.status).toBe('CANCELLED');
   });
 
+  it('rechaza cancelar si la matriz personalizada versionada revoca CANCEL_CUSTOMER_REQUESTED_CHANGE', async () => {
+    const existing = buildRecord();
+    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, 'FRONT_OFFICE');
+    const matrixAuth = {
+      assertAllowed: jest.fn().mockRejectedValue(
+        new ForbiddenException({
+          code: 'ROLE_NOT_ALLOWED',
+          detail: 'El rol FRONT_OFFICE no tiene permiso para realizar la accion CANCEL_CUSTOMER_REQUESTED_CHANGE sobre una Reserva segun la matriz vigente (version 2).',
+        }),
+      ),
+      isAllowed: jest.fn().mockResolvedValue(false),
+    } as unknown as MatrixAuthorizationService;
+
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+    await expect(
+      handler.execute(
+        new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE'),
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'ROLE_NOT_ALLOWED',
+      },
+    });
+    expect(reservations.cancel).not.toHaveBeenCalled();
+  });
+
   it('rechaza cualquier cancelacion si el rol autorizado no esta en la matriz de Reserva', async () => {
     const existing = buildRecord();
-    const { reservations, workContext, audit, outbox, transactionManager } = buildDeps(existing, 'AUDITORIA');
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager);
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'AUDITORIA');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
       handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE')),
