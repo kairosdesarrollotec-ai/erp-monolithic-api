@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { UserProfileRepositoryPort } from '../../../users/application/ports/user-profile-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
@@ -6,6 +6,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
+import { EmailNotificationPort } from '../ports/email-notification.port';
 import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
 
 /**
@@ -23,6 +24,8 @@ import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
  */
 @Injectable()
 export class AssignUserToCompanyHandler {
+  private readonly logger = new Logger(AssignUserToCompanyHandler.name);
+
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
     private readonly adminAuthorization: AdminMatrixAuthorizationService,
@@ -31,6 +34,7 @@ export class AssignUserToCompanyHandler {
     private readonly userProfiles: UserProfileRepositoryPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
+    private readonly emailNotification: EmailNotificationPort,
   ) {}
 
   async execute(command: AssignUserToCompanyCommand): Promise<{ id: string }> {
@@ -53,23 +57,27 @@ export class AssignUserToCompanyHandler {
       });
     }
 
-    let targetUid = await this.identity.findUidByEmail(command.targetEmail);
+    const existingUid = await this.identity.findUidByEmail(command.targetEmail);
+    const isNewUser = !existingUid;
+    let resolvedUid: string;
 
-    if (!targetUid) {
+    if (isNewUser) {
       const provisioned = await this.identity.provisionUser(command.targetEmail, command.initialPassword);
-      targetUid = provisioned.uid;
+      resolvedUid = provisioned.uid;
       await this.userProfiles.createProfile({
-        firebaseUid: targetUid,
+        firebaseUid: resolvedUid,
         organizationId: context.organizationId,
         requiresPasswordChange: true,
       });
+    } else {
+      resolvedUid = existingUid;
     }
 
     const assignment = await this.transactionManager.run(async (tx) => {
       const result = await this.adminUsers.createOrReactivateAssignment(
         {
           organizationId: context.organizationId,
-          firebaseUid: targetUid,
+          firebaseUid: resolvedUid,
           companyId: command.targetCompanyId,
           branchId: command.targetBranchId,
           role: command.targetRole,
@@ -81,7 +89,7 @@ export class AssignUserToCompanyHandler {
         {
           organizationId: context.organizationId,
           actorUserId: command.actorFirebaseUid,
-          targetFirebaseUid: targetUid,
+          targetFirebaseUid: resolvedUid,
           action: 'USER_ASSIGNMENT_CREATED_OR_REACTIVATED',
           changes: {
             targetEmail: command.targetEmail,
@@ -95,6 +103,14 @@ export class AssignUserToCompanyHandler {
 
       return result;
     });
+
+    if (isNewUser) {
+      void this.emailNotification
+        .sendWelcomeUser(command.targetEmail, command.initialPassword)
+        .catch((err: unknown) =>
+          this.logger.error('Welcome email failed to send', { email: command.targetEmail, error: err }),
+        );
+    }
 
     return { id: assignment.id };
   }

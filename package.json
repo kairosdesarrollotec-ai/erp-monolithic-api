@@ -19,5 +19,8 @@
     "lint": "npm run lint --workspaces --if-present",
     "test:integration:api": "npm run test:integration --workspace apps/api",
     "seed:platform-admin": "ts-node -P apps/api/tsconfig.json scripts/seed-platform-admin.ts"
+  },
+  "dependencies": {
+    "resend": "^6.30.0"
   }
 }

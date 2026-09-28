@@ -8,6 +8,7 @@ import { UserProfileRepositoryPort } from '../../../users/application/ports/user
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
+import { EmailNotificationPort } from '../ports/email-notification.port';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
 const FAKE_TX = { __fakeTx: true } as any;
@@ -64,7 +65,11 @@ function buildDeps(opts: {
     run: jest.fn((work: any) => work(FAKE_TX)),
   };
 
-  return { workContext, adminAuthorization, adminUsers, identity, userProfiles, audit, transactionManager };
+  const emailNotification: jest.Mocked<EmailNotificationPort> = {
+    sendWelcomeUser: jest.fn().mockResolvedValue(undefined),
+  };
+
+  return { workContext, adminAuthorization, adminUsers, identity, userProfiles, audit, transactionManager, emailNotification };
 }
 
 function buildHandler(deps: ReturnType<typeof buildDeps>) {
@@ -76,6 +81,7 @@ function buildHandler(deps: ReturnType<typeof buildDeps>) {
     deps.userProfiles,
     deps.audit,
     deps.transactionManager,
+    deps.emailNotification,
   );
 }
 
@@ -121,6 +127,7 @@ describe('AssignUserToCompanyHandler', () => {
       }),
       FAKE_TX,
     );
+    expect(deps.emailNotification.sendWelcomeUser).not.toHaveBeenCalled();
     expect(result).toEqual({ id: 'assign-1' });
   });
 
@@ -144,6 +151,9 @@ describe('AssignUserToCompanyHandler', () => {
       expect.objectContaining({ action: 'USER_ASSIGNMENT_CREATED_OR_REACTIVATED' }),
       FAKE_TX,
     );
+    // email fire-and-forget: se llama pero no esperamos su resolución
+    await new Promise(process.nextTick); // deja que la promesa void se resuelva
+    expect(deps.emailNotification.sendWelcomeUser).toHaveBeenCalledWith('nuevo@veloxrent.pe', 'Temporal@123');
     expect(result).toEqual({ id: 'assign-1' });
   });
 
