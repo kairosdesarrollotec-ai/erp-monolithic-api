@@ -15,7 +15,7 @@ import {
   provisionalQuotingPolicyFromEnv,
 } from './application/services/provisional-quoting.guard';
 import { PrismaInquiryRepository } from './infrastructure/persistence/prisma-inquiry.repository';
-import { ProvisionalFleetAvailabilityAdapter } from './infrastructure/fleet/provisional-fleet-availability.adapter';
+import { FleetModuleAvailabilityAdapter } from './infrastructure/fleet/fleet-module-availability.adapter';
 import { ProvisionalRateCardAdapter } from './infrastructure/pricing/provisional-rate-card.adapter';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
@@ -23,6 +23,7 @@ import { ReservationsModule } from '../reservations/reservations.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { ParametersModule } from '../parameters/parameters.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
+import { FleetModule } from '../fleet/fleet.module';
 
 /**
  * HU-26 (Consulta, CON-01..CON-04).
@@ -32,12 +33,14 @@ import { AuthorizationModule } from '../authorization/authorization.module';
  *   dentro de la misma transaccion de la conversion (caso de uso unico).
  * - PrismaModule/IdempotencyModule (@Global): TransactionManagerPort,
  *   ClockPort, IdempotencyInterceptor.
- * - FleetAvailabilityPort/RateCardPort: adaptadores PROVISIONALES
- *   (revalidacion PR#7), bloqueados en produccion por
- *   ProvisionalQuotingGuard salvo KAIROS_ALLOW_PROVISIONAL_QUOTING=true.
+ * - FleetAvailabilityPort: adaptador REAL (`FleetModuleAvailabilityAdapter`)
+ *   sobre el modulo Fleet real (FleetModule), in-process. RateCardPort
+ *   sigue PROVISIONAL (revalidacion PR#7); ProvisionalQuotingGuard bloquea
+ *   produccion mientras el tarifario lo sea, salvo
+ *   KAIROS_ALLOW_PROVISIONAL_QUOTING=true.
  */
 @Module({
-  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule, AuthorizationModule],
+  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule, AuthorizationModule, FleetModule],
   controllers: [InquiriesController],
   providers: [
     RegisterInquiryHandler,
@@ -48,7 +51,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     ListInquiriesHandler,
     ProvisionalQuotingGuard,
     { provide: InquiryRepositoryPort, useClass: PrismaInquiryRepository },
-    { provide: FleetAvailabilityPort, useClass: ProvisionalFleetAvailabilityAdapter },
+    { provide: FleetAvailabilityPort, useClass: FleetModuleAvailabilityAdapter },
     { provide: RateCardPort, useClass: ProvisionalRateCardAdapter },
     { provide: PROVISIONAL_QUOTING_POLICY, useFactory: () => provisionalQuotingPolicyFromEnv(process.env) },
   ],
