@@ -285,6 +285,7 @@ model Branch {
   assignments  UserCompanyAssignment[]
   reservations Reservation[]
   inquiries    Inquiry[]
+  vehicles     Vehicle[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -413,22 +414,28 @@ model Customer {
 model Vehicle {
   id                 String   @id @default(uuid())
   organizationId     String   @map("organization_id")
-  /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508) - mismo
-  /// razonamiento que Customer.operatingCompanyId arriba: cierra el
-  /// cruce cross-company, deja el nivel de sede como pregunta abierta
-  /// para el modulo real de Flota (todavia no construido).
   operatingCompanyId String   @map("operating_company_id")
+  branchId           String?  @map("branch_id")
   plate              String   @unique
   brand              String
   model              String
+  year               Int?
+  color              String?
+  category           String?  @default("SEDAN")
+  status             String   @default("AVAILABLE") // AVAILABLE | RENTED | MAINTENANCE | OUT_OF_SERVICE
+  dailyRate          Decimal? @map("daily_rate") @db.Decimal(10, 2)
+  photoUrl           String?  @map("photo_url")
   createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
 
   operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  branch           Branch?       @relation(fields: [branchId, operatingCompanyId], references: [id, companyId], onDelete: SetNull)
   reservations     Reservation[]
   quotations       Quotation[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
+  @@index([operatingCompanyId, status])
   @@map("vehicles")
 }
 
