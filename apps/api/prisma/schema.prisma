@@ -391,7 +391,11 @@ model Customer {
   nationality        InquiryNationality? @map("nationality")
   /// SC-CON-001.03: solo aplica a EXTRANJERO. CHECK en la migracion.
   countryEntryDate   DateTime?           @map("country_entry_date") @db.Date
+  email              String?
+  phone              String?
+  address            String?
   createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
 
   operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   reservations     Reservation[]
@@ -399,6 +403,7 @@ model Customer {
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
+  @@index([operatingCompanyId, documentNumber])
   @@map("customers")
 }
 

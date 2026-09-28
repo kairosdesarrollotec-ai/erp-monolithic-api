@@ -5,6 +5,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { UsersModule } from './modules/users/users.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { InquiriesModule } from './modules/inquiries/inquiries.module';
+import { CustomersModule } from './modules/customers/customers.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
@@ -22,6 +23,7 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     AuthorizationModule,
     ReservationsModule,
     InquiriesModule,
+    CustomersModule,
     AdminModule,
     NotificationsModule,
   ],
