@@ -7,14 +7,25 @@ import { buildWelcomeUserEmail } from './welcome-user.template';
 @Injectable()
 export class ResendEmailAdapter implements EmailNotificationPort {
   private readonly logger = new Logger(ResendEmailAdapter.name);
-  private readonly resend: Resend;
-  private readonly from: string;
-  private readonly loginUrl: string;
+  private _client: Resend | null = null;
 
-  constructor(private readonly config: ConfigService) {
-    this.resend = new Resend(config.get<string>('RESEND_API_KEY'));
-    this.from = config.get<string>('EMAIL_FROM') ?? 'no-reply@kairosnexo.com';
-    this.loginUrl = config.get<string>('APP_BASE_URL') ?? 'https://kairos-nexo-dev.web.app/';
+  constructor(private readonly config: ConfigService) {}
+
+  private get client(): Resend {
+    if (!this._client) {
+      const apiKey = this.config.get<string>('RESEND_API_KEY');
+      if (!apiKey) throw new Error('RESEND_API_KEY no está configurado');
+      this._client = new Resend(apiKey);
+    }
+    return this._client;
+  }
+
+  private get from(): string {
+    return this.config.get<string>('EMAIL_FROM') ?? 'no-reply@kairosnexo.com';
+  }
+
+  private get loginUrl(): string {
+    return this.config.get<string>('APP_BASE_URL') ?? 'https://kairos-nexo-dev.web.app/';
   }
 
   async sendWelcomeUser(toEmail: string, initialPassword: string): Promise<void> {
@@ -24,7 +35,7 @@ export class ResendEmailAdapter implements EmailNotificationPort {
       loginUrl: this.loginUrl,
     });
 
-    const { error } = await this.resend.emails.send({
+    const { error } = await this.client.emails.send({
       from: this.from,
       to: toEmail,
       subject,
