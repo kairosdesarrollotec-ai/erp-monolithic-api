@@ -55,9 +55,11 @@ La migración NestJS 10→12 debe hacerse como unidad coordinada. Ver issue [#17
    - Coordinar con frontend el impacto en permisos/UI una vez implementado.
 
 2. **TR-07 — envío externo real de notificaciones (email/push/SMS).**
-   Hoy solo existe registro interno (`notifications` module) — el envío externo no está implementado.
-   - Definir proveedor (SendGrid/SES para email, FCM para push, SMS a definir).
-   - Implementar el adaptador respetando el contrato ya expuesto a frontend.
+   Implementado en `feature/bloque-2-tr-07-notificaciones-externas`:
+   - Módulo autónomo `NotificationDispatchModule` desacoplado de Users/Notifications.
+   - Puertos: `NotificationDispatcherPort`, `RecipientContactLookupPort`, `EmailNotificationPort`, `PushNotificationPort`, `SmsNotificationPort`.
+   - Adaptadores: `FirebaseRecipientContactLookupAdapter`, `FirebasePushNotificationAdapter`, `ConsoleEmailNotificationAdapter`, `ConsoleSmsNotificationAdapter`.
+   - Integrado en `OutboxRelayService` con ejecución paralela de canales y contención de fallos sin abortar el relay ni envenenar la DLQ.
 
 3. **TR-04, TR-08, TR-09, TR-10** ("Transversal restante", HU-38) — sin empezar.
    - Revisar BDD/SDD/TDD transversales y contratos en `PANTALLAS-V3-B-TRANSVERSAL.md` para determinar qué parte requiere endpoint o lógica de backend (algunos pueden ser solo frontend).
@@ -92,7 +94,7 @@ Ambos conflictos tienen implementación interina aplicada en `main` (no bloquean
 | CI-B.3 | SBOM CycloneDX en CI (PR#19) | ✅ Cerrado | — | — |
 | CI-C | CD pipeline: Docker, Cloud Run, Prisma migrate deploy (PR#20) | ✅ Mergeado 25-sep-2026 | Setup GCP + secrets | — |
 | 2 | ADM-02 — enforcement extendido | Pendiente | — | Parte frontend de ADM-02 |
-| 3 | TR-07 — envío externo real | Pendiente | — | Parte frontend de TR-07 (si cambia contrato) |
+| 3 | TR-07 — envío externo real | ✅ Implementado (PR listo) | — | Parte frontend de TR-07 (si cambia contrato) |
 | 4 | Migración NestJS 10→12 (issue #17) | Pendiente | Decisión formal | — |
 | 5 | TR-04/08/09/10 | Pendiente | Definir alcance backend vs. frontend | — |
 | 6 | Confirmar `prisma migrate deploy` | Pendiente | — | — |

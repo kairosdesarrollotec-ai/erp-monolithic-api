@@ -4,6 +4,7 @@ import { PrismaDashboardItemRepository } from './infrastructure/persistence/pris
 import { OutboxRelayService } from './infrastructure/outbox-relay.service';
 import { NotificationReadModelModule } from '../notifications/notification-read-model.module';
 import { NotificationTemplatesModule } from '../notification-templates/notification-templates.module';
+import { NotificationDispatchModule } from '../notifications/notification-dispatch.module';
 
 /**
  * Modulo transversal de TR-06 (Tablero por rol). Ver
@@ -23,7 +24,11 @@ import { NotificationTemplatesModule } from '../notification-templates/notificat
  * antes de sumar TR-08 como tercera proyeccion sobre el mismo evento.
  */
 @Module({
-  imports: [NotificationReadModelModule, NotificationTemplatesModule],
+  imports: [
+    NotificationReadModelModule,
+    NotificationTemplatesModule,
+    NotificationDispatchModule,
+  ],
   providers: [
     { provide: DashboardItemRepositoryPort, useClass: PrismaDashboardItemRepository },
     OutboxRelayService,
