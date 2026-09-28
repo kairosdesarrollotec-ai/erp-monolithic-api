@@ -25,6 +25,7 @@ export const WORKER_ROLES = [
   'FINANZAS',
   'FRONT_OFFICE',
   'GERENCIA',
+  'PLATFORM_ADMIN',
   'RRHH',
 ] as const;
 

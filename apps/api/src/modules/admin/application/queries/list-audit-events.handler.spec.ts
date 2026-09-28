@@ -33,6 +33,7 @@ function buildAuditEvents(records: AuditEventRecord[] = []) {
 function buildIdentity(emails: Record<string, string | null> = {}) {
   const repo: jest.Mocked<IdentityLookupPort> = {
     findUidByEmail: jest.fn(),
+    provisionUser: jest.fn(),
     findEmailsByUids: jest.fn().mockResolvedValue(emails),
   };
   return repo;

@@ -85,6 +85,7 @@ export class AdminController {
         dto.targetCompanyId,
         dto.targetBranchId,
         dto.targetRole,
+        dto.initialPassword,
       ),
     );
   }

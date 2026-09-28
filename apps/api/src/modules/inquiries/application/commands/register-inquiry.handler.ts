@@ -5,21 +5,15 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { RegisterInquiryCommand } from './register-inquiry.command';
 
 /**
- * CON-P01..P05 (BR-CON-001/003/004/005) - registra la consulta en
- * REGISTRADA con el snapshot de CON-02.
+ * CON-P01..P05 (BR-CON-001/003/004/005) - registra la consulta en REGISTRADA.
  *
- * Controles (revalidacion PR#7, d7a6124):
- * - ALTO "RBAC pendiente": tras resolver el contexto autorizado se aplica
- *   la politica rol-accion (`REGISTER`, deny-by-default) via MatrixAuthorizationService.
- * - ALTO "aislamiento de cliente": `customerId`, si llega, debe pertenecer
- *   a la MISMA organizacion y empresa del contexto autorizado (antes solo
- *   se comparaba organizacion). 404 si no - no se revela si existe en otra
- *   empresa.
- * - ALTO "brecha contractual con CON-02": se persiste el snapshot
- *   (nacionalidad, destino, dias, prospecto, periodo, personas, fecha de
- *   ingreso). Sin cliente formal, el nombre del prospecto es obligatorio
- *   (CON-P02); la fecha de ingreso al pais solo aplica a EXTRANJERO
- *   (SC-CON-001.03). Ambas reglas se refuerzan tambien con CHECK en la base.
+ * CONFLICT-CON-002 (resuelto): la identidad del prospecto se persiste en
+ * Customer, no en Inquiry. Flujo:
+ *   a) Si llega `customerId` -> valida que pertenezca a la empresa del contexto.
+ *   b) Si llega `prospect` (sin customerId) -> crea el Customer primero; el
+ *      customerId resultante va en la Inquiry. La fecha de ingreso solo aplica
+ *      a EXTRANJERO (SC-CON-001.03).
+ *   c) Si no llega ninguno de los dos -> error 400.
  */
 @Injectable()
 export class RegisterInquiryHandler {
@@ -30,14 +24,14 @@ export class RegisterInquiryHandler {
   ) {}
 
   async execute(command: RegisterInquiryCommand): Promise<InquiryRecord> {
-    const { snapshot } = command;
-    if (!command.customerId && !snapshot.prospectName?.trim()) {
+    if (!command.customerId && !command.prospect) {
       throw new BadRequestException({
-        code: 'PROSPECT_NAME_REQUIRED',
-        detail: 'Sin un cliente formal (customerId), el nombre del prospecto es obligatorio.',
+        code: 'PROSPECT_OR_CUSTOMER_REQUIRED',
+        detail: 'Debe indicar un cliente formal (customerId) o los datos del prospecto.',
       });
     }
-    if (snapshot.countryEntryDate && snapshot.nationality !== 'EXTRANJERO') {
+
+    if (command.prospect?.countryEntryDate && command.prospect.nationality !== 'EXTRANJERO') {
       throw new BadRequestException({
         code: 'COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS',
         detail: 'La fecha de ingreso al pais solo aplica a clientes extranjeros.',
@@ -51,6 +45,8 @@ export class RegisterInquiryHandler {
     });
     await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'REGISTER');
 
+    let customerId: string;
+
     if (command.customerId) {
       const customer = await this.inquiries.findCustomerById(command.customerId);
       if (
@@ -63,24 +59,32 @@ export class RegisterInquiryHandler {
           detail: 'El cliente indicado no existe en esta empresa.',
         });
       }
+      customerId = customer.id;
+    } else {
+      const prospect = command.prospect!;
+      const created = await this.inquiries.createCustomer({
+        organizationId: context.organizationId,
+        operatingCompanyId: context.companyId,
+        fullName: prospect.fullName.trim(),
+        documentType: prospect.documentType,
+        documentNumber: prospect.documentNumber,
+        nationality: prospect.nationality,
+        countryEntryDate: prospect.countryEntryDate,
+      });
+      customerId = created.id;
     }
 
     return this.inquiries.create({
       organizationId: context.organizationId,
       operatingCompanyId: context.companyId,
       branchId: context.branchId,
-      customerId: command.customerId,
+      customerId,
       channel: command.channel,
       touristUse: command.touristUse,
-      prospectName: snapshot.prospectName?.trim() || undefined,
-      prospectDocumentType: snapshot.prospectDocumentType,
-      prospectDocumentNumber: snapshot.prospectDocumentNumber,
-      nationality: snapshot.nationality,
-      destination: snapshot.destination,
-      estimatedDays: snapshot.estimatedDays,
-      travelStartDate: snapshot.travelStartDate,
-      partySize: snapshot.partySize,
-      countryEntryDate: snapshot.countryEntryDate,
+      destination: command.snapshot.destination,
+      estimatedDays: command.snapshot.estimatedDays,
+      travelStartDate: command.snapshot.travelStartDate,
+      partySize: command.snapshot.partySize,
       createdBy: command.firebaseUid,
     });
   }

@@ -9,15 +9,32 @@ import {
   IsUUID,
   Matches,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * TDD-CON-001.md 11.1 + snapshot de CON-02 (hallazgo ALTO de revalidacion
- * PR#7, "brecha contractual con CON-02"; PANTALLAS-V3-B-CONSULTA.md punto 6
- * y BDD-CON-001.md DAT-CON-001..004). Contrato en
- * packages/contracts/openapi/inquiries.yaml (RegisterInquiryRequest).
+ * CONFLICT-CON-002 (resuelto): la identidad del prospecto se separa en
+ * un sub-objeto anidado. Cuando llega `prospect` (sin `customerId`) el
+ * handler crea primero el Customer.
+ */
+export class ProspectDto {
+  @IsString() @IsNotEmpty() @MaxLength(200) fullName!: string;
+  @IsString() @IsNotEmpty() @MaxLength(30) documentType!: string;
+  @IsString() @IsNotEmpty() @MaxLength(30) documentNumber!: string;
+  @IsIn(['PERUANO', 'EXTRANJERO']) nationality!: 'PERUANO' | 'EXTRANJERO';
+  /** SC-CON-001.03 - solo EXTRANJERO (validado en el handler). */
+  @IsOptional() @Matches(ISO_DATE_ONLY, { message: 'countryEntryDate debe tener formato YYYY-MM-DD.' })
+  countryEntryDate?: string;
+}
+
+/**
+ * TDD-CON-001.md 11.1 - registro de consulta CON-02.
+ * Contrato en packages/contracts/openapi/inquiries.yaml (RegisterInquiryRequest).
+ *
+ * Debe llegar exactamente uno de `customerId` o `prospect`; validado en el handler.
  */
 export class RegisterInquiryDto {
   @IsUUID() companyId!: string;
@@ -27,18 +44,14 @@ export class RegisterInquiryDto {
   @IsIn(['WHATSAPP', 'LLAMADA', 'PRESENCIAL', 'WEB', 'REDES'])
   channel!: 'WHATSAPP' | 'LLAMADA' | 'PRESENCIAL' | 'WEB' | 'REDES';
 
+  /** Cliente formal existente. Mutuamente exclusivo con `prospect`. */
   @IsOptional() @IsUUID() customerId?: string;
+
+  /** Datos del prospecto cuando no existe Customer previo. */
+  @IsOptional() @ValidateNested() @Type(() => ProspectDto) prospect?: ProspectDto;
 
   /** DAT-CON-001 */
   @IsBoolean() touristUse!: boolean;
-
-  /** CON-P02 - obligatorio si no hay customerId (validado en el handler). */
-  @IsOptional() @IsString() @MaxLength(200) prospectName?: string;
-  @IsOptional() @IsString() @MaxLength(30) prospectDocumentType?: string;
-  @IsOptional() @IsString() @MaxLength(30) prospectDocumentNumber?: string;
-
-  /** DAT-CON-002 */
-  @IsIn(['PERUANO', 'EXTRANJERO']) nationality!: 'PERUANO' | 'EXTRANJERO';
 
   /** DAT-CON-003 */
   @IsString() @IsNotEmpty() @MaxLength(200) destination!: string;
@@ -48,8 +61,4 @@ export class RegisterInquiryDto {
   @IsOptional() @Matches(ISO_DATE_ONLY, { message: 'travelStartDate debe tener formato YYYY-MM-DD.' })
   travelStartDate?: string;
   @IsOptional() @IsInt() @IsPositive() partySize?: number;
-
-  /** SC-CON-001.03 - solo EXTRANJERO (validado en el handler y por CHECK). */
-  @IsOptional() @Matches(ISO_DATE_ONLY, { message: 'countryEntryDate debe tener formato YYYY-MM-DD.' })
-  countryEntryDate?: string;
 }

@@ -25,21 +25,16 @@ export interface InteractionRecord {
 }
 
 /**
- * Hallazgo ALTO de revalidacion PR#7 ("brecha contractual con CON-02"):
- * snapshot de lo capturado en CON-02 (PANTALLAS-V3-B-CONSULTA.md punto 6 /
- * BDD-CON-001.md DAT-CON-001..004). Todos los campos son `null` solo en
- * consultas `LEGACY_STUB` (ver domain/inquiry-data-origin.ts).
+ * Snapshot del viaje capturado en CON-02 (CONFLICT-CON-002 resuelto):
+ * la identidad del prospecto (nombre, documento, nacionalidad) se persiste
+ * en Customer; Inquiry conserva solo el contexto del viaje.
+ * Todos los campos son `null` solo en consultas `LEGACY_STUB`.
  */
 export interface InquirySnapshot {
-  prospectName: string | null;
-  prospectDocumentType: string | null;
-  prospectDocumentNumber: string | null;
-  nationality: InquiryNationality | null;
   destination: string | null;
   estimatedDays: number | null;
   travelStartDate: Date | null;
   partySize: number | null;
-  countryEntryDate: Date | null;
 }
 
 /**
@@ -72,18 +67,13 @@ export interface CreateInquiryInput {
   organizationId: string;
   operatingCompanyId: string;
   branchId: string;
-  customerId?: string;
+  customerId: string;
   channel: InquiryChannel;
   touristUse: boolean;
-  prospectName?: string;
-  prospectDocumentType?: string;
-  prospectDocumentNumber?: string;
-  nationality: InquiryNationality;
   destination: string;
   estimatedDays: number;
   travelStartDate?: Date;
   partySize?: number;
-  countryEntryDate?: Date;
   createdBy: string;
 }
 
@@ -137,15 +127,23 @@ export interface ConvertToReservationInput extends InquiryScope {
   expectedVersion: number;
 }
 
-/**
- * Hallazgo ALTO de revalidacion PR#7 ("aislamiento de cliente y vehiculo
- * incompleto"): se expone `operatingCompanyId` para que los handlers
- * comparen organizacion Y empresa, no solo organizacion.
- */
 export interface CustomerRecord {
   id: string;
   organizationId: string;
   operatingCompanyId: string;
+  fullName: string;
+  nationality: InquiryNationality | null;
+  countryEntryDate: Date | null;
+}
+
+export interface CreateCustomerInput {
+  organizationId: string;
+  operatingCompanyId: string;
+  fullName: string;
+  documentType: string;
+  documentNumber: string;
+  nationality: InquiryNationality;
+  countryEntryDate?: Date;
 }
 
 /**
@@ -163,6 +161,7 @@ export abstract class InquiryRepositoryPort {
   abstract list(filter: ListInquiriesFilter): Promise<InquirySummaryRecord[]>;
 
   abstract findCustomerById(id: string): Promise<CustomerRecord | null>;
+  abstract createCustomer(input: CreateCustomerInput): Promise<CustomerRecord>;
 
   abstract quote(input: QuoteInquiryInput, fromStatuses: InquiryStatus[]): Promise<InquiryRecord>;
 

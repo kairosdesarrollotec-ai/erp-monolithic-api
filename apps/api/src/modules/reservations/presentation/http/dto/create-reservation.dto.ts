@@ -1,14 +1,13 @@
-import { IsIn, IsISO8601, IsUUID } from 'class-validator';
+import { IsDecimal, IsIn, IsISO8601, IsInt, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
 
 /**
- * Hallazgo medio de revision PR#6 ("DTOs sin formato fuerte"): companyId/
- * branchId/inquiryId/customerId/vehicleId son UUIDs en el esquema
- * (schema.prisma) - `@IsUUID()` en vez de `@IsString()` rechaza en el
- * borde HTTP cualquier valor que ni siquiera tiene forma de id valido,
- * mismo patron que get-dashboard.dto.ts desde la correccion de PR#5.
+ * CONFLICT-CON-001 (resuelto): inquiryId es opcional — se omite para
+ * creacion directa, se incluye cuando la reserva se origina en una Consulta
+ * (aunque en ese caso se recomienda usar convert-to-reservation que valida
+ * la cotizacion vigente y transiciona la Consulta en la misma transaccion).
  */
 export class CreateReservationDto {
-  @IsUUID() inquiryId!: string;
+  @IsOptional() @IsUUID() inquiryId?: string;
   @IsUUID() customerId!: string;
   @IsUUID() vehicleId!: string;
   @IsUUID() companyId!: string;
@@ -16,4 +15,8 @@ export class CreateReservationDto {
   @IsIn(['PRESENCIAL', 'VIRTUAL']) channelMode!: 'PRESENCIAL' | 'VIRTUAL';
   @IsISO8601() startAt!: string;
   @IsISO8601() endAt!: string;
+  /** Monto a cobrar al confirmar (BR-RES-001). Formato: "300.00". */
+  @IsString() @IsDecimal({ decimal_digits: '0,2' }) requiredPaymentAmount!: string;
+  @IsString() currency!: string;
+  @IsInt() @IsPositive() paymentPolicyVersion!: number;
 }

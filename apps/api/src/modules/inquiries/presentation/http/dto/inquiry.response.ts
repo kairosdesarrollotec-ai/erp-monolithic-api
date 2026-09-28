@@ -1,12 +1,12 @@
 import { InquiryStatus } from '../../../domain/inquiry-status';
 import { InquiryChannel } from '../../../domain/inquiry-channel';
-import { InquiryNationality, ThirdRequiredDocument } from '../../../domain/inquiry-nationality';
 import { InquiryDataOrigin } from '../../../domain/inquiry-data-origin';
 
 /**
- * Resumen de una consulta (CON-01, GET /inquiries). Incluye el snapshot de
- * CON-02 (revalidacion PR#7) para que la bandeja muestre cliente/prospecto,
- * canal, estado y fecha sin cargar el historial.
+ * Resumen de una consulta (CON-01, GET /inquiries).
+ * CONFLICT-CON-002 (resuelto): los campos de identidad del prospecto
+ * (nombre, documento, nacionalidad) ya no están en Inquiry. Para obtener
+ * esa información, consultar GET /customers/{customerId}.
  */
 export interface InquirySummaryResponse {
   id: string;
@@ -17,17 +17,10 @@ export interface InquirySummaryResponse {
   channel: InquiryChannel | null;
   touristUse: boolean;
   customerId: string | null;
-  prospectName: string | null;
-  prospectDocumentType: string | null;
-  prospectDocumentNumber: string | null;
-  nationality: InquiryNationality | null;
   destination: string | null;
   estimatedDays: number | null;
   travelStartDate: string | null;
   partySize: number | null;
-  countryEntryDate: string | null;
-  /** BR-CON-004 - derivado de la nacionalidad; null si no se conoce. */
-  thirdRequiredDocument: ThirdRequiredDocument | null;
   dataOrigin: InquiryDataOrigin;
   closedReason: string | null;
   version: number;

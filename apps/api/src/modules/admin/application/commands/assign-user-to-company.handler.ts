@@ -1,32 +1,40 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { UserProfileRepositoryPort } from '../../../users/application/ports/user-profile-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
+import { EmailNotificationPort } from '../ports/email-notification.port';
 import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
 
 /**
  * ADM-01 (Usuarios y asignaciones) - "Agregar usuario" / asignar
- * empresa-sede-rol. BR implicita del contrato ("denegacion por
- * defecto"): esta es la UNICA forma de darle a un usuario cualquier
- * permiso en KAIROS - antes de este comando, un firebaseUid autenticado
- * no puede hacer nada (WorkContextAuthorizationService ya lo garantiza,
- * al no encontrar ninguna asignacion vigente).
+ * empresa-sede-rol.
  *
- * Mismo criterio de atomicidad que ConfirmReservationHandler: la
- * asignacion y su auditoria corren en la misma transaccion.
+ * Si el correo no existe en Firebase, se crea la cuenta con la contraseña
+ * inicial proporcionada (initialPassword) y requiresPasswordChange=true.
+ * Al primer login, TR-02 obliga al usuario a cambiar la contraseña y
+ * enrolar MFA antes de acceder a las rutas protegidas.
+ *
+ * Si el correo ya existe, se reutiliza el uid existente.
+ *
+ * Atomicidad: asignacion + auditoria corren en la misma transaccion.
  */
 @Injectable()
 export class AssignUserToCompanyHandler {
+  private readonly logger = new Logger(AssignUserToCompanyHandler.name);
+
   constructor(
     private readonly workContext: WorkContextAuthorizationService,
     private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly adminUsers: AdminUserRepositoryPort,
     private readonly identity: IdentityLookupPort,
+    private readonly userProfiles: UserProfileRepositoryPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
+    private readonly emailNotification: EmailNotificationPort,
   ) {}
 
   async execute(command: AssignUserToCompanyCommand): Promise<{ id: string }> {
@@ -36,15 +44,6 @@ export class AssignUserToCompanyHandler {
       branchId: command.actorBranchId,
     });
     await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_USERS');
-
-    const targetUid = await this.identity.findUidByEmail(command.targetEmail);
-    if (!targetUid) {
-      throw new NotFoundException({
-        code: 'USER_NOT_FOUND_IN_IDENTITY_PROVIDER',
-        detail:
-          'No existe una cuenta de Firebase Authentication con ese correo. ADM-01 asigna empresa/sede/rol a una cuenta ya existente, no crea cuentas nuevas.',
-      });
-    }
 
     const ownership = await this.adminUsers.findCompanyBranchOwnership(
       context.organizationId,
@@ -58,11 +57,27 @@ export class AssignUserToCompanyHandler {
       });
     }
 
-    return this.transactionManager.run(async (tx) => {
-      const assignment = await this.adminUsers.createOrReactivateAssignment(
+    const existingUid = await this.identity.findUidByEmail(command.targetEmail);
+    const isNewUser = !existingUid;
+    let resolvedUid: string;
+
+    if (isNewUser) {
+      const provisioned = await this.identity.provisionUser(command.targetEmail, command.initialPassword);
+      resolvedUid = provisioned.uid;
+      await this.userProfiles.createProfile({
+        firebaseUid: resolvedUid,
+        organizationId: context.organizationId,
+        requiresPasswordChange: true,
+      });
+    } else {
+      resolvedUid = existingUid;
+    }
+
+    const assignment = await this.transactionManager.run(async (tx) => {
+      const result = await this.adminUsers.createOrReactivateAssignment(
         {
           organizationId: context.organizationId,
-          firebaseUid: targetUid,
+          firebaseUid: resolvedUid,
           companyId: command.targetCompanyId,
           branchId: command.targetBranchId,
           role: command.targetRole,
@@ -74,7 +89,7 @@ export class AssignUserToCompanyHandler {
         {
           organizationId: context.organizationId,
           actorUserId: command.actorFirebaseUid,
-          targetFirebaseUid: targetUid,
+          targetFirebaseUid: resolvedUid,
           action: 'USER_ASSIGNMENT_CREATED_OR_REACTIVATED',
           changes: {
             targetEmail: command.targetEmail,
@@ -86,7 +101,17 @@ export class AssignUserToCompanyHandler {
         tx,
       );
 
-      return assignment;
+      return result;
     });
+
+    if (isNewUser) {
+      void this.emailNotification
+        .sendWelcomeUser(command.targetEmail, command.initialPassword)
+        .catch((err: unknown) =>
+          this.logger.error('Welcome email failed to send', { email: command.targetEmail, error: err }),
+        );
+    }
+
+    return { id: assignment.id };
   }
 }

@@ -20,6 +20,8 @@ import { ParametersModule } from '../parameters/parameters.module';
 import { NotificationTemplatesModule } from '../notification-templates/notification-templates.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { AdminMatrixAuthorizationService } from './application/services/admin-matrix-authorization.service';
+import { EmailNotificationPort } from './application/ports/email-notification.port';
+import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter';
 
 /**
  * ADM-01 (Usuarios y asignaciones). Primera pantalla real del rol
@@ -46,6 +48,7 @@ import { AdminMatrixAuthorizationService } from './application/services/admin-ma
     AdminMatrixAuthorizationService,
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
+    { provide: EmailNotificationPort, useClass: ResendEmailAdapter },
   ],
 })
 export class AdminModule {}

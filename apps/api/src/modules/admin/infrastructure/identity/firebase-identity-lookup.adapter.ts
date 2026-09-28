@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { getAuth } from 'firebase-admin/auth';
 import { initFirebaseAdmin } from '../../../../config/firebase-admin.config';
 import { IdentityLookupPort } from '../../application/ports/identity-lookup.port';
@@ -12,6 +12,24 @@ export class FirebaseIdentityLookupAdapter implements IdentityLookupPort {
       return user.uid;
     } catch {
       return null;
+    }
+  }
+
+  async provisionUser(email: string, password: string): Promise<{ uid: string }> {
+    initFirebaseAdmin();
+    const auth = getAuth();
+    try {
+      const created = await auth.createUser({ email, emailVerified: true, password });
+      return { uid: created.uid };
+    } catch (err: unknown) {
+      const code = (err as { errorInfo?: { code?: string } }).errorInfo?.code;
+      if (code === 'auth/email-already-exists') {
+        throw new ConflictException({
+          code: 'USER_ALREADY_EXISTS_IN_IDENTITY_PROVIDER',
+          detail: 'Ya existe una cuenta de Firebase Authentication con ese correo.',
+        });
+      }
+      throw err;
     }
   }
 

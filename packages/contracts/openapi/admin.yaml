@@ -267,7 +267,7 @@ components:
   schemas:
     WorkerRole:
       type: string
-      enum: [ADMINISTRACION, AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA, RRHH]
+      enum: [ADMINISTRACION, AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA, PLATFORM_ADMIN, RRHH]
     OrganizationUser:
       type: object
       required: [id, firebaseUid, email, companyId, companyName, branchId, branchName, role, active, mfaEnrolled]
@@ -284,7 +284,7 @@ components:
         mfaEnrolled: { type: boolean }
     AssignUserRequest:
       type: object
-      required: [companyId, branchId, targetEmail, targetCompanyId, targetBranchId, targetRole]
+      required: [companyId, branchId, targetEmail, targetCompanyId, targetBranchId, targetRole, initialPassword]
       properties:
         companyId: { type: string, format: uuid, description: 'Empresa vigente del admin (contexto de trabajo)' }
         branchId: { type: string, format: uuid, description: 'Sede vigente del admin (contexto de trabajo)' }
@@ -292,6 +292,7 @@ components:
         targetCompanyId: { type: string, format: uuid, description: 'Empresa destino de la asignacion' }
         targetBranchId: { type: string, format: uuid, description: 'Sede destino de la asignacion' }
         targetRole: { $ref: '#/components/schemas/WorkerRole' }
+        initialPassword: { type: string, minLength: 8, description: 'Contraseña inicial del usuario. TR-02 fuerza el cambio en el primer login.' }
     AuditEvent:
       type: object
       required: [id, actorFirebaseUid, actorEmail, entityType, entityId, action, changes, createdAt]

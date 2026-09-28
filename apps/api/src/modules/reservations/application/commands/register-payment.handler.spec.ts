@@ -24,6 +24,7 @@ const SCOPE: ReservationScope = { organizationId: 'org-1', operatingCompanyId: '
 describe('RegisterPaymentHandler', () => {
   function buildDeps(existing: ReservationRecord | null, forbidden = false, role = 'FRONT_OFFICE', matrixAssert?: jest.Mock) {
     const reservations: jest.Mocked<ReservationRepositoryPort> = {
+      findCustomerById: jest.fn(), findVehicleById: jest.fn(), isVehicleAvailable: jest.fn(),
       create: jest.fn(), findById: jest.fn().mockResolvedValue(existing), list: jest.fn(),
       registerPayment: jest.fn().mockResolvedValue({ ...(existing ?? buildRecord()), paymentValidatedAt: new Date(), version: 2 }),
       registerDocuments: jest.fn(), confirm: jest.fn(), cancel: jest.fn(),

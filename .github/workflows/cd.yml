@@ -21,8 +21,16 @@ name: CD
 #   CLOUD_RUN_SERVICE      — Nombre del servicio Cloud Run (ej. erp-api-development)
 #
 # Secretos de ambiente requeridos (Settings > Environments > <nombre> > Secrets):
-#   DATABASE_URL           — URL de conexion pooled a Supabase para ese ambiente
-#   DIRECT_URL             — URL de conexion directa a Supabase para migraciones DDL
+#   DATABASE_URL             — URL de conexion pooled a Supabase para ese ambiente
+#   DIRECT_URL               — URL de conexion directa a Supabase para migraciones DDL
+#   FIREBASE_PROJECT_ID      — ID del proyecto Firebase (para Firebase Admin SDK)
+#   FIREBASE_CLIENT_EMAIL    — client_email del service account de Firebase Admin
+#   FIREBASE_PRIVATE_KEY     — private_key del service account (con \n literales)
+#   RESEND_API_KEY           — API key de Resend para envio de correo transaccional
+#
+# Variables de ambiente requeridas adicionales (Settings > Environments > <nombre> > Variables):
+#   EMAIL_FROM               — Remitente verificado en Resend (ej. no-reply@kairosnexo.com)
+#   APP_BASE_URL             — URL base de la app web para el boton del correo de bienvenida
 
 on:
   push:
@@ -99,14 +107,41 @@ jobs:
         run: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 
       # --- Deploy a Cloud Run ---
-      # DATABASE_URL se inyecta como variable de entorno de Cloud Run.
+      # Las vars se escriben a un YAML via Python para manejar correctamente
+      # caracteres especiales en FIREBASE_PRIVATE_KEY (\n, =, etc.).
       # Mejora pendiente: migrar a GCP Secret Manager para produccion.
       - name: Deploy a Cloud Run
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+          APP_BASE_URL: ${{ vars.APP_BASE_URL }}
         run: |
+          python3 - << 'PYEOF'
+          import os, json
+          rows = {
+              "NODE_ENV": "production",
+              "DATABASE_URL": os.environ["DATABASE_URL"],
+              "FIREBASE_PROJECT_ID": os.environ["FIREBASE_PROJECT_ID"],
+              "FIREBASE_CLIENT_EMAIL": os.environ["FIREBASE_CLIENT_EMAIL"],
+              "FIREBASE_PRIVATE_KEY": os.environ["FIREBASE_PRIVATE_KEY"],
+              "RESEND_API_KEY": os.environ["RESEND_API_KEY"],
+              "EMAIL_FROM": os.environ["EMAIL_FROM"],
+              "APP_BASE_URL": os.environ["APP_BASE_URL"],
+          }
+          with open("/tmp/env-vars.yaml", "w") as f:
+              for k, v in rows.items():
+                  f.write(f"{k}: {json.dumps(v)}\n")
+          PYEOF
+
           gcloud run deploy "$CLOUD_RUN_SERVICE" \
             --image="$IMAGE" \
             --region="$GCP_REGION" \
             --platform=managed \
-            --set-env-vars="NODE_ENV=production,DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --env-vars-file=/tmp/env-vars.yaml \
             --allow-unauthenticated \
             --quiet
+          rm -f /tmp/env-vars.yaml

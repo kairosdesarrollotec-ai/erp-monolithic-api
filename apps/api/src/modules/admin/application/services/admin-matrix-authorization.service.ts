@@ -13,6 +13,7 @@ export class AdminMatrixAuthorizationService {
   constructor(private readonly matrixAuth: MatrixAuthorizationService) {}
 
   async assertAllowed(organizationId: string, role: WorkerRole, action: AdminAction): Promise<void> {
+    if (role === 'PLATFORM_ADMIN') return;
     return this.matrixAuth.assertAllowed(organizationId, role, 'ADMIN', action);
   }
 }

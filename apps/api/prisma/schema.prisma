@@ -7,7 +7,11 @@
 // forma incremental, pantalla a pantalla, segun TDD-<MOD>-001.md.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // linux-musl-arm64-openssl-3.0.x = Alpine (node:22-alpine) con openssl 3.x en ARM64
+  // linux-musl-openssl-3.0.x       = Alpine con openssl 3.x en x86_64 (Cloud Run)
+  // native                          = desarrollo local (mac, linux host)
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -322,6 +326,7 @@ enum WorkerRole {
   FINANZAS
   FRONT_OFFICE
   GERENCIA
+  PLATFORM_ADMIN
   RRHH
 }
 
@@ -360,8 +365,8 @@ model UserCompanyAssignment {
 /// El modulo real de Clientes (Customers, ver SDD-RES-001 seccion 3.3)
 /// no esta construido todavia. Se migra cuando exista.
 model Customer {
-  id                 String   @id @default(uuid())
-  organizationId     String   @map("organization_id")
+  id                 String              @id @default(uuid())
+  organizationId     String              @map("organization_id")
   /// Hallazgo ALTO de revision de seguimiento de PR#6 (d442508,
   /// "referencias corregidas solo a nivel organizacion, no
   /// empresa/sede"): sin este campo, un usuario autorizado en la sede A
@@ -375,11 +380,18 @@ model Customer {
   /// especifica o es compartido entre las sedes de una misma empresa;
   /// inventar esa regla violaria CLAUDE.md seccion 4. Se migra cuando el
   /// modulo real de Clientes exista.
-  operatingCompanyId String   @map("operating_company_id")
-  fullName           String   @map("full_name")
-  documentType       String   @map("document_type")
-  documentNumber     String   @map("document_number")
-  createdAt          DateTime @default(now()) @map("created_at")
+  operatingCompanyId String              @map("operating_company_id")
+  fullName           String              @map("full_name")
+  documentType       String              @map("document_type")
+  documentNumber     String              @map("document_number")
+  /// CONFLICT-CON-002 (resuelto): la identidad del prospecto se persiste
+  /// en Customer, no en Inquiry. Al registrar una consulta sin cliente
+  /// formal, se crea primero el Customer con estos campos; el customerId
+  /// resultante va en Inquiry.customer_id.
+  nationality        InquiryNationality? @map("nationality")
+  /// SC-CON-001.03: solo aplica a EXTRANJERO. CHECK en la migracion.
+  countryEntryDate   DateTime?           @map("country_entry_date") @db.Date
+  createdAt          DateTime            @default(now()) @map("created_at")
 
   operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   reservations     Reservation[]
@@ -481,22 +493,15 @@ model Inquiry {
   channel                InquiryChannel?
   /// DAT-CON-001.
   touristUse             Boolean             @map("tourist_use")
-  /// CON-P02 - nombre del prospecto cuando todavia no es un Customer
-  /// formal (CON-02: "puede ser un prospecto sin cliente formal").
-  prospectName           String?             @map("prospect_name")
-  prospectDocumentType   String?             @map("prospect_document_type")
-  prospectDocumentNumber String?             @map("prospect_document_number")
-  /// DAT-CON-002.
-  nationality            InquiryNationality?
   /// DAT-CON-003 - destino y tiempo estimado (condicionan el vehiculo
-  /// elegible, BR-CON-005).
+  /// elegible, BR-CON-005). CONFLICT-CON-002: la identidad del prospecto
+  /// (nombre, documento, nacionalidad) se persiste en Customer. Inquiry
+  /// conserva solo el contexto del viaje.
   destination            String?
   estimatedDays          Int?                @map("estimated_days")
   /// CON-02 "periodo" / "fecha" y "personas" (opcionales en el contrato).
   travelStartDate        DateTime?           @map("travel_start_date") @db.Date
   partySize              Int?                @map("party_size")
-  /// SC-CON-001.03 - solo para EXTRANJERO (CHECK en la migracion).
-  countryEntryDate       DateTime?           @map("country_entry_date") @db.Date
   dataOrigin             InquiryDataOrigin   @default(CON02) @map("data_origin")
   status                 InquiryStatus       @default(REGISTRADA)
   /// CHECK `inquiries_closed_reason_check` (TDD seccion 9).
@@ -611,13 +616,13 @@ model Reservation {
   organizationId        String            @map("organization_id")
   operatingCompanyId    String            @map("operating_company_id")
   branchId              String            @map("branch_id")
-  /// Hallazgo CRITICO de revalidacion PR#7 ("cardinalidad Inquiry ->
-  /// Reservation no garantizada"): UNIQUE - una consulta se convierte a
-  /// lo sumo UNA vez (TDD-CON-001.md 7.3 inv. 2 / 8.1: CONVERTIDA es
-  /// terminal; BR-CON-003: un nuevo pedido del mismo cliente pasa por
-  /// una nueva Consulta). La unicidad vive en la base, no solo en el
-  /// caso de uso ConvertToReservationHandler.
-  inquiryId             String            @unique @map("inquiry_id")
+  /// CONFLICT-CON-001 (resuelto): `POST /reservations` crea una reserva
+  /// directamente (sin consulta previa); la unica via para crear una
+  /// reserva DESDE una consulta sigue siendo `convert-to-reservation`.
+  /// inquiryId es nullable para el caso de creacion directa; el UNIQUE
+  /// garantiza que una consulta se convierte a lo sumo una vez (NULLs son
+  /// distintos entre si en PostgreSQL UNIQUE).
+  inquiryId             String?           @unique @map("inquiry_id")
   customerId            String            @map("customer_id")
   vehicleId             String            @map("vehicle_id")
   status                ReservationStatus @default(DRAFT)
@@ -651,7 +656,10 @@ model Reservation {
   /// - mismo patron y mismo motivo que la FK compuesta agregada en PR#4
   /// para UserCompanyAssignment.company (evita que organizationId
   /// contradiga a la empresa referenciada).
-  inquiry          Inquiry  @relation(fields: [inquiryId, operatingCompanyId], references: [id, operatingCompanyId])
+  /// FK simple (inquiryId nullable): Prisma no admite relacion opcional
+  /// sobre FK compuesta cuando uno de los campos es NOT NULL. El aislamiento
+  /// empresa<>consulta se valida en el handler (cuando inquiryId presente).
+  inquiry          Inquiry?  @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
   customer         Customer @relation(fields: [customerId, operatingCompanyId], references: [id, operatingCompanyId])
   vehicle          Vehicle  @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
   operatingCompany Company  @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])

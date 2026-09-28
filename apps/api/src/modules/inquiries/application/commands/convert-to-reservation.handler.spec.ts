@@ -184,7 +184,7 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
   });
 
   it('rechaza si la consulta no tiene cliente formal asociado', async () => {
-    const { handler } = build({ existing: quotedInquiry({ customerId: null, prospectName: 'Ana' }) });
+    const { handler } = build({ existing: quotedInquiry({ customerId: null }) });
 
     const error = await handler.execute(command()).catch((e) => e);
 
