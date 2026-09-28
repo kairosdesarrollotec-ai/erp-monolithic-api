@@ -19,7 +19,7 @@ export class FirebaseIdentityLookupAdapter implements IdentityLookupPort {
     initFirebaseAdmin();
     const auth = getAuth();
     try {
-      const created = await auth.createUser({ email, emailVerified: false, password });
+      const created = await auth.createUser({ email, emailVerified: true, password });
       return { uid: created.uid };
     } catch (err: unknown) {
       const code = (err as { errorInfo?: { code?: string } }).errorInfo?.code;
