@@ -5,6 +5,7 @@ import {
   CreateVehicleInput,
   FleetVehicleRepositoryPort,
   ListVehiclesFilters,
+  UpdateVehicleInput,
 } from '../../application/ports/fleet-vehicle-repository.port';
 import { FleetVehicle, VehicleStatus } from '../../domain/vehicle';
 
@@ -147,6 +148,36 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
         },
       },
       data: { status },
+    });
+
+    return toDomain(row);
+  }
+
+  async update(
+    id: string,
+    scope: { organizationId: string; operatingCompanyId: string },
+    input: UpdateVehicleInput,
+  ): Promise<FleetVehicle> {
+    const row = await this.prisma.vehicle.update({
+      where: {
+        id_operatingCompanyId: {
+          id,
+          operatingCompanyId: scope.operatingCompanyId,
+        },
+      },
+      data: {
+        branchId: input.branchId ?? undefined,
+        brand: input.brand,
+        model: input.model,
+        year: input.year ?? undefined,
+        color: input.color ?? undefined,
+        category: input.category ?? undefined,
+        dailyRate:
+          input.dailyRate !== undefined && input.dailyRate !== null
+            ? new Prisma.Decimal(input.dailyRate)
+            : undefined,
+        photoUrl: input.photoUrl ?? undefined,
+      },
     });
 
     return toDomain(row);

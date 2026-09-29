@@ -59,6 +59,9 @@ export function buildFleetVehicleRepository(
     updateStatus: jest.fn().mockImplementation(async (_id: string, _scope: unknown, status: VehicleStatus) =>
       buildFleetVehicle({ ...existing, status }),
     ),
+    update: jest.fn().mockImplementation(async (_id: string, _scope: unknown, input) =>
+      buildFleetVehicle({ ...existing, ...input }),
+    ),
   };
 }
 
