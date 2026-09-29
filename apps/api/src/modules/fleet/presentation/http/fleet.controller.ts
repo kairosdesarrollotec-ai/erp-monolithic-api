@@ -18,13 +18,16 @@ import { IdempotencyInterceptor } from '../../../../common/http/idempotency.inte
 import { CreateVehicleHandler } from '../../application/commands/create-vehicle.handler';
 import { CreateVehicleCommand } from '../../application/commands/create-vehicle.command';
 import { UpdateVehicleStatusHandler } from '../../application/commands/update-vehicle-status.handler';
+import { UpdateVehicleHandler } from '../../application/commands/update-vehicle.handler';
 import { UpdateVehicleStatusCommand } from '../../application/commands/update-vehicle-status.command';
+import { UpdateVehicleCommand } from '../../application/commands/update-vehicle.command';
 import { ListVehiclesHandler } from '../../application/queries/list-vehicles.handler';
 import { ListVehiclesQuery } from '../../application/queries/list-vehicles.query';
 import { GetVehicleHandler } from '../../application/queries/get-vehicle.handler';
 import { GetVehicleQuery } from '../../application/queries/get-vehicle.query';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleStatusDto } from './dto/update-vehicle-status.dto';
+import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { ListVehiclesQueryDto } from './dto/list-vehicles-query.dto';
 import { GetVehicleQueryDto } from './dto/get-vehicle-query.dto';
 import { ListVehiclesResponse, VehicleResponse } from './dto/vehicle.response';
@@ -36,6 +39,7 @@ export class FleetController {
   constructor(
     private readonly createVehicleHandler: CreateVehicleHandler,
     private readonly updateVehicleStatusHandler: UpdateVehicleStatusHandler,
+    private readonly updateVehicleHandler: UpdateVehicleHandler,
     private readonly listVehiclesHandler: ListVehiclesHandler,
     private readonly getVehicleHandler: GetVehicleHandler,
   ) {}
@@ -118,6 +122,32 @@ export class FleetController {
         dto.companyId,
         dto.branchId,
         dto.status,
+      ),
+    );
+
+    return toVehicleResponse(vehicle);
+  }
+
+  @Patch('vehicles/:id')
+  async update(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateVehicleDto,
+  ): Promise<VehicleResponse> {
+    const vehicle = await this.updateVehicleHandler.execute(
+      new UpdateVehicleCommand(
+        req.firebaseUid!,
+        id,
+        dto.companyId,
+        dto.branchId,
+        dto.brand,
+        dto.model,
+        dto.year,
+        dto.color,
+        dto.category,
+        dto.dailyRate,
+        dto.photoUrl,
+        dto.assignedBranchId,
       ),
     );
 

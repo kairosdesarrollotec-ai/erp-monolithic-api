@@ -15,6 +15,17 @@ export interface CreateVehicleInput {
   photoUrl?: string | null;
 }
 
+export interface UpdateVehicleInput {
+  branchId?: string | null;
+  brand: string;
+  model: string;
+  year?: number | null;
+  color?: string | null;
+  category?: string | null;
+  dailyRate?: number | null;
+  photoUrl?: string | null;
+}
+
 export interface ListVehiclesFilters {
   organizationId: string;
   operatingCompanyId: string;
@@ -39,5 +50,10 @@ export abstract class FleetVehicleRepositoryPort {
     id: string,
     scope: { organizationId: string; operatingCompanyId: string },
     status: VehicleStatus,
+  ): Promise<FleetVehicle>;
+  abstract update(
+    id: string,
+    scope: { organizationId: string; operatingCompanyId: string },
+    input: UpdateVehicleInput,
   ): Promise<FleetVehicle>;
 }
