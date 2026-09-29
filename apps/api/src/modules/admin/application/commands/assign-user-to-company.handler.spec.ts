@@ -39,6 +39,7 @@ function buildDeps(opts: {
     createOrReactivateAssignment: jest.fn().mockResolvedValue({ id: 'assign-1' }),
     deactivateAssignment: jest.fn(),
     countActiveByRole: jest.fn(),
+    listCompaniesWithBranches: jest.fn(),
   };
 
   const identity: jest.Mocked<IdentityLookupPort> = {
@@ -94,7 +95,7 @@ function buildCommand(overrides: Partial<AssignUserToCompanyCommand> = {}) {
     overrides.targetCompanyId ?? 'company-2',
     overrides.targetBranchId ?? 'branch-2',
     overrides.targetRole ?? 'FRONT_OFFICE',
-    overrides.initialPassword ?? 'Temporal@123',
+    'initialPassword' in overrides ? overrides.initialPassword : 'Temporal@123',
   );
 }
 
@@ -190,5 +191,30 @@ describe('AssignUserToCompanyHandler', () => {
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(BadRequestException);
     expect(deps.adminUsers.createOrReactivateAssignment).not.toHaveBeenCalled();
     expect(deps.audit.recordAdminEvent).not.toHaveBeenCalled();
+  });
+
+  it('reutiliza uid existente sin exigir initialPassword (correo ya existe, el campo se ignora)', async () => {
+    const deps = buildDeps();
+    const handler = buildHandler(deps);
+
+    const result = await handler.execute(buildCommand({ initialPassword: undefined }));
+
+    expect(deps.identity.provisionUser).not.toHaveBeenCalled();
+    expect(deps.adminUsers.createOrReactivateAssignment).toHaveBeenCalledWith(
+      expect.objectContaining({ firebaseUid: 'uid-target' }),
+      FAKE_TX,
+    );
+    expect(result).toEqual({ id: 'assign-1' });
+  });
+
+  it('rechaza con INITIAL_PASSWORD_REQUIRED si el correo es nuevo y no se envio initialPassword', async () => {
+    const deps = buildDeps({ targetUid: null });
+    const handler = buildHandler(deps);
+
+    await expect(handler.execute(buildCommand({ initialPassword: undefined }))).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(deps.identity.provisionUser).not.toHaveBeenCalled();
+    expect(deps.adminUsers.createOrReactivateAssignment).not.toHaveBeenCalled();
   });
 });

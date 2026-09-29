@@ -30,6 +30,7 @@ function buildAdminUsers(records: AdminAssignmentRecord[] = []) {
     createOrReactivateAssignment: jest.fn(),
     deactivateAssignment: jest.fn(),
     countActiveByRole: jest.fn(),
+    listCompaniesWithBranches: jest.fn(),
   };
   return repo;
 }

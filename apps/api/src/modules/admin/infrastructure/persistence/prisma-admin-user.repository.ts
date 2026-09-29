@@ -6,6 +6,7 @@ import {
   AdminAssignmentRecord,
   AdminUserRepositoryPort,
   CompanyBranchOwnership,
+  CompanyWithBranches,
   CreateOrReactivateAssignmentInput,
 } from '../../application/ports/admin-user-repository.port';
 
@@ -131,5 +132,23 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
     return client.userCompanyAssignment.count({
       where: { organizationId, role, active: true },
     });
+  }
+
+  async listCompaniesWithBranches(organizationId: string): Promise<CompanyWithBranches[]> {
+    const companies = await this.prisma.company.findMany({
+      where: { organizationId },
+      select: {
+        id: true,
+        name: true,
+        branches: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    return companies.map((company) => ({
+      companyId: company.id,
+      companyName: company.name,
+      branches: company.branches.map((branch) => ({ branchId: branch.id, branchName: branch.name })),
+    }));
   }
 }
