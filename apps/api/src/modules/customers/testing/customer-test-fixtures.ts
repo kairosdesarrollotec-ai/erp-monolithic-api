@@ -46,6 +46,19 @@ export function buildCustomerRepository(existing: Customer | null = buildCustome
     ),
     findById: jest.fn().mockImplementation(async (id: string) => (existing && existing.id === id ? existing : null)),
     findByDocument: jest.fn().mockResolvedValue(null),
+    update: jest.fn().mockImplementation(async (id: string, _scope, data) =>
+      buildCustomer({
+        id,
+        fullName: data.fullName,
+        documentType: data.documentType,
+        documentNumber: data.documentNumber,
+        nationality: data.nationality ?? null,
+        countryEntryDate: data.countryEntryDate ?? null,
+        email: data.email ?? null,
+        phone: data.phone ?? null,
+        address: data.address ?? null,
+      }),
+    ),
     list: jest.fn().mockResolvedValue({
       items: existing ? [existing] : [],
       total: existing ? 1 : 0,

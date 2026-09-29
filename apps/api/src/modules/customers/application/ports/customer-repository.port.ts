@@ -13,6 +13,17 @@ export interface CreateCustomerData {
   address?: string | null;
 }
 
+export interface UpdateCustomerData {
+  fullName: string;
+  documentType: string;
+  documentNumber: string;
+  nationality?: 'PERUANO' | 'EXTRANJERO' | null;
+  countryEntryDate?: Date | null;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+}
+
 export interface ListCustomersFilter {
   organizationId: string;
   operatingCompanyId: string;
@@ -36,4 +47,10 @@ export abstract class CustomerRepositoryPort {
   abstract list(filter: ListCustomersFilter): Promise<{ items: Customer[]; total: number }>;
 
   abstract create(data: CreateCustomerData): Promise<Customer>;
+
+  abstract update(
+    id: string,
+    scope: { organizationId: string; operatingCompanyId: string },
+    data: UpdateCustomerData,
+  ): Promise<Customer>;
 }
