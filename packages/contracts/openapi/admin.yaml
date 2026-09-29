@@ -46,14 +46,38 @@ paths:
                     items: { $ref: '#/components/schemas/OrganizationUser' }
         '403':
           description: Sin contexto vigente en esa empresa/sede, o rol sin MANAGE_USERS segun la matriz de permisos vigente
+  /admin/companies:
+    get:
+      operationId: getOrganizationCompanies
+      summary: ADM-01 - Empresas y sedes de la organizacion del admin (para el selector de "Agregar usuario")
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Empresas de la organizacion con sus sedes
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [companies]
+                properties:
+                  companies:
+                    type: array
+                    items: { $ref: '#/components/schemas/OrganizationCompany' }
+        '403':
+          description: Sin contexto vigente en esa empresa/sede, o rol sin MANAGE_USERS
   /admin/assignments:
     post:
       operationId: assignUserToCompany
       summary: ADM-01 - Agregar usuario (asigna empresa/sede/rol a una cuenta de Firebase ya existente)
       description: >
-        Unica via para darle a un usuario cualquier permiso en KAIROS. No
-        crea cuentas nuevas - el correo debe existir ya en Firebase
-        Authentication.
+        Unica via para darle a un usuario cualquier permiso en KAIROS. Si
+        el correo no existe todavia en Firebase Authentication, se crea
+        la cuenta (initialPassword es obligatoria en ese caso). Si ya
+        existe, se reutiliza el uid y initialPassword se ignora aunque se
+        envie.
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -70,11 +94,13 @@ paths:
                 required: [id]
                 properties: { id: { type: string, format: uuid } }
         '400':
-          description: 'COMPANY_BRANCH_NOT_IN_ORGANIZATION - la empresa/sede destino no pertenece a la organizacion del admin (IDOR)'
+          description: >
+            COMPANY_BRANCH_NOT_IN_ORGANIZATION - la empresa/sede destino
+            no pertenece a la organizacion del admin (IDOR) -
+            INITIAL_PASSWORD_REQUIRED - el correo es nuevo y no se envio
+            initialPassword
         '403':
           description: Sin contexto vigente, o rol sin MANAGE_USERS
-        '404':
-          description: 'USER_NOT_FOUND_IN_IDENTITY_PROVIDER - no existe una cuenta de Firebase con ese correo'
   /admin/assignments/{id}/deactivate:
     post:
       operationId: deactivateAssignment
@@ -268,6 +294,21 @@ components:
     WorkerRole:
       type: string
       enum: [ADMINISTRACION, AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA, PLATFORM_ADMIN, RRHH]
+    OrganizationBranch:
+      type: object
+      required: [branchId, branchName]
+      properties:
+        branchId: { type: string, format: uuid }
+        branchName: { type: string }
+    OrganizationCompany:
+      type: object
+      required: [companyId, companyName, branches]
+      properties:
+        companyId: { type: string, format: uuid }
+        companyName: { type: string }
+        branches:
+          type: array
+          items: { $ref: '#/components/schemas/OrganizationBranch' }
     OrganizationUser:
       type: object
       required: [id, firebaseUid, email, companyId, companyName, branchId, branchName, role, active, mfaEnrolled]
@@ -284,7 +325,7 @@ components:
         mfaEnrolled: { type: boolean }
     AssignUserRequest:
       type: object
-      required: [companyId, branchId, targetEmail, targetCompanyId, targetBranchId, targetRole, initialPassword]
+      required: [companyId, branchId, targetEmail, targetCompanyId, targetBranchId, targetRole]
       properties:
         companyId: { type: string, format: uuid, description: 'Empresa vigente del admin (contexto de trabajo)' }
         branchId: { type: string, format: uuid, description: 'Sede vigente del admin (contexto de trabajo)' }
@@ -292,7 +333,15 @@ components:
         targetCompanyId: { type: string, format: uuid, description: 'Empresa destino de la asignacion' }
         targetBranchId: { type: string, format: uuid, description: 'Sede destino de la asignacion' }
         targetRole: { $ref: '#/components/schemas/WorkerRole' }
-        initialPassword: { type: string, minLength: 8, description: 'Contraseña inicial del usuario. TR-02 fuerza el cambio en el primer login.' }
+        initialPassword:
+          type: string
+          minLength: 8
+          description: >
+            Contraseña inicial del usuario. Obligatoria solo cuando el
+            correo todavia no existe en Firebase (el backend responde
+            400 INITIAL_PASSWORD_REQUIRED si falta en ese caso); se
+            ignora si el correo ya existe. TR-02 fuerza el cambio en el
+            primer login.
     AuditEvent:
       type: object
       required: [id, actorFirebaseUid, actorEmail, entityType, entityId, action, changes, createdAt]

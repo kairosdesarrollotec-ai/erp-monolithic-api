@@ -26,6 +26,12 @@ export interface CompanyBranchOwnership {
   branchId: string;
 }
 
+export interface CompanyWithBranches {
+  companyId: string;
+  companyName: string;
+  branches: { branchId: string; branchName: string }[];
+}
+
 /**
  * Puerto de persistencia de ADM-01 (Usuarios y asignaciones,
  * PANTALLAS-V2-B-SOPORTE.md). Reutiliza `user_company_assignments` (la
@@ -90,4 +96,11 @@ export abstract class AdminUserRepositoryPort {
     role: WorkerRole,
     tx?: Prisma.TransactionClient,
   ): Promise<number>;
+
+  /**
+   * Empresas y sedes de la organizacion (GET /admin/companies) - para
+   * poblar el selector Empresa/Sede de "Agregar usuario" con el grupo
+   * completo, no solo el contexto de trabajo actual del admin.
+   */
+  abstract listCompaniesWithBranches(organizationId: string): Promise<CompanyWithBranches[]>;
 }

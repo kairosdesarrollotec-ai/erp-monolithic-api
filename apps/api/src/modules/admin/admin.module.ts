@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AdminController } from './presentation/http/admin.controller';
 import { ListOrganizationUsersHandler } from './application/queries/list-organization-users.handler';
+import { GetOrganizationCompaniesHandler } from './application/queries/get-organization-companies.handler';
 import { AssignUserToCompanyHandler } from './application/commands/assign-user-to-company.handler';
 import { DeactivateAssignmentHandler } from './application/commands/deactivate-assignment.handler';
 import { ListAuditEventsHandler } from './application/queries/list-audit-events.handler';
@@ -36,6 +37,7 @@ import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter'
   controllers: [AdminController],
   providers: [
     ListOrganizationUsersHandler,
+    GetOrganizationCompaniesHandler,
     AssignUserToCompanyHandler,
     DeactivateAssignmentHandler,
     ListAuditEventsHandler,

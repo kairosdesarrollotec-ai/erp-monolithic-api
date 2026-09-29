@@ -1,6 +1,8 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ListOrganizationUsersHandler } from '../../application/queries/list-organization-users.handler';
 import { ListOrganizationUsersQuery } from '../../application/queries/list-organization-users.query';
+import { GetOrganizationCompaniesHandler } from '../../application/queries/get-organization-companies.handler';
+import { GetOrganizationCompaniesQuery } from '../../application/queries/get-organization-companies.query';
 import { AssignUserToCompanyHandler } from '../../application/commands/assign-user-to-company.handler';
 import { AssignUserToCompanyCommand } from '../../application/commands/assign-user-to-company.command';
 import { DeactivateAssignmentHandler } from '../../application/commands/deactivate-assignment.handler';
@@ -24,6 +26,8 @@ import {
   FirebaseAuthGuard,
 } from '../../../users/infrastructure/auth/firebase-auth.guard';
 import { GetOrganizationUsersDto } from './dto/get-organization-users.dto';
+import { GetOrganizationCompaniesDto } from './dto/get-organization-companies.dto';
+import { OrganizationCompaniesResponse } from './dto/organization-companies.response';
 import { AssignUserDto } from './dto/assign-user.dto';
 import { DeactivateAssignmentDto } from './dto/deactivate-assignment.dto';
 import { OrganizationUsersResponse } from './dto/organization-user.response';
@@ -49,6 +53,7 @@ import { NotificationTemplatesResponse } from './dto/notification-templates.resp
 export class AdminController {
   constructor(
     private readonly listOrganizationUsers: ListOrganizationUsersHandler,
+    private readonly getOrganizationCompanies: GetOrganizationCompaniesHandler,
     private readonly assignUserToCompany: AssignUserToCompanyHandler,
     private readonly deactivateAssignment: DeactivateAssignmentHandler,
     private readonly listAuditEvents: ListAuditEventsHandler,
@@ -69,6 +74,17 @@ export class AdminController {
       new ListOrganizationUsersQuery(req.firebaseUid!, query.companyId, query.branchId),
     );
     return { users };
+  }
+
+  @Get('companies')
+  async companies(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: GetOrganizationCompaniesDto,
+  ): Promise<OrganizationCompaniesResponse> {
+    const companies = await this.getOrganizationCompanies.execute(
+      new GetOrganizationCompaniesQuery(req.firebaseUid!, query.companyId, query.branchId),
+    );
+    return { companies };
   }
 
   @Post('assignments')

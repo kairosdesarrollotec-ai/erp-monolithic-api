@@ -41,6 +41,7 @@ function buildDeps(opts: {
     createOrReactivateAssignment: jest.fn(),
     deactivateAssignment: jest.fn().mockResolvedValue(deactivated),
     countActiveByRole: jest.fn().mockResolvedValue(remainingActiveAdmins),
+    listCompaniesWithBranches: jest.fn(),
   };
 
   const audit: jest.Mocked<AuditEventRepositoryPort> = {

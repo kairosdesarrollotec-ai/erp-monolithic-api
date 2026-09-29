@@ -9,6 +9,6 @@ export class AssignUserToCompanyCommand {
     public readonly targetCompanyId: string,
     public readonly targetBranchId: string,
     public readonly targetRole: WorkerRole,
-    public readonly initialPassword: string,
+    public readonly initialPassword?: string,
   ) {}
 }
