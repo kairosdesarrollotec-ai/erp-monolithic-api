@@ -6,6 +6,7 @@ import {
   CustomerRepositoryPort,
   CreateCustomerData,
   ListCustomersFilter,
+  UpdateCustomerData,
 } from '../../application/ports/customer-repository.port';
 import { Customer } from '../../domain/customer';
 
@@ -84,6 +85,33 @@ export class PrismaCustomerRepository extends CustomerRepositoryPort {
         id: randomUUID(),
         organizationId: data.organizationId,
         operatingCompanyId: data.operatingCompanyId,
+        fullName: data.fullName,
+        documentType: data.documentType,
+        documentNumber: data.documentNumber,
+        nationality: data.nationality,
+        countryEntryDate: data.countryEntryDate,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+      },
+    });
+
+    return this.toDomain(row);
+  }
+
+  async update(
+    id: string,
+    scope: { organizationId: string; operatingCompanyId: string },
+    data: UpdateCustomerData,
+  ): Promise<Customer> {
+    const row = await this.prisma.customer.update({
+      where: {
+        id_operatingCompanyId: {
+          id,
+          operatingCompanyId: scope.operatingCompanyId,
+        },
+      },
+      data: {
         fullName: data.fullName,
         documentType: data.documentType,
         documentNumber: data.documentNumber,

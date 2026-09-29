@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -16,11 +17,14 @@ import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastr
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { CreateCustomerHandler } from '../../application/commands/create-customer.handler';
 import { CreateCustomerCommand } from '../../application/commands/create-customer.command';
+import { UpdateCustomerHandler } from '../../application/commands/update-customer.handler';
+import { UpdateCustomerCommand } from '../../application/commands/update-customer.command';
 import { ListCustomersHandler } from '../../application/queries/list-customers.handler';
 import { ListCustomersQuery } from '../../application/queries/list-customers.query';
 import { GetCustomerHandler } from '../../application/queries/get-customer.handler';
 import { GetCustomerQuery } from '../../application/queries/get-customer.query';
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ListCustomersQueryDto } from './dto/list-customers-query.dto';
 import { GetCustomerQueryDto } from './dto/get-customer-query.dto';
 import { CustomerResponse, ListCustomersResponse } from './dto/customer.response';
@@ -35,6 +39,7 @@ function toUtcDate(dateOnly: string | undefined): Date | undefined {
 export class CustomersController {
   constructor(
     private readonly createCustomerHandler: CreateCustomerHandler,
+    private readonly updateCustomerHandler: UpdateCustomerHandler,
     private readonly listCustomersHandler: ListCustomersHandler,
     private readonly getCustomerHandler: GetCustomerHandler,
   ) {}
@@ -49,6 +54,32 @@ export class CustomersController {
     const customer = await this.createCustomerHandler.execute(
       new CreateCustomerCommand(
         req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        dto.fullName,
+        dto.documentType,
+        dto.documentNumber,
+        dto.nationality,
+        toUtcDate(dto.countryEntryDate),
+        dto.email,
+        dto.phone,
+        dto.address,
+      ),
+    );
+
+    return toCustomerResponse(customer);
+  }
+
+  @Patch(':id')
+  async update(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCustomerDto,
+  ): Promise<CustomerResponse> {
+    const customer = await this.updateCustomerHandler.execute(
+      new UpdateCustomerCommand(
+        req.firebaseUid!,
+        id,
         dto.companyId,
         dto.branchId,
         dto.fullName,
