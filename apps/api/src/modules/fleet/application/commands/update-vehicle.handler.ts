@@ -48,8 +48,8 @@ export class UpdateVehicleHandler {
 
     return this.vehicles.update(command.vehicleId, scope, {
       branchId: command.assignedBranchId?.trim() || existing.branchId,
-      brand: command.brand.trim(),
-      model: command.model.trim(),
+      brand: command.brand != null ? command.brand.trim() : existing.brand,
+      model: command.model != null ? command.model.trim() : existing.model,
       year: command.year,
       color: command.color?.trim() || null,
       category: command.category?.trim() || existing.category,

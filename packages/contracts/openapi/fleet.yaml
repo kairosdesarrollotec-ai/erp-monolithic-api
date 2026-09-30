@@ -27,7 +27,7 @@ info:
     parámetros de scope companyId + branchId. El backend re-valida la combinacion
     en cada request (API stateless).
 
-    X-Idempotency-Key soportado en POST /fleet/vehicles, PATCH /fleet/vehicles/{id}/status
+    Idempotency-Key soportado en POST /fleet/vehicles, PATCH /fleet/vehicles/{id}/status
     y PATCH /fleet/vehicles/{id} a traves del IdempotencyInterceptor del backend.
 
     Nota sobre assignedBranchId: una sede asignada distinta a la del contexto solo
@@ -505,8 +505,6 @@ components:
       required:
         - companyId
         - branchId
-        - brand
-        - model
       properties:
         companyId:
           type: string

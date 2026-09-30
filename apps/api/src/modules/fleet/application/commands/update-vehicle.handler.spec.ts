@@ -77,6 +77,31 @@ describe('UpdateVehicleHandler', () => {
     expect(repository.update).not.toHaveBeenCalled();
   });
 
+  it('conserva brand y model existentes cuando no se proporcionan en el comando', async () => {
+    const vehicle = buildFleetVehicle({ brand: 'Toyota', model: 'Hilux' });
+    const repository = buildFleetVehicleRepository(vehicle);
+    const workContext = buildWorkContext('CAMPO');
+    const handler = new UpdateVehicleHandler(repository, workContext);
+
+    const command = new UpdateVehicleCommand(
+      'uid-1',
+      'veh-1',
+      COMPANY,
+      BRANCH,
+      undefined,
+      undefined,
+      2022,
+    );
+
+    await handler.execute(command);
+
+    expect(repository.update).toHaveBeenCalledWith(
+      'veh-1',
+      { organizationId: ORG, operatingCompanyId: COMPANY },
+      expect.objectContaining({ brand: 'Toyota', model: 'Hilux', year: 2022 }),
+    );
+  });
+
   it('no permite editar la placa: el comando no acepta ese campo', async () => {
     const vehicle = buildFleetVehicle({ plate: 'ABC-123' });
     const repository = buildFleetVehicleRepository(vehicle);
