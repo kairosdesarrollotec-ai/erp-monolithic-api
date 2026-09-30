@@ -100,6 +100,34 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # --- Resolución automática de migraciones fallidas (solo develop y qa) ---
+      # Si una migración anterior falló (P3018, P3009, etc.) y fue corregida en
+      # el código, la marcamos como rolled-back para que migrate deploy pueda
+      # re-aplicarla con el SQL actualizado.
+      # En uat y production este paso no corre: un fallo de migración requiere
+      # revisión manual antes de re-intentar.
+      - name: Resolver migraciones fallidas
+        if: contains(fromJSON('["develop", "qa"]'), github.ref_name)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          FAILED=$(psql "$DIRECT_URL" -t -A -c \
+            "SELECT migration_name FROM _prisma_migrations \
+             WHERE finished_at IS NULL AND rolled_back_at IS NULL \
+             ORDER BY started_at" 2>/dev/null || true)
+          if [ -z "$FAILED" ]; then
+            echo "Sin migraciones fallidas pendientes."
+            exit 0
+          fi
+          while IFS= read -r migration; do
+            [ -z "$migration" ] && continue
+            echo "Resolviendo: $migration"
+            npx prisma migrate resolve \
+              --rolled-back "$migration" \
+              --schema=apps/api/prisma/schema.prisma
+          done <<< "$FAILED"
+
       - name: Prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
