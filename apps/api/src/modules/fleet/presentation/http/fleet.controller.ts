@@ -13,6 +13,9 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { RequestPhotoUploadSessionHandler } from '../../application/commands/request-photo-upload-session.handler';
+import { RequestPhotoUploadSessionDto } from './dto/request-photo-upload-session.dto';
+import { PhotoUploadSessionResponse } from './dto/photo-upload-session.response';
 import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastructure/auth/firebase-auth.guard';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { CreateVehicleHandler } from '../../application/commands/create-vehicle.handler';
@@ -42,7 +45,23 @@ export class FleetController {
     private readonly updateVehicleHandler: UpdateVehicleHandler,
     private readonly listVehiclesHandler: ListVehiclesHandler,
     private readonly getVehicleHandler: GetVehicleHandler,
+    private readonly requestPhotoUploadSessionHandler: RequestPhotoUploadSessionHandler,
   ) {}
+
+  @Post('vehicles/photo-upload-sessions')
+  @HttpCode(HttpStatus.CREATED)
+  async requestPhotoUploadSession(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: RequestPhotoUploadSessionDto,
+  ): Promise<PhotoUploadSessionResponse> {
+    return this.requestPhotoUploadSessionHandler.execute({
+      firebaseUid: req.firebaseUid!,
+      companyId: dto.companyId,
+      branchId: dto.branchId,
+      contentType: dto.contentType,
+      contentLength: dto.contentLength,
+    });
+  }
 
   @Post('vehicles')
   @HttpCode(HttpStatus.CREATED)

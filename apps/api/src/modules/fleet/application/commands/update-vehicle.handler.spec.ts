@@ -28,7 +28,7 @@ describe('UpdateVehicleHandler', () => {
       ' Negro ',
       ' SUV ',
       190,
-      'https://example.com/tucson.jpg',
+      'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
     );
 
     const result = await handler.execute(command);
@@ -53,7 +53,7 @@ describe('UpdateVehicleHandler', () => {
         color: 'Negro',
         category: 'SUV',
         dailyRate: 190,
-        photoUrl: 'https://example.com/tucson.jpg',
+        photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
       },
     );
     expect(result.brand).toBe('Hyundai');

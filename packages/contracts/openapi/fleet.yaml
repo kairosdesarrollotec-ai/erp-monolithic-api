@@ -1,13 +1,19 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.1.0
+  version: 0.2.0
   description: >
     Contrato del módulo Flota. Expone el CRUD de vehículos para las empresas
     del Grupo KAIROS: registrar (POST /fleet/vehicles), listar con filtros
     (GET /fleet/vehicles), obtener detalle (GET /fleet/vehicles/{id}),
     actualizar estado (PATCH /fleet/vehicles/{id}/status) y actualizar datos
     (PATCH /fleet/vehicles/{id}).
+
+    0.2.0 — Foto de vehículo via URL firmada de Google Cloud Storage (ADR-KAI-005
+    extendido a Fleet, PROP-008): se agrega POST /fleet/vehicles/photo-upload-sessions
+    para obtener una URL firmada de carga (PUT a GCS, 15 min de validez, máx 12 MB,
+    JPEG o WebP). photoUrl en CreateVehicleRequest y UpdateVehicleRequest acepta
+    únicamente URLs HTTPS de GCS (ya no acepta data: URIs).
 
     Permisos PROVISIONAL (ADM-02 no implementado - ver fleet-role.policy.ts,
     fuente SDD-KAIROS-TRANSVERSAL.md §15.5):
@@ -30,6 +36,62 @@ info:
     (IDOR por sede - fleet-role.policy.ts assertCrossBranchAllowed).
 
 paths:
+  /fleet/vehicles/photo-upload-sessions:
+    post:
+      operationId: requestVehiclePhotoUploadSession
+      summary: Solicita una URL firmada para subir una foto de vehículo a GCS
+      description: >
+        Devuelve una uploadUrl (PUT firmado a GCS, válida 15 min) y una objectUrl
+        (URL HTTPS permanente donde quedará almacenado el archivo).
+
+        El cliente debe:
+          1. Hacer PUT a uploadUrl con el archivo como body y el Content-Type correcto.
+          2. Pasar objectUrl como photoUrl al crear o actualizar el vehículo.
+
+        Límites: JPEG o WebP, máximo 12 MB (ADR-KAI-005 / SDD-00 §16.5).
+        Requiere rol con permiso de escritura en Flota.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhotoUploadSessionRequest'
+      responses:
+        '201':
+          description: Sesión de carga creada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoUploadSessionResponse'
+        '400':
+          description: contentType no permitido, contentLength fuera de rango, o parámetros requeridos ausentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: Empresa/sede no autorizada o FLEET_WRITE_NOT_ALLOWED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '413':
+          description: contentLength supera el límite de 12 MB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '503':
+          description: GCS no configurado en el entorno (GCS_BUCKET_NAME ausente)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+
   /fleet/vehicles:
     post:
       operationId: createVehicle
@@ -327,6 +389,49 @@ components:
         Validez 24 h (implementado por IdempotencyInterceptor).
 
   schemas:
+    PhotoUploadSessionRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+        - contentType
+        - contentLength
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        contentType:
+          type: string
+          enum: [image/jpeg, image/webp]
+          description: Tipo MIME del archivo a subir. Solo JPEG y WebP (SDD-00 §16.5).
+        contentLength:
+          type: integer
+          minimum: 1
+          maximum: 12582912
+          description: Tamaño exacto del archivo en bytes (máx 12 MB = 12 582 912 bytes).
+
+    PhotoUploadSessionResponse:
+      type: object
+      required:
+        - uploadUrl
+        - objectUrl
+      properties:
+        uploadUrl:
+          type: string
+          format: uri
+          description: >
+            URL firmada de GCS para la carga (PUT con el archivo como body,
+            Content-Type igual al solicitado). Válida 15 minutos.
+        objectUrl:
+          type: string
+          format: uri
+          description: >
+            URL permanente del objeto en GCS. Pasar como photoUrl al crear o
+            actualizar el vehículo después de que la carga a uploadUrl sea exitosa.
+
     VehicleStatus:
       type: string
       description: >
@@ -387,8 +492,13 @@ components:
           description: Tarifa diaria de alquiler en moneda local.
         photoUrl:
           type: string
+          format: uri
           nullable: true
-          description: URL de la foto del vehículo.
+          pattern: '^https://storage\.googleapis\.com/'
+          description: >
+            URL HTTPS de Google Cloud Storage del objeto ya cargado.
+            Obtener previamente via POST /fleet/vehicles/photo-upload-sessions.
+            No se acepta data: URI ni URL de otro proveedor.
 
     UpdateVehicleRequest:
       type: object
@@ -432,7 +542,12 @@ components:
           nullable: true
         photoUrl:
           type: string
+          format: uri
           nullable: true
+          pattern: '^https://storage\.googleapis\.com/'
+          description: >
+            URL HTTPS de GCS del objeto ya cargado. Si no se proporciona, la
+            foto existente del vehículo no cambia.
 
     UpdateVehicleStatusRequest:
       type: object

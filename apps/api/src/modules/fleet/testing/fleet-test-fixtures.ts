@@ -22,7 +22,7 @@ export function buildFleetVehicle(overrides: Partial<FleetVehicle> = {}): FleetV
     category: 'PICKUP',
     status: 'AVAILABLE',
     dailyRate: 250,
-    photoUrl: 'https://example.com/hilux.jpg',
+    photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/hilux.jpg',
     createdAt: new Date('2026-09-28T10:00:00Z'),
     updatedAt: new Date('2026-09-28T10:00:00Z'),
     ...overrides,

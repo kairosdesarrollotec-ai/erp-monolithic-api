@@ -6,7 +6,9 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUrl,
   IsUUID,
+  Matches,
   Max,
   Min,
 } from 'class-validator';
@@ -58,6 +60,9 @@ export class CreateVehicleDto {
   dailyRate?: number;
 
   @IsOptional()
-  @IsString()
+  @IsUrl({ protocols: ['https'], require_tld: true })
+  @Matches(/^https:\/\/storage\.googleapis\.com\//, {
+    message: 'photoUrl must be a Google Cloud Storage HTTPS URL',
+  })
   photoUrl?: string;
 }

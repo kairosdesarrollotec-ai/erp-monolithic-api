@@ -20,6 +20,12 @@ Cada entrada: `ID | Fecha | Fuentes en conflicto | Decision | Aprobado por | Alc
 | BOOT-002 | 2026-09-14 | El catalogo completo de las 148 pantallas se genero mediante mapeo automatico nombre-de-carpeta -> UX-ID cruzando contra la seccion 5 de la especificacion UX/UI v3.1, no mediante lectura manual de cada `code.html`. | Bootstrap Claude Code (accion tecnica, no de negocio) | Precision del campo `ux_id`/`module` en `docs/prototype-manifest.yaml`; requiere verificacion humana puntual, especialmente en las pantallas del wizard "entrega_etapa_X_de_5" mapeadas a ALQ-03..ALQ-09 por inferencia de contenido. |
 | BOOT-003 | 2026-09-14 | La arquitectura de indexacion del blueprint (Zoekt, SCIP/LSP, Tree-sitter, pgvector, Sourcegraph) no se implementa en este bootstrap. Se usa exclusivamente filesystem + `rg` + manifiestos + indices IDE/LSP disponibles. | Instruccion explicita del usuario (principios obligatorios del bootstrap) | `.claude/rules`, busqueda/recuperacion de contexto de todos los agentes y skills. |
 
+## Foto de catálogo de vehículos — almacenamiento GCS (finding #5 PR#34 / CONFLICT-FLO-001)
+
+| ID | Fecha | Decision | Estado | Alcance afectado |
+|---|---|---|---|---|
+| PROP-008 | 2026-09-30 | Se extiende ADR-KAI-005 al módulo Fleet para fotos de catálogo de vehículos. Patrón aprobado: (1) `POST /fleet/vehicles/photo-upload-sessions` devuelve URL firmada PUT de GCS (15 min, máx 12 MB, JPEG o WebP — SDD-00 §16.5); (2) el frontend sube directamente a GCS con `PUT`; (3) `photoUrl` en `CreateVehicleDto`/`UpdateVehicleDto` acepta únicamente URLs HTTPS de `storage.googleapis.com`; (4) migración forward-safe: nullifica data: URIs existentes y agrega CHECK `photo_url NOT LIKE 'data:%'`. Se agregan env vars `GCS_BUCKET_NAME`, `GCS_CLIENT_EMAIL` (opcional, fallback a `FIREBASE_CLIENT_EMAIL`), `GCS_PRIVATE_KEY` (opcional, fallback a `FIREBASE_PRIVATE_KEY`). Cubre el finding #5 de PR#34. Resuelve `CONFLICT-FLO-001.md`. | CONFIRMADO por el usuario ("Opción A, aplícala", sesión 2026-09-30) | `apps/api/src/modules/fleet/**` (nuevo endpoint, GCS port, DTOs, módulo); `apps/api/prisma/migrations/20260929020000_vehicles_photo_url_check`; `packages/contracts/openapi/fleet.yaml` v0.2.0; `apps/web/src/app/fleet/NewVehicleModal.tsx` (elimina canvas/data URL); `apps/web/src/app/fleet/useFleetList.ts` (upload antes del submit); `apps/api/.env.example` |
+
 ## Propuestas tecnicas pendientes de validacion formal (HU-21 / TR-02)
 
 | ID | Fecha | Decision | Estado | Alcance afectado |
