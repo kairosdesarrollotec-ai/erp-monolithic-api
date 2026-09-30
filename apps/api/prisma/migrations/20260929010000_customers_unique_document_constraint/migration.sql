@@ -2,27 +2,36 @@
 -- sin restriccion unica, permitiendo duplicados bajo concurrencia.
 -- Correccion: restriccion UNIQUE (operating_company_id, document_type, document_number).
 --
--- Deduplicacion previa: elimina filas duplicadas conservando la mas reciente
--- (por created_at DESC, id DESC). Solo elimina filas sin referencias activas
--- en inquiries ni reservations para no violar integridad referencial.
--- Si quedan duplicados con referencias dependientes la migracion fallara; en
--- ese caso fusionar manualmente esos registros antes de re-ejecutar.
+-- Deduplicacion previa: para cada grupo duplicado conserva la fila mas
+-- reciente (created_at DESC, id DESC como desempate), reasigna las referencias
+-- de inquiries y reservations al registro keeper, luego elimina el duplicado.
+-- Este orden evita violar restricciones de integridad referencial.
 
-WITH ranked AS (
-  SELECT id,
-         ROW_NUMBER() OVER (
-           PARTITION BY operating_company_id, document_type, document_number
-           ORDER BY created_at DESC, id DESC
-         ) AS rn
-  FROM customers
-)
-DELETE FROM customers
-WHERE id IN (
-  SELECT r.id FROM ranked r
-  WHERE r.rn > 1
-    AND NOT EXISTS (SELECT 1 FROM inquiries    WHERE customer_id = r.id)
-    AND NOT EXISTS (SELECT 1 FROM reservations WHERE customer_id = r.id)
-);
+DO $$
+DECLARE
+  rec RECORD;
+BEGIN
+  FOR rec IN
+    WITH ranked AS (
+      SELECT id,
+             FIRST_VALUE(id) OVER (
+               PARTITION BY operating_company_id, document_type, document_number
+               ORDER BY created_at DESC, id DESC
+             ) AS keeper_id,
+             ROW_NUMBER() OVER (
+               PARTITION BY operating_company_id, document_type, document_number
+               ORDER BY created_at DESC, id DESC
+             ) AS rn
+      FROM customers
+    )
+    SELECT id, keeper_id FROM ranked WHERE rn > 1
+  LOOP
+    UPDATE inquiries    SET customer_id = rec.keeper_id WHERE customer_id = rec.id;
+    UPDATE reservations SET customer_id = rec.keeper_id WHERE customer_id = rec.id;
+    DELETE FROM customers WHERE id = rec.id;
+  END LOOP;
+END;
+$$;
 
 -- Nombre generado por Prisma (63 caracteres, truncado desde el medio para preservar _key).
 -- PostgreSQL truncaria a "...document_number_ke" si se usara el nombre sin truncar;
