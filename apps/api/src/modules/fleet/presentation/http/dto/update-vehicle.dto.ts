@@ -20,13 +20,15 @@ export class UpdateVehicleDto {
   @IsUUID()
   assignedBranchId?: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  brand!: string;
+  brand?: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  model!: string;
+  model?: string;
 
   @IsOptional()
   @Type(() => Number)

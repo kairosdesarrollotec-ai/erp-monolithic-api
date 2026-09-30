@@ -279,6 +279,30 @@ sources:
   sha256: e0add45e4601a3181d54c64811acdfd107e4c9e29f047015e20c3876e4243b2c
   authority: technical
   supersedes: null
+- id: OPENAPI-CUSTOMERS-V0.1.0
+  path: packages/contracts/openapi/customers.yaml
+  type: OpenAPI
+  module: Customers
+  version: '0.1.0'
+  date: 2026-09-30
+  status: approved
+  estado_original: Contrato inicial del módulo Clientes — CRUD completo (POST/GET/PATCH)
+  sha256: 2ba213934be69b4fbd8317b5b409c4fc1c733a9d11ab0aa1ba591bf7ab5d55c3
+  authority: contract
+  supersedes: null
+- id: OPENAPI-FLEET-V0.2.0
+  path: packages/contracts/openapi/fleet.yaml
+  type: OpenAPI
+  module: Fleet
+  version: '0.2.0'
+  date: 2026-09-30
+  status: approved
+  estado_original: >
+    Contrato del módulo Flota — CRUD de vehículos + foto via URL firmada GCS
+    (PROP-008 / ADR-KAI-005). brand y model opcionales en PATCH (semántica REST).
+  sha256: 854eeab613b8c5e2a8ffa910547a37bb9f3302ce03db99afe66f31bf8574fa7b
+  authority: contract
+  supersedes: OPENAPI-FLEET-V0.1.0
 - id: UX-UI-V3.1-KAIROS
   path: docs/sources/ux-ui/especificacion-ux-ui-v3.1-para-prototipado-del-erp-kairos.md
   type: UX
