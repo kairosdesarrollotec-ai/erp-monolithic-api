@@ -403,6 +403,7 @@ model Customer {
   inquiries        Inquiry[]
 
   @@unique([id, operatingCompanyId])
+  @@unique([operatingCompanyId, documentType, documentNumber])
   @@index([operatingCompanyId])
   @@index([operatingCompanyId, documentNumber])
   @@map("customers")
@@ -429,7 +430,7 @@ model Vehicle {
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
 
   operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
-  branch           Branch?       @relation(fields: [branchId, operatingCompanyId], references: [id, companyId], onDelete: SetNull)
+  branch           Branch?       @relation(fields: [branchId, operatingCompanyId], references: [id, companyId], onDelete: Restrict)
   reservations     Reservation[]
   quotations       Quotation[]
 

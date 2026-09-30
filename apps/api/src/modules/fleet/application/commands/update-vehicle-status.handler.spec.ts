@@ -14,7 +14,7 @@ describe('UpdateVehicleStatusHandler', () => {
   it('actualiza el estado de un vehículo existente', async () => {
     const vehicle = buildFleetVehicle({ status: 'AVAILABLE' });
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext();
+    const workContext = buildWorkContext('CAMPO');
     const handler = new UpdateVehicleStatusHandler(repository, workContext);
 
     const command = new UpdateVehicleStatusCommand(
@@ -46,7 +46,7 @@ describe('UpdateVehicleStatusHandler', () => {
 
   it('lanza NotFoundException si el vehículo no existe en la empresa', async () => {
     const repository = buildFleetVehicleRepository(null);
-    const workContext = buildWorkContext();
+    const workContext = buildWorkContext('CAMPO');
     const handler = new UpdateVehicleStatusHandler(repository, workContext);
 
     const command = new UpdateVehicleStatusCommand(

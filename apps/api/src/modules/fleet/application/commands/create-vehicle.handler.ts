@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateVehicleCommand } from './create-vehicle.command';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertFleetWrite, assertCrossBranchAllowed } from '../policies/fleet-role.policy';
 import { VehiclePlateAlreadyExistsError } from '../../domain/fleet-errors';
 import { FleetVehicle } from '../../domain/vehicle';
 
@@ -18,6 +19,9 @@ export class CreateVehicleHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
+
+    assertFleetWrite(context.role);
+    assertCrossBranchAllowed(context.role, context.branchId, command.assignedBranchId);
 
     const sanitizedPlate = command.plate.trim().toUpperCase();
 

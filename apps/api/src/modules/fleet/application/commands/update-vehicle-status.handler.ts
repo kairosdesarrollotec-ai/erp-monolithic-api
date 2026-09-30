@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateVehicleStatusCommand } from './update-vehicle-status.command';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertFleetWrite } from '../policies/fleet-role.policy';
 import { FleetVehicle } from '../../domain/vehicle';
 
 @Injectable()
@@ -17,6 +18,8 @@ export class UpdateVehicleStatusHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
+
+    assertFleetWrite(context.role);
 
     const vehicle = await this.vehicles.findById(command.vehicleId, {
       organizationId: context.organizationId,

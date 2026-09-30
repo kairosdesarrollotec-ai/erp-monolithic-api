@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CustomerRepositoryPort } from '../ports/customer-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertCustomerRead } from '../policies/customer-role.policy';
 import { ListCustomersQuery } from './list-customers.query';
 import { Customer } from '../../domain/customer';
 
@@ -17,6 +18,8 @@ export class ListCustomersHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
+
+    assertCustomerRead(context.role);
 
     return this.customers.list({
       organizationId: context.organizationId,

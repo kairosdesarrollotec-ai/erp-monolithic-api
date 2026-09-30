@@ -71,6 +71,7 @@ export class CustomersController {
   }
 
   @Patch(':id')
+  @UseInterceptors(IdempotencyInterceptor)
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,

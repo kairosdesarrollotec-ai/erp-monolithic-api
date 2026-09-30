@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ListVehiclesQuery } from './list-vehicles.query';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertFleetRead, assertCrossBranchAllowed } from '../policies/fleet-role.policy';
 import { FleetVehicle } from '../../domain/vehicle';
 
 @Injectable()
@@ -17,6 +18,9 @@ export class ListVehiclesHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
+
+    assertFleetRead(context.role);
+    assertCrossBranchAllowed(context.role, context.branchId, query.filterBranchId);
 
     return this.vehicles.list({
       organizationId: context.organizationId,

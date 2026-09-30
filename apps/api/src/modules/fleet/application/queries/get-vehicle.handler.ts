@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { GetVehicleQuery } from './get-vehicle.query';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertFleetRead } from '../policies/fleet-role.policy';
 import { FleetVehicle } from '../../domain/vehicle';
 
 @Injectable()
@@ -17,6 +18,8 @@ export class GetVehicleHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
+
+    assertFleetRead(context.role);
 
     const vehicle = await this.vehicles.findById(query.vehicleId, {
       organizationId: context.organizationId,

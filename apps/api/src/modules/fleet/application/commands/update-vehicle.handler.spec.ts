@@ -14,7 +14,7 @@ describe('UpdateVehicleHandler', () => {
   it('actualiza los datos editables de un vehículo existente', async () => {
     const vehicle = buildFleetVehicle();
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext();
+    const workContext = buildWorkContext('CAMPO');
     const handler = new UpdateVehicleHandler(repository, workContext);
 
     const command = new UpdateVehicleCommand(
@@ -61,7 +61,7 @@ describe('UpdateVehicleHandler', () => {
 
   it('lanza NotFoundException si el vehículo no existe en la empresa', async () => {
     const repository = buildFleetVehicleRepository(null);
-    const workContext = buildWorkContext();
+    const workContext = buildWorkContext('CAMPO');
     const handler = new UpdateVehicleHandler(repository, workContext);
 
     const command = new UpdateVehicleCommand(
@@ -80,7 +80,7 @@ describe('UpdateVehicleHandler', () => {
   it('no permite editar la placa: el comando no acepta ese campo', async () => {
     const vehicle = buildFleetVehicle({ plate: 'ABC-123' });
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext();
+    const workContext = buildWorkContext('CAMPO');
     const handler = new UpdateVehicleHandler(repository, workContext);
 
     const command = new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, 'Toyota', 'Hilux');

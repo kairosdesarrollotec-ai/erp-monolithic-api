@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CustomerRepositoryPort } from '../ports/customer-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertCustomerRead } from '../policies/customer-role.policy';
 import { GetCustomerQuery } from './get-customer.query';
 import { Customer } from '../../domain/customer';
 
@@ -17,6 +18,8 @@ export class GetCustomerHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
+
+    assertCustomerRead(context.role);
 
     const customer = await this.customers.findById(query.id, {
       organizationId: context.organizationId,

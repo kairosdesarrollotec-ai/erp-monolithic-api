@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateVehicleCommand } from './update-vehicle.command';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertFleetWrite, assertCrossBranchAllowed } from '../policies/fleet-role.policy';
 import { FleetVehicle } from '../../domain/vehicle';
 
 /**
@@ -27,6 +28,9 @@ export class UpdateVehicleHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
+
+    assertFleetWrite(context.role);
+    assertCrossBranchAllowed(context.role, context.branchId, command.assignedBranchId);
 
     const scope = {
       organizationId: context.organizationId,

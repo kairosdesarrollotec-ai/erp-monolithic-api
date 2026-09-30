@@ -110,6 +110,7 @@ export class FleetController {
   }
 
   @Patch('vehicles/:id/status')
+  @UseInterceptors(IdempotencyInterceptor)
   async updateStatus(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
@@ -129,6 +130,7 @@ export class FleetController {
   }
 
   @Patch('vehicles/:id')
+  @UseInterceptors(IdempotencyInterceptor)
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
