@@ -144,16 +144,14 @@ jobs:
         with:
           node-version: 22
 
-      # SCA. Bloquea con severidad CRITICAL. Las 3 vulnerabilidades HIGH
-      # conocidas (multer/body-parser via @nestjs/platform-express, lodash via
-      # @nestjs/config) solo se corrigen con un upgrade MAYOR de NestJS, que
-      # requiere autorizacion (CLAUDE.md seccion 15) - se reportan sin
-      # bloquear hasta esa decision (SLA KAIROS para HIGH: 7 dias).
-      - name: npm audit (bloqueante - critical)
-        run: npm audit --omit=dev --audit-level=critical
-      - name: npm audit (informativo - high)
-        run: npm audit --omit=dev --audit-level=high
-        continue-on-error: true
+      # SCA con allowlist. Bloquea en CRITICAL y en cualquier HIGH no registrado
+      # en audit-allowlist.json. Los HIGH conocidos (multer via @nestjs/platform-express,
+      # lodash via @nestjs/config) estan en el allowlist con fecha de remediacion;
+      # el script verifica que no hayan pasado su SLA. Agregar un nuevo HIGH al
+      # allowlist requiere razon, plan de remediacion y target_date — no es exencion
+      # permanente. Ver scripts/audit-check.mjs y audit-allowlist.json.
+      - name: npm audit (bloqueante - high/critical con allowlist)
+        run: npm run audit:prod
 
       # Secret scanning: binario oficial de gitleaks verificado por checksum
       # (sin action de terceros, que ademas exige licencia para orgs).

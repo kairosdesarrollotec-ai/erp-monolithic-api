@@ -18,7 +18,9 @@
     "test:web": "npm run test --workspace apps/web",
     "lint": "npm run lint --workspaces --if-present",
     "test:integration:api": "npm run test:integration --workspace apps/api",
-    "seed:platform-admin": "ts-node -P apps/api/tsconfig.json scripts/seed-platform-admin.ts"
+    "seed:platform-admin": "ts-node -P apps/api/tsconfig.json scripts/seed-platform-admin.ts",
+    "audit:prod": "node scripts/audit-check.mjs",
+    "audit:all": "node scripts/audit-check.mjs --include-dev"
   },
   "dependencies": {
     "resend": "^6.30.0"

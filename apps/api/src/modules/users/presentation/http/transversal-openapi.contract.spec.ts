@@ -1,6 +1,8 @@
 import 'reflect-metadata';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'node:url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA, HTTP_CODE_METADATA } from '@nestjs/common/constants';
 import { getMetadataStorage } from 'class-validator';
@@ -10,8 +12,7 @@ import { SelectWorkContextDto } from './dto/select-work-context.dto';
 import { RecordLoginAttemptDto } from '../../../audit/presentation/http/dto/record-login-attempt.dto';
 import { WORKER_ROLES } from '../../../users/domain/worker-role';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const yaml = require('js-yaml');
+import yaml from 'js-yaml';
 
 /**
  * Verifica que packages/contracts/openapi/transversal.yaml y el backend
@@ -26,7 +27,8 @@ const SPEC_PATH = path.resolve(
   __dirname,
   '../../../../../../../packages/contracts/openapi/transversal.yaml',
 );
-const spec = yaml.load(fs.readFileSync(SPEC_PATH, 'utf8'));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const spec = yaml.load(fs.readFileSync(SPEC_PATH, 'utf8')) as any;
 
 type Operation = { operationId: string; parameters?: any[]; responses: Record<string, unknown>; requestBody?: any };
 
