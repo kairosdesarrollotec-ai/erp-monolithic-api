@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsString, IsUUID, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 import { WORKER_ROLES, WorkerRole } from '../../../../users/domain/worker-role';
 
 export class AssignUserDto {
@@ -20,7 +20,13 @@ export class AssignUserDto {
   @IsIn(WORKER_ROLES)
   targetRole!: WorkerRole;
 
+  /**
+   * Solo obligatoria si el backend determina que el correo es nuevo en
+   * Firebase (ver AssignUserToCompanyHandler) - para un correo ya
+   * existente el handler la ignora aunque se envie.
+   */
+  @IsOptional()
   @IsString()
   @MinLength(8)
-  initialPassword!: string;
+  initialPassword?: string;
 }

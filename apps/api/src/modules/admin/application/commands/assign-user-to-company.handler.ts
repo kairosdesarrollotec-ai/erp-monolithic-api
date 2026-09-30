@@ -62,6 +62,12 @@ export class AssignUserToCompanyHandler {
     let resolvedUid: string;
 
     if (isNewUser) {
+      if (!command.initialPassword) {
+        throw new BadRequestException({
+          code: 'INITIAL_PASSWORD_REQUIRED',
+          detail: 'El correo no existe todavia - se requiere una contrasena inicial para crear la cuenta.',
+        });
+      }
       const provisioned = await this.identity.provisionUser(command.targetEmail, command.initialPassword);
       resolvedUid = provisioned.uid;
       await this.userProfiles.createProfile({
@@ -106,7 +112,7 @@ export class AssignUserToCompanyHandler {
 
     if (isNewUser) {
       void this.emailNotification
-        .sendWelcomeUser(command.targetEmail, command.initialPassword)
+        .sendWelcomeUser(command.targetEmail, command.initialPassword!)
         .catch((err: unknown) =>
           this.logger.error('Welcome email failed to send', { email: command.targetEmail, error: err }),
         );
