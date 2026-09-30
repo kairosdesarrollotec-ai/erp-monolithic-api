@@ -50,6 +50,7 @@ function buildDeps(opts: {
     recordReservationEvent: jest.fn(),
     recordInquiryEvent: jest.fn(),
     recordAdminEvent: jest.fn(),
+    recordRentalEvent: jest.fn(),
   };
 
   const transactionManager: jest.Mocked<TransactionManagerPort> = {

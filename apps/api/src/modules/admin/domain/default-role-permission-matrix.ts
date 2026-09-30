@@ -1,6 +1,7 @@
 import { WORKER_ROLES } from '../../users/domain/worker-role';
 import { assertReservationRoleAllowed, ReservationAction } from '../../reservations/application/policies/reservation-role-policy';
 import { assertInquiryRoleAllowed, InquiryAction } from '../../inquiries/application/policies/inquiry-role-policy';
+import { assertRentalRoleAllowed, RentalAction } from '../../rentals/application/policies/rental-role-policy';
 import { assertAdminRoleAllowed, AdminAction } from '../application/policies/admin-role-policy';
 import { PERMISSION_ACTION_CATALOG } from './permission-action-catalog';
 import type { RolePermissionEntry } from '../application/ports/role-permission-matrix.port';
@@ -32,7 +33,7 @@ export function buildDefaultRolePermissionMatrix(): RolePermissionEntry[] {
 
 function isAllowedByExistingPolicy(
   role: (typeof WORKER_ROLES)[number],
-  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN',
+  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL',
   action: string,
 ): boolean {
   try {
@@ -40,6 +41,8 @@ function isAllowedByExistingPolicy(
       assertReservationRoleAllowed(role, action as ReservationAction);
     } else if (module === 'INQUIRY') {
       assertInquiryRoleAllowed(role, action as InquiryAction);
+    } else if (module === 'RENTAL') {
+      assertRentalRoleAllowed(role, action as RentalAction);
     } else {
       assertAdminRoleAllowed(role, action as AdminAction);
     }

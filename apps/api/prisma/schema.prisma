@@ -260,6 +260,8 @@ model Company {
   customers    Customer[]
   vehicles     Vehicle[]
   inquiries    Inquiry[]
+  rentals      Rental[]
+  contractTemplates ContractTemplate[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -286,6 +288,7 @@ model Branch {
   reservations Reservation[]
   inquiries    Inquiry[]
   vehicles     Vehicle[]
+  rentals      Rental[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -401,6 +404,8 @@ model Customer {
   operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   reservations     Reservation[]
   inquiries        Inquiry[]
+  rentals          Rental[]
+  rentalParties    RentalParty[]
 
   @@unique([id, operatingCompanyId])
   @@unique([operatingCompanyId, documentType, documentNumber])
@@ -433,6 +438,7 @@ model Vehicle {
   branch           Branch?       @relation(fields: [branchId, operatingCompanyId], references: [id, companyId], onDelete: Restrict)
   reservations     Reservation[]
   quotations       Quotation[]
+  rentals          Rental[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
@@ -537,6 +543,7 @@ model Inquiry {
   interactions     Interaction[]
   quotations       Quotation[]
   reservations     Reservation[]
+  rentals          Rental[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
@@ -679,6 +686,7 @@ model Reservation {
   branch           Branch   @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
 
   acceptance ReservationAcceptance?
+  rental     Rental?
 
   // Hallazgo critico PR#6 ("IDOR entre sedes/empresas"): este indice
   // respalda el filtro de scope completo (organizationId +
@@ -750,4 +758,188 @@ model DashboardItem {
   @@unique([sourceEventId, itemType])
   @@index([organizationId, operatingCompanyId, branchId, role, dismissedAt, priority])
   @@map("dashboard_items")
+}
+
+/// TDD-03-alquiler seccion 8.1 - 10 estados del ciclo de vida de Alquiler.
+enum RentalStatus {
+  DRAFT
+  VALIDATION
+  NOTARY_EVALUATION
+  CONTRACTING
+  PENDING_DELIVERY
+  ACTIVE
+  EXTENSION_PENDING
+  RETURN_IN_PROGRESS
+  CLOSED
+  CANCELLED
+}
+
+/// TDD-03-alquiler seccion 7.2 / BR-ALQ-005 - resultado de prueba de alcolimetro.
+enum AlcoholTestResult {
+  FAVORABLE
+  DESFAVORABLE
+  RECHAZADO
+}
+
+/// TDD-03-alquiler seccion 7.2 / BR-ALQ-003/004 - resultado de evaluacion notarial.
+enum NotaryResult {
+  MANDATORY
+  DOUBLE_DEPOSIT
+  THIRD_PATH_ELIGIBLE
+  MANUAL_REVIEW
+}
+
+/// TDD-03-alquiler seccion 9.2 - Agregado principal de Alquiler (ALQ-01..11).
+model Rental {
+  id                 String             @id @default(uuid())
+  organizationId     String             @map("organization_id")
+  operatingCompanyId String             @map("operating_company_id")
+  branchId           String             @map("branch_id")
+  inquiryId          String?            @map("inquiry_id")
+  reservationId      String?            @unique @map("reservation_id")
+  customerId         String             @map("customer_id")
+  vehicleId          String             @map("vehicle_id")
+  planCode           String             @default("NORMAL") @map("plan_code") // NORMAL | PLUS | LIBRE
+  status             RentalStatus       @default(DRAFT)
+  startAt            DateTime?          @map("start_at")
+  expectedEndAt      DateTime?          @map("expected_end_at")
+  alcoholTestResult  AlcoholTestResult? @map("alcohol_test_result")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  createdBy          String             @map("created_by")
+  updatedAt          DateTime           @default(now()) @updatedAt @map("updated_at")
+  updatedBy          String             @map("updated_by")
+  version            Int                @default(1)
+
+  operatingCompany Company      @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  branch           Branch       @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
+  customer         Customer     @relation(fields: [customerId, operatingCompanyId], references: [id, operatingCompanyId])
+  vehicle          Vehicle      @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
+  reservation      Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  inquiry          Inquiry?     @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+
+  parties          RentalParty[]
+  notaryEvaluation NotaryEvaluation?
+  contract         RentalContract?
+  deposit          RentalDeposit?
+  extensions       RentalExtension[]
+
+  @@unique([id, operatingCompanyId])
+  @@index([operatingCompanyId, status, createdAt(sort: Desc)])
+  @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)])
+  @@index([customerId, createdAt(sort: Desc)])
+  @@map("rentals")
+}
+
+/// TDD-03-alquiler seccion 9.2 / BR-ALQ-015 - intervinientes del alquiler.
+model RentalParty {
+  id         String   @id @default(uuid())
+  rentalId   String   @map("rental_id")
+  customerId String   @map("customer_id")
+  role       String   // 'SIGNER' | 'DRIVER' | 'RESPONSIBLE'
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  rental   Rental   @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([rentalId])
+  @@map("rental_parties")
+}
+
+/// TDD-03-alquiler seccion 9.3 / BR-ALQ-003/004 - evaluacion notarial.
+model NotaryEvaluation {
+  id            String       @id @default(uuid())
+  rentalId      String       @unique @map("rental_id")
+  policyVersion Int          @map("policy_version")
+  result        NotaryResult
+  reason        String       @db.VarChar(500)
+  evaluatedAt   DateTime     @default(now()) @map("evaluated_at")
+  approvedBy    String?      @map("approved_by")
+  justification String?      @db.VarChar(500)
+
+  rental Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@map("notary_evaluations")
+}
+
+/// TDD-03-alquiler seccion 9.3 / BR-DOC-002/003 - contrato inmutable formalizado.
+model RentalContract {
+  id                String            @id @default(uuid())
+  rentalId          String            @unique @map("rental_id")
+  templateVersionId String            @map("template_version_id")
+  documentRef       String            @map("document_ref")
+  status            String            @default("PENDING") // PENDING | SIGNED | VOID
+  signedAt          DateTime?         @map("signed_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+
+  rental   Rental           @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  template ContractTemplate @relation(fields: [templateVersionId], references: [id])
+
+  @@map("rental_contracts")
+}
+
+/// TDD-03-alquiler seccion 9.3 / BR-DOC-002 - plantillas vigentes por empresa.
+model ContractTemplate {
+  id            String    @id @default(uuid())
+  companyId     String    @map("company_id")
+  type          String    @db.VarChar(30)
+  version       Int
+  effectiveFrom DateTime  @map("effective_from")
+  effectiveTo   DateTime? @map("effective_to")
+  status        String    @default("ACTIVE") // ACTIVE | RETIRED
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  company   Company          @relation(fields: [companyId], references: [id])
+  contracts RentalContract[]
+
+  @@unique([companyId, type, version])
+  @@index([companyId, type])
+  @@map("contract_templates")
+}
+
+/// TDD-03-alquiler seccion 9.4 - garantia retenida para el alquiler.
+model RentalDeposit {
+  id             String                    @id @default(uuid())
+  rentalId       String                    @unique @map("rental_id")
+  originalAmount Decimal                   @map("original_amount") @db.Decimal(12, 2)
+  currency       String                    @db.Char(3)
+  status         String                    @default("HELD") // HELD | RETURNED | RETAINED | PARTIALLY_RETAINED
+  createdAt      DateTime                  @default(now()) @map("created_at")
+
+  rental      Rental                    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  adjustments RentalDepositAdjustment[]
+
+  @@map("rental_deposits")
+}
+
+/// TDD-03-alquiler seccion 9.4 - ajustes append-only sobre la garantia.
+model RentalDepositAdjustment {
+  id           String        @id @default(uuid())
+  depositId    String        @map("deposit_id")
+  type         String        // 'DISCOUNT' | 'FULL_RETENTION' | 'RELEASE' | 'IMMOBILIZATION_CHARGE'
+  amount       Decimal       @db.Decimal(12, 2)
+  reason       String        @db.VarChar(500)
+  authorizedBy String        @map("authorized_by")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  deposit RentalDeposit @relation(fields: [depositId], references: [id], onDelete: Cascade)
+
+  @@index([depositId])
+  @@map("rental_deposit_adjustments")
+}
+
+/// TDD-03-alquiler seccion 9.4 / BR-ALQ-012/013 - solicitudes de ampliacion.
+model RentalExtension {
+  id                  String    @id @default(uuid())
+  rentalId            String    @map("rental_id")
+  requestedEndAt      DateTime  @map("requested_end_at")
+  status              String    @default("PENDING") // PENDING | AUTHORIZED | REJECTED | BREACH
+  paymentId           String?   @map("payment_id")
+  addendumDocumentRef String?   @map("addendum_document_ref")
+  requestedAt         DateTime  @default(now()) @map("requested_at")
+  resolvedAt          DateTime? @map("resolved_at")
+
+  rental Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@map("rental_extensions")
 }

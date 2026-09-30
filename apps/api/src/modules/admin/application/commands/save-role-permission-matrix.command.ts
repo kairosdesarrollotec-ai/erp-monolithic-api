@@ -2,7 +2,7 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
 
 export interface SaveRolePermissionMatrixEntryInput {
   role: WorkerRole;
-  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN';
+  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL';
   action: string;
   allowed: boolean;
 }
