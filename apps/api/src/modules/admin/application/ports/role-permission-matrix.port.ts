@@ -3,7 +3,7 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
 
 export interface RolePermissionEntry {
   role: WorkerRole;
-  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN';
+  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL';
   action: string;
   allowed: boolean;
 }
