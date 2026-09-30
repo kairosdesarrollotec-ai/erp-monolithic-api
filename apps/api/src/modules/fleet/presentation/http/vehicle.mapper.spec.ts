@@ -16,7 +16,7 @@ describe('toVehicleResponse', () => {
       category: 'PICKUP',
       status: 'AVAILABLE',
       dailyRate: 250,
-      photoUrl: 'https://example.com/hilux.jpg',
+      photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/hilux.jpg',
       createdAt: new Date('2026-09-28T10:00:00.000Z'),
       updatedAt: new Date('2026-09-28T10:00:00.000Z'),
     };
@@ -36,7 +36,7 @@ describe('toVehicleResponse', () => {
       category: 'PICKUP',
       status: 'AVAILABLE',
       dailyRate: 250,
-      photoUrl: 'https://example.com/hilux.jpg',
+      photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/hilux.jpg',
       createdAt: '2026-09-28T10:00:00.000Z',
       updatedAt: '2026-09-28T10:00:00.000Z',
     });
