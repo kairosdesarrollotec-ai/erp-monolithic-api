@@ -1,0 +1,483 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Customers API
+  version: 0.1.0
+  description: >
+    Contrato del módulo Clientes. Expone el CRUD de clientes para las empresas
+    del Grupo KAIROS: registrar (POST /customers), listar con filtros (GET
+    /customers), obtener detalle (GET /customers/{id}) y actualizar (PATCH
+    /customers/{id}).
+
+    Permisos PROVISIONAL (ADM-02 no implementado - ver customer-role.policy.ts,
+    fuente SDD-KAIROS-TRANSVERSAL.md §15.5):
+      Escritura (POST, PATCH): GERENCIA, ADMINISTRACION, FRONT_OFFICE, PLATFORM_ADMIN.
+      Lectura (GET): GERENCIA, ADMINISTRACION, CAMPO, FRONT_OFFICE, FINANZAS,
+      AUDITORIA, PLATFORM_ADMIN.
+
+    Todos los endpoints requieren autenticación Firebase (Bearer token) y los
+    parámetros de scope companyId + branchId. El backend re-valida la combinacion
+    en cada request (API stateless - ver TDD Transversal).
+
+    X-Idempotency-Key soportado en POST /customers y PATCH /customers/{id}
+    a traves del IdempotencyInterceptor del backend.
+
+paths:
+  /customers:
+    post:
+      operationId: createCustomer
+      summary: Registra un nuevo cliente en la empresa del contexto
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201':
+          description: Cliente creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: >
+            Validación fallida. Puede ser error de campo de class-validator
+            (formato NestErrorResponse) o la regla de negocio
+            COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS (formato KairosErrorResponse:
+            countryEntryDate enviado sin nationality=EXTRANJERO).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: >
+            Empresa/sede no autorizada para el usuario (combinacion companyId/branchId
+            no vigente), o CUSTOMER_WRITE_NOT_ALLOWED (el rol del usuario no tiene
+            permiso de escritura en clientes).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyErrorResponse'
+        '409':
+          description: >
+            CUSTOMER_DOCUMENT_ALREADY_EXISTS - ya existe un cliente registrado
+            con el mismo tipo y número de documento en esta empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+    get:
+      operationId: listCustomers
+      summary: Lista clientes de la empresa con filtros opcionales (paginación offset)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro de texto libre (fullName, documentNumber).
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Máximo de registros a devolver (1-100).
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+          description: Posición inicial para la paginación (0-indexed).
+      responses:
+        '200':
+          description: Lista paginada de clientes con el total sin paginar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCustomersResponse'
+        '400':
+          description: Parámetros de query inválidos (companyId/branchId no son UUID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: >
+            Empresa/sede no autorizada, o CUSTOMER_READ_NOT_ALLOWED (rol sin
+            permiso de lectura en clientes).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyErrorResponse'
+
+  /customers/{id}:
+    get:
+      operationId: getCustomer
+      summary: Obtiene el detalle completo de un cliente por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: El path param {id} no tiene formato UUID o parámetros de query inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: >
+            Empresa/sede no autorizada, o CUSTOMER_READ_NOT_ALLOWED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyErrorResponse'
+        '404':
+          description: CUSTOMER_NOT_FOUND - el cliente no existe en el scope de la empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+    patch:
+      operationId: updateCustomer
+      summary: Actualiza los datos personales de un cliente
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        '200':
+          description: Cliente actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: >
+            Validación fallida (class-validator) o COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: Empresa/sede no autorizada, o CUSTOMER_WRITE_NOT_ALLOWED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyErrorResponse'
+        '404':
+          description: CUSTOMER_NOT_FOUND - el cliente no existe en el scope de la empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '409':
+          description: >
+            CUSTOMER_DOCUMENT_ALREADY_EXISTS - ya existe otro cliente con ese documento.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'ID token de Firebase Authentication, enviado como "Authorization: Bearer <idToken>"'
+
+  parameters:
+    CustomerId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID del cliente
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 200
+      description: >
+        Clave de idempotencia para comandos de escritura. Si se envía, el backend
+        reserva la clave atomicamente antes de ejecutar. Un reintento con la misma
+        clave y cuerpo identico devuelve la respuesta almacenada sin re-ejecutar.
+        Validez 24 h (implementado por IdempotencyInterceptor).
+
+  schemas:
+    CreateCustomerRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+        - fullName
+        - documentType
+        - documentNumber
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+          maxLength: 200
+        documentType:
+          type: string
+          maxLength: 30
+          description: >
+            Tipo de documento de identidad (ej: DNI, PASAPORTE, CARNET_EXTRANJERIA).
+            Se normaliza a mayúsculas en el backend.
+        documentNumber:
+          type: string
+          maxLength: 30
+        nationality:
+          type: string
+          enum: [PERUANO, EXTRANJERO]
+          nullable: true
+        countryEntryDate:
+          type: string
+          format: date
+          description: >
+            Fecha de ingreso al país (YYYY-MM-DD). Solo válida cuando
+            nationality=EXTRANJERO - el backend lanza COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS
+            si se envía con otra nacionalidad.
+          nullable: true
+        email:
+          type: string
+          format: email
+          maxLength: 120
+          nullable: true
+        phone:
+          type: string
+          maxLength: 30
+          nullable: true
+        address:
+          type: string
+          maxLength: 300
+          nullable: true
+
+    UpdateCustomerRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+        - fullName
+        - documentType
+        - documentNumber
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+          maxLength: 200
+        documentType:
+          type: string
+          maxLength: 30
+        documentNumber:
+          type: string
+          maxLength: 30
+        nationality:
+          type: string
+          enum: [PERUANO, EXTRANJERO]
+          nullable: true
+        countryEntryDate:
+          type: string
+          format: date
+          nullable: true
+        email:
+          type: string
+          format: email
+          maxLength: 120
+          nullable: true
+        phone:
+          type: string
+          maxLength: 30
+          nullable: true
+        address:
+          type: string
+          maxLength: 300
+          nullable: true
+
+    CustomerResponse:
+      type: object
+      required:
+        - id
+        - organizationId
+        - operatingCompanyId
+        - fullName
+        - documentType
+        - documentNumber
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+          description: ID del grupo KAIROS al que pertenece la empresa
+        operatingCompanyId:
+          type: string
+          format: uuid
+          description: ID de la empresa operativa (companyId del scope)
+        fullName:
+          type: string
+        documentType:
+          type: string
+          description: Tipo de documento normalizado a mayúsculas
+        documentNumber:
+          type: string
+        nationality:
+          type: string
+          enum: [PERUANO, EXTRANJERO]
+          nullable: true
+        countryEntryDate:
+          type: string
+          format: date
+          description: Fecha de ingreso al país (YYYY-MM-DD), null si no aplica.
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp ISO 8601 UTC de creación
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp ISO 8601 UTC de última modificación
+
+    ListCustomersResponse:
+      type: object
+      required:
+        - items
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerResponse'
+        total:
+          type: integer
+          minimum: 0
+          description: Total de clientes que coinciden con el filtro (sin paginar).
+
+    NestErrorResponse:
+      description: >
+        Formato de error estándar de NestJS para errores de validación de campo
+        (class-validator). message puede ser string o array de strings con los
+        mensajes de cada campo inválido.
+      type: object
+      required: [statusCode, message, error]
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string
+
+    KairosErrorResponse:
+      description: >
+        Formato de error de negocio del ERP KAIROS. Usado por los handlers
+        para errores de dominio con código identificable.
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: >
+            Código de error de negocio. Valores posibles en este módulo:
+            CUSTOMER_NOT_FOUND, CUSTOMER_DOCUMENT_ALREADY_EXISTS,
+            CUSTOMER_WRITE_NOT_ALLOWED, CUSTOMER_READ_NOT_ALLOWED,
+            COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS.
+          example: CUSTOMER_NOT_FOUND
+        detail:
+          type: string
+          description: Descripción legible del error para el usuario o el log.
+
+    AnyErrorResponse:
+      description: >
+        Error de validación (NestErrorResponse) o de negocio (KairosErrorResponse).
+        El cliente debe discriminar por la presencia del campo "code" (KairosErrorResponse)
+        o "statusCode" (NestErrorResponse).
+      oneOf:
+        - $ref: '#/components/schemas/NestErrorResponse'
+        - $ref: '#/components/schemas/KairosErrorResponse'

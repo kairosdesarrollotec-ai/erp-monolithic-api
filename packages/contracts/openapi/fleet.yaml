@@ -1,0 +1,565 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Fleet API
+  version: 0.1.0
+  description: >
+    Contrato del módulo Flota. Expone el CRUD de vehículos para las empresas
+    del Grupo KAIROS: registrar (POST /fleet/vehicles), listar con filtros
+    (GET /fleet/vehicles), obtener detalle (GET /fleet/vehicles/{id}),
+    actualizar estado (PATCH /fleet/vehicles/{id}/status) y actualizar datos
+    (PATCH /fleet/vehicles/{id}).
+
+    Permisos PROVISIONAL (ADM-02 no implementado - ver fleet-role.policy.ts,
+    fuente SDD-KAIROS-TRANSVERSAL.md §15.5):
+      Escritura (POST, PATCH): GERENCIA, ADMINISTRACION, CAMPO, PLATFORM_ADMIN.
+      Lectura (GET): GERENCIA, ADMINISTRACION, CAMPO, FRONT_OFFICE, FINANZAS,
+      AUDITORIA, PLATFORM_ADMIN.
+      Cross-branch (assignedBranchId o filterBranchId distinto al contexto):
+      GERENCIA, ADMINISTRACION, PLATFORM_ADMIN.
+
+    Todos los endpoints requieren autenticación Firebase (Bearer token) y los
+    parámetros de scope companyId + branchId. El backend re-valida la combinacion
+    en cada request (API stateless).
+
+    X-Idempotency-Key soportado en POST /fleet/vehicles, PATCH /fleet/vehicles/{id}/status
+    y PATCH /fleet/vehicles/{id} a traves del IdempotencyInterceptor del backend.
+
+    Nota sobre assignedBranchId: una sede asignada distinta a la del contexto solo
+    la pueden establecer los roles con permisos cross-branch. Un Fleet Operator
+    (CAMPO) autorizaado para Sede A no puede gestionar vehículos de Sede B
+    (IDOR por sede - fleet-role.policy.ts assertCrossBranchAllowed).
+
+paths:
+  /fleet/vehicles:
+    post:
+      operationId: createVehicle
+      summary: Registra un nuevo vehículo en la flota
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVehicleRequest'
+      responses:
+        '201':
+          description: Vehículo creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '400':
+          description: Validación fallida (class-validator)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: >
+            Empresa/sede no autorizada, FLEET_WRITE_NOT_ALLOWED (rol sin permiso
+            de escritura en flota), o CROSS_BRANCH_NOT_ALLOWED (assignedBranchId
+            distinto al branchId del contexto y el rol no tiene permiso cross-branch).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '409':
+          description: >
+            VEHICLE_PLATE_ALREADY_EXISTS - ya existe un vehículo registrado con
+            esa placa en esta empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+    get:
+      operationId: listVehicles
+      summary: Lista vehículos de la empresa con filtros opcionales (paginación offset)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: filterBranchId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: >
+            Filtra por sede asignada al vehículo. Solo roles cross-branch
+            (GERENCIA, ADMINISTRACION, PLATFORM_ADMIN) pueden filtrar por
+            una sede distinta al branchId del contexto.
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/VehicleStatus'
+          description: Filtra por estado del vehículo
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro de texto libre (plate, brand, model).
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Máximo de registros a devolver (1-100).
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+          description: Posición inicial para la paginación (0-indexed).
+      responses:
+        '200':
+          description: Lista paginada de vehículos con el total sin paginar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVehiclesResponse'
+        '400':
+          description: Parámetros de query inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: >
+            Empresa/sede no autorizada, o FLEET_READ_NOT_ALLOWED (rol sin
+            permiso de lectura en flota).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+
+  /fleet/vehicles/{id}:
+    get:
+      operationId: getVehicle
+      summary: Obtiene el detalle completo de un vehículo por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleId'
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del vehículo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '400':
+          description: El path param {id} no tiene formato UUID o parámetros de query inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: Empresa/sede no autorizada, o FLEET_READ_NOT_ALLOWED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '404':
+          description: VEHICLE_NOT_FOUND - el vehículo no existe en el scope de la empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+    patch:
+      operationId: updateVehicle
+      summary: Actualiza los datos de un vehículo (excepto su estado y placa)
+      description: >
+        Actualiza brand, model, year, color, category, dailyRate, photoUrl y
+        assignedBranchId. La placa no se puede cambiar; para cambiar el estado
+        usar PATCH /fleet/vehicles/{id}/status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVehicleRequest'
+      responses:
+        '200':
+          description: Vehículo actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '400':
+          description: Validación fallida (class-validator)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: >
+            Empresa/sede no autorizada, FLEET_WRITE_NOT_ALLOWED, o
+            CROSS_BRANCH_NOT_ALLOWED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '404':
+          description: VEHICLE_NOT_FOUND - el vehículo no existe en el scope de la empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+
+  /fleet/vehicles/{id}/status:
+    patch:
+      operationId: updateVehicleStatus
+      summary: Actualiza el estado operativo de un vehículo
+      description: >
+        Cambia el status del vehículo a uno de: AVAILABLE, RENTED, MAINTENANCE,
+        OUT_OF_SERVICE. El backend valida que el vehículo exista en el scope
+        de la empresa antes de actualizar.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVehicleStatusRequest'
+      responses:
+        '200':
+          description: Estado del vehículo actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '400':
+          description: Validación fallida (status fuera del enum o parámetros requeridos ausentes)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de Firebase ausente o inválido
+        '403':
+          description: Empresa/sede no autorizada, o FLEET_WRITE_NOT_ALLOWED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '404':
+          description: VEHICLE_NOT_FOUND - el vehículo no existe en el scope de la empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'ID token de Firebase Authentication, enviado como "Authorization: Bearer <idToken>"'
+
+  parameters:
+    VehicleId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID del vehículo
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 200
+      description: >
+        Clave de idempotencia para comandos de escritura. Si se envía, el backend
+        reserva la clave atomicamente antes de ejecutar. Un reintento con la misma
+        clave y cuerpo identico devuelve la respuesta almacenada sin re-ejecutar.
+        Validez 24 h (implementado por IdempotencyInterceptor).
+
+  schemas:
+    VehicleStatus:
+      type: string
+      description: >
+        Estado operativo del vehículo. AVAILABLE = disponible para alquiler;
+        RENTED = en alquiler activo; MAINTENANCE = en mantenimiento;
+        OUT_OF_SERVICE = fuera de servicio (no disponible ni rentable).
+      enum: [AVAILABLE, RENTED, MAINTENANCE, OUT_OF_SERVICE]
+
+    CreateVehicleRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+        - plate
+        - brand
+        - model
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+          description: Sede del contexto de trabajo del usuario
+        assignedBranchId:
+          type: string
+          format: uuid
+          nullable: true
+          description: >
+            Sede asignada al vehículo. Si se omite, se usa el branchId del contexto.
+            Solo roles cross-branch pueden asignar una sede diferente al branchId.
+        plate:
+          type: string
+          description: Placa del vehículo. Se normaliza a mayúsculas en el backend. Única por empresa.
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+          minimum: 1950
+          maximum: 2100
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+          description: Categoría del vehículo (ej. SEDAN, SUV, PICKUP). Por defecto "SEDAN" si se omite.
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+          description: Estado inicial del vehículo. Por defecto AVAILABLE si se omite.
+        dailyRate:
+          type: number
+          minimum: 0
+          nullable: true
+          description: Tarifa diaria de alquiler en moneda local.
+        photoUrl:
+          type: string
+          nullable: true
+          description: URL de la foto del vehículo.
+
+    UpdateVehicleRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+        - brand
+        - model
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        assignedBranchId:
+          type: string
+          format: uuid
+          nullable: true
+          description: >
+            Nueva sede asignada al vehículo. Solo roles cross-branch pueden
+            asignar una sede diferente al branchId del contexto.
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+          minimum: 1950
+          maximum: 2100
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        dailyRate:
+          type: number
+          minimum: 0
+          nullable: true
+        photoUrl:
+          type: string
+          nullable: true
+
+    UpdateVehicleStatusRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+        - status
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+
+    VehicleResponse:
+      type: object
+      required:
+        - id
+        - organizationId
+        - operatingCompanyId
+        - plate
+        - brand
+        - model
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+          description: ID del grupo KAIROS al que pertenece la empresa
+        operatingCompanyId:
+          type: string
+          format: uuid
+          description: ID de la empresa operativa
+        branchId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Sede asignada al vehículo (puede diferir del branchId del contexto)
+        plate:
+          type: string
+          description: Placa normalizada a mayúsculas
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+        dailyRate:
+          type: number
+          nullable: true
+        photoUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp ISO 8601 UTC de creación
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp ISO 8601 UTC de última modificación
+
+    ListVehiclesResponse:
+      type: object
+      required:
+        - items
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleResponse'
+        total:
+          type: integer
+          minimum: 0
+          description: Total de vehículos que coinciden con el filtro (sin paginar).
+
+    NestErrorResponse:
+      description: >
+        Formato de error estándar de NestJS para errores de validación de campo
+        (class-validator). message puede ser string o array de strings.
+      type: object
+      required: [statusCode, message, error]
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string
+
+    KairosErrorResponse:
+      description: >
+        Formato de error de negocio del ERP KAIROS. Usado por los handlers
+        para errores de dominio con código identificable.
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: >
+            Código de error de negocio. Valores posibles en este módulo:
+            VEHICLE_NOT_FOUND, VEHICLE_PLATE_ALREADY_EXISTS,
+            FLEET_WRITE_NOT_ALLOWED, FLEET_READ_NOT_ALLOWED,
+            CROSS_BRANCH_NOT_ALLOWED.
+          example: VEHICLE_NOT_FOUND
+        detail:
+          type: string
+          description: Descripción legible del error para el usuario o el log.
