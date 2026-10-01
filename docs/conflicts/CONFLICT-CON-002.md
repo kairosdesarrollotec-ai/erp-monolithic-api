@@ -7,5 +7,5 @@
 - Alternativas y consecuencias:
   1. (Aplicada en PR#7, siguiendo la jerarquia de CLAUDE.md: el BDD gobierna los datos obligatorios y UX/UI los campos) Snapshot como columnas de `inquiries`, obligatorio para consultas nuevas via CHECK `inquiries_con02_snapshot_check`; el tercer requisito documental (BR-CON-004) se deriva de la nacionalidad, no se guarda. Consecuencia: TDD-CON-001 debe actualizarse para reflejarlo.
   2. Snapshot en una entidad de prospecto del futuro modulo Customers. Consecuencia: depende de un modulo no construido; la migracion de datos seria posterior.
-- Estado: OPEN (implementacion interina aplicada, falta la actualizacion formal del TDD)
-- Resolucion (si aplica): pendiente de aprobacion de Eder Ramos (Tech Lead) - registrar en docs/decision-log.md.
+- Estado: RESUELTO
+- Resolucion: DEC-CON-002-FINAL (2026-10-01). Alternativa 1 confirmada por el usuario (Russbel). El snapshot de CON-02 vive en `inquiries` como columnas del viaje (destination, estimated_days, travel_start_date, party_size, data_origin); la identidad del prospecto (nationality, country_entry_date) vive en `customers`. Implementacion de PR#7 / migracion 20260923000000 pasa a ser permanente. TDD-CON-001 §9.2/11.1 actualizado para reflejar el schema real. Registrado en docs/decision-log.md.
