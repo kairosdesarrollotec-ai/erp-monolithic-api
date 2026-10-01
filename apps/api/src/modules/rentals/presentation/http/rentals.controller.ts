@@ -41,6 +41,8 @@ import { AuthorizeExtensionHandler } from '../../application/commands/authorize-
 import { AuthorizeExtensionCommand } from '../../application/commands/authorize-extension.command';
 import { RejectExtensionHandler } from '../../application/commands/reject-extension.handler';
 import { RejectExtensionCommand } from '../../application/commands/reject-extension.command';
+import { ReportExtensionBreachHandler } from '../../application/commands/report-extension-breach.handler';
+import { ReportExtensionBreachCommand } from '../../application/commands/report-extension-breach.command';
 import { GetRentalHandler } from '../../application/queries/get-rental.handler';
 import { GetRentalQuery } from '../../application/queries/get-rental.query';
 import { ListRentalsHandler } from '../../application/queries/list-rentals.handler';
@@ -56,6 +58,7 @@ import { CompleteDeliveryDto } from './dto/complete-delivery.dto';
 import { RequestExtensionDto } from './dto/request-extension.dto';
 import { AuthorizeExtensionDto } from './dto/authorize-extension.dto';
 import { RejectExtensionDto } from './dto/reject-extension.dto';
+import { ReportExtensionBreachDto } from './dto/report-extension-breach.dto';
 import { ListRentalsQueryDto } from './dto/list-rentals-query.dto';
 import { GetRentalQueryDto } from './dto/get-rental-query.dto';
 import { RentalResponse } from './dto/rental.response';
@@ -77,6 +80,7 @@ export class RentalsController {
     private readonly requestExtension: RequestExtensionHandler,
     private readonly authorizeExtension: AuthorizeExtensionHandler,
     private readonly rejectExtension: RejectExtensionHandler,
+    private readonly reportExtensionBreach: ReportExtensionBreachHandler,
     private readonly getRental: GetRentalHandler,
     private readonly listRentals: ListRentalsHandler,
   ) {}
@@ -377,6 +381,28 @@ export class RentalsController {
         dto.companyId,
         dto.branchId,
         parseVersionIfMatch(ifMatch),
+      ),
+    );
+    return toRentalResponse(updated);
+  }
+
+  @Post(':id/commands/report-extension-breach')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async reportExtensionBreachCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReportExtensionBreachDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<RentalResponse> {
+    const updated = await this.reportExtensionBreach.execute(
+      new ReportExtensionBreachCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.notes,
       ),
     );
     return toRentalResponse(updated);

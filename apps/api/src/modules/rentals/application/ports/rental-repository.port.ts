@@ -187,6 +187,16 @@ export interface RejectExtensionInput {
   updatedBy: string;
 }
 
+export interface ReportExtensionBreachInput {
+  rentalId: string;
+  scope: RentalScope;
+  expectedVersion: number;
+  extensionId: string;
+  customerId: string;
+  legalEvaluationNote: string;
+  updatedBy: string;
+}
+
 export abstract class RentalRepositoryPort {
   abstract create(input: CreateRentalInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract findById(id: string, scope: RentalScope, tx?: Prisma.TransactionClient): Promise<RentalRecord | null>;
@@ -250,4 +260,8 @@ export abstract class RentalRepositoryPort {
   abstract requestExtension(input: RequestExtensionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract authorizeExtension(input: AuthorizeExtensionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract rejectExtension(input: RejectExtensionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
+  abstract reportExtensionBreach(
+    input: ReportExtensionBreachInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord>;
 }
