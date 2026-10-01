@@ -230,6 +230,27 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     expect(formalized.status).toBe('PENDING_DELIVERY');
 
     // 6. Completar entrega (PENDING_DELIVERY → ACTIVE)
+    const evidenceScope = { organizationId: org, operatingCompanyId: company, branchId: branch };
+    for (let i = 0; i < 35; i++) {
+      await evidenceRepository.record({
+        rentalId,
+        scope: evidenceScope,
+        type: 'PHOTO',
+        zone: 'FRONTAL',
+        objectUrl: `https://storage.test/evidence-photo-${i}.jpg`,
+        uploadedBy: UID,
+      });
+    }
+    for (let i = 0; i < 3; i++) {
+      await evidenceRepository.record({
+        rentalId,
+        scope: evidenceScope,
+        type: 'VIDEO',
+        zone: 'FRONTAL',
+        objectUrl: `https://storage.test/evidence-video-${i}.mp4`,
+        uploadedBy: UID,
+      });
+    }
     const completeHandler = new CompleteDeliveryHandler(
       rentalRepo,
       fleetVehicles,
