@@ -5,6 +5,7 @@ import { PrismaTransactionManager } from '../../src/common/persistence/prisma-tr
 import { PrismaRentalRepository } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental.repository';
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
 import { PrismaFleetVehicleRepository } from '../../src/modules/fleet/infrastructure/persistence/prisma-fleet-vehicle.repository';
+import { PrismaRentalEvidenceRepository } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-evidence.repository';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../src/modules/authorization/matrix-authorization.service';
 import { PrismaRolePermissionMatrixRepository } from '../../src/modules/admin/infrastructure/persistence/prisma-role-permission-matrix.repository';
@@ -120,6 +121,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     const matrixAuth = buildMatrixAuth();
     const audit = buildAudit();
     const fleetVehicles = new PrismaFleetVehicleRepository(ps);
+    const evidenceRepository = new PrismaRentalEvidenceRepository(ps);
 
     // 1. Crear alquiler
     const createHandler = new CreateRentalHandler(rentalRepo, workContext, matrixAuth, txManager, audit, outbox);
@@ -236,6 +238,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       txManager,
       audit,
       outbox,
+      evidenceRepository,
     );
     const delivered = await completeHandler.execute(
       new CompleteDeliveryCommand(rentalId, UID, company, branch, formalized.version, 35, 3),
