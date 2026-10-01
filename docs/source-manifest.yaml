@@ -377,6 +377,50 @@ sources:
   sha256: e0add45e4601a3181d54c64811acdfd107e4c9e29f047015e20c3876e4243b2c
   authority: technical
   supersedes: null
+- id: BDD-KAIROS-MVP-002-CLI
+  path: docs/sources/bdd/bdd-clients.md
+  type: BDD
+  module: Clientes
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
+  sha256: unknown
+  authority: business
+  supersedes: null
+  notes: >
+    BDD específico del módulo customers. Documenta reglas BR-CLI-001..005 y escenarios
+    SC-CLI-001..005. Fuente primaria: customers.yaml v0.1.0 y customer-role.policy.ts.
+- id: SDD-KAIROS-MVP-002-CLI
+  path: docs/sources/sdd/sdd-clients.md
+  type: SDD
+  module: Clientes
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
+  sha256: unknown
+  authority: functional
+  supersedes: null
+  notes: >
+    SDD específico del módulo customers. CustomersController, CreateCustomerHandler,
+    ListCustomersHandler, GetCustomerHandler, UpdateCustomerHandler, CustomerRolePolicy,
+    PrismaCustomerRepository. Flujo de coincidencia DNI (SC-CLI-002).
+- id: TDD-KAIROS-MVP-002-CLI
+  path: docs/sources/tdd/tdd-clients.md
+  type: TDD
+  module: Clientes
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
+  sha256: unknown
+  authority: technical
+  supersedes: null
+  notes: >
+    TDD específico del módulo customers. Modelo Prisma, contrato customers.yaml v0.1.0,
+    aislamiento multiempresa (doble capa: aplicación + repositorio), unique constraint
+    (operatingCompanyId, documentType, documentNumber). ADR TDD-CLI-ADR-001..003.
 - id: OPENAPI-CUSTOMERS-V0.1.0
   path: packages/contracts/openapi/customers.yaml
   type: OpenAPI

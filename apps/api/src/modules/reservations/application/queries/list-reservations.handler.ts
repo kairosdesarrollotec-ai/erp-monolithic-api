@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { ListReservationsQuery } from './list-reservations.query';
 
 /**
@@ -16,6 +17,7 @@ export class ListReservationsHandler {
   constructor(
     private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(query: ListReservationsQuery): Promise<ReservationRecord[]> {
@@ -24,6 +26,7 @@ export class ListReservationsHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'READ_LIST');
 
     return this.reservations.list({
       organizationId: context.organizationId,

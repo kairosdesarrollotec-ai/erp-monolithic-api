@@ -943,3 +943,22 @@ model RentalExtension {
   @@index([rentalId])
   @@map("rental_extensions")
 }
+
+/// Tarifario versionado por empresa operadora (operatingCompanyId).
+/// currentFor: fila más reciente donde effectiveFrom <= at.
+/// Reemplaza ProvisionalRateCardAdapter (PROP-007).
+/// No eliminar ni editar versiones existentes: insertar la siguiente.
+model RateCardEntry {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  amountPerDay       Decimal  @map("amount_per_day") @db.Decimal(10, 2)
+  currency           String   @db.Char(3)
+  validityHours      Int      @map("validity_hours")
+  effectiveFrom      DateTime @default(now()) @map("effective_from")
+  createdAt          DateTime @default(now()) @map("created_at")
+  createdBy          String   @map("created_by")
+
+  @@index([operatingCompanyId, effectiveFrom])
+  @@map("rate_card_versions")
+}

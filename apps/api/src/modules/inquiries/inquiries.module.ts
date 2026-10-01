@@ -15,8 +15,8 @@ import {
   provisionalQuotingPolicyFromEnv,
 } from './application/services/provisional-quoting.guard';
 import { PrismaInquiryRepository } from './infrastructure/persistence/prisma-inquiry.repository';
-import { ProvisionalFleetAvailabilityAdapter } from './infrastructure/fleet/provisional-fleet-availability.adapter';
-import { ProvisionalRateCardAdapter } from './infrastructure/pricing/provisional-rate-card.adapter';
+import { PrismaFleetAvailabilityAdapter } from './infrastructure/fleet/prisma-fleet-availability.adapter';
+import { PrismaRateCardAdapter } from './infrastructure/pricing/prisma-rate-card.adapter';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { ReservationsModule } from '../reservations/reservations.module';
@@ -32,9 +32,11 @@ import { AuthorizationModule } from '../authorization/authorization.module';
  *   dentro de la misma transaccion de la conversion (caso de uso unico).
  * - PrismaModule/IdempotencyModule (@Global): TransactionManagerPort,
  *   ClockPort, IdempotencyInterceptor.
- * - FleetAvailabilityPort/RateCardPort: adaptadores PROVISIONALES
- *   (revalidacion PR#7), bloqueados en produccion por
- *   ProvisionalQuotingGuard salvo KAIROS_ALLOW_PROVISIONAL_QUOTING=true.
+ * - FleetAvailabilityPort: PrismaFleetAvailabilityAdapter (productionReady=true).
+ * - FleetAvailabilityPort: PrismaFleetAvailabilityAdapter (productionReady=true).
+ * - RateCardPort: PrismaRateCardAdapter (productionReady=true).
+ * - ProvisionalQuotingGuard queda como salvaguarda: si ambos adaptan productionReady
+ *   pasan el assert y cotizar funciona en produccion sin variable de entorno.
  */
 @Module({
   imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule, AuthorizationModule],
@@ -48,8 +50,8 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     ListInquiriesHandler,
     ProvisionalQuotingGuard,
     { provide: InquiryRepositoryPort, useClass: PrismaInquiryRepository },
-    { provide: FleetAvailabilityPort, useClass: ProvisionalFleetAvailabilityAdapter },
-    { provide: RateCardPort, useClass: ProvisionalRateCardAdapter },
+    { provide: FleetAvailabilityPort, useClass: PrismaFleetAvailabilityAdapter },
+    { provide: RateCardPort, useClass: PrismaRateCardAdapter },
     { provide: PROVISIONAL_QUOTING_POLICY, useFactory: () => provisionalQuotingPolicyFromEnv(process.env) },
   ],
 })
