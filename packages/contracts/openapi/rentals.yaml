@@ -513,11 +513,14 @@ components:
 
     FormalizeContractRequest:
       type: object
-      required: [companyId, branchId, templateVersionId, documentRef, depositAmount, depositCurrency]
+      required: [companyId, branchId, documentRef, depositAmount, depositCurrency]
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
-        templateVersionId: { type: string, format: uuid }
+        templateVersionId:
+          type: string
+          format: uuid
+          description: Opcional - si se omite, el backend resuelve la plantilla ACTIVE vigente de la empresa.
         documentRef: { type: string }
         depositAmount: { type: string }
         depositCurrency: { type: string, enum: [PEN, USD] }

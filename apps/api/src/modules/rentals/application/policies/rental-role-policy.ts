@@ -10,9 +10,12 @@ export type RentalAction =
   | 'APPROVE_NOTARY_EXCEPTION'
   | 'FORMALIZE_CONTRACT'
   | 'COMPLETE_DELIVERY'
+  | 'UPLOAD_EVIDENCE'
   | 'REQUEST_EXTENSION'
   | 'AUTHORIZE_EXTENSION'
-  | 'REJECT_EXTENSION';
+  | 'REJECT_EXTENSION'
+  | 'REPORT_EXTENSION_BREACH'
+  | 'MANAGE_CONTRACT_TEMPLATES';
 
 const OPERATIONAL_ROLES: ReadonlySet<WorkerRole> = new Set([
   'FRONT_OFFICE',
@@ -30,10 +33,17 @@ const RENTAL_ROLE_POLICY: Readonly<Record<RentalAction, ReadonlySet<WorkerRole>>
   APPROVE_NOTARY_EXCEPTION: new Set(['GERENCIA']),
   FORMALIZE_CONTRACT: OPERATIONAL_ROLES,
   COMPLETE_DELIVERY: OPERATIONAL_ROLES,
+  // Mismo rol que completar entrega: quien hace el checklist sube su evidencia.
+  UPLOAD_EVIDENCE: OPERATIONAL_ROLES,
   REQUEST_EXTENSION: OPERATIONAL_ROLES,
   // BR-ALQ-012/013: autorizar/rechazar una ampliacion compromete disponibilidad de flota y garantia -> Gerencia.
   AUTHORIZE_EXTENSION: new Set(['GERENCIA']),
   REJECT_EXTENSION: new Set(['GERENCIA']),
+  // BR-ALQ-013: falta grave compromete el 100% de la garantia del cliente y su estado "rojo" -> Gerencia.
+  REPORT_EXTENSION_BREACH: new Set(['GERENCIA']),
+  // BR-DOC-002: cambiar la plantilla de contrato vigente de una empresa afecta
+  // todos los alquileres nuevos que se formalicen - restringido a Admin/Gerencia.
+  MANAGE_CONTRACT_TEMPLATES: new Set(['GERENCIA', 'ADMINISTRACION']),
 };
 
 export function assertRentalRoleAllowed(role: WorkerRole, action: RentalAction): void {
