@@ -959,6 +959,6 @@ model RateCardEntry {
   createdAt          DateTime @default(now()) @map("created_at")
   createdBy          String   @map("created_by")
 
-  @@index([operatingCompanyId, effectiveFrom])
+  @@index([operatingCompanyId, effectiveFrom], map: "rate_card_versions_company_effective_idx")
   @@map("rate_card_versions")
 }
