@@ -32,8 +32,15 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
  *
  * Cuando ADM-02 exista, este archivo se reemplaza por una consulta a esa
  * matriz real - no se extiende a mano con mas casos particulares.
+ *
+ * READ_LIST / READ_DETAIL siguen el mismo criterio documentado que Consulta
+ * (PANTALLAS-V3-B-CONSULTA.md punto 3): lectura para FRONT_OFFICE, GERENCIA,
+ * AUDITORIA y ADMINISTRACION. Sin fuente que restrinja la lectura a menos
+ * roles que la escritura, y sin inventar reglas nuevas.
  */
 export type ReservationAction =
+  | 'READ_LIST'
+  | 'READ_DETAIL'
   | 'CREATE'
   | 'REGISTER_PAYMENT'
   | 'REGISTER_DOCUMENTS'
@@ -41,9 +48,12 @@ export type ReservationAction =
   | 'CANCEL_CUSTOMER_REQUESTED_CHANGE'
   | 'CANCEL_NO_SHOW';
 
+const READ_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'AUDITORIA', 'ADMINISTRACION']);
 const OPERATIONAL_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'ADMINISTRACION']);
 
 const RESERVATION_ROLE_POLICY: Readonly<Record<ReservationAction, ReadonlySet<WorkerRole>>> = {
+  READ_LIST: READ_ROLES,
+  READ_DETAIL: READ_ROLES,
   CREATE: OPERATIONAL_ROLES,
   REGISTER_PAYMENT: OPERATIONAL_ROLES,
   REGISTER_DOCUMENTS: OPERATIONAL_ROLES,

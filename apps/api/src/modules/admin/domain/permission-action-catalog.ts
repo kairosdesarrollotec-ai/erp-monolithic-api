@@ -12,6 +12,8 @@ export interface PermissionActionDescriptor {
 }
 
 export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = [
+  { module: 'RESERVATION', action: 'READ_LIST', label: 'Reserva: listar bandeja' },
+  { module: 'RESERVATION', action: 'READ_DETAIL', label: 'Reserva: ver detalle' },
   { module: 'RESERVATION', action: 'CREATE', label: 'Reserva: crear' },
   { module: 'RESERVATION', action: 'REGISTER_PAYMENT', label: 'Reserva: registrar pago' },
   { module: 'RESERVATION', action: 'REGISTER_DOCUMENTS', label: 'Reserva: registrar documentos' },

@@ -71,6 +71,20 @@ export class QuotingNotProductionReadyError extends ServiceUnavailableException 
   }
 }
 
+/**
+ * No existe ninguna versión de tarifa para la empresa a la fecha dada.
+ * Ocurre cuando la tabla rate_card_versions está vacía para esa empresa
+ * o cuando ninguna entrada tiene effectiveFrom <= at.
+ */
+export class RateCardNotConfiguredError extends ServiceUnavailableException {
+  constructor(operatingCompanyId: string) {
+    super({
+      code: 'RATE_CARD_NOT_CONFIGURED',
+      detail: `No hay tarifa configurada para la empresa ${operatingCompanyId} a esta fecha. Configure una tarifa antes de cotizar.`,
+    });
+  }
+}
+
 /** Una consulta se convierte a lo sumo en UNA reserva (UNIQUE reservations.inquiry_id). */
 export class InquiryAlreadyConvertedError extends ConflictException {
   constructor() {

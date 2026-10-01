@@ -14,5 +14,5 @@ export interface RateCardVersion {
 export abstract class RateCardPort {
   /** false mientras el tarifario sea provisional (no apto para produccion). */
   abstract readonly productionReady: boolean;
-  abstract currentFor(operatingCompanyId: string, at: Date): Promise<RateCardVersion>;
+  abstract currentFor(organizationId: string, operatingCompanyId: string, at: Date): Promise<RateCardVersion>;
 }
