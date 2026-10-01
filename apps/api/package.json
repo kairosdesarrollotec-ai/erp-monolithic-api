@@ -71,7 +71,10 @@
       ]
     },
     "moduleNameMapper": {
-      "^jose$": "<rootDir>/__stubs__/jose.cjs"
+      "^jose$": "<rootDir>/__stubs__/jose.cjs",
+      "config/firebase-admin\\.config$": "<rootDir>/__stubs__/firebase-admin.config.cjs",
+      "^firebase-admin/messaging$": "<rootDir>/__stubs__/firebase-admin-messaging.ts",
+      "^firebase-admin/auth$": "<rootDir>/__stubs__/firebase-admin-auth.ts"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",

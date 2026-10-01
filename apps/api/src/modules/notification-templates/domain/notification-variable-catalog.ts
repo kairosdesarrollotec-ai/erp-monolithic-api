@@ -7,8 +7,7 @@
  */
 export const ALLOWED_NOTIFICATION_VARIABLES: readonly string[] = ['nombre', 'fecha', 'vehiculo', 'sede', 'monto'];
 
-export const NOTIFICATION_CHANNELS = ['EMAIL', 'PUSH', 'SMS'] as const;
-export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
+export { NOTIFICATION_CHANNELS, NotificationChannel } from '../../../common/domain/notification-channel';
 
 const VARIABLE_PATTERN = /\{([a-zA-Z_]+)\}/g;
 

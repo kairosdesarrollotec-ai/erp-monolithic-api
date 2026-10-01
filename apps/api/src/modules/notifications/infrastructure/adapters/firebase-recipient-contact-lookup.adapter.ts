@@ -12,8 +12,11 @@ export class FirebaseRecipientContactLookupAdapter
     FirebaseRecipientContactLookupAdapter.name,
   );
 
+  // organizationId is received for future per-org contact resolution;
+  // Firebase UID lookup is currently org-agnostic.
   async lookupContact(
     recipientFirebaseUid: string,
+    _organizationId: string,
   ): Promise<RecipientContact | null> {
     try {
       initFirebaseAdmin();

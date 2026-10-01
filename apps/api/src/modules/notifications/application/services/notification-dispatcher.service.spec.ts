@@ -88,7 +88,7 @@ describe('NotificationDispatcherService', () => {
   it('despacha a todos los canales configurados en paralelo cuando los contactos existen', async () => {
     const result = await service.dispatch(baseInput);
 
-    expect(contactLookup.lookupContact).toHaveBeenCalledWith('uid-12345');
+    expect(contactLookup.lookupContact).toHaveBeenCalledWith('uid-12345', 'org-1');
     expect(emailSender.send).toHaveBeenCalledTimes(1);
     expect(pushSender.send).toHaveBeenCalledTimes(1);
     expect(smsSender.send).toHaveBeenCalledTimes(1);
@@ -181,5 +181,23 @@ describe('NotificationDispatcherService', () => {
     expect(emailSender.send).not.toHaveBeenCalled();
     expect(pushSender.send).not.toHaveBeenCalled();
     expect(smsSender.send).not.toHaveBeenCalled();
+  });
+
+  it('marca canal desconocido como SKIPPED con razón UNKNOWN_CHANNEL_*', async () => {
+    const result = await service.dispatch({
+      ...baseInput,
+      channels: ['UNKNOWN_FUTURE_CHANNEL' as never],
+    });
+
+    expect(emailSender.send).not.toHaveBeenCalled();
+    expect(pushSender.send).not.toHaveBeenCalled();
+    expect(smsSender.send).not.toHaveBeenCalled();
+
+    expect(result.deliveries).toHaveLength(1);
+    expect(result.deliveries[0].status).toBe('SKIPPED');
+    expect(result.deliveries[0].reason).toBe(
+      'UNKNOWN_CHANNEL_UNKNOWN_FUTURE_CHANNEL',
+    );
+    expect(result.overallStatus).toBe('ALL_SKIPPED');
   });
 });

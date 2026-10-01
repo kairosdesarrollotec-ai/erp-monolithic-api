@@ -4,6 +4,7 @@
   "testEnvironment": "node",
   "testRegex": "test/integration/.*\\.integration\\.spec\\.ts$",
   "extensionsToTreatAsEsm": [".ts"],
+  "setupFilesAfterEnv": ["<rootDir>/src/jest-esm-globals.ts"],
   "transform": {
     "^.+\\.(t|j)s$": ["ts-jest", {
       "useESM": true,
@@ -12,5 +13,8 @@
         "moduleResolution": "bundler"
       }
     }]
+  },
+  "moduleNameMapper": {
+    "^jose$": "<rootDir>/src/__stubs__/jose.cjs"
   }
 }

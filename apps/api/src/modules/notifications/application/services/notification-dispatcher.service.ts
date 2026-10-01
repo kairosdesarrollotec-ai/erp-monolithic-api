@@ -48,7 +48,7 @@ export class NotificationDispatcherService
 
     let contact = null;
     try {
-      contact = await this.contactLookup.lookupContact(recipientFirebaseUid);
+      contact = await this.contactLookup.lookupContact(recipientFirebaseUid, input.organizationId);
     } catch (err) {
       this.logger.warn(
         `Failed to resolve contact info for uid=${recipientFirebaseUid.slice(0, 6)}...: ${(err as Error).message}`,

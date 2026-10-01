@@ -1,10 +1,9 @@
 import { FirebasePushNotificationAdapter } from './firebase-push-notification.adapter';
 import { getMessaging } from 'firebase-admin/messaging';
-import { initFirebaseAdmin } from '../../../../config/firebase-admin.config';
 import { ChannelNotificationPayload } from '../../domain/external-notification';
 
-jest.mock('firebase-admin/messaging');
-jest.mock('../../../../config/firebase-admin.config');
+// moduleNameMapper redirects firebase-admin/messaging and config/firebase-admin.config
+// to jest.fn() stubs — no jest.mock() calls needed.
 
 describe('FirebasePushNotificationAdapter', () => {
   let adapter: FirebasePushNotificationAdapter;
@@ -30,7 +29,6 @@ describe('FirebasePushNotificationAdapter', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (initFirebaseAdmin as jest.Mock).mockReturnValue({});
     (getMessaging as jest.Mock).mockReturnValue({
       sendEachForMulticast: mockSendEachForMulticast,
     });
