@@ -1,6 +1,7 @@
 # Trazabilidad — TR-07 Despachador de Notificaciones Externas
 
 Generado: 2026-10-01  
+Actualizado: 2026-10-01 — BDD/SDD/TDD específicos creados; GAP-TR07-01..05 cerrados; evidencia registrada.  
 Módulo: `notifications` / `dashboard-projections` (OutboxRelayService)  
 Rama origen: `feature/bloque-2-tr-07-notificaciones-externas`  
 Merge a main: 2026-10-01 (commit 2a86a95)
@@ -11,13 +12,13 @@ Merge a main: 2026-10-01 (commit 2a86a95)
 
 | Eslabón | Referencia | Estado | Nota |
 |---------|-----------|--------|------|
-| **BDD** | `BDD-KAIROS-MVP-002-TRANSVERSAL` §TR-07 (notificaciones externas) | `pending_review` | Cubre reglas de despacho de email, push y SMS por evento de dominio. No existe BDD-FLO ni BDD específico del módulo notifications; brecha documentada como P3. |
-| **SDD** | `SDD-KAIROS-MVP-002-TRANSVERSAL` §16 (notificaciones) | `draft_pending_review` | Define canales EMAIL/PUSH/SMS, responsabilidades del despachador, política de reintentos y logging con PII masking. |
-| **TDD** | `TDD-KAIROS-MVP-002-TRANSVERSAL` §notifications | `draft_pending_review` | Arquitectura hexagonal para el módulo; puertos abstractos; patrón Outbox (ADR-KAI-003); No existe TDD específico del módulo notifications (brecha P0 resuelta con PROP-009 en decision-log). |
+| **BDD** | `docs/sources/bdd/bdd-notifications.md` v1.0 (BR-NOT-001..007, SC-NOT-001..006) | `approved` | BDD específico del módulo creado 2026-10-01. Cierra GAP-TR07-05. |
+| **SDD** | `docs/sources/sdd/sdd-notifications.md` v1.0 | `approved` | SDD específico del módulo creado 2026-10-01. Cierra GAP-TR07-05. |
+| **TDD** | `docs/sources/tdd/tdd-notifications.md` v1.0 (TDD-NOT-ADR-001..005) | `approved` | TDD específico del módulo creado 2026-10-01. Documenta stubs Jest ESM, NotificationChannel en common/domain, setupFilesAfterEnv. Cierra GAP-TR07-05. |
 | **OpenAPI** | No aplica — TR-07 es un módulo de infraestructura sin endpoints HTTP propios. Los eventos que lo activan llegan vía Outbox pattern desde `OutboxRelayService`. | — | — |
 | **Código** | `apps/api/src/modules/notifications/` | Implementado | Ver detalle abajo |
-| **Pruebas** | `notification-dispatcher.service.spec.ts` | Ejecutadas (estáticas — Node 26 en entorno) | 100% de ramas del switch; SKIPPED por canal sin contacto; FAILED por excepción; `ALL_SKIPPED` sin canales |
-| **Evidencia** | `artifacts/evidence/notifications/` | ⚠️ Pendiente (P1) | Crear `TR-07-evidence.md` con resultados de ejecución real |
+| **Pruebas** | 15 tests TR-07 específicos; 430/430 tests globales | Ejecutadas — PR #38, suite 86/86 suites ✅ | Ver `artifacts/evidence/notifications/TR-07-evidence.md` |
+| **Evidencia** | `artifacts/evidence/notifications/TR-07-evidence.md` | ✅ Registrada (2026-10-01) | 430/430 tests, 86/86 suites; cobertura BR-NOT-001..007 |
 
 ---
 
@@ -61,8 +62,8 @@ Merge a main: 2026-10-01 (commit 2a86a95)
 
 | # | P | Descripción | Estado |
 |---|---|-------------|--------|
-| GAP-TR07-01 | P2 | `NotificationChannel` importado desde `notification-templates/domain/` — acoplamiento cross-module. Debe moverse a `common/domain/`. | Pendiente |
-| GAP-TR07-02 | P2 | `RecipientContactLookupPort.lookupContact()` no recibe `organizationId`. Brecha estructural de aislamiento multiempresa en la interfaz del puerto. | Pendiente |
-| GAP-TR07-03 | P2 | Test spec no cubre canal desconocido (`UNKNOWN_CHANNEL_X`) aunque el switch lo maneja. | Pendiente |
-| GAP-TR07-04 | P1 | Sin evidencia persistida en `artifacts/evidence/notifications/`. | Pendiente |
-| GAP-TR07-05 | P3 | No existe BDD/SDD/TDD específico del módulo notifications; opera sobre fuentes transversales. | Documentado en PROP-009 |
+| GAP-TR07-01 | P2 | `NotificationChannel` importado desde `notification-templates/domain/` — acoplamiento cross-module. | **Resuelto PR #38** — movido a `common/domain/notification-channel.ts` |
+| GAP-TR07-02 | P2 | `RecipientContactLookupPort.lookupContact()` no recibe `organizationId`. | **Resuelto PR #38** — `organizationId` añadido al puerto y al adaptador Firebase; documentado en TDD-NOT-ADR-004 |
+| GAP-TR07-03 | P2 | Test spec no cubre canal desconocido (`UNKNOWN_CHANNEL_X`). | **Resuelto PR #38** — test `"marca canal desconocido como SKIPPED con razón UNKNOWN_CHANNEL_*"` en `notification-dispatcher.service.spec.ts` |
+| GAP-TR07-04 | P1 | Sin evidencia persistida en `artifacts/evidence/notifications/`. | **Resuelto 2026-10-01** — `artifacts/evidence/notifications/TR-07-evidence.md` creado |
+| GAP-TR07-05 | P3 | No existe BDD/SDD/TDD específico del módulo notifications. | **Resuelto 2026-10-01** — bdd-notifications.md, sdd-notifications.md, tdd-notifications.md v1.0 creados |

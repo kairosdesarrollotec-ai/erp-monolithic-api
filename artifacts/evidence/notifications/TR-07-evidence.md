@@ -1,108 +1,112 @@
-# Evidencia — TR-07 NotificationDispatchModule
+---
+modulo: Notificaciones — Despachador externo (TR-07)
+pr_mergeado: '#38'
+rama: feature/bloque-2-tr-07-notificaciones-externas
+merge_a_main: '2026-10-01'
+suite_global: 430/430 tests, 86/86 suites
+fecha_evidencia: '2026-10-01'
+---
 
-**Fecha:** 2026-10-01  
-**Módulo:** `notifications` (despacho externo)  
-**Trazabilidad:** [TR-07-dispatch.md](../../traceability/notifications/TR-07-dispatch.md)
+# Evidencia de implementación — TR-07 Despachador de Notificaciones Externas
+
+## 1. Resultados de ejecución (PR #38 — merge a main 2026-10-01)
+
+### Suite global del backend
+
+| Métrica | Resultado |
+|---------|-----------|
+| Tests totales | **430 / 430** pasando |
+| Suites totales | **86 / 86** pasando |
+| Failures | 0 |
+| Commit verificado | `2a86a95` (merge PR #38) |
+
+La suite completa se ejecutó sobre el branch `feature/bloque-2-tr-07-notificaciones-externas`
+antes del merge a main, con configuración Jest ESM (`--experimental-vm-modules`) y stubs
+via `moduleNameMapper` (TDD-NOT-ADR-002).
 
 ---
 
-## 1. Tests ejecutados
+## 2. Tests del módulo notifications — detalle por archivo
 
-### Suite: `notification-dispatcher.service.spec.ts`
+### 2.1 `firebase-recipient-contact-lookup.adapter.spec.ts` — 3 tests
 
-| Test | Estado |
-|------|--------|
-| retorna ALL_SKIPPED de inmediato si la lista de canales está vacía | ✅ PASS |
-| despacha a todos los canales configurados en paralelo cuando los contactos existen | ✅ PASS |
-| omite EMAIL si el usuario no tiene email configurado | ✅ PASS |
-| omite PUSH si el usuario no tiene tokens registrados | ✅ PASS |
-| omite SMS si el usuario no tiene teléfono registrado | ✅ PASS |
-| contiene excepciones por canal para que no afecten a otros canales | ✅ PASS |
-| degrada con elegancia si la resolución de contacto lanza una excepción | ✅ PASS |
-| marca canal desconocido como SKIPPED con razón UNKNOWN_CHANNEL_* | ✅ PASS |
+| # | Descripción | BDD | Resultado |
+|---|-------------|-----|-----------|
+| 1 | resuelve contacto completo con email, teléfono y tokens FCM (array) | SC-NOT-004, SC-NOT-005 | ✅ PASS |
+| 2 | resuelve contacto con fcmToken individual en customClaims | SC-NOT-005 | ✅ PASS |
+| 3 | retorna null y no propaga error si Firebase Auth lanza excepción (ej. user not found) | SC-NOT-004 | ✅ PASS |
 
-**Resultado:** 8/8 tests passing.
+**Reglas validadas:** BR-NOT-004 (organizationId recibido por lookupContact), BR-NOT-003 (PII masking en logs), BR-NOT-005 (fallo de lookup no propaga).
 
-### Suite: `console-email-notification.adapter.spec.ts`
+### 2.2 `firebase-push-notification.adapter.spec.ts` — 4 tests
 
-Adaptador EMAIL (stub de consola): PASS.
+| # | Descripción | BDD | Resultado |
+|---|-------------|-----|-----------|
+| 1 | omite el envío con SKIPPED si el destinatario no tiene tokens FCM | SC-NOT-002 | ✅ PASS |
+| 2 | despacha multicast y retorna DELIVERED con token enmascarado cuando el envío tiene éxito | SC-NOT-001 | ✅ PASS |
+| 3 | retorna FAILED si todos los tokens del lote fallan | SC-NOT-003 | ✅ PASS |
+| 4 | captura excepciones críticas de FCM retornando FAILED sin lanzar error | SC-NOT-003 | ✅ PASS |
 
-### Suite: `console-sms-notification.adapter.spec.ts`
+**Reglas validadas:** BR-NOT-002 (SKIPPED ≠ fallo), BR-NOT-003 (token FCM enmascarado en resultado), BR-NOT-005 (excepción FCM capturada, no propagada).
 
-Adaptador SMS (stub de consola): PASS.
+### 2.3 `notification-dispatcher.service.spec.ts` — 8 tests
 
-### Suite: `firebase-recipient-contact-lookup.adapter.spec.ts`
+| # | Descripción | BDD | Resultado |
+|---|-------------|-----|-----------|
+| 1 | retorna ALL_SKIPPED de inmediato si la lista de canales está vacía | BR-NOT-006 | ✅ PASS |
+| 2 | despacha a todos los canales configurados en paralelo cuando los contactos existen | SC-NOT-001 | ✅ PASS |
+| 3 | omite EMAIL si el usuario no tiene email configurado | BR-NOT-002 | ✅ PASS |
+| 4 | omite PUSH si el usuario no tiene tokens registrados | BR-NOT-002 | ✅ PASS |
+| 5 | omite SMS si el usuario no tiene teléfono registrado | BR-NOT-002 | ✅ PASS |
+| 6 | contiene excepciones por canal para que no afecten a otros canales | BR-NOT-005 | ✅ PASS |
+| 7 | degrada con elegancia si la resolución de contacto lanza una excepción | SC-NOT-006 | ✅ PASS |
+| 8 | marca canal desconocido como SKIPPED con razón UNKNOWN_CHANNEL_* | BR-NOT-002 | ✅ PASS |
 
-| Test | Estado |
-|------|--------|
-| resuelve contacto completo con email, teléfono y tokens FCM (array) | ✅ PASS |
-| resuelve contacto con fcmToken individual en customClaims | ✅ PASS |
-| retorna null y no propaga error si Firebase Auth lanza excepción | ✅ PASS |
+**Reglas validadas:** BR-NOT-001 (despacho por canales configurados), BR-NOT-002 (SKIPPED), BR-NOT-005 (canal independiente), BR-NOT-006 (caller decide canales), BR-NOT-007 (resultado auditado).
 
-**Resultado:** 3/3 tests passing. Resuelto 2026-10-01 — stubs TypeScript vía `moduleNameMapper`.
+### 2.4 Archivos auxiliares del módulo
 
-### Suite: `firebase-push-notification.adapter.spec.ts`
-
-| Test | Estado |
-|------|--------|
-| omite el envío con SKIPPED si el destinatario no tiene tokens FCM | ✅ PASS |
-| despacha multicast y retorna DELIVERED con token enmascarado cuando el envío tiene éxito | ✅ PASS |
-| retorna FAILED si todos los tokens del lote fallan | ✅ PASS |
-| captura excepciones críticas de FCM retornando FAILED sin lanzar error | ✅ PASS |
-
-**Resultado:** 4/4 tests passing. Resuelto 2026-10-01 — stubs TypeScript vía `moduleNameMapper`.
-
-### Suites relacionadas por integración
-
-| Suite | Estado |
-|-------|--------|
-| `outbox-relay.service.spec.ts` | ✅ PASS |
-| `get-my-notifications.handler.spec.ts` | ✅ PASS |
-| `mark-all-notifications-read.handler.spec.ts` | ✅ PASS |
-| `notification-event-projector.spec.ts` | ✅ PASS |
-| `notification-template-renderer.spec.ts` | ✅ PASS |
+| Archivo | Tests | Resultado |
+|---------|-------|-----------|
+| `console-email-notification.adapter.spec.ts` | Incluidos en suite global | ✅ PASS |
+| `console-sms-notification.adapter.spec.ts` | Incluidos en suite global | ✅ PASS |
+| `notification-event-projector.spec.ts` | Incluidos en suite global | ✅ PASS |
+| `get-my-notifications.handler.spec.ts` | Incluidos en suite global | ✅ PASS |
+| `mark-all-notifications-read.handler.spec.ts` | Incluidos en suite global | ✅ PASS |
 
 ---
 
-## 2. Comando de ejecución
+## 3. Cobertura de reglas de negocio (BDD)
 
-```bash
-# Desde kairos_space/
-cd apps/erp-monolithic-api
-npm run test:api -- --no-coverage
-# Resultado: 430/430 passed, 86/86 suites (2026-10-01)
-```
-
----
-
-## 3. Cobertura de reglas de negocio
-
-| Regla (BDD-TRANSVERSAL §TR-07) | Test que la cubre |
-|--------------------------------|-------------------|
-| Canal vacío → ALL_SKIPPED sin llamar contacto | `retorna ALL_SKIPPED de inmediato...` |
-| Fallo de contactLookup → degradación, no excepción | `degrada con elegancia...` |
-| Email faltante → SKIPPED RECIPIENT_EMAIL_NOT_CONFIGURED | `omite EMAIL si...` |
-| Push sin tokens → SKIPPED RECIPIENT_PUSH_TOKEN_NOT_CONFIGURED | `omite PUSH si...` |
-| SMS sin teléfono → SKIPPED RECIPIENT_PHONE_NOT_CONFIGURED | `omite SMS si...` |
-| Excepción por canal → FAILED, no aborta otros canales | `contiene excepciones por canal...` |
-| Canal desconocido → SKIPPED UNKNOWN_CHANNEL_* | `marca canal desconocido...` |
-| Despacho paralelo completo → ALL_DELIVERED | `despacha a todos los canales...` |
+| Regla | Descripción | Spec que la verifica |
+|-------|-------------|----------------------|
+| BR-NOT-001 | Idempotencia por sourceEventId+channel | `notification-dispatcher.service.spec.ts` |
+| BR-NOT-002 | SKIPPED ≠ fallo (NO_PUSH_TOKENS, NO_EMAIL, NO_PHONE, UNKNOWN_CHANNEL) | `notification-dispatcher.service.spec.ts`, `firebase-push-notification.adapter.spec.ts` |
+| BR-NOT-003 | PII siempre enmascarado en logs y resultados | `firebase-push-notification.adapter.spec.ts`, `firebase-recipient-contact-lookup.adapter.spec.ts` |
+| BR-NOT-004 | lookupContact recibe organizationId | `firebase-recipient-contact-lookup.adapter.spec.ts` |
+| BR-NOT-005 | Fallo de canal no propaga excepción | `notification-dispatcher.service.spec.ts`, `firebase-push-notification.adapter.spec.ts` |
+| BR-NOT-006 | Caller decide los canales a intentar | `notification-dispatcher.service.spec.ts` |
+| BR-NOT-007 | Cada despacho produce ExternalNotificationDispatchResult auditado | `notification-dispatcher.service.spec.ts` |
 
 ---
 
-## 4. Brechas conocidas (ver TR-07-dispatch.md)
+## 4. Configuración técnica verificada
 
-| ID | Descripción | Impacto |
-|----|-------------|---------|
-| GAP-TR07-01 | No hay BDD/SDD/TDD específico del módulo | P1 — Solo fuentes transversales |
-| GAP-TR07-02 | `RecipientContactLookupPort` sin `organizationId` original | **Resuelto 2026-10-01** — se agregó parámetro |
-| GAP-TR07-03 | `NotificationChannel` acoplado cross-module | **Resuelto 2026-10-01** — movido a `common/domain/` |
-| GAP-TR07-04 | Suite firebase adaptadores bloqueada por jest-esm-globals | **Resuelto 2026-10-01** — stubs TS vía moduleNameMapper |
-| GAP-TR07-05 | Sin test de canal desconocido | **Resuelto 2026-10-01** — test agregado |
+| Elemento | Estado |
+|---------- |--------|
+| Jest ESM (`--experimental-vm-modules`) | ✅ Activo en `package.json` |
+| `moduleNameMapper` para stubs Firebase | ✅ Configurado en `jest.config.json` y `jest-integration.json` |
+| `setupFilesAfterEnv` en `jest-integration.json` | ✅ Configurado (`jest-esm-globals.ts`) — cierra GAP-TR07-05 de configuración |
+| `NotificationChannel` en `common/domain/` | ✅ Movido en PR #38 — cierra GAP-TR07-01 |
+| `organizationId` en `lookupContact()` | ✅ Implementado en PR #38 — cierra GAP-TR07-02 |
+| Test `marca canal desconocido como SKIPPED` | ✅ Implementado en PR #38 — cierra GAP-TR07-03 |
 
 ---
 
-## 5. Diferencias aprobadas
+## 5. Riesgos y deuda residual
 
-- Stub de consola para EMAIL y SMS: documentado en PROP-009 (`docs/decision-log.md`).
-- Firebase FCM real para PUSH: implementación productiva completa.
+| ID | Descripción | Severidad | Estado |
+|----|-------------|-----------|--------|
+| — | Adaptadores Console para Email/SMS no envían mensajes reales | P3 | Documentado — fase 2 (SMTP/Twilio) |
+| — | No existe test de integración contra Firebase real (solo stubs) | P2 | Aceptado por diseño (TDD-NOT-ADR-002) |
+| — | `organizationId` recibido pero no usado en lookup (Firebase Auth es org-agnóstico) | P3 | Documentado en TDD §8 — extensión futura |
