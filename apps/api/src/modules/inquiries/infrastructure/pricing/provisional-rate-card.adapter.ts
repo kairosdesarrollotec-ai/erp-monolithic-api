@@ -12,7 +12,7 @@ import { CURRENT_RATE_CARD } from '../../domain/inquiry-rate-card';
 export class ProvisionalRateCardAdapter extends RateCardPort {
   readonly productionReady = false;
 
-  async currentFor(): Promise<RateCardVersion> {
+  async currentFor(_organizationId: string, _operatingCompanyId: string, _at: Date): Promise<RateCardVersion> {
     return CURRENT_RATE_CARD;
   }
 }

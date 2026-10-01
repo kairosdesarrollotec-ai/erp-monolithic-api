@@ -385,7 +385,7 @@ sources:
   date: '2026-10-01'
   status: approved
   estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
-  sha256: unknown
+  sha256: f5d301205210aad119f3e002443983ef855dd52a2777df062a3617638c7c4637
   authority: business
   supersedes: null
   notes: >
@@ -399,7 +399,7 @@ sources:
   date: '2026-10-01'
   status: approved
   estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
-  sha256: unknown
+  sha256: 3434a2b257b776f9a1f39754a1e8d804bc05f36538918a64cac53fa8ae2beb42
   authority: functional
   supersedes: null
   notes: >
@@ -414,7 +414,7 @@ sources:
   date: '2026-10-01'
   status: approved
   estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
-  sha256: unknown
+  sha256: 2de014980195f1693ac7577dd48cbe537a97affc86b8b0fc988875a864c0a162
   authority: technical
   supersedes: null
   notes: >

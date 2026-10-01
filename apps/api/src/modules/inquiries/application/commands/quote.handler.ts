@@ -79,7 +79,7 @@ export class QuoteHandler {
     }
 
     const now = this.clock.now();
-    const rateCard = await this.rateCards.currentFor(scope.operatingCompanyId, now);
+    const rateCard = await this.rateCards.currentFor(scope.organizationId, scope.operatingCompanyId, now);
     const amount = (Number(rateCard.amountPerDay) * command.estimatedDays).toFixed(2);
     const validUntil = new Date(now.getTime() + rateCard.validityHours * MS_PER_HOUR);
 

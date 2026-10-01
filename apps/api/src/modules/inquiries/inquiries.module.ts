@@ -33,7 +33,6 @@ import { AuthorizationModule } from '../authorization/authorization.module';
  * - PrismaModule/IdempotencyModule (@Global): TransactionManagerPort,
  *   ClockPort, IdempotencyInterceptor.
  * - FleetAvailabilityPort: PrismaFleetAvailabilityAdapter (productionReady=true).
- * - FleetAvailabilityPort: PrismaFleetAvailabilityAdapter (productionReady=true).
  * - RateCardPort: PrismaRateCardAdapter (productionReady=true).
  * - ProvisionalQuotingGuard queda como salvaguarda: si ambos adaptan productionReady
  *   pasan el assert y cotizar funciona en produccion sin variable de entorno.

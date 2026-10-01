@@ -8,6 +8,7 @@ const prisma = {
   rateCardEntry: { findFirst: findFirstMock },
 } as never;
 
+const ORG_ID = 'org-kairos';
 const COMPANY_ID = 'comp-veloxrent';
 const NOW = new Date('2026-10-01T12:00:00Z');
 
@@ -43,7 +44,7 @@ describe('PrismaRateCardAdapter', () => {
   it('devuelve la versión activa con los campos correctos', async () => {
     findFirstMock.mockResolvedValue(makeEntry());
 
-    const result = await adapter.currentFor(COMPANY_ID, NOW);
+    const result = await adapter.currentFor(ORG_ID, COMPANY_ID, NOW);
 
     expect(result.version).toBe('entry-uuid-1');
     expect(result.amountPerDay).toBe('120.00');
@@ -51,14 +52,15 @@ describe('PrismaRateCardAdapter', () => {
     expect(result.validityHours).toBe(72);
   });
 
-  it('consulta con operatingCompanyId y effectiveFrom <= at', async () => {
+  it('consulta con organizationId, operatingCompanyId y effectiveFrom <= at', async () => {
     findFirstMock.mockResolvedValue(makeEntry());
 
-    await adapter.currentFor(COMPANY_ID, NOW);
+    await adapter.currentFor(ORG_ID, COMPANY_ID, NOW);
 
     expect(findFirstMock).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
+          organizationId: ORG_ID,
           operatingCompanyId: COMPANY_ID,
           effectiveFrom: { lte: NOW },
         },
@@ -70,7 +72,7 @@ describe('PrismaRateCardAdapter', () => {
   it('lanza RateCardNotConfiguredError (503) cuando no hay entrada', async () => {
     findFirstMock.mockResolvedValue(null);
 
-    await expect(adapter.currentFor(COMPANY_ID, NOW)).rejects.toThrow(
+    await expect(adapter.currentFor(ORG_ID, COMPANY_ID, NOW)).rejects.toThrow(
       RateCardNotConfiguredError,
     );
   });
@@ -79,7 +81,7 @@ describe('PrismaRateCardAdapter', () => {
     findFirstMock.mockResolvedValue(null);
 
     try {
-      await adapter.currentFor(COMPANY_ID, NOW);
+      await adapter.currentFor(ORG_ID, COMPANY_ID, NOW);
       fail('should have thrown');
     } catch (err) {
       expect(err).toBeInstanceOf(RateCardNotConfiguredError);
@@ -95,7 +97,7 @@ describe('PrismaRateCardAdapter', () => {
     findFirstMock.mockResolvedValue(null);
 
     const past = new Date('2026-01-01T00:00:00Z');
-    await expect(adapter.currentFor(COMPANY_ID, past)).rejects.toThrow(
+    await expect(adapter.currentFor(ORG_ID, COMPANY_ID, past)).rejects.toThrow(
       RateCardNotConfiguredError,
     );
 
@@ -112,7 +114,7 @@ describe('PrismaRateCardAdapter', () => {
     const customId = 'custom-rate-card-uuid';
     findFirstMock.mockResolvedValue(makeEntry({ id: customId }));
 
-    const result = await adapter.currentFor(COMPANY_ID, NOW);
+    const result = await adapter.currentFor(ORG_ID, COMPANY_ID, NOW);
 
     expect(result.version).toBe(customId);
   });

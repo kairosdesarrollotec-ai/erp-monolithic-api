@@ -22,9 +22,10 @@ export class PrismaRateCardAdapter extends RateCardPort {
     super();
   }
 
-  async currentFor(operatingCompanyId: string, at: Date): Promise<RateCardVersion> {
+  async currentFor(organizationId: string, operatingCompanyId: string, at: Date): Promise<RateCardVersion> {
     const entry = await this.prisma.rateCardEntry.findFirst({
       where: {
+        organizationId,
         operatingCompanyId,
         effectiveFrom: { lte: at },
       },
