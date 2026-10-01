@@ -3,6 +3,22 @@ generated_note: Generado por bootstrap Claude Code a partir del encabezado real 
   version/fecha/estado se extrajeron con regex del propio documento, no se inventaron. Si un documento
   cambia, este manifiesto debe regenerarse via el agente index-maintainer.
 sources:
+- id: OPENAPI-NOTIFICATIONS-DISPATCH
+  path: apps/api/src/modules/notifications/notification-dispatch.module.ts
+  type: MODULE
+  module: Notificaciones (despacho externo)
+  version: '1.0'
+  date: '2026-10-01'
+  status: active
+  estado_original: Módulo TR-07 mergeado a main el 2026-10-01 (rama feature/bloque-2-tr-07-notificaciones-externas)
+  sha256: unknown
+  authority: technical
+  supersedes: null
+  notes: >
+    No existe BDD/SDD/TDD específico del módulo notifications. Opera bajo fuentes transversales
+    (BDD-KAIROS-MVP-002-TRANSVERSAL §TR-07, SDD-KAIROS-MVP-002-TRANSVERSAL §16,
+    TDD-KAIROS-MVP-002-TRANSVERSAL §notifications). Brecha documentada en PROP-009 (decision-log.md).
+    Trazabilidad: artifacts/traceability/notifications/TR-07-dispatch.md.
 - id: BDD-KAIROS-MVP-002-TRANSVERSAL
   path: docs/sources/bdd/bdd-00-transversal.md
   type: BDD

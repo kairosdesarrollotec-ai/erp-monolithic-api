@@ -1,4 +1,4 @@
-import { NotificationChannel } from '../../notification-templates/domain/notification-variable-catalog';
+import { NotificationChannel } from '../../../common/domain/notification-channel';
 
 export interface RecipientContact {
   readonly recipientId: string;
