@@ -3,6 +3,90 @@ generated_note: Generado por bootstrap Claude Code a partir del encabezado real 
   version/fecha/estado se extrajeron con regex del propio documento, no se inventaron. Si un documento
   cambia, este manifiesto debe regenerarse via el agente index-maintainer.
 sources:
+- id: BDD-KAIROS-MVP-002-NOT
+  path: docs/sources/bdd/bdd-notifications.md
+  type: BDD
+  module: Notificaciones
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  sha256: unknown
+  authority: business
+  supersedes: null
+  notes: >
+    BDD específico del módulo notifications. Documenta los 12 eventos de notificación (BDD §12),
+    reglas BR-NOT-001..007 y escenarios SC-NOT-001..006. Fuente: bdd-00-transversal.md §12.
+- id: SDD-KAIROS-MVP-002-NOT
+  path: docs/sources/sdd/sdd-notifications.md
+  type: SDD
+  module: Notificaciones
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  sha256: unknown
+  authority: functional
+  supersedes: null
+  notes: >
+    SDD específico del módulo notifications. Diseño hexagonal: 5 puertos, 4 adaptadores
+    (Firebase FCM, Firebase Auth lookup, ConsoleEmail, ConsoleSMS).
+- id: TDD-KAIROS-MVP-002-NOT
+  path: docs/sources/tdd/tdd-notifications.md
+  type: TDD
+  module: Notificaciones
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  sha256: unknown
+  authority: technical
+  supersedes: null
+  notes: >
+    TDD específico del módulo notifications. Incluye ADR Jest ESM stubs (TDD-NOT-ADR-002),
+    estructura de módulo, modelo de dominio y guía de testing. Refleja 430/430 tests.
+- id: BDD-KAIROS-MVP-002-FLT
+  path: docs/sources/bdd/bdd-fleet.md
+  type: BDD
+  module: Flota
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
+  sha256: unknown
+  authority: business
+  supersedes: null
+  notes: >
+    BDD específico del módulo fleet. Documenta estados AVAILABLE/RENTED/MAINTENANCE/OUT_OF_SERVICE,
+    reglas BR-FLT-001..009 y escenarios SC-FLT-001..010. Fuente primaria: fleet.yaml v0.2.0.
+- id: SDD-KAIROS-MVP-002-FLT
+  path: docs/sources/sdd/sdd-fleet.md
+  type: SDD
+  module: Flota
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
+  sha256: unknown
+  authority: functional
+  supersedes: null
+  notes: >
+    SDD específico del módulo fleet. FleetController, FleetRolePolicy, VehicleService,
+    GcsPhotoUploadService, VehicleRepository. Flujo foto GCS (ADR-KAI-005 extendido — PROP-008).
+- id: TDD-KAIROS-MVP-002-FLT
+  path: docs/sources/tdd/tdd-fleet.md
+  type: TDD
+  module: Flota
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
+  sha256: unknown
+  authority: technical
+  supersedes: null
+  notes: >
+    TDD específico del módulo fleet. Incluye modelo Prisma, contrato OpenAPI fleet.yaml v0.2.0,
+    stack frontend (FleetListScreen, useFleetList, NewVehicleModal, MSW v2). Refleja 22/22 tests.
 - id: OPENAPI-NOTIFICATIONS-DISPATCH
   path: apps/api/src/modules/notifications/notification-dispatch.module.ts
   type: MODULE
@@ -15,10 +99,8 @@ sources:
   authority: technical
   supersedes: null
   notes: >
-    No existe BDD/SDD/TDD específico del módulo notifications. Opera bajo fuentes transversales
-    (BDD-KAIROS-MVP-002-TRANSVERSAL §TR-07, SDD-KAIROS-MVP-002-TRANSVERSAL §16,
-    TDD-KAIROS-MVP-002-TRANSVERSAL §notifications). Brecha documentada en PROP-009 (decision-log.md).
-    Trazabilidad: artifacts/traceability/notifications/TR-07-dispatch.md.
+    BDD/SDD/TDD específicos creados 2026-10-01 (GAP-TR07-01 cerrado): bdd-notifications.md,
+    sdd-notifications.md, tdd-notifications.md. Trazabilidad: artifacts/traceability/notifications/TR-07-dispatch.md.
 - id: BDD-KAIROS-MVP-002-TRANSVERSAL
   path: docs/sources/bdd/bdd-00-transversal.md
   type: BDD
