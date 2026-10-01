@@ -1,7 +1,8 @@
 import 'reflect-metadata';
 import * as fs from 'fs';
 import * as path from 'path';
-
+import { fileURLToPath } from 'node:url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA, HTTP_CODE_METADATA, INTERCEPTORS_METADATA } from '@nestjs/common/constants';
 import { getMetadataStorage } from 'class-validator';
