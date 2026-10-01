@@ -1,7 +1,5 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { fileURLToPath } from 'node:url';
-const __dirname = join(fileURLToPath(import.meta.url), '..');
 import { WORKER_ROLES } from './worker-role';
 
 /**
