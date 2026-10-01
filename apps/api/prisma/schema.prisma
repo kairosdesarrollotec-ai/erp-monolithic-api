@@ -854,7 +854,7 @@ model RentalEvidence {
   rental Rental @relation(fields: [rentalId, operatingCompanyId], references: [id, operatingCompanyId])
 
   @@index([rentalId, type])
-  @@index([organizationId, operatingCompanyId, rentalId])
+  @@index([organizationId, operatingCompanyId, rentalId], map: "rental_evidence_organization_id_operating_company_id_renta_idx")
   @@map("rental_evidence")
 }
 
