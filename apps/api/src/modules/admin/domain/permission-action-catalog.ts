@@ -31,7 +31,6 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RENTAL', action: 'APPROVE_NOTARY_EXCEPTION', label: 'Alquiler: aprobar excepción notarial' },
   { module: 'RENTAL', action: 'FORMALIZE_CONTRACT', label: 'Alquiler: formalizar contrato' },
   { module: 'RENTAL', action: 'COMPLETE_DELIVERY', label: 'Alquiler: completar entrega' },
-  { module: 'RENTAL', action: 'UPLOAD_EVIDENCE', label: 'Alquiler: subir evidencia de entrega' },
   { module: 'RENTAL', action: 'REQUEST_EXTENSION', label: 'Alquiler: solicitar ampliacion' },
   { module: 'RENTAL', action: 'AUTHORIZE_EXTENSION', label: 'Alquiler: autorizar ampliacion' },
   { module: 'RENTAL', action: 'REJECT_EXTENSION', label: 'Alquiler: rechazar ampliacion' },
