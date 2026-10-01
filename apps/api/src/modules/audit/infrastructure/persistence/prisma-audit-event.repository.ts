@@ -8,6 +8,7 @@ import {
   RecordReservationEventInput,
   RecordInquiryEventInput,
   RecordAdminEventInput,
+  RecordRentalEventInput,
 } from '../../application/ports/audit-event-repository.port';
 import {
   AuditEventQueryPort,
@@ -87,6 +88,20 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         actorUserId: input.actorUserId,
         entityType: 'admin_user_assignment',
         entityId: input.targetFirebaseUid,
+        action: input.action,
+        changes: input.changes as any,
+      },
+    });
+  }
+
+  async recordRentalEvent(input: RecordRentalEventInput, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.auditEvent.create({
+      data: {
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        entityType: 'rental',
+        entityId: input.rentalId,
         action: input.action,
         changes: input.changes as any,
       },

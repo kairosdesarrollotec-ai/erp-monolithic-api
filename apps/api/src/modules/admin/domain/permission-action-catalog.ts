@@ -6,7 +6,7 @@
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
 export interface PermissionActionDescriptor {
-  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN';
+  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL';
   action: string;
   label: string;
 }
@@ -23,6 +23,17 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'INQUIRY', action: 'QUOTE', label: 'Consulta: cotizar' },
   { module: 'INQUIRY', action: 'CLOSE', label: 'Consulta: cerrar' },
   { module: 'INQUIRY', action: 'CONVERT_TO_RESERVATION', label: 'Consulta: convertir a reserva' },
+  { module: 'RENTAL', action: 'CREATE', label: 'Alquiler: crear' },
+  { module: 'RENTAL', action: 'READ', label: 'Alquiler: leer' },
+  { module: 'RENTAL', action: 'VALIDATE_DOCUMENTS', label: 'Alquiler: validar documentos' },
+  { module: 'RENTAL', action: 'REGISTER_ALCOHOL_TEST', label: 'Alquiler: registrar alcolímetro' },
+  { module: 'RENTAL', action: 'EVALUATE_NOTARY', label: 'Alquiler: evaluar notaría' },
+  { module: 'RENTAL', action: 'APPROVE_NOTARY_EXCEPTION', label: 'Alquiler: aprobar excepción notarial' },
+  { module: 'RENTAL', action: 'FORMALIZE_CONTRACT', label: 'Alquiler: formalizar contrato' },
+  { module: 'RENTAL', action: 'COMPLETE_DELIVERY', label: 'Alquiler: completar entrega' },
+  { module: 'RENTAL', action: 'REQUEST_EXTENSION', label: 'Alquiler: solicitar ampliacion' },
+  { module: 'RENTAL', action: 'AUTHORIZE_EXTENSION', label: 'Alquiler: autorizar ampliacion' },
+  { module: 'RENTAL', action: 'REJECT_EXTENSION', label: 'Alquiler: rechazar ampliacion' },
   { module: 'ADMIN', action: 'MANAGE_USERS', label: 'Administración: gestionar usuarios' },
   { module: 'ADMIN', action: 'VIEW_AUDIT', label: 'Administración: ver auditoría' },
   { module: 'ADMIN', action: 'MANAGE_PARAMETERS', label: 'Administración: gestionar parámetros' },

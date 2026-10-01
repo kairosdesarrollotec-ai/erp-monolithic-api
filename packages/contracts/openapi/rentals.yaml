@@ -1,0 +1,659 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Rentals API
+  version: 1.0.0
+  description: >
+    Contrato del módulo Alquiler (ALQ-01 a ALQ-11, TDD-03-alquiler.md).
+    Implementa el ciclo de vida completo de alquiler: creación directa y desde reserva confirmada (RES-05),
+    validación documental (BR-CON-004), prueba de alcolímetro de tolerancia cero (BR-ALQ-005),
+    matriz de evaluación notarial y tercer camino (BR-ALQ-003/004), formalización de contrato con garantía (BR-DOC-002/003),
+    y entrega formal del vehículo con checklist (35 fotos + 3 videos) y transición de flota a RENTED (BR-INS-003/004).
+
+paths:
+  /rentals:
+    post:
+      operationId: createRental
+      summary: Crear alquiler directo (ALQ-01)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRentalRequest' }
+      responses:
+        '201':
+          description: Alquiler creado exitosamente en estado DRAFT
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Cliente o vehículo no encontrado en la empresa
+        '422':
+          description: Período de alquiler inválido
+        '500':
+          description: Error interno del servidor
+
+    get:
+      operationId: listRentals
+      summary: Bandeja de alquileres con filtros y paginación keyset
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/RentalStatus' } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: cursorCreatedAt, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: cursorId, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de alquileres
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: Parámetros de cursor inválidos o limit fuera de rango
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '500':
+          description: Error interno del servidor
+
+  /rentals/from-reservation/{reservationId}:
+    post:
+      operationId: createRentalFromReservation
+      summary: Crear alquiler a partir de reserva confirmada (RES-05 / ALQ-01)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: reservationId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRentalFromReservationRequest' }
+      responses:
+        '201':
+          description: Alquiler creado exitosamente vinculado a la reserva
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Reserva no encontrada en la empresa/sede
+        '409':
+          description: La reserva no está en estado CONFIRMED o ya tiene un alquiler asociado
+        '500':
+          description: Error interno del servidor
+
+  /rentals/{id}:
+    get:
+      operationId: getRental
+      summary: Detalle completo de un expediente de alquiler
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Expediente del alquiler
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler no encontrado en la empresa/sede
+        '500':
+          description: Error interno del servidor
+
+  /rentals/{id}/commands/validate-documents:
+    post:
+      operationId: validateDocuments
+      summary: Validar documentos del cliente e intervinientes (BR-CON-004)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ValidateDocumentsRequest' }
+      responses:
+        '200':
+          description: Documentos validados; alquiler pasa a VALIDATION
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en DRAFT)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Documentos incompletos
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/register-alcohol-test:
+    post:
+      operationId: registerAlcoholTest
+      summary: Registrar resultado de prueba de alcolímetro (BR-ALQ-005)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterAlcoholTestRequest' }
+      responses:
+        '200':
+          description: Resultado registrado (FAVORABLE -> NOTARY_EVALUATION; DESFAVORABLE/RECHAZADO -> CANCELLED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en VALIDATION)
+        '412':
+          description: Versión no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/evaluate-notary:
+    post:
+      operationId: evaluateNotary
+      summary: Evaluar matriz notarial automática (BR-ALQ-003/004)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvaluateNotaryRequest' }
+      responses:
+        '200':
+          description: Resultado de evaluación notarial
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [rental, evaluation]
+                properties:
+                  rental: { $ref: '#/components/schemas/RentalResponse' }
+                  evaluation:
+                    type: object
+                    required: [result, policyVersion, reason, requiresApproval]
+                    properties:
+                      result: { $ref: '#/components/schemas/NotaryResult' }
+                      policyVersion: { type: integer }
+                      reason: { type: string }
+                      requiresApproval: { type: boolean }
+                      approverRole: { type: string }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en NOTARY_EVALUATION)
+        '412':
+          description: Versión no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/approve-notary-exception:
+    post:
+      operationId: approveNotaryException
+      summary: Aprobar excepción notarial / tercer camino (BR-ALQ-004) - Exclusivo Gerencia
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApproveNotaryExceptionRequest' }
+      responses:
+        '200':
+          description: Excepción aprobada; alquiler pasa a CONTRACTING
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol no autorizado (solo GERENCIA)
+        '409':
+          description: Estado incompatible
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Vehículo prohibido para excepción notarial (BR-ALQ-003)
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/formalize-contract:
+    post:
+      operationId: formalizeContract
+      summary: Formalizar contrato firmado y registrar garantía (BR-DOC-002/003)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FormalizeContractRequest' }
+      responses:
+        '200':
+          description: Contrato formalizado; alquiler pasa a PENDING_DELIVERY
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: Plantilla de contrato no pertenece a la empresa o monto de garantía inválido
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en CONTRACTING)
+        '412':
+          description: Versión no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/complete-delivery:
+    post:
+      operationId: completeDelivery
+      summary: Completar entrega física del vehículo con checklist (BR-INS-003/004)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteDeliveryRequest' }
+      responses:
+        '200':
+          description: Entrega completada; alquiler pasa a ACTIVE y vehículo a RENTED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en PENDING_DELIVERY)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Falta evidencia obligatoria (mínimo 35 fotos y 3 videos)
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/request-extension:
+    post:
+      operationId: requestExtension
+      summary: Solicitar ampliacion de alquiler (UC-ALQ-006 / BR-ALQ-012)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestExtensionRequest' }
+      responses:
+        '200':
+          description: Ampliacion solicitada; alquiler pasa a EXTENSION_PENDING
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en ACTIVE)
+        '412':
+          description: Version no coincide (If-Match)
+        '422':
+          description: No cumple aviso de 12h de anticipacion o excede 3 dias (BR-ALQ-012)
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/authorize-extension:
+    post:
+      operationId: authorizeExtension
+      summary: Autorizar ampliacion de alquiler (UC-ALQ-006 / BR-ALQ-012)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthorizeExtensionRequest' }
+      responses:
+        '200':
+          description: Ampliacion autorizada; alquiler regresa a ACTIVE con nuevo expectedEndAt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol no autorizado (solo GERENCIA)
+        '409':
+          description: Estado incompatible (debe estar en EXTENSION_PENDING)
+        '412':
+          description: Version no coincide (If-Match)
+        '422':
+          description: Vehiculo no disponible en la ventana extendida
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/reject-extension:
+    post:
+      operationId: rejectExtension
+      summary: Rechazar ampliacion de alquiler (UC-ALQ-006 / BR-ALQ-012)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectExtensionRequest' }
+      responses:
+        '200':
+          description: Ampliacion rechazada; alquiler regresa a ACTIVE sin cambiar el plazo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en EXTENSION_PENDING)
+        '412':
+          description: Version no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+
+components:
+  schemas:
+    RentalStatus:
+      type: string
+      enum:
+        - DRAFT
+        - VALIDATION
+        - NOTARY_EVALUATION
+        - CONTRACTING
+        - PENDING_DELIVERY
+        - ACTIVE
+        - EXTENSION_PENDING
+        - RETURN_IN_PROGRESS
+        - CLOSED
+        - CANCELLED
+
+    AlcoholTestResult:
+      type: string
+      enum:
+        - FAVORABLE
+        - DESFAVORABLE
+        - RECHAZADO
+
+    NotaryResult:
+      type: string
+      enum:
+        - MANDATORY
+        - DOUBLE_DEPOSIT
+        - THIRD_PATH_ELIGIBLE
+        - MANUAL_REVIEW
+
+    RentalPartyRole:
+      type: string
+      enum:
+        - SIGNER
+        - DRIVER
+        - RESPONSIBLE
+
+    CreateRentalRequest:
+      type: object
+      required: [companyId, branchId, customerId, vehicleId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        customerId: { type: string, format: uuid }
+        vehicleId: { type: string, format: uuid }
+        planCode: { type: string, enum: [NORMAL, PLUS, LIBRE], default: NORMAL }
+        startAt: { type: string, format: date-time }
+        expectedEndAt: { type: string, format: date-time }
+        inquiryId: { type: string, format: uuid }
+
+    CreateRentalFromReservationRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        planCode: { type: string, enum: [NORMAL, PLUS, LIBRE], default: NORMAL }
+
+    ValidateDocumentsRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        identityDocumentValid: { type: boolean }
+        driverLicenseValid: { type: boolean }
+        addressOrStayProofValid: { type: boolean }
+        notes: { type: string }
+
+    RegisterAlcoholTestRequest:
+      type: object
+      required: [companyId, branchId, result]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        result: { $ref: '#/components/schemas/AlcoholTestResult' }
+        notes: { type: string }
+
+    EvaluateNotaryRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+
+    ApproveNotaryExceptionRequest:
+      type: object
+      required: [companyId, branchId, justification]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        justification: { type: string, minLength: 10 }
+
+    FormalizeContractRequest:
+      type: object
+      required: [companyId, branchId, templateVersionId, documentRef, depositAmount, depositCurrency]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        templateVersionId: { type: string, format: uuid }
+        documentRef: { type: string }
+        depositAmount: { type: string }
+        depositCurrency: { type: string, enum: [PEN, USD] }
+
+    CompleteDeliveryRequest:
+      type: object
+      required: [companyId, branchId, photosCount, videosCount]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        photosCount: { type: integer, minimum: 0 }
+        videosCount: { type: integer, minimum: 0 }
+        notes: { type: string }
+
+    RequestExtensionRequest:
+      type: object
+      required: [companyId, branchId, requestedEndAt]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        requestedEndAt: { type: string, format: date-time }
+
+    AuthorizeExtensionRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        paymentId: { type: string, format: uuid }
+        addendumDocumentRef: { type: string }
+
+    RejectExtensionRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+
+    RentalPartyResponse:
+      type: object
+      required: [id, customerId, role, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        customerId: { type: string, format: uuid }
+        role: { $ref: '#/components/schemas/RentalPartyRole' }
+        createdAt: { type: string, format: date-time }
+
+    NotaryEvaluationResponse:
+      type: object
+      required: [id, policyVersion, result, reason, evaluatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        policyVersion: { type: integer }
+        result: { $ref: '#/components/schemas/NotaryResult' }
+        reason: { type: string }
+        evaluatedAt: { type: string, format: date-time }
+        approvedBy: { type: string, nullable: true }
+        justification: { type: string, nullable: true }
+
+    RentalContractResponse:
+      type: object
+      required: [id, templateVersionId, documentRef, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        templateVersionId: { type: string, format: uuid }
+        documentRef: { type: string }
+        status: { type: string }
+        signedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    RentalDepositResponse:
+      type: object
+      required: [id, originalAmount, currency, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        originalAmount: { type: string }
+        currency: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    RentalResponse:
+      type: object
+      required:
+        - id
+        - organizationId
+        - operatingCompanyId
+        - branchId
+        - customerId
+        - customerName
+        - customerDocNumber
+        - vehicleId
+        - vehiclePlate
+        - vehicleBrand
+        - vehicleModel
+        - planCode
+        - status
+        - createdAt
+        - createdBy
+        - updatedAt
+        - updatedBy
+        - version
+        - etag
+      properties:
+        id: { type: string, format: uuid }
+        organizationId: { type: string, format: uuid }
+        operatingCompanyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        inquiryId: { type: string, format: uuid, nullable: true }
+        reservationId: { type: string, format: uuid, nullable: true }
+        customerId: { type: string, format: uuid }
+        customerName: { type: string }
+        customerDocNumber: { type: string }
+        vehicleId: { type: string, format: uuid }
+        vehiclePlate: { type: string }
+        vehicleBrand: { type: string }
+        vehicleModel: { type: string }
+        planCode: { type: string }
+        status: { $ref: '#/components/schemas/RentalStatus' }
+        startAt: { type: string, format: date-time, nullable: true }
+        expectedEndAt: { type: string, format: date-time, nullable: true }
+        alcoholTestResult: { $ref: '#/components/schemas/AlcoholTestResult', nullable: true }
+        createdAt: { type: string, format: date-time }
+        createdBy: { type: string }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { type: string }
+        version: { type: integer }
+        etag: { type: string }
+        parties:
+          type: array
+          items: { $ref: '#/components/schemas/RentalPartyResponse' }
+        notaryEvaluation:
+          allOf: [{ $ref: '#/components/schemas/NotaryEvaluationResponse' }]
+          nullable: true
+        contract:
+          allOf: [{ $ref: '#/components/schemas/RentalContractResponse' }]
+          nullable: true
+        deposit:
+          allOf: [{ $ref: '#/components/schemas/RentalDepositResponse' }]
+          nullable: true

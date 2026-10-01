@@ -4,7 +4,7 @@ import { WORKER_ROLES, WorkerRole } from '../../../../users/domain/worker-role';
 
 export class RolePermissionEntryDto {
   @IsIn(WORKER_ROLES) role!: WorkerRole;
-  @IsIn(['RESERVATION', 'INQUIRY', 'ADMIN']) module!: 'RESERVATION' | 'INQUIRY' | 'ADMIN';
+  @IsIn(['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL']) module!: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL';
   @IsString() action!: string;
   @IsBoolean() allowed!: boolean;
 }

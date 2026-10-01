@@ -124,21 +124,38 @@ CREATE TYPE inquiry_status AS ENUM ('REGISTRADA','COTIZADA','CONVERTIDA','CERRAD
 
 ### 9.2 Tablas
 
+> **Nota (DEC-CON-002-FINAL, 2026-10-01):** Este DDL fue actualizado para reflejar el schema real
+> implementado en PR#7 / migración `20260923000000_inquiries_expand_backfill_contract`. Los campos
+> de contexto de viaje viven en `inquiries`; la identidad del prospecto (nationality,
+> country_entry_date) vive en `customers`. Ver `docs/decision-log.md` DEC-CON-002-FINAL.
+
 ```sql
 CREATE TABLE inquiries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL,
   operating_company_id uuid NOT NULL,
-  customer_id uuid NULL REFERENCES customers(id),  -- puede ser prospecto sin cliente formal
-  channel varchar(30) NOT NULL,
+  branch_id uuid NOT NULL,
+  customer_id uuid NULL REFERENCES customers(id),  -- prospecto sin cliente formal: NULL
+  channel inquiry_channel NULL,                    -- nullable: origen CON_DIRECTO no siempre lo captura
+  tourist_use boolean NOT NULL DEFAULT false,
+  -- Snapshot de contexto de viaje (CON-02 / DAT-CON-003)
+  destination varchar(200) NULL,
+  estimated_days integer NULL CHECK (estimated_days > 0),
+  travel_start_date date NULL,
+  party_size integer NULL,
+  data_origin inquiry_data_origin NOT NULL DEFAULT 'CON02',
   status inquiry_status NOT NULL DEFAULT 'REGISTRADA',
   closed_reason varchar(500) NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   created_by uuid NOT NULL,
   version integer NOT NULL DEFAULT 1,
-  CONSTRAINT inquiry_close_reason CHECK (
+  CONSTRAINT inquiries_closed_reason_check CHECK (
     status != 'CERRADA_SIN_CONVERSION' OR closed_reason IS NOT NULL
-  )
+  ),
+  CONSTRAINT inquiries_version_check CHECK (version >= 1),
+  CONSTRAINT fk_inquiries_branch
+    FOREIGN KEY (branch_id, operating_company_id)
+    REFERENCES branches(id, company_id)
 );
 
 CREATE TABLE interactions (
@@ -188,6 +205,11 @@ Todo comando mutable sobre `inquiries` exige `If-Match: "<version>"`. Si la vers
 
 ### 11.1 Registrar consulta
 
+> **Nota (DEC-CON-002-FINAL, 2026-10-01):** Este body fue actualizado para reflejar el contrato
+> real implementado en PR#7 / `inquiries.yaml` v0.2.0. Los campos de contexto de viaje se envían
+> en el body del registro; la identidad del prospecto (nationality, countryEntryDate) se captura
+> en el módulo Customers.
+
 ```
 POST /api/v1/inquiries
 Idempotency-Key: 018f...
@@ -197,7 +219,11 @@ Idempotency-Key: 018f...
 {
   "channel": "WHATSAPP",
   "customerId": "uuid (opcional)",
-  "touristUse": true
+  "touristUse": true,
+  "destination": "Vilcashuamán",
+  "estimatedDays": 3,
+  "travelStartDate": "2026-11-01",
+  "partySize": 2
 }
 ```
 

@@ -39,6 +39,14 @@ export interface RecordInquiryEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordRentalEventInput {
+  organizationId: string;
+  actorUserId: string;
+  rentalId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -92,6 +100,15 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordAdminEvent(
     input: RecordAdminEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * ALQ-01..11 (Alquiler) - TDD-03-alquiler.md seccion 17.
+   * `tx` opcional para atomicidad con la mutacion.
+   */
+  abstract recordRentalEvent(
+    input: RecordRentalEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

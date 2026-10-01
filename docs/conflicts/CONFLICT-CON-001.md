@@ -8,5 +8,5 @@
   1. (Aplicada de forma INTERINA en PR#7) Caso de uso unico `convert-to-reservation`; `POST /reservations` conserva autenticacion/contexto/rol y responde 409 `INQUIRY_CONVERSION_REQUIRED`. Consecuencia: TDD-RES-001 11.1 queda desactualizado hasta que se corrija; ningun cliente usa hoy ese endpoint.
   2. `POST /reservations` delega en el mismo caso de uso (mismo resultado, dos rutas HTTP). Consecuencia: mas superficie de contrato a mantener; el cuerpo de 11.1 (endAt explicito, vehicleId) puede contradecir la cotizacion vigente y habria que definir que gana.
   En ambos casos la base ya garantiza la cardinalidad 1:1 (UNIQUE `reservations.inquiry_id`, migracion 20260923000000).
-- Estado: OPEN
-- Resolucion (si aplica): pendiente de decision de Eder Ramos (Tech Lead) - registrar en docs/decision-log.md.
+- Estado: RESUELTO
+- Resolucion: DEC-CON-001-FINAL (2026-10-01). Alternativa 1 confirmada por el usuario (Russbel). `convert-to-reservation` es el UNICO caso de uso para crear una Reserva a partir de una Consulta. `POST /reservations` retorna 409 `INQUIRY_CONVERSION_REQUIRED` cuando recibe `inquiryId` — comportamiento interino ya implementado en PR#7 que pasa a ser permanente. TDD-RES-001 §11.1 queda como fuente con nota de desactualizacion hasta que se actualice formalmente. Registrado en docs/decision-log.md.
