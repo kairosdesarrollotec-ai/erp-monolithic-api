@@ -220,6 +220,7 @@ export abstract class RentalRepositoryPort {
   } | null>;
   abstract countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number>;
   abstract findActiveContractTemplate(companyId: string, type: string): Promise<{ id: string; version: number } | null>;
+  abstract contractTemplateBelongsToCompany(templateVersionId: string, companyId: string): Promise<boolean>;
   abstract list(filter: ListRentalsFilter): Promise<RentalRecord[]>;
   abstract transitionStatus(
     id: string,

@@ -28,12 +28,16 @@ paths:
               schema: { $ref: '#/components/schemas/RentalResponse' }
         '400':
           description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
         '403':
           description: No autorizado para el contexto o rol insuficiente
         '404':
           description: Cliente o vehículo no encontrado en la empresa
         '422':
           description: Período de alquiler inválido
+        '500':
+          description: Error interno del servidor
 
     get:
       operationId: listRentals
@@ -54,6 +58,14 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: Parámetros de cursor inválidos o limit fuera de rango
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '500':
+          description: Error interno del servidor
 
   /rentals/from-reservation/{reservationId}:
     post:
@@ -73,10 +85,18 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '404':
           description: Reserva no encontrada en la empresa/sede
         '409':
           description: La reserva no está en estado CONFIRMED o ya tiene un alquiler asociado
+        '500':
+          description: Error interno del servidor
 
   /rentals/{id}:
     get:
@@ -93,8 +113,14 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '404':
           description: Alquiler no encontrado en la empresa/sede
+        '500':
+          description: Error interno del servidor
 
   /rentals/{id}/commands/validate-documents:
     post:
@@ -115,6 +141,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en DRAFT)
         '412':
@@ -143,6 +173,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en VALIDATION)
         '412':
@@ -182,6 +216,10 @@ paths:
                       reason: { type: string }
                       requiresApproval: { type: boolean }
                       approverRole: { type: string }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en NOTARY_EVALUATION)
         '412':
@@ -208,6 +246,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
         '403':
           description: Rol no autorizado (solo GERENCIA)
         '409':
@@ -238,6 +278,12 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: Plantilla de contrato no pertenece a la empresa o monto de garantía inválido
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en CONTRACTING)
         '412':
@@ -264,6 +310,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en PENDING_DELIVERY)
         '412':
@@ -292,6 +342,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en ACTIVE)
         '412':
@@ -320,6 +374,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol no autorizado (solo GERENCIA)
         '409':
           description: Estado incompatible (debe estar en EXTENSION_PENDING)
         '412':
@@ -348,6 +406,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en EXTENSION_PENDING)
         '412':

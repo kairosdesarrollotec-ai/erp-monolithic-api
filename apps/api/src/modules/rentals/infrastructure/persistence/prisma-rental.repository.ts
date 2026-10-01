@@ -293,6 +293,14 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     });
   }
 
+  async contractTemplateBelongsToCompany(templateVersionId: string, companyId: string): Promise<boolean> {
+    const row = await this.prisma.contractTemplate.findFirst({
+      where: { id: templateVersionId, companyId },
+      select: { id: true },
+    });
+    return row !== null;
+  }
+
   async list(filter: ListRentalsFilter): Promise<RentalRecord[]> {
     const where: Prisma.RentalWhereInput = {
       organizationId: filter.organizationId,

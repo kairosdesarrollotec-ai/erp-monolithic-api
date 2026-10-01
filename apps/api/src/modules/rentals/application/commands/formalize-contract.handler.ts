@@ -54,6 +54,17 @@ export class FormalizeContractHandler {
       throw new RentalStateConflictError('formalizar contrato en', existing.status);
     }
 
+    const templateOwned = await this.rentals.contractTemplateBelongsToCompany(
+      command.templateVersionId,
+      command.companyId,
+    );
+    if (!templateOwned) {
+      throw new BadRequestException({
+        code: 'INVALID_CONTRACT_TEMPLATE',
+        detail: 'La plantilla de contrato no pertenece a la empresa autenticada.',
+      });
+    }
+
     return this.transactionManager.run(async (tx) => {
       const current = await this.rentals.findById(command.id, scope, tx);
       if (!current) {

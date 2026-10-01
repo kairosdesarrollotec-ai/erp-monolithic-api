@@ -303,6 +303,33 @@ sources:
   sha256: 854eeab613b8c5e2a8ffa910547a37bb9f3302ce03db99afe66f31bf8574fa7b
   authority: contract
   supersedes: OPENAPI-FLEET-V0.1.0
+- id: OPENAPI-RESERVATIONS-V0.2.0
+  path: packages/contracts/openapi/reservations.yaml
+  type: OpenAPI
+  module: Reservations
+  version: '0.2.0'
+  date: 2026-09-21
+  status: approved
+  estado_original: >
+    Contrato del módulo Reservas — CRUD + paginación + UUIDs + branchId obligatorio
+    en bandeja + códigos 428/412/409 corregidos (NOTA-PR6).
+  sha256: null
+  authority: contract
+  supersedes: null
+- id: OPENAPI-RENTALS-V1.0.0
+  path: packages/contracts/openapi/rentals.yaml
+  type: OpenAPI
+  module: Rentals
+  version: '1.0.0'
+  date: 2026-09-30
+  status: current
+  estado_original: >
+    Contrato inicial del módulo Alquiler — cubre UC-ALQ-001 a UC-ALQ-006 (crear alquiler
+    directo, crear desde reserva, validar documentos, registrar alcoholímetro, evaluar
+    notaría/aprobar excepción, ampliaciones). PR #36 (feature/rental-extensions-api).
+  sha256: null
+  authority: contract
+  supersedes: null
 - id: UX-UI-V3.1-KAIROS
   path: docs/sources/ux-ui/especificacion-ux-ui-v3.1-para-prototipado-del-erp-kairos.md
   type: UX
