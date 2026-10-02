@@ -34,7 +34,7 @@ import { FleetModule } from '../fleet/fleet.module';
 
 @Module({
   imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule],
-  controllers: [RentalsController, ContractTemplatesController],
+  controllers: [ContractTemplatesController, RentalsController],
   providers: [
     CreateRentalHandler,
     CreateRentalFromReservationHandler,
