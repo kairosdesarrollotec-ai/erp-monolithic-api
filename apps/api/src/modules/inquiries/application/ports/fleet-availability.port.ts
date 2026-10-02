@@ -7,6 +7,15 @@
  * El modulo real de Flota no existe todavia (PROP-005); este puerto fija el
  * contrato para que el adaptador provisional se reemplace sin tocar los
  * handlers.
+ *
+ * Correccion (oct 2026): el precio de cotizacion viene de aqui
+ * (`dailyRate`, el mismo dato que ya administra Flota en FLO-02), no de
+ * un tarifario separado por empresa. El `RateCardPort`/`rate_card_versions`
+ * introducido en PROP-007 era una decision tecnica provisional nunca
+ * confirmada contra el negocio: el tarifario real (`Ficha_AS-IS_VELOXRENT_
+ * Alquiler_PARA_NOTION.md` seccion 5.1, TDD-CON-001.md seccion 2.1 "snapshot
+ * versionado del tarifario") siempre fue por vehiculo, no por empresa -
+ * exactamente lo que ya modela `Vehicle.dailyRate`. Ver quote.handler.ts.
  */
 export interface VehicleEligibilityQuery {
   organizationId: string;
@@ -18,7 +27,7 @@ export interface VehicleEligibilityQuery {
 }
 
 export type VehicleEligibility =
-  | { eligible: true; vehicleId: string }
+  | { eligible: true; vehicleId: string; dailyRate: string }
   | { eligible: false; reason: string };
 
 export abstract class FleetAvailabilityPort {

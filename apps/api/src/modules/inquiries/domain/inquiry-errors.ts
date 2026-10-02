@@ -72,9 +72,11 @@ export class QuotingNotProductionReadyError extends ServiceUnavailableException 
 }
 
 /**
- * No existe ninguna versión de tarifa para la empresa a la fecha dada.
- * Ocurre cuando la tabla rate_card_versions está vacía para esa empresa
- * o cuando ninguna entrada tiene effectiveFrom <= at.
+ * @deprecated (oct 2026) Sin uso - RateCardPort/rate_card_versions ya no
+ * es la fuente del precio de cotizacion (ver quote.handler.ts y
+ * fleet-availability.port.ts). Se mantiene la clase sin borrar por si
+ * algun consumidor externo del paquete todavia la importa; no se lanza
+ * desde ningun handler.
  */
 export class RateCardNotConfiguredError extends ServiceUnavailableException {
   constructor(operatingCompanyId: string) {

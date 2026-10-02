@@ -48,7 +48,7 @@ describe('PrismaFleetAvailabilityAdapter', () => {
   });
 
   it('devuelve inelegible cuando el vehículo está asignado a otra sede', async () => {
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: 'branch-other' });
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: 'branch-other', dailyRate: '100.00' });
 
     const result = await adapter.checkEligibility(BASE_QUERY);
 
@@ -60,7 +60,7 @@ describe('PrismaFleetAvailabilityAdapter', () => {
   });
 
   it('no verifica sede cuando el vehículo no tiene branchId (vehículo compartido)', async () => {
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null });
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
     findFirstCommitmentMock.mockResolvedValue(null);
 
     const result = await adapter.checkEligibility(BASE_QUERY);
@@ -68,8 +68,20 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     expect(result.eligible).toBe(true);
   });
 
+  it('devuelve inelegible cuando el vehículo no tiene dailyRate configurado en Flota', async () => {
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: null });
+
+    const result = await adapter.checkEligibility(BASE_QUERY);
+
+    expect(result.eligible).toBe(false);
+    if (!result.eligible) {
+      expect(result.reason).toMatch(/tarifa/i);
+    }
+    expect(findFirstCommitmentMock).not.toHaveBeenCalled();
+  });
+
   it('devuelve elegible cuando la sede del vehículo coincide y no hay compromisos activos', async () => {
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: 'branch-1' });
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: 'branch-1', dailyRate: '250.00' });
     findFirstCommitmentMock.mockResolvedValue(null);
 
     const result = await adapter.checkEligibility(BASE_QUERY);
@@ -77,11 +89,12 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     expect(result.eligible).toBe(true);
     if (result.eligible) {
       expect(result.vehicleId).toBe('vehicle-1');
+      expect(result.dailyRate).toBe('250.00');
     }
   });
 
   it('consulta compromisos solo con status ACTIVE', async () => {
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null });
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
     findFirstCommitmentMock.mockResolvedValue(null);
 
     await adapter.checkEligibility(BASE_QUERY);
@@ -97,7 +110,7 @@ describe('PrismaFleetAvailabilityAdapter', () => {
   });
 
   it('devuelve inelegible cuando existe un compromiso ACTIVE que solapa', async () => {
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null });
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
     findFirstCommitmentMock.mockResolvedValue({ id: 'commit-1' });
 
     const result = await adapter.checkEligibility(BASE_QUERY);
@@ -111,7 +124,7 @@ describe('PrismaFleetAvailabilityAdapter', () => {
   it('la query de solapamiento incluye startsAt:lt y endsAt:gt con el período correcto', async () => {
     const before = new Date();
 
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null });
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
     findFirstCommitmentMock.mockResolvedValue(null);
 
     await adapter.checkEligibility({ ...BASE_QUERY, estimatedDays: 3 });
@@ -133,7 +146,7 @@ describe('PrismaFleetAvailabilityAdapter', () => {
   });
 
   it('compromisos con status RELEASED no bloquean la elegibilidad', async () => {
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null });
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
     // findFirst returns null because the WHERE filters status = ACTIVE
     findFirstCommitmentMock.mockResolvedValue(null);
 

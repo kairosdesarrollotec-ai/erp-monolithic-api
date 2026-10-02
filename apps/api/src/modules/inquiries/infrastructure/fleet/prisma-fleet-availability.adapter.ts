@@ -39,7 +39,7 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
         organizationId: query.organizationId,
         operatingCompanyId: query.operatingCompanyId,
       },
-      select: { id: true, branchId: true },
+      select: { id: true, branchId: true, dailyRate: true },
     });
 
     if (!vehicle) {
@@ -50,6 +50,16 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
       return {
         eligible: false,
         reason: 'El vehículo no está asignado a la sede de esta consulta.',
+      };
+    }
+
+    // Correccion (oct 2026): el precio de cotizacion es el dailyRate del
+    // vehiculo (administrado en FLO-02), no un tarifario separado por
+    // empresa - ver el comentario en fleet-availability.port.ts.
+    if (vehicle.dailyRate === null) {
+      return {
+        eligible: false,
+        reason: 'Este vehículo no tiene tarifa configurada en Flota. Configúrala en la ficha del vehículo antes de cotizar.',
       };
     }
 
@@ -73,6 +83,6 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
       };
     }
 
-    return { eligible: true, vehicleId: vehicle.id };
+    return { eligible: true, vehicleId: vehicle.id, dailyRate: vehicle.dailyRate.toString() };
   }
 }
