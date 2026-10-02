@@ -1,4 +1,5 @@
-import { BadRequestException, ForbiddenException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { QuotingNotProductionReadyError } from '../../domain/inquiry-errors';
 import { ConvertToReservationHandler } from './convert-to-reservation.handler';
 import { ConvertToReservationCommand } from './convert-to-reservation.command';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
@@ -206,7 +207,7 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
   it('en produccion, con Flota/tarifario provisionales, responde 503 sin tocar la base', async () => {
     const { handler, transactions } = build({ production: true });
 
-    await expect(handler.execute(command())).rejects.toBeInstanceOf(ServiceUnavailableException);
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(QuotingNotProductionReadyError);
     expect(transactions.run).not.toHaveBeenCalled();
   });
 
