@@ -40,6 +40,24 @@ export interface RentalContractRecord {
   createdAt: Date;
 }
 
+/// TDD-03-alquiler seccion 9.3 / BR-DOC-002 - plantilla de contrato versionada.
+export interface ContractTemplateRecord {
+  id: string;
+  companyId: string;
+  type: string;
+  version: number;
+  effectiveFrom: Date;
+  effectiveTo: Date | null;
+  status: string;
+  createdAt: Date;
+}
+
+export interface CreateContractTemplateInput {
+  companyId: string;
+  type: string;
+  effectiveFrom: Date;
+}
+
 export interface RentalDepositRecord {
   id: string;
   rentalId: string;
@@ -187,6 +205,16 @@ export interface RejectExtensionInput {
   updatedBy: string;
 }
 
+export interface ReportExtensionBreachInput {
+  rentalId: string;
+  scope: RentalScope;
+  expectedVersion: number;
+  extensionId: string;
+  customerId: string;
+  legalEvaluationNote: string;
+  updatedBy: string;
+}
+
 export abstract class RentalRepositoryPort {
   abstract create(input: CreateRentalInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract findById(id: string, scope: RentalScope, tx?: Prisma.TransactionClient): Promise<RentalRecord | null>;
@@ -221,6 +249,11 @@ export abstract class RentalRepositoryPort {
   abstract countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number>;
   abstract findActiveContractTemplate(companyId: string, type: string): Promise<{ id: string; version: number } | null>;
   abstract contractTemplateBelongsToCompany(templateVersionId: string, companyId: string): Promise<boolean>;
+  abstract createContractTemplate(
+    input: CreateContractTemplateInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ContractTemplateRecord>;
+  abstract listContractTemplates(companyId: string): Promise<ContractTemplateRecord[]>;
   abstract list(filter: ListRentalsFilter): Promise<RentalRecord[]>;
   abstract transitionStatus(
     id: string,
@@ -250,4 +283,8 @@ export abstract class RentalRepositoryPort {
   abstract requestExtension(input: RequestExtensionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract authorizeExtension(input: AuthorizeExtensionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract rejectExtension(input: RejectExtensionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
+  abstract reportExtensionBreach(
+    input: ReportExtensionBreachInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord>;
 }

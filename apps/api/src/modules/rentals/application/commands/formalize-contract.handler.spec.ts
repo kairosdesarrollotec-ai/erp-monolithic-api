@@ -38,10 +38,11 @@ describe('FormalizeContractHandler', () => {
 
   const fakeTx = {} as any;
 
-  function buildDeps(templateOwned = true) {
+  function buildDeps(templateOwned = true, activeTemplate: { id: string; version: number } | null = { id: 'tpl-active', version: 1 }) {
     const rentals = {
       findById: jest.fn().mockResolvedValue(fakeRental),
       contractTemplateBelongsToCompany: jest.fn().mockResolvedValue(templateOwned),
+      findActiveContractTemplate: jest.fn().mockResolvedValue(activeTemplate),
       formalizeContract: jest.fn().mockResolvedValue({ ...fakeRental, status: 'PENDING_DELIVERY', version: 5 }),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
@@ -233,6 +234,47 @@ describe('FormalizeContractHandler', () => {
         ),
       ),
     ).rejects.toThrow(RentalStateConflictError);
+  });
+
+  it('templateVersionId omitido → resuelve automaticamente la plantilla ACTIVE vigente', async () => {
+    const deps = buildDeps(true, { id: 'tpl-auto', version: 3 });
+    const handler = new FormalizeContractHandler(
+      deps.rentals,
+      deps.workContext,
+      deps.matrixAuth,
+      deps.transactionManager,
+      deps.auditRepository,
+      deps.outboxRepository,
+    );
+
+    await handler.execute(
+      new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
+    );
+
+    expect(deps.rentals.findActiveContractTemplate).toHaveBeenCalledWith('comp-1', 'RENTAL_CONTRACT');
+    expect(deps.rentals.contractTemplateBelongsToCompany).not.toHaveBeenCalled();
+    expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+      expect.objectContaining({ templateVersionId: 'tpl-auto' }),
+      fakeTx,
+    );
+  });
+
+  it('templateVersionId omitido y sin plantilla ACTIVE → BadRequestException con code NO_ACTIVE_CONTRACT_TEMPLATE', async () => {
+    const deps = buildDeps(true, null);
+    const handler = new FormalizeContractHandler(
+      deps.rentals,
+      deps.workContext,
+      deps.matrixAuth,
+      deps.transactionManager,
+      deps.auditRepository,
+      deps.outboxRepository,
+    );
+
+    await expect(
+      handler.execute(
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
+      ),
+    ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'NO_ACTIVE_CONTRACT_TEMPLATE' }) });
   });
 
   it('alquiler no encontrado → NotFoundException', async () => {
