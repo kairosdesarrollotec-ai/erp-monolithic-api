@@ -398,6 +398,11 @@ model Customer {
   email              String?
   phone              String?
   address            String?
+  /// Decision de diseno nueva (no existia un modulo/campo real de
+  /// Clientes para esto): estado "rojo"/lista negra del cliente,
+  /// introducido para BR-ALQ-013 (falta grave de ampliacion de
+  /// alquiler). NORMAL | ROJO.
+  status             String              @default("NORMAL")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
 

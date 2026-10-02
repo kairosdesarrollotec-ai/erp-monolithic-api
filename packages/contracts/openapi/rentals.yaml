@@ -417,6 +417,36 @@ paths:
         '428':
           description: Falta header If-Match
 
+  /rentals/{id}/commands/report-extension-breach:
+    post:
+      operationId: reportExtensionBreach
+      summary: Registrar falta grave de ampliacion (UC-ALQ-006b / BR-ALQ-013) - retiene 100% de garantia y marca cliente "rojo"
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportExtensionBreachRequest' }
+      responses:
+        '200':
+          description: Falta grave registrada; extension pasa a BREACH, garantia retenida al 100% y cliente marcado "rojo"
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente (requiere GERENCIA)
+        '409':
+          description: Estado incompatible (debe estar en EXTENSION_PENDING)
+        '412':
+          description: Version no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+
 components:
   schemas:
     RentalStatus:
@@ -555,6 +585,14 @@ components:
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
+
+    ReportExtensionBreachRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        notes: { type: string, maxLength: 500, description: 'Nota adicional del operador para el expediente de evaluacion legal (BR-ALQ-013)' }
 
     RentalPartyResponse:
       type: object

@@ -11,6 +11,7 @@ import { CompleteDeliveryHandler } from './application/commands/complete-deliver
 import { RequestExtensionHandler } from './application/commands/request-extension.handler';
 import { AuthorizeExtensionHandler } from './application/commands/authorize-extension.handler';
 import { RejectExtensionHandler } from './application/commands/reject-extension.handler';
+import { ReportExtensionBreachHandler } from './application/commands/report-extension-breach.handler';
 import { GetRentalHandler } from './application/queries/get-rental.handler';
 import { ListRentalsHandler } from './application/queries/list-rentals.handler';
 import { RentalRepositoryPort } from './application/ports/rental-repository.port';
@@ -36,6 +37,7 @@ import { FleetModule } from '../fleet/fleet.module';
     RequestExtensionHandler,
     AuthorizeExtensionHandler,
     RejectExtensionHandler,
+    ReportExtensionBreachHandler,
     GetRentalHandler,
     ListRentalsHandler,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
