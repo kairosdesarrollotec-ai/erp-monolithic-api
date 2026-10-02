@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
+import { RentalEvidenceRepositoryPort } from '../ports/rental-evidence-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
@@ -15,7 +16,10 @@ export const REQUIRED_DELIVERY_VIDEOS = 3;
 /**
  * ALQ-09 / BR-INS-003 / BR-INS-004 - Entrega formal del vehículo.
  * TDD-03-alquiler.md seccion 10.2 / 11.4
- * Valida checklist fotográfico y audiovisual completo (35 fotos + 3 videos).
+ * Valida checklist fotográfico y audiovisual completo (35 fotos + 3 videos)
+ * contra evidencia REAL persistida en RentalEvidence (ver
+ * RequestEvidenceUploadSessionHandler / RecordEvidenceHandler) - ya no
+ * contra los contadores que enviaba el cliente en el DTO.
  * Transiciona Rental a ACTIVE y Vehículo a RENTED.
  */
 @Injectable()
@@ -28,20 +32,10 @@ export class CompleteDeliveryHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    private readonly evidenceRepository: RentalEvidenceRepositoryPort,
   ) {}
 
   async execute(command: CompleteDeliveryCommand): Promise<RentalRecord> {
-    const missingEvidence: string[] = [];
-    if (command.photosCount < REQUIRED_DELIVERY_PHOTOS) {
-      missingEvidence.push(`${REQUIRED_DELIVERY_PHOTOS - command.photosCount} fotos restantes (mínimo ${REQUIRED_DELIVERY_PHOTOS})`);
-    }
-    if (command.videosCount < REQUIRED_DELIVERY_VIDEOS) {
-      missingEvidence.push(`${REQUIRED_DELIVERY_VIDEOS - command.videosCount} videos restantes (mínimo ${REQUIRED_DELIVERY_VIDEOS})`);
-    }
-    if (missingEvidence.length > 0) {
-      throw new MissingDeliveryEvidenceError(missingEvidence);
-    }
-
     const context = await this.workContext.authorize({
       firebaseUid: command.firebaseUid,
       companyId: command.companyId,
@@ -62,6 +56,22 @@ export class CompleteDeliveryHandler {
     }
     if (existing.status !== 'PENDING_DELIVERY') {
       throw new RentalStateConflictError('completar entrega en', existing.status);
+    }
+
+    const evidenceCounts = await this.evidenceRepository.countByType(command.id, scope);
+    const missingEvidence: string[] = [];
+    if (evidenceCounts.photos < REQUIRED_DELIVERY_PHOTOS) {
+      missingEvidence.push(
+        `${REQUIRED_DELIVERY_PHOTOS - evidenceCounts.photos} fotos restantes (mínimo ${REQUIRED_DELIVERY_PHOTOS})`,
+      );
+    }
+    if (evidenceCounts.videos < REQUIRED_DELIVERY_VIDEOS) {
+      missingEvidence.push(
+        `${REQUIRED_DELIVERY_VIDEOS - evidenceCounts.videos} videos restantes (mínimo ${REQUIRED_DELIVERY_VIDEOS})`,
+      );
+    }
+    if (missingEvidence.length > 0) {
+      throw new MissingDeliveryEvidenceError(missingEvidence);
     }
 
     return this.transactionManager.run(async (tx) => {
@@ -100,8 +110,10 @@ export class CompleteDeliveryHandler {
           rentalId: updated.id,
           action: 'DELIVERY_COMPLETED',
           changes: {
-            photosCount: command.photosCount,
-            videosCount: command.videosCount,
+            photosCount: evidenceCounts.photos,
+            videosCount: evidenceCounts.videos,
+            reportedPhotosCount: command.photosCount,
+            reportedVideosCount: command.videosCount,
             notes: command.notes,
             newStatus: 'ACTIVE',
             vehicleStatus: 'RENTED',

@@ -8,6 +8,9 @@ import { EvaluateNotaryHandler } from './application/commands/evaluate-notary.ha
 import { ApproveNotaryExceptionHandler } from './application/commands/approve-notary-exception.handler';
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
+import { RequestEvidenceUploadSessionHandler } from './application/commands/request-evidence-upload-session.handler';
+import { RecordEvidenceHandler } from './application/commands/record-evidence.handler';
+import { ListRentalEvidenceHandler } from './application/queries/list-rental-evidence.handler';
 import { RequestExtensionHandler } from './application/commands/request-extension.handler';
 import { AuthorizeExtensionHandler } from './application/commands/authorize-extension.handler';
 import { RejectExtensionHandler } from './application/commands/reject-extension.handler';
@@ -15,7 +18,11 @@ import { ReportExtensionBreachHandler } from './application/commands/report-exte
 import { GetRentalHandler } from './application/queries/get-rental.handler';
 import { ListRentalsHandler } from './application/queries/list-rentals.handler';
 import { RentalRepositoryPort } from './application/ports/rental-repository.port';
+import { RentalEvidenceRepositoryPort } from './application/ports/rental-evidence-repository.port';
+import { RentalEvidenceStoragePort } from './application/ports/rental-evidence-storage.port';
 import { PrismaRentalRepository } from './infrastructure/persistence/prisma-rental.repository';
+import { PrismaRentalEvidenceRepository } from './infrastructure/persistence/prisma-rental-evidence.repository';
+import { GcsRentalEvidenceService } from './infrastructure/storage/gcs-rental-evidence.service';
 import { UsersModule } from '../users/users.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { AuditModule } from '../audit/audit.module';
@@ -34,6 +41,9 @@ import { FleetModule } from '../fleet/fleet.module';
     ApproveNotaryExceptionHandler,
     FormalizeContractHandler,
     CompleteDeliveryHandler,
+    RequestEvidenceUploadSessionHandler,
+    RecordEvidenceHandler,
+    ListRentalEvidenceHandler,
     RequestExtensionHandler,
     AuthorizeExtensionHandler,
     RejectExtensionHandler,
@@ -41,6 +51,8 @@ import { FleetModule } from '../fleet/fleet.module';
     GetRentalHandler,
     ListRentalsHandler,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
+    { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
+    { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },
   ],
   exports: [RentalRepositoryPort],
 })

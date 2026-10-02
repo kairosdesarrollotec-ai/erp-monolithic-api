@@ -10,6 +10,7 @@ export type RentalAction =
   | 'APPROVE_NOTARY_EXCEPTION'
   | 'FORMALIZE_CONTRACT'
   | 'COMPLETE_DELIVERY'
+  | 'UPLOAD_EVIDENCE'
   | 'REQUEST_EXTENSION'
   | 'AUTHORIZE_EXTENSION'
   | 'REJECT_EXTENSION'
@@ -31,6 +32,8 @@ const RENTAL_ROLE_POLICY: Readonly<Record<RentalAction, ReadonlySet<WorkerRole>>
   APPROVE_NOTARY_EXCEPTION: new Set(['GERENCIA']),
   FORMALIZE_CONTRACT: OPERATIONAL_ROLES,
   COMPLETE_DELIVERY: OPERATIONAL_ROLES,
+  // Mismo rol que completar entrega: quien hace el checklist sube su evidencia.
+  UPLOAD_EVIDENCE: OPERATIONAL_ROLES,
   REQUEST_EXTENSION: OPERATIONAL_ROLES,
   // BR-ALQ-012/013: autorizar/rechazar una ampliacion compromete disponibilidad de flota y garantia -> Gerencia.
   AUTHORIZE_EXTENSION: new Set(['GERENCIA']),
