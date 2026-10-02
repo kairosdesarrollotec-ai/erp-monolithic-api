@@ -22,6 +22,8 @@ import {
 } from '../../application/ports/rental-repository.port';
 import { RentalStatus } from '../../domain/rental-status';
 import { ExtensionStatus } from '../../domain/extension-status';
+import { RentalPartyRole } from '../../domain/rental-party-role';
+import { NotaryResult } from '../../domain/notary-result';
 import { RentalVersionConflictError } from '../../domain/rental-errors';
 
 type RentalWithRelations = Prisma.RentalGetPayload<{
@@ -64,7 +66,7 @@ function toRecord(row: RentalWithRelations): RentalRecord {
       id: p.id,
       rentalId: p.rentalId,
       customerId: p.customerId,
-      role: p.role as any,
+      role: p.role as RentalPartyRole,
       createdAt: p.createdAt,
     })),
     notaryEvaluation: row.notaryEvaluation
@@ -72,7 +74,7 @@ function toRecord(row: RentalWithRelations): RentalRecord {
           id: row.notaryEvaluation.id,
           rentalId: row.notaryEvaluation.rentalId,
           policyVersion: row.notaryEvaluation.policyVersion,
-          result: row.notaryEvaluation.result as any,
+          result: row.notaryEvaluation.result as NotaryResult,
           reason: row.notaryEvaluation.reason,
           evaluatedAt: row.notaryEvaluation.evaluatedAt,
           approvedBy: row.notaryEvaluation.approvedBy,

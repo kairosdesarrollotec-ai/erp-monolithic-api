@@ -1,10 +1,9 @@
-import { ConflictException } from '@nestjs/common';
+import { DomainConflictError } from '../../../common/domain/domain-errors';
 
-export class CustomerDocumentAlreadyExistsError extends ConflictException {
+export class CustomerDocumentAlreadyExistsError extends DomainConflictError {
+  readonly code = 'CUSTOMER_DOCUMENT_ALREADY_EXISTS';
+
   constructor(documentType: string, documentNumber: string) {
-    super({
-      code: 'CUSTOMER_DOCUMENT_ALREADY_EXISTS',
-      detail: `Ya existe un cliente con ${documentType} número ${documentNumber} en esta empresa.`,
-    });
+    super(`Ya existe un cliente con ${documentType} número ${documentNumber} en esta empresa.`);
   }
 }

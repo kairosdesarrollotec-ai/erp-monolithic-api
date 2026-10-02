@@ -1,30 +1,27 @@
 import {
-  ConflictException,
-  ForbiddenException,
-  HttpException,
-  HttpStatus,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+  DomainConflictError,
+  DomainForbiddenError,
+  DomainPreconditionError,
+  DomainPreconditionRequiredError,
+  DomainUnprocessableError,
+} from '../../../common/domain/domain-errors';
 import { ReservationStatus } from './reservation-status';
 
 /** TDD-RES-001.md seccion 12/11.4 - REQUIREMENTS_INCOMPLETE (422). */
-export class RequirementsIncompleteError extends UnprocessableEntityException {
+export class RequirementsIncompleteError extends DomainUnprocessableError {
+  readonly code = 'REQUIREMENTS_INCOMPLETE';
+
   constructor(missing: string[]) {
-    super({
-      code: 'REQUIREMENTS_INCOMPLETE',
-      detail: `Falta completar: ${missing.join(', ')}`,
-      missingRequirements: missing,
-    });
+    super(`Falta completar: ${missing.join(', ')}`, { missingRequirements: missing });
   }
 }
 
 /** TDD-RES-001.md seccion 11.4 - VEHICLE_NOT_AVAILABLE (409). */
-export class VehicleNotAvailableError extends ConflictException {
+export class VehicleNotAvailableError extends DomainConflictError {
+  readonly code = 'VEHICLE_NOT_AVAILABLE';
+
   constructor() {
-    super({
-      code: 'VEHICLE_NOT_AVAILABLE',
-      detail: 'El vehiculo ya no esta disponible para el intervalo solicitado.',
-    });
+    super('El vehiculo ya no esta disponible para el intervalo solicitado.');
   }
 }
 
@@ -36,16 +33,11 @@ export class VehicleNotAvailableError extends ConflictException {
  * la propia documentacion original del TDD ya indicaba (comentario
  * previo: "aqui como 409 por simplicidad HTTP", ahora corregido).
  */
-export class ReservationVersionConflictError extends HttpException {
+export class ReservationVersionConflictError extends DomainPreconditionError {
+  readonly code = 'RESERVATION_VERSION_CONFLICT';
+
   constructor() {
-    super(
-      {
-        code: 'RESERVATION_VERSION_CONFLICT',
-        detail: 'La reserva fue modificada por otra operacion - vuelve a cargarla.',
-        statusCode: HttpStatus.PRECONDITION_FAILED,
-      },
-      HttpStatus.PRECONDITION_FAILED,
-    );
+    super('La reserva fue modificada por otra operacion - vuelve a cargarla.');
   }
 }
 
@@ -54,20 +46,17 @@ export class ReservationVersionConflictError extends HttpException {
  * es un precondition REQUIRED (RFC 6585), no un payload invalido - 428,
  * nunca 400.
  */
-export class IfMatchRequiredError extends HttpException {
+export class IfMatchRequiredError extends DomainPreconditionRequiredError {
+  readonly code = 'IF_MATCH_REQUIRED';
+
   constructor() {
-    super(
-      {
-        code: 'IF_MATCH_REQUIRED',
-        detail: 'Falta el header If-Match con la version vigente de la reserva.',
-        statusCode: HttpStatus.PRECONDITION_REQUIRED,
-      },
-      HttpStatus.PRECONDITION_REQUIRED,
-    );
+    super('Falta el header If-Match con la version vigente de la reserva.');
   }
 }
 
-export class ReservationScopeForbiddenError extends ForbiddenException {
+export class ReservationScopeForbiddenError extends DomainForbiddenError {
+  readonly code = 'RESERVATION_SCOPE_FORBIDDEN';
+
   constructor() {
     super('La reserva no pertenece al contexto de trabajo del usuario.');
   }
@@ -81,12 +70,11 @@ export class ReservationScopeForbiddenError extends ForbiddenException {
  * recurso y la operacion pedida - distinto del 412 de version, que es
  * sobre el valor de If-Match, no sobre el estado de negocio.
  */
-export class ReservationStateConflictError extends ConflictException {
+export class ReservationStateConflictError extends DomainConflictError {
+  readonly code = 'RESERVATION_STATE_CONFLICT';
+
   constructor(action: string, status: ReservationStatus) {
-    super({
-      code: 'RESERVATION_STATE_CONFLICT',
-      detail: `No se puede ${action} una reserva en estado ${status}.`,
-    });
+    super(`No se puede ${action} una reserva en estado ${status}.`);
   }
 }
 
@@ -97,12 +85,11 @@ export class ReservationStateConflictError extends ConflictException {
  * p.ej. dos conversiones concurrentes. Se traduce a 409 con codigo propio
  * en vez de un 500 generico.
  */
-export class InquiryAlreadyHasReservationError extends ConflictException {
+export class InquiryAlreadyHasReservationError extends DomainConflictError {
+  readonly code = 'INQUIRY_ALREADY_CONVERTED';
+
   constructor() {
-    super({
-      code: 'INQUIRY_ALREADY_CONVERTED',
-      detail: 'La consulta ya tiene una reserva asociada - una consulta se convierte a lo sumo una vez.',
-    });
+    super('La consulta ya tiene una reserva asociada - una consulta se convierte a lo sumo una vez.');
   }
 }
 
@@ -114,11 +101,10 @@ export class InquiryAlreadyHasReservationError extends ConflictException {
  * permitia crear una reserva citando una consulta en cualquier estado
  * (incluso cerrada) sin transicionarla - ver docs/conflicts/CONFLICT-CON-001.md.
  */
-export class InquiryConversionRequiredError extends ConflictException {
+export class InquiryConversionRequiredError extends DomainConflictError {
+  readonly code = 'INQUIRY_CONVERSION_REQUIRED';
+
   constructor(inquiryId: string) {
-    super({
-      code: 'INQUIRY_CONVERSION_REQUIRED',
-      detail: `Las reservas se crean convirtiendo la consulta: POST /inquiries/${inquiryId}/commands/convert-to-reservation.`,
-    });
+    super(`Las reservas se crean convirtiendo la consulta: POST /inquiries/${inquiryId}/commands/convert-to-reservation.`);
   }
 }
