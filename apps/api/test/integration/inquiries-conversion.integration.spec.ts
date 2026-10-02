@@ -148,7 +148,7 @@ describe('Consulta -> Reserva (Postgres real)', () => {
     const rejected = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
     expect(fulfilled).toHaveLength(1);
     expect(rejected).toHaveLength(1);
-    expect([409, 412, 422]).toContain(rejected[0].reason.getStatus?.());
+    expect([409, 412, 422]).toContain(rejected[0].reason.httpStatus);
     await expect(prisma.reservation.count({ where: { inquiryId } })).resolves.toBe(1);
     await expect(prisma.inquiry.findUniqueOrThrow({ where: { id: inquiryId } })).resolves.toEqual(
       expect.objectContaining({ status: 'CONVERTIDA', version: 3 }),
