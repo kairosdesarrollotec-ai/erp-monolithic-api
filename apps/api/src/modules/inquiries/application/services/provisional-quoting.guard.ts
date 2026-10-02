@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
-import { RateCardPort } from '../ports/rate-card.port';
 import { QuotingNotProductionReadyError } from '../../domain/inquiry-errors';
 
 export const PROVISIONAL_QUOTING_POLICY = Symbol('PROVISIONAL_QUOTING_POLICY');
@@ -22,18 +21,21 @@ export function provisionalQuotingPolicyFromEnv(env: NodeJS.ProcessEnv): Provisi
 /**
  * Hallazgo ALTO de revalidacion PR#7 ("el flujo provisional cotiza sin
  * disponibilidad/tarifa productiva - corregir antes de habilitar
- * produccion"): control concreto, no solo documental. Si Flota o el
- * tarifario siguen siendo adaptadores provisionales y la API corre en
- * produccion, cotizar y convertir responden 503 QUOTING_NOT_PRODUCTION_READY
- * - a menos que alguien lo habilite EXPLICITAMENTE por variable de entorno
- * (decision consciente y auditable, nunca por omision). Fuera de produccion
+ * produccion"): control concreto, no solo documental. Si Flota sigue
+ * siendo un adaptador provisional y la API corre en produccion, cotizar y
+ * convertir responden 503 QUOTING_NOT_PRODUCTION_READY - a menos que
+ * alguien lo habilite EXPLICITAMENTE por variable de entorno (decision
+ * consciente y auditable, nunca por omision). Fuera de produccion
  * (desarrollo/QA) el flujo provisional funciona normalmente.
+ *
+ * Correccion (oct 2026): ya no verifica un `RateCardPort` separado - el
+ * precio de cotizacion es responsabilidad de `FleetAvailabilityPort`
+ * (ver quote.handler.ts), asi que un solo chequeo cubre ambos.
  */
 @Injectable()
 export class ProvisionalQuotingGuard {
   constructor(
     private readonly fleet: FleetAvailabilityPort,
-    private readonly rateCards: RateCardPort,
     @Inject(PROVISIONAL_QUOTING_POLICY) private readonly policy: ProvisionalQuotingPolicy,
   ) {}
 
@@ -42,10 +44,7 @@ export class ProvisionalQuotingGuard {
       return;
     }
     if (!this.fleet.productionReady) {
-      throw new QuotingNotProductionReadyError('La elegibilidad de Flota (FleetAvailabilityPort)');
-    }
-    if (!this.rateCards.productionReady) {
-      throw new QuotingNotProductionReadyError('El tarifario versionado (RateCardPort)');
+      throw new QuotingNotProductionReadyError('La elegibilidad y tarifa de Flota (FleetAvailabilityPort)');
     }
   }
 }

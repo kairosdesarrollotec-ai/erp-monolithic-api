@@ -11,18 +11,26 @@ const QUERY = {
 
 describe('ProvisionalFleetAvailabilityAdapter', () => {
   it('busca el vehiculo por organizacion Y empresa (aislamiento cross-company)', async () => {
-    const findFirst = jest.fn().mockResolvedValue({ id: 'veh-1' });
+    const findFirst = jest.fn().mockResolvedValue({ id: 'veh-1', dailyRate: '100.00' });
     const adapter = new ProvisionalFleetAvailabilityAdapter({ vehicle: { findFirst } } as any);
 
-    await expect(adapter.checkEligibility(QUERY)).resolves.toEqual({ eligible: true, vehicleId: 'veh-1' });
+    await expect(adapter.checkEligibility(QUERY)).resolves.toEqual({ eligible: true, vehicleId: 'veh-1', dailyRate: '100.00' });
     expect(findFirst).toHaveBeenCalledWith({
       where: { id: 'veh-1', organizationId: 'org-1', operatingCompanyId: 'company-1' },
-      select: { id: true },
+      select: { id: true, dailyRate: true },
     });
   });
 
   it('un vehiculo de otra empresa (no encontrado bajo el scope) no es elegible', async () => {
     const adapter = new ProvisionalFleetAvailabilityAdapter({ vehicle: { findFirst: jest.fn().mockResolvedValue(null) } } as any);
+
+    await expect(adapter.checkEligibility(QUERY)).resolves.toEqual(expect.objectContaining({ eligible: false }));
+  });
+
+  it('un vehiculo sin dailyRate configurado no es elegible', async () => {
+    const adapter = new ProvisionalFleetAvailabilityAdapter({
+      vehicle: { findFirst: jest.fn().mockResolvedValue({ id: 'veh-1', dailyRate: null }) },
+    } as any);
 
     await expect(adapter.checkEligibility(QUERY)).resolves.toEqual(expect.objectContaining({ eligible: false }));
   });

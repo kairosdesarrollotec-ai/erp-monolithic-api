@@ -51,8 +51,7 @@ function build(options: {
   const outbox = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxEventRepositoryPort>;
   const transactions = buildTransactionManager();
   const fleet = { productionReady: false } as any;
-  const rateCards = { productionReady: false } as any;
-  const guard = new ProvisionalQuotingGuard(fleet, rateCards, { production: options.production ?? false, allowProvisional: false });
+  const guard = new ProvisionalQuotingGuard(fleet, { production: options.production ?? false, allowProvisional: false });
   const clock = new FixedClock(options.now ?? NOW);
   const depositPolicy = {
     getCurrent: jest.fn().mockResolvedValue({ version: 1, amount: '300.00', currency: 'PEN', effectiveFrom: null }),
