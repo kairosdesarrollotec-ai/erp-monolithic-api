@@ -24,6 +24,7 @@ export async function createTestDatabase(): Promise<TestDatabase> {
     env: {
       ...process.env,
       DATABASE_URL: databaseUrl,
+      DIRECT_URL: databaseUrl,
     },
     stdio: 'pipe',
   });

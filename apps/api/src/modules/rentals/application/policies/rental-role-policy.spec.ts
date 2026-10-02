@@ -65,6 +65,23 @@ describe('assertRentalRoleAllowed', () => {
     }
   });
 
+  it('falta grave de ampliacion (BR-ALQ-013, REPORT_EXTENSION_BREACH) solo esta permitida para GERENCIA', () => {
+    expect(() => assertRentalRoleAllowed('GERENCIA', 'REPORT_EXTENSION_BREACH')).not.toThrow();
+
+    const nonGerenciaRoles: WorkerRole[] = [
+      'FRONT_OFFICE',
+      'ADMINISTRACION',
+      'AUDITORIA',
+      'FINANZAS',
+      'CAMPO',
+      'RRHH',
+    ];
+
+    for (const role of nonGerenciaRoles) {
+      expect(() => assertRentalRoleAllowed(role, 'REPORT_EXTENSION_BREACH')).toThrow(ForbiddenException);
+    }
+  });
+
   it('PLATFORM_ADMIN tiene pase irrestricto', () => {
     for (const action of [
       'CREATE',

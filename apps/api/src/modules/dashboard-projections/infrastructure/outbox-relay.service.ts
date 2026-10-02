@@ -6,6 +6,7 @@ import { projectReservationEvent } from '../application/projectors/reservation-e
 import { NotificationReadModelPort } from '../../notifications/application/ports/notification-read-model.port';
 import { NotificationTemplatePort } from '../../notification-templates/application/ports/notification-template.port';
 import { projectNotificationEvent } from '../../notifications/domain/notification-event-projector';
+import { NotificationDispatcherPort } from '../../notifications/application/ports/notification-dispatcher.port';
 
 const DEFAULT_BATCH_SIZE = 50;
 const DEFAULT_LEASE_MS = 30_000;
@@ -79,6 +80,7 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
     private readonly dashboardItems: DashboardItemRepositoryPort,
     private readonly notifications: NotificationReadModelPort,
     private readonly notificationTemplates: NotificationTemplatePort,
+    private readonly dispatcher: NotificationDispatcherPort,
   ) {}
 
   onModuleInit(): void {
@@ -195,6 +197,12 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
    * cae a su texto generico de respaldo (ver
    * notification-event-projector.ts) en vez de dejar al usuario sin
    * notificacion.
+   *
+   * Adicionalmente, si la plantilla tiene canales externos configurados
+   * (EMAIL, PUSH, SMS), despacha mediante NotificationDispatcherPort.
+   * RESILIENCIA: el despacho externo corre aislado en try/catch para que
+   * un error de red o de proveedor externo no aborte la marcacion del
+   * evento ni envenene el outbox relay.
    */
   private async projectNotification(event: {
     id: string;
@@ -204,11 +212,35 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
   }): Promise<void> {
     const payload = event.payload as { organizationId?: string };
     const organizationId = payload.organizationId;
-    const template = organizationId ? await this.notificationTemplates.getCurrent(organizationId, event.eventType) : null;
+    const template = organizationId
+      ? await this.notificationTemplates.getCurrent(organizationId, event.eventType)
+      : null;
 
     const result = projectNotificationEvent(event, template?.body ?? null);
     if (result.action === 'CREATE') {
       await this.notifications.create(result.item);
+
+      const channels = template?.channels ?? [];
+      if (channels.length > 0) {
+        try {
+          await this.dispatcher.dispatch({
+            sourceEventId: event.id,
+            eventType: event.eventType,
+            organizationId: result.item.organizationId,
+            companyId: result.item.companyId,
+            branchId: result.item.branchId,
+            recipientFirebaseUid: result.item.recipientFirebaseUid,
+            title: result.item.title,
+            body: result.item.title,
+            deepLink: result.item.deepLink,
+            channels,
+          });
+        } catch (dispatchError) {
+          this.logger.error(
+            `Fallo no bloqueante en despacho externo para evento ${event.id}: ${(dispatchError as Error).message}`,
+          );
+        }
+      }
     }
   }
 }

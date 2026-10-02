@@ -284,6 +284,8 @@ Todo comando mutable exige `If-Match: "<version>"`. Versión distinta devuelve `
 
 ### 11.1 Crear reserva (borrador)
 
+> ⚠️ **Sección parcialmente estale — DEC-CON-001-FINAL (2026-10-01):** cuando el body incluye `inquiryId`, el endpoint `POST /api/v1/reservations` retorna **409 `INQUIRY_CONVERSION_REQUIRED`** en lugar de 201. La única vía válida para crear una Reserva a partir de una Consulta es `POST /api/v1/inquiries/{id}/commands/convert-to-reservation`. El body de ejemplo abajo sigue siendo correcto para reservas creadas sin `inquiryId`. Ver `CONFLICT-CON-001.md` (RESUELTO) y `docs/decision-log.md` (DEC-CON-001-FINAL).
+
 ```
 POST /api/v1/reservations
 Idempotency-Key: 018f...
@@ -301,7 +303,7 @@ Idempotency-Key: 018f...
 }
 ```
 
-Respuesta `201`:
+Respuesta `201` (solo cuando no hay `inquiryId`; con `inquiryId` → 409 `INQUIRY_CONVERSION_REQUIRED`):
 
 ```json
 {

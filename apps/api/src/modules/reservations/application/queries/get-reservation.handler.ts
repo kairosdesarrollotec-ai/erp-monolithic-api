@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { GetReservationQuery } from './get-reservation.query';
 
 /**
@@ -16,6 +17,7 @@ export class GetReservationHandler {
   constructor(
     private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
+    private readonly matrixAuth: MatrixAuthorizationService,
   ) {}
 
   async execute(query: GetReservationQuery): Promise<ReservationRecord> {
@@ -24,6 +26,7 @@ export class GetReservationHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
+    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'READ_DETAIL');
 
     const reservation = await this.reservations.findById(query.id, {
       organizationId: context.organizationId,

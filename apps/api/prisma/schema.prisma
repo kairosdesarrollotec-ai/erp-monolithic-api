@@ -398,6 +398,11 @@ model Customer {
   email              String?
   phone              String?
   address            String?
+  /// Decision de diseno nueva (no existia un modulo/campo real de
+  /// Clientes para esto): estado "rojo"/lista negra del cliente,
+  /// introducido para BR-ALQ-013 (falta grave de ampliacion de
+  /// alquiler). NORMAL | ROJO.
+  status             String              @default("NORMAL")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
 
@@ -822,12 +827,45 @@ model Rental {
   contract         RentalContract?
   deposit          RentalDeposit?
   extensions       RentalExtension[]
+  evidence         RentalEvidence[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
   @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)])
   @@index([customerId, createdAt(sort: Desc)])
   @@map("rentals")
+}
+
+/// ALQ-09 / BR-INS-003 / BR-INS-004 - evidencia real (foto/video) del
+/// checklist de entrega de un alquiler. No existe aun una tabla
+/// transversal `evidence` (TDD-RES-001 seccion 9.3 ya documenta el mismo
+/// gap con `ReservationAcceptance.evidenceRef` como placeholder) - este
+/// modelo es especifico de Rentals, analogo al patron ya usado por Fleet
+/// (GcsVehiclePhotoService) pero persistiendo un registro por archivo en
+/// vez de un solo campo `photoUrl`, porque aqui se deben contar/validar
+/// multiples evidencias (35 fotos + 3 videos) antes de permitir
+/// complete-delivery.
+model RentalEvidence {
+  id                 String             @id @default(uuid())
+  organizationId     String             @map("organization_id")
+  operatingCompanyId String             @map("operating_company_id")
+  rentalId           String             @map("rental_id")
+  type               RentalEvidenceType
+  zone               String
+  objectUrl          String             @map("object_url")
+  uploadedBy         String             @map("uploaded_by")
+  uploadedAt         DateTime           @default(now()) @map("uploaded_at")
+
+  rental Rental @relation(fields: [rentalId, operatingCompanyId], references: [id, operatingCompanyId])
+
+  @@index([rentalId, type])
+  @@index([organizationId, operatingCompanyId, rentalId], map: "rental_evidence_organization_id_operating_company_id_renta_idx")
+  @@map("rental_evidence")
+}
+
+enum RentalEvidenceType {
+  PHOTO
+  VIDEO
 }
 
 /// TDD-03-alquiler seccion 9.2 / BR-ALQ-015 - intervinientes del alquiler.
@@ -946,4 +984,23 @@ model RentalExtension {
 
   @@index([rentalId])
   @@map("rental_extensions")
+}
+
+/// Tarifario versionado por empresa operadora (operatingCompanyId).
+/// currentFor: fila más reciente donde effectiveFrom <= at.
+/// Reemplaza ProvisionalRateCardAdapter (PROP-007).
+/// No eliminar ni editar versiones existentes: insertar la siguiente.
+model RateCardEntry {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  amountPerDay       Decimal  @map("amount_per_day") @db.Decimal(10, 2)
+  currency           String   @db.Char(3)
+  validityHours      Int      @map("validity_hours")
+  effectiveFrom      DateTime @default(now()) @map("effective_from")
+  createdAt          DateTime @default(now()) @map("created_at")
+  createdBy          String   @map("created_by")
+
+  @@index([operatingCompanyId, effectiveFrom], map: "rate_card_versions_company_effective_idx")
+  @@map("rate_card_versions")
 }

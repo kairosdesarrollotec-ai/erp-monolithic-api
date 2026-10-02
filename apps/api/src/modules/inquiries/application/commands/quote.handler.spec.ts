@@ -57,7 +57,7 @@ describe('QuoteHandler', () => {
 
     await handler.execute(command(3));
 
-    expect(rateCards.currentFor).toHaveBeenCalledWith(COMPANY, NOW);
+    expect(rateCards.currentFor).toHaveBeenCalledWith(ORG, COMPANY, NOW);
     expect(inquiries.quote).toHaveBeenCalledWith(
       {
         id: 'inq-1',

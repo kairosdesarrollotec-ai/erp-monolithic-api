@@ -323,6 +323,96 @@ paths:
         '428':
           description: Falta header If-Match
 
+  /rentals/{id}/evidence/upload-url:
+    post:
+      operationId: requestRentalEvidenceUploadSession
+      summary: Solicita una URL firmada para subir una foto/video de evidencia de entrega a GCS
+      description: >
+        Mismo patron que POST /fleet/vehicles/photo-upload-sessions (PROP-008 /
+        ADR-KAI-005): el cliente hace PUT del archivo a uploadUrl y luego
+        confirma con POST /rentals/{id}/evidence usando el objectUrl devuelto.
+        Requiere Idempotency-Key para reintentos seguros.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestEvidenceUploadSessionRequest' }
+      responses:
+        '201':
+          description: Sesión de carga creada correctamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvidenceUploadSessionResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler no encontrado
+        '409':
+          description: Estado incompatible (debe estar en PENDING_DELIVERY)
+        '413':
+          description: contentLength supera el máximo permitido (12 MB foto / 200 MB video)
+
+  /rentals/{id}/evidence:
+    post:
+      operationId: recordRentalEvidence
+      summary: Registra una evidencia (foto/video) ya subida a GCS
+      description: >
+        Confirma en BD una evidencia subida con la uploadUrl obtenida de
+        POST /rentals/{id}/evidence/upload-url. Requiere Idempotency-Key.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordEvidenceRequest' }
+      responses:
+        '201':
+          description: Evidencia registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalEvidenceResponse' }
+        '400':
+          description: objectUrl no es una URL de GCS válida
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler no encontrado
+        '409':
+          description: Estado incompatible (debe estar en PENDING_DELIVERY)
+    get:
+      operationId: listRentalEvidence
+      summary: Lista la evidencia de entrega registrada para un alquiler
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de evidencia (progreso del checklist BR-INS-003/004)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RentalEvidenceResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler no encontrado
+
   /rentals/{id}/commands/request-extension:
     post:
       operationId: requestExtension
@@ -410,6 +500,36 @@ paths:
           description: Token de autenticación ausente o inválido
         '403':
           description: No autorizado para el contexto o rol insuficiente
+        '409':
+          description: Estado incompatible (debe estar en EXTENSION_PENDING)
+        '412':
+          description: Version no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+
+  /rentals/{id}/commands/report-extension-breach:
+    post:
+      operationId: reportExtensionBreach
+      summary: Registrar falta grave de ampliacion (UC-ALQ-006b / BR-ALQ-013) - retiene 100% de garantia y marca cliente "rojo"
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportExtensionBreachRequest' }
+      responses:
+        '200':
+          description: Falta grave registrada; extension pasa a BREACH, garantia retenida al 100% y cliente marcado "rojo"
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente (requiere GERENCIA)
         '409':
           description: Estado incompatible (debe estar en EXTENSION_PENDING)
         '412':
@@ -527,13 +647,84 @@ components:
 
     CompleteDeliveryRequest:
       type: object
-      required: [companyId, branchId, photosCount, videosCount]
+      required: [companyId, branchId]
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
-        photosCount: { type: integer, minimum: 0 }
-        videosCount: { type: integer, minimum: 0 }
+        photosCount:
+          type: integer
+          minimum: 0
+          deprecated: true
+          description: >
+            Obsoleto - BR-INS-003/004 ahora se valida contra el conteo real de
+            RentalEvidence (ver POST /rentals/{id}/evidence), no contra este
+            contador. Se mantiene opcional solo por compatibilidad.
+        videosCount:
+          type: integer
+          minimum: 0
+          deprecated: true
         notes: { type: string }
+
+    RentalEvidenceZone:
+      type: string
+      enum: [FRONTAL, LATERAL_IZQUIERDO, LATERAL_DERECHO, POSTERIOR, INTERIOR]
+
+    RequestEvidenceUploadSessionRequest:
+      type: object
+      required: [companyId, branchId, type, zone, contentType, contentLength]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        type: { type: string, enum: [PHOTO, VIDEO] }
+        zone: { $ref: '#/components/schemas/RentalEvidenceZone' }
+        contentType:
+          type: string
+          enum: [image/jpeg, image/webp, video/mp4, video/webm]
+        contentLength:
+          type: integer
+          minimum: 1
+          description: >
+            Tamaño exacto del archivo en bytes. Máximo 12 MB para PHOTO, 200 MB
+            para VIDEO (supuesto propio de esta tarea, sin BR que fije un límite
+            de video).
+
+    EvidenceUploadSessionResponse:
+      type: object
+      required: [uploadUrl, objectUrl]
+      properties:
+        uploadUrl:
+          type: string
+          format: uri
+          description: URL firmada de GCS (PUT, válida 15 min).
+        objectUrl:
+          type: string
+          format: uri
+          description: URL permanente del objeto en GCS. Pasar a POST /rentals/{id}/evidence.
+
+    RecordEvidenceRequest:
+      type: object
+      required: [companyId, branchId, type, zone, objectUrl]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        type: { type: string, enum: [PHOTO, VIDEO] }
+        zone: { $ref: '#/components/schemas/RentalEvidenceZone' }
+        objectUrl:
+          type: string
+          format: uri
+          description: objectUrl devuelto por POST /rentals/{id}/evidence/upload-url, ya subido a GCS.
+
+    RentalEvidenceResponse:
+      type: object
+      required: [id, rentalId, type, zone, objectUrl, uploadedBy, uploadedAt]
+      properties:
+        id: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        type: { type: string, enum: [PHOTO, VIDEO] }
+        zone: { $ref: '#/components/schemas/RentalEvidenceZone' }
+        objectUrl: { type: string, format: uri }
+        uploadedBy: { type: string }
+        uploadedAt: { type: string, format: date-time }
 
     RequestExtensionRequest:
       type: object
@@ -558,6 +749,14 @@ components:
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
+
+    ReportExtensionBreachRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        notes: { type: string, maxLength: 500, description: 'Nota adicional del operador para el expediente de evaluacion legal (BR-ALQ-013)' }
 
     RentalPartyResponse:
       type: object

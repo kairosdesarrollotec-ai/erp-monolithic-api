@@ -3,6 +3,104 @@ generated_note: Generado por bootstrap Claude Code a partir del encabezado real 
   version/fecha/estado se extrajeron con regex del propio documento, no se inventaron. Si un documento
   cambia, este manifiesto debe regenerarse via el agente index-maintainer.
 sources:
+- id: BDD-KAIROS-MVP-002-NOT
+  path: docs/sources/bdd/bdd-notifications.md
+  type: BDD
+  module: Notificaciones
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  sha256: unknown
+  authority: business
+  supersedes: null
+  notes: >
+    BDD específico del módulo notifications. Documenta los 12 eventos de notificación (BDD §12),
+    reglas BR-NOT-001..007 y escenarios SC-NOT-001..006. Fuente: bdd-00-transversal.md §12.
+- id: SDD-KAIROS-MVP-002-NOT
+  path: docs/sources/sdd/sdd-notifications.md
+  type: SDD
+  module: Notificaciones
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  sha256: unknown
+  authority: functional
+  supersedes: null
+  notes: >
+    SDD específico del módulo notifications. Diseño hexagonal: 5 puertos, 4 adaptadores
+    (Firebase FCM, Firebase Auth lookup, ConsoleEmail, ConsoleSMS).
+- id: TDD-KAIROS-MVP-002-NOT
+  path: docs/sources/tdd/tdd-notifications.md
+  type: TDD
+  module: Notificaciones
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  sha256: unknown
+  authority: technical
+  supersedes: null
+  notes: >
+    TDD específico del módulo notifications. Incluye ADR Jest ESM stubs (TDD-NOT-ADR-002),
+    estructura de módulo, modelo de dominio y guía de testing. Refleja 430/430 tests.
+- id: BDD-KAIROS-MVP-002-FLT
+  path: docs/sources/bdd/bdd-fleet.md
+  type: BDD
+  module: Flota
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
+  sha256: unknown
+  authority: business
+  supersedes: null
+  notes: >
+    BDD específico del módulo fleet. Documenta estados AVAILABLE/RENTED/MAINTENANCE/OUT_OF_SERVICE,
+    reglas BR-FLT-001..009 y escenarios SC-FLT-001..010. Fuente primaria: fleet.yaml v0.2.0.
+- id: SDD-KAIROS-MVP-002-FLT
+  path: docs/sources/sdd/sdd-fleet.md
+  type: SDD
+  module: Flota
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
+  sha256: unknown
+  authority: functional
+  supersedes: null
+  notes: >
+    SDD específico del módulo fleet. FleetController, FleetRolePolicy, VehicleService,
+    GcsPhotoUploadService, VehicleRepository. Flujo foto GCS (ADR-KAI-005 extendido — PROP-008).
+- id: TDD-KAIROS-MVP-002-FLT
+  path: docs/sources/tdd/tdd-fleet.md
+  type: TDD
+  module: Flota
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
+  sha256: unknown
+  authority: technical
+  supersedes: null
+  notes: >
+    TDD específico del módulo fleet. Incluye modelo Prisma, contrato OpenAPI fleet.yaml v0.2.0,
+    stack frontend (FleetListScreen, useFleetList, NewVehicleModal, MSW v2). Refleja 22/22 tests.
+- id: OPENAPI-NOTIFICATIONS-DISPATCH
+  path: apps/api/src/modules/notifications/notification-dispatch.module.ts
+  type: MODULE
+  module: Notificaciones (despacho externo)
+  version: '1.0'
+  date: '2026-10-01'
+  status: active
+  estado_original: Módulo TR-07 mergeado a main el 2026-10-01 (rama feature/bloque-2-tr-07-notificaciones-externas)
+  sha256: unknown
+  authority: technical
+  supersedes: null
+  notes: >
+    BDD/SDD/TDD específicos creados 2026-10-01 (GAP-TR07-01 cerrado): bdd-notifications.md,
+    sdd-notifications.md, tdd-notifications.md. Trazabilidad: artifacts/traceability/notifications/TR-07-dispatch.md.
 - id: BDD-KAIROS-MVP-002-TRANSVERSAL
   path: docs/sources/bdd/bdd-00-transversal.md
   type: BDD
@@ -197,8 +295,8 @@ sources:
   module: Transversal
   version: '3.4'
   date: 10 de septiembre de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. v3.4 aprobado por Tech Lead (Eder Ramos) sin firma formal. Stack React/Vite/Node22/NestJS verificado contra implementación.
   sha256: a4d01294286579e53c56490b48ae4234fbfa19e917df12c452e6fd06af79f1df
   authority: technical
   supersedes: null
@@ -208,8 +306,8 @@ sources:
   module: Consulta
   version: '2.0'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. §9.2/11.1 actualizados en PR#7 con snapshot de datos de viaje (CONFLICT-CON-002 resuelto). Código en inquiries/ verificado coherente.
   sha256: 8af34aef4ffde5bad4c6375385fc5bc0606eee2ad11513b00c0a93c9d11ab0f3
   authority: technical
   supersedes: null
@@ -219,8 +317,8 @@ sources:
   module: Reserva
   version: '2.2'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01. §11.1 actualizado con nota DEC-CON-001-FINAL (POST /reservations con inquiryId → 409 INQUIRY_CONVERSION_REQUIRED). Demás secciones coherentes con PR#7.
   sha256: 1bcb1efaa2040a874a7a5c8d87686971254e467a37f82a0bbb07226e51dc1a1b
   authority: technical
   supersedes: null
@@ -230,8 +328,8 @@ sources:
   module: Alquiler
   version: '2.1'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. Módulo no implementado aún; coherente con TDD transversal y decisiones arquitectónicas.
   sha256: 2613c8d423267f8c7fe802b5c0036ec2631ac1463fece220446fc3ed2b8a0acb
   authority: technical
   supersedes: null
@@ -241,8 +339,8 @@ sources:
   module: Devolución
   version: '2.1'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. Módulo no implementado aún; daño técnico sin tabla y OQ-TDD-DEV-001 resuelto (Motrix fuera de alcance).
   sha256: 4f3db9b4e97722e1c30a1d24c95506976f9244c969d11ca0d2efd49cef558917
   authority: technical
   supersedes: null
@@ -252,8 +350,8 @@ sources:
   module: Reclutamiento y Selección
   version: '2.0'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. Módulo no implementado aún; coherente con TDD transversal.
   sha256: c994dc8d3120332ea1af25d09dc8cb7ce40d9c4cd1f31531cc157792ef7fe0c4
   authority: technical
   supersedes: null
@@ -263,8 +361,8 @@ sources:
   module: Administración de Personal
   version: '2.1'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. Módulo no implementado aún; OQ-ADP-102 resuelto (sin 4to nivel de autorización automático).
   sha256: e13fbd27ad0b079cac355c4539bf5abf862d025f44c265b74c2aa3ab5d991a9e
   authority: technical
   supersedes: null
@@ -274,11 +372,55 @@ sources:
   module: Trazabilidad
   version: '2.1'
   date: 02 de septiembre de 2026
-  status: draft_pending_review
-  estado_original: Completo en contenido, pendiente de revisión formal
+  status: approved
+  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. Matriz BDD→SDD→TDD→Test coherente con la arquitectura implementada.
   sha256: e0add45e4601a3181d54c64811acdfd107e4c9e29f047015e20c3876e4243b2c
   authority: technical
   supersedes: null
+- id: BDD-KAIROS-MVP-002-CLI
+  path: docs/sources/bdd/bdd-clients.md
+  type: BDD
+  module: Clientes
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
+  sha256: f5d301205210aad119f3e002443983ef855dd52a2777df062a3617638c7c4637
+  authority: business
+  supersedes: null
+  notes: >
+    BDD específico del módulo customers. Documenta reglas BR-CLI-001..005 y escenarios
+    SC-CLI-001..005. Fuente primaria: customers.yaml v0.1.0 y customer-role.policy.ts.
+- id: SDD-KAIROS-MVP-002-CLI
+  path: docs/sources/sdd/sdd-clients.md
+  type: SDD
+  module: Clientes
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
+  sha256: 3434a2b257b776f9a1f39754a1e8d804bc05f36538918a64cac53fa8ae2beb42
+  authority: functional
+  supersedes: null
+  notes: >
+    SDD específico del módulo customers. CustomersController, CreateCustomerHandler,
+    ListCustomersHandler, GetCustomerHandler, UpdateCustomerHandler, CustomerRolePolicy,
+    PrismaCustomerRepository. Flujo de coincidencia DNI (SC-CLI-002).
+- id: TDD-KAIROS-MVP-002-CLI
+  path: docs/sources/tdd/tdd-clients.md
+  type: TDD
+  module: Clientes
+  version: '1.0'
+  date: '2026-10-01'
+  status: approved
+  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-CLI-01
+  sha256: 2de014980195f1693ac7577dd48cbe537a97affc86b8b0fc988875a864c0a162
+  authority: technical
+  supersedes: null
+  notes: >
+    TDD específico del módulo customers. Modelo Prisma, contrato customers.yaml v0.1.0,
+    aislamiento multiempresa (doble capa: aplicación + repositorio), unique constraint
+    (operatingCompanyId, documentType, documentNumber). ADR TDD-CLI-ADR-001..003.
 - id: OPENAPI-CUSTOMERS-V0.1.0
   path: packages/contracts/openapi/customers.yaml
   type: OpenAPI

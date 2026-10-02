@@ -8,6 +8,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { MissingDeliveryEvidenceError, RentalStateConflictError } from '../../domain/rental-errors';
+import { RentalEvidenceRepositoryPort } from '../ports/rental-evidence-repository.port';
 
 describe('CompleteDeliveryHandler', () => {
   const fakeRental: RentalRecord = {
@@ -83,7 +84,22 @@ describe('CompleteDeliveryHandler', () => {
       publish: jest.fn().mockResolvedValue(undefined),
     };
 
-    return { rentals, fleetVehicles, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository };
+    const evidenceRepository = {
+      record: jest.fn(),
+      list: jest.fn(),
+      countByType: jest.fn().mockResolvedValue({ photos: 35, videos: 3 }),
+    } as unknown as jest.Mocked<RentalEvidenceRepositoryPort>;
+
+    return {
+      rentals,
+      fleetVehicles,
+      workContext,
+      matrixAuth,
+      transactionManager,
+      auditRepository,
+      outboxRepository,
+      evidenceRepository,
+    };
   }
 
   it('completa entrega exitosamente con 35 fotos y 3 videos (BR-INS-003/004) y actualiza vehiculo a RENTED', async () => {
@@ -96,6 +112,7 @@ describe('CompleteDeliveryHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     const result = await handler.execute(
@@ -120,6 +137,7 @@ describe('CompleteDeliveryHandler', () => {
 
   it('rechaza con MissingDeliveryEvidenceError si faltan fotos (minimo 35)', async () => {
     const deps = buildDeps();
+    deps.evidenceRepository.countByType.mockResolvedValueOnce({ photos: 30, videos: 3 });
     const handler = new CompleteDeliveryHandler(
       deps.rentals,
       deps.fleetVehicles,
@@ -128,6 +146,7 @@ describe('CompleteDeliveryHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     await expect(
@@ -137,6 +156,7 @@ describe('CompleteDeliveryHandler', () => {
 
   it('rechaza con MissingDeliveryEvidenceError si faltan videos (minimo 3)', async () => {
     const deps = buildDeps();
+    deps.evidenceRepository.countByType.mockResolvedValueOnce({ photos: 35, videos: 2 });
     const handler = new CompleteDeliveryHandler(
       deps.rentals,
       deps.fleetVehicles,
@@ -145,6 +165,7 @@ describe('CompleteDeliveryHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     await expect(
@@ -164,6 +185,7 @@ describe('CompleteDeliveryHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     await expect(

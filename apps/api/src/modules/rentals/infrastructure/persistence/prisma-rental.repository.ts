@@ -18,6 +18,7 @@ import {
   RejectExtensionInput,
   ContractTemplateRecord,
   CreateContractTemplateInput,
+  ReportExtensionBreachInput,
 } from '../../application/ports/rental-repository.port';
 import { RentalStatus } from '../../domain/rental-status';
 import { ExtensionStatus } from '../../domain/extension-status';
@@ -650,6 +651,67 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
       input.scope,
       input.expectedVersion,
       { status: 'ACTIVE', updatedBy: input.updatedBy },
+      tx,
+    );
+  }
+
+  /**
+   * BR-ALQ-013 / UC-ALQ-006b - falta grave de ampliacion: el cliente retiene
+   * el vehiculo sin cumplir los 4 requisitos (aviso 12h, autorizacion, pago,
+   * adenda firmada). Marca la extension como BREACH, retiene el 100% de la
+   * garantia (RentalDepositAdjustment FULL_RETENTION) y marca al cliente
+   * como "rojo" (Customer.status). El alquiler NO cambia de estado aqui:
+   * RentalStatus no tiene hoy un estado terminal para "vehiculo retenido
+   * sin autorizacion" (ver domain/rental-status.ts) y agregar uno es una
+   * decision de modelado fuera del alcance de este ticket.
+   */
+  async reportExtensionBreach(
+    input: ReportExtensionBreachInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord> {
+    const client = tx ?? this.prisma;
+
+    await client.rentalExtension.update({
+      where: { id: input.extensionId },
+      data: {
+        status: 'BREACH',
+        resolvedAt: new Date(),
+      },
+    });
+
+    const deposit = await client.rentalDeposit.findUniqueOrThrow({
+      where: { rentalId: input.rentalId },
+    });
+
+    await client.rentalDepositAdjustment.create({
+      data: {
+        depositId: deposit.id,
+        type: 'FULL_RETENTION',
+        amount: deposit.originalAmount,
+        reason: input.legalEvaluationNote,
+        authorizedBy: input.updatedBy,
+      },
+    });
+
+    await client.rentalDeposit.update({
+      where: { id: deposit.id },
+      data: { status: 'RETAINED' },
+    });
+
+    // Decision de diseno nueva (no existia un modulo/campo real de Clientes
+    // para esto): se reutiliza el campo Customer.status ("NORMAL" | "ROJO")
+    // agregado en esta misma migracion, en vez de modelar una lista negra
+    // separada sin fuente BDD/SDD de Clientes que lo respalde.
+    await client.customer.update({
+      where: { id: input.customerId },
+      data: { status: 'ROJO' },
+    });
+
+    return this.bumpVersion(
+      input.rentalId,
+      input.scope,
+      input.expectedVersion,
+      { updatedBy: input.updatedBy },
       tx,
     );
   }
