@@ -1,0 +1,207 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Notifications API
+  version: 0.1.0
+  description: >
+    Contrato del modulo Notificaciones (TR-07, Centro de Notificaciones).
+
+    Cubre la bandeja de notificaciones in-app del usuario autenticado:
+    consultar las propias notificaciones (GET /notifications) y marcarlas
+    todas como leidas (POST /notifications/read-all).
+
+    El destinatario se extrae siempre del token de sesion Firebase
+    (req.firebaseUid) — nunca de un parametro de la peticion. Esto
+    garantiza que un usuario no puede consultar ni modificar las
+    notificaciones de otro usuario (BR-NOT-008, TDD-NOT-ADR-006).
+
+    Fuentes: bdd-notifications.md v1.1, sdd-notifications.md v1.1,
+    tdd-notifications.md v1.1, NotificationsController,
+    GetMyNotificationsQueryDto, NotificationsResponse.
+
+paths:
+  /notifications:
+    get:
+      operationId: listNotifications
+      summary: Bandeja de notificaciones in-app del usuario autenticado (TR-07)
+      description: >
+        Devuelve las notificaciones cuyo destinatario es el Firebase UID
+        del token de sesion presentado, filtradas por empresa y sede.
+        El parametro unreadOnly limita el resultado a las notificaciones
+        no leidas (readAt = null).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID de la empresa del contexto de trabajo actual.
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID de la sede del contexto de trabajo actual.
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - 'true'
+              - 'false'
+          description: >
+            Si es 'true', devuelve solo las notificaciones no leidas
+            (readAt = null). Si es 'false' o se omite, devuelve todas.
+      responses:
+        '200':
+          description: Lista de notificaciones del usuario. Array vacio si no hay notificaciones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsResponse'
+              example:
+                notifications:
+                  - id: '550e8400-e29b-41d4-a716-446655440001'
+                    notificationType: 'ReservationConfirmed'
+                    isEscalated: false
+                    title: 'Tu reserva fue confirmada.'
+                    deepLink: '/reservas/550e8400-e29b-41d4-a716-446655440000'
+                    readAt: null
+                    createdAt: '2026-10-02T14:30:00.000Z'
+                  - id: '550e8400-e29b-41d4-a716-446655440002'
+                    notificationType: 'ReservationCreated'
+                    isEscalated: false
+                    title: 'Reserva creada para el vehiculo V-001, del 03/10/2026.'
+                    deepLink: '/reservas/550e8400-e29b-41d4-a716-446655440003'
+                    readAt: '2026-10-02T10:00:00.000Z'
+                    createdAt: '2026-10-01T09:15:00.000Z'
+        '401':
+          description: Token de sesion ausente, invalido o expirado.
+        '422':
+          description: companyId o branchId no son UUIDs validos.
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      summary: Marca todas las notificaciones del usuario como leidas (TR-07)
+      description: >
+        Marca como leidas todas las notificaciones del usuario autenticado
+        (identificado por el token Firebase) en el contexto de empresa y
+        sede indicados en el cuerpo.
+
+        La operacion es idempotente: si no hay notificaciones sin leer,
+        responde 204 sin error.
+
+        El timestamp de readAt se fija en el momento de ejecucion del
+        comando (BR-NOT-010).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkAllNotificationsReadRequest'
+            example:
+              companyId: '550e8400-e29b-41d4-a716-446655440010'
+              branchId: '550e8400-e29b-41d4-a716-446655440011'
+      responses:
+        '204':
+          description: Notificaciones marcadas como leidas. Sin cuerpo de respuesta.
+        '401':
+          description: Token de sesion ausente, invalido o expirado.
+        '422':
+          description: companyId o branchId ausentes o no son UUIDs validos.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase JWT
+      description: >
+        Token de sesion Firebase obtenido con getIdToken() del SDK
+        Firebase Authentication. Verificado por FirebaseAuthGuard en el
+        backend.
+
+  schemas:
+    NotificationsResponse:
+      type: object
+      required:
+        - notifications
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationItem'
+
+    NotificationItem:
+      type: object
+      required:
+        - id
+        - notificationType
+        - isEscalated
+        - title
+        - deepLink
+        - readAt
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador unico de la notificacion in-app.
+        notificationType:
+          type: string
+          description: >
+            Tipo de evento que origino la notificacion. En fase 1 los
+            valores posibles son: ReservationCreated, ReservationConfirmed,
+            ReservationCancelled. Puede extenderse sin version bump del
+            contrato.
+          example: 'ReservationConfirmed'
+        isEscalated:
+          type: boolean
+          description: Indica si la notificacion fue marcada como urgente/escalada.
+        title:
+          type: string
+          description: >
+            Texto renderizado de la notificacion. Resultado de aplicar la
+            plantilla del evento al payload del evento de dominio.
+          example: 'Tu reserva fue confirmada.'
+        deepLink:
+          type: string
+          description: >
+            Ruta interna del ERP para navegar directamente al recurso
+            relacionado (e.g. /reservas/{id}).
+          example: '/reservas/550e8400-e29b-41d4-a716-446655440000'
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: >
+            Timestamp ISO 8601 de cuando el usuario leyo la notificacion.
+            null si la notificacion no ha sido leida.
+          example: null
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp ISO 8601 de creacion de la notificacion.
+          example: '2026-10-02T14:30:00.000Z'
+
+    MarkAllNotificationsReadRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+      properties:
+        companyId:
+          type: string
+          format: uuid
+          description: UUID de la empresa del contexto de trabajo actual.
+        branchId:
+          type: string
+          format: uuid
+          description: UUID de la sede del contexto de trabajo actual.
