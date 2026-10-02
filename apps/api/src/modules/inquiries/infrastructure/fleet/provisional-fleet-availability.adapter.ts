@@ -40,11 +40,16 @@ export class ProvisionalFleetAvailabilityAdapter extends FleetAvailabilityPort {
         organizationId: query.organizationId,
         operatingCompanyId: query.operatingCompanyId,
       },
-      select: { id: true },
+      select: { id: true, dailyRate: true },
     });
     if (!vehicle) {
       return { eligible: false, reason: 'El vehiculo indicado no existe en esta empresa.' };
     }
-    return { eligible: true, vehicleId: vehicle.id };
+    // Mismo criterio que PrismaFleetAvailabilityAdapter (oct 2026): el
+    // precio tambien sale de Vehicle.dailyRate - ver fleet-availability.port.ts.
+    if (vehicle.dailyRate === null) {
+      return { eligible: false, reason: 'Este vehiculo no tiene tarifa configurada en Flota.' };
+    }
+    return { eligible: true, vehicleId: vehicle.id, dailyRate: vehicle.dailyRate.toString() };
   }
 }

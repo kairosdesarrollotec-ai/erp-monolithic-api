@@ -8,7 +8,6 @@ import { GetInquiryHandler } from './application/queries/get-inquiry.handler';
 import { ListInquiriesHandler } from './application/queries/list-inquiries.handler';
 import { InquiryRepositoryPort } from './application/ports/inquiry-repository.port';
 import { FleetAvailabilityPort } from './application/ports/fleet-availability.port';
-import { RateCardPort } from './application/ports/rate-card.port';
 import {
   PROVISIONAL_QUOTING_POLICY,
   ProvisionalQuotingGuard,
@@ -16,7 +15,6 @@ import {
 } from './application/services/provisional-quoting.guard';
 import { PrismaInquiryRepository } from './infrastructure/persistence/prisma-inquiry.repository';
 import { PrismaFleetAvailabilityAdapter } from './infrastructure/fleet/prisma-fleet-availability.adapter';
-import { PrismaRateCardAdapter } from './infrastructure/pricing/prisma-rate-card.adapter';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { ReservationsModule } from '../reservations/reservations.module';
@@ -32,10 +30,13 @@ import { AuthorizationModule } from '../authorization/authorization.module';
  *   dentro de la misma transaccion de la conversion (caso de uso unico).
  * - PrismaModule/IdempotencyModule (@Global): TransactionManagerPort,
  *   ClockPort, IdempotencyInterceptor.
- * - FleetAvailabilityPort: PrismaFleetAvailabilityAdapter (productionReady=true).
- * - RateCardPort: PrismaRateCardAdapter (productionReady=true).
- * - ProvisionalQuotingGuard queda como salvaguarda: si ambos adaptan productionReady
- *   pasan el assert y cotizar funciona en produccion sin variable de entorno.
+ * - FleetAvailabilityPort: PrismaFleetAvailabilityAdapter (productionReady=true),
+ *   tambien fuente del precio de cotizacion (Vehicle.dailyRate) desde oct
+ *   2026 - RateCardPort/rate_card_versions queda sin uso (ver
+ *   quote.handler.ts y fleet-availability.port.ts).
+ * - ProvisionalQuotingGuard queda como salvaguarda: si el adaptador de
+ *   Flota es productionReady, el assert pasa y cotizar funciona en
+ *   produccion sin variable de entorno.
  */
 @Module({
   imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule, AuthorizationModule],
@@ -50,7 +51,6 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     ProvisionalQuotingGuard,
     { provide: InquiryRepositoryPort, useClass: PrismaInquiryRepository },
     { provide: FleetAvailabilityPort, useClass: PrismaFleetAvailabilityAdapter },
-    { provide: RateCardPort, useClass: PrismaRateCardAdapter },
     { provide: PROVISIONAL_QUOTING_POLICY, useFactory: () => provisionalQuotingPolicyFromEnv(process.env) },
   ],
 })

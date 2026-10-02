@@ -1,0 +1,31 @@
+-- Migration: drop_rate_card_versions
+-- Date: 2026-10-02
+-- Decision: PROP-007-FINAL (decision-log.md)
+--
+-- El tarifario versionado (rate_card_versions) queda sin uso desde oct 2026.
+-- El precio de cotizacion ahora proviene de Vehicle.dailyRate via
+-- FleetAvailabilityPort.checkEligibility(). La columna rateCardVersionId en
+-- Quotation conserva el marcador 'FLEET-DAILY-RATE' (string, sin FK).
+--
+-- Esta tabla estaba vacia en todos los entornos (nunca fue poblada en
+-- produccion; era parte del flujo provisional PROP-007 que nunca se activo).
+--
+-- Rollback: ver comentario al final de este archivo.
+
+DROP TABLE IF EXISTS "rate_card_versions";
+
+-- Rollback (solo si la tabla estaba vacia — verificar antes de ejecutar):
+-- CREATE TABLE "rate_card_versions" (
+--   "id"                   TEXT         NOT NULL,
+--   "organization_id"      TEXT         NOT NULL,
+--   "operating_company_id" TEXT         NOT NULL,
+--   "amount_per_day"       DECIMAL(10,2) NOT NULL,
+--   "currency"             CHAR(3)      NOT NULL,
+--   "validity_hours"       INTEGER      NOT NULL,
+--   "effective_from"       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+--   "created_at"           TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+--   "created_by"           TEXT         NOT NULL,
+--   CONSTRAINT "rate_card_versions_pkey" PRIMARY KEY ("id")
+-- );
+-- CREATE INDEX "rate_card_versions_company_effective_idx"
+--   ON "rate_card_versions" ("operating_company_id", "effective_from");

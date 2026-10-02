@@ -16,9 +16,14 @@ import {
   RequestExtensionInput,
   AuthorizeExtensionInput,
   RejectExtensionInput,
+  ContractTemplateRecord,
+  CreateContractTemplateInput,
+  ReportExtensionBreachInput,
 } from '../../application/ports/rental-repository.port';
 import { RentalStatus } from '../../domain/rental-status';
 import { ExtensionStatus } from '../../domain/extension-status';
+import { RentalPartyRole } from '../../domain/rental-party-role';
+import { NotaryResult } from '../../domain/notary-result';
 import { RentalVersionConflictError } from '../../domain/rental-errors';
 
 type RentalWithRelations = Prisma.RentalGetPayload<{
@@ -61,7 +66,7 @@ function toRecord(row: RentalWithRelations): RentalRecord {
       id: p.id,
       rentalId: p.rentalId,
       customerId: p.customerId,
-      role: p.role as any,
+      role: p.role as RentalPartyRole,
       createdAt: p.createdAt,
     })),
     notaryEvaluation: row.notaryEvaluation
@@ -69,7 +74,7 @@ function toRecord(row: RentalWithRelations): RentalRecord {
           id: row.notaryEvaluation.id,
           rentalId: row.notaryEvaluation.rentalId,
           policyVersion: row.notaryEvaluation.policyVersion,
-          result: row.notaryEvaluation.result as any,
+          result: row.notaryEvaluation.result as NotaryResult,
           reason: row.notaryEvaluation.reason,
           evaluatedAt: row.notaryEvaluation.evaluatedAt,
           approvedBy: row.notaryEvaluation.approvedBy,
@@ -294,11 +299,54 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
   }
 
   async contractTemplateBelongsToCompany(templateVersionId: string, companyId: string): Promise<boolean> {
+    // Tambien exige status ACTIVE: formalize-contract solo acepta un
+    // templateVersionId explicito si ademas esta vigente (BR-DOC-002).
     const row = await this.prisma.contractTemplate.findFirst({
-      where: { id: templateVersionId, companyId },
+      where: { id: templateVersionId, companyId, status: 'ACTIVE' },
       select: { id: true },
     });
     return row !== null;
+  }
+
+  async createContractTemplate(
+    input: CreateContractTemplateInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ContractTemplateRecord> {
+    const client = tx ?? this.prisma;
+
+    const last = await client.contractTemplate.findFirst({
+      where: { companyId: input.companyId, type: input.type },
+      orderBy: { version: 'desc' },
+      select: { version: true },
+    });
+    const nextVersion = (last?.version ?? 0) + 1;
+
+    // Retira la version ACTIVE previa (si existe) antes de insertar la
+    // nueva: el indice unico parcial "contract_template_unique_active"
+    // (BR-DOC-002) solo permite 1 fila ACTIVE por (company_id, type), y
+    // dentro de la misma transaccion el UPDATE ya es visible para el
+    // INSERT siguiente.
+    await client.contractTemplate.updateMany({
+      where: { companyId: input.companyId, type: input.type, status: 'ACTIVE' },
+      data: { status: 'RETIRED', effectiveTo: new Date() },
+    });
+
+    return client.contractTemplate.create({
+      data: {
+        companyId: input.companyId,
+        type: input.type,
+        version: nextVersion,
+        effectiveFrom: input.effectiveFrom,
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  async listContractTemplates(companyId: string): Promise<ContractTemplateRecord[]> {
+    return this.prisma.contractTemplate.findMany({
+      where: { companyId },
+      orderBy: [{ type: 'asc' }, { version: 'desc' }],
+    });
   }
 
   async list(filter: ListRentalsFilter): Promise<RentalRecord[]> {
@@ -605,6 +653,67 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
       input.scope,
       input.expectedVersion,
       { status: 'ACTIVE', updatedBy: input.updatedBy },
+      tx,
+    );
+  }
+
+  /**
+   * BR-ALQ-013 / UC-ALQ-006b - falta grave de ampliacion: el cliente retiene
+   * el vehiculo sin cumplir los 4 requisitos (aviso 12h, autorizacion, pago,
+   * adenda firmada). Marca la extension como BREACH, retiene el 100% de la
+   * garantia (RentalDepositAdjustment FULL_RETENTION) y marca al cliente
+   * como "rojo" (Customer.status). El alquiler NO cambia de estado aqui:
+   * RentalStatus no tiene hoy un estado terminal para "vehiculo retenido
+   * sin autorizacion" (ver domain/rental-status.ts) y agregar uno es una
+   * decision de modelado fuera del alcance de este ticket.
+   */
+  async reportExtensionBreach(
+    input: ReportExtensionBreachInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord> {
+    const client = tx ?? this.prisma;
+
+    await client.rentalExtension.update({
+      where: { id: input.extensionId },
+      data: {
+        status: 'BREACH',
+        resolvedAt: new Date(),
+      },
+    });
+
+    const deposit = await client.rentalDeposit.findUniqueOrThrow({
+      where: { rentalId: input.rentalId },
+    });
+
+    await client.rentalDepositAdjustment.create({
+      data: {
+        depositId: deposit.id,
+        type: 'FULL_RETENTION',
+        amount: deposit.originalAmount,
+        reason: input.legalEvaluationNote,
+        authorizedBy: input.updatedBy,
+      },
+    });
+
+    await client.rentalDeposit.update({
+      where: { id: deposit.id },
+      data: { status: 'RETAINED' },
+    });
+
+    // Decision de diseno nueva (no existia un modulo/campo real de Clientes
+    // para esto): se reutiliza el campo Customer.status ("NORMAL" | "ROJO")
+    // agregado en esta misma migracion, en vez de modelar una lista negra
+    // separada sin fuente BDD/SDD de Clientes que lo respalde.
+    await client.customer.update({
+      where: { id: input.customerId },
+      data: { status: 'ROJO' },
+    });
+
+    return this.bumpVersion(
+      input.rentalId,
+      input.scope,
+      input.expectedVersion,
+      { updatedBy: input.updatedBy },
       tx,
     );
   }

@@ -2,7 +2,6 @@ import { BadRequestException, ForbiddenException, NotFoundException, ServiceUnav
 import { QuoteHandler } from './quote.handler';
 import { QuoteCommand } from './quote.command';
 import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
-import { RateCardPort } from '../ports/rate-card.port';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { InquiryNotTransitionableError, VehicleNotEligibleError } from '../../domain/inquiry-errors';
 import {
@@ -24,40 +23,36 @@ function buildFleet(eligible = true): jest.Mocked<FleetAvailabilityPort> {
     productionReady: false,
     checkEligibility: jest
       .fn()
-      .mockResolvedValue(eligible ? { eligible: true, vehicleId: 'veh-1' } : { eligible: false, reason: 'El vehiculo indicado no existe en esta empresa.' }),
+      .mockResolvedValue(
+        eligible
+          ? { eligible: true, vehicleId: 'veh-1', dailyRate: '100.00' }
+          : { eligible: false, reason: 'El vehiculo indicado no existe en esta empresa.' },
+      ),
   } as unknown as jest.Mocked<FleetAvailabilityPort>;
-}
-
-function buildRateCards(): jest.Mocked<RateCardPort> {
-  return {
-    productionReady: false,
-    currentFor: jest.fn().mockResolvedValue({ version: 'RC-TEST-1', amountPerDay: '100.00', currency: 'PEN', validityHours: 48 }),
-  } as unknown as jest.Mocked<RateCardPort>;
 }
 
 function build(options: { role?: Parameters<typeof buildWorkContext>[0]; eligible?: boolean; production?: boolean; allow?: boolean; existing?: ReturnType<typeof buildInquiry> | null } = {}) {
   const inquiries = buildInquiryRepository(options.existing === undefined ? buildInquiry() : options.existing);
   const fleet = buildFleet(options.eligible ?? true);
-  const rateCards = buildRateCards();
-  const guard = new ProvisionalQuotingGuard(fleet, rateCards, {
+  const guard = new ProvisionalQuotingGuard(fleet, {
     production: options.production ?? false,
     allowProvisional: options.allow ?? false,
   });
   const matrixAuth = buildMatrixAuth();
-  const handler = new QuoteHandler(inquiries, buildWorkContext(options.role), fleet, rateCards, guard, new FixedClock(NOW), matrixAuth);
-  return { handler, inquiries, fleet, rateCards, matrixAuth };
+  const handler = new QuoteHandler(inquiries, buildWorkContext(options.role), fleet, guard, new FixedClock(NOW), matrixAuth);
+  return { handler, inquiries, fleet, matrixAuth };
 }
 
 const command = (estimatedDays = 3) =>
   new QuoteCommand('inq-1', 'uid-1', COMPANY, BRANCH, 1, 'veh-1', 'Vilcashuaman', estimatedDays);
 
 describe('QuoteHandler', () => {
-  it('cotiza con el tarifario versionado (RateCardPort) y vigencia calculada con el reloj inyectable', async () => {
-    const { handler, inquiries, rateCards } = build();
+  it('cotiza con el precio del vehiculo (Vehicle.dailyRate via FleetAvailabilityPort), vigencia de 72h calculada con el reloj inyectable', async () => {
+    const { handler, inquiries, fleet } = build();
 
     await handler.execute(command(3));
 
-    expect(rateCards.currentFor).toHaveBeenCalledWith(ORG, COMPANY, NOW);
+    expect(fleet.checkEligibility).toHaveBeenCalled();
     expect(inquiries.quote).toHaveBeenCalledWith(
       {
         id: 'inq-1',
@@ -68,8 +63,8 @@ describe('QuoteHandler', () => {
         estimatedDays: 3,
         amount: '300.00',
         currency: 'PEN',
-        rateCardVersionId: 'RC-TEST-1',
-        validUntil: new Date('2026-09-25T15:00:00Z'),
+        rateCardVersionId: 'FLEET-DAILY-RATE',
+        validUntil: new Date('2026-09-26T15:00:00Z'),
       },
       ['REGISTRADA', 'COTIZADA'],
     );

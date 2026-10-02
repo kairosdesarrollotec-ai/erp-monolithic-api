@@ -7,10 +7,13 @@ sources:
   path: docs/sources/bdd/bdd-notifications.md
   type: BDD
   module: Notificaciones
-  version: '1.0'
-  date: '2026-10-01'
+  version: '1.1'
+  date: '2026-10-02'
   status: approved
-  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  estado_original: >
+    APROBADO v1.1 — rectificación SOURCE_CONFLICT: incorpora bandeja in-app
+    (GET /notifications, POST /notifications/read-all, BR-NOT-008..010,
+    SC-NOT-007..009). Elimina "fuera del MVP" de la bandeja in-app.
   sha256: unknown
   authority: business
   supersedes: null
@@ -21,30 +24,36 @@ sources:
   path: docs/sources/sdd/sdd-notifications.md
   type: SDD
   module: Notificaciones
-  version: '1.0'
-  date: '2026-10-01'
+  version: '1.1'
+  date: '2026-10-02'
   status: approved
-  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  estado_original: >
+    APROBADO v1.1 — rectificación SOURCE_CONFLICT: incorpora capa presentation/
+    (NotificationsController, GetMyNotificationsHandler, MarkAllNotificationsReadHandler),
+    NotificationReadModelPort y contrato notifications.yaml v0.1.0.
   sha256: unknown
   authority: functional
-  supersedes: null
+  supersedes: SDD-KAIROS-MVP-002-NOT-V1.0
   notes: >
-    SDD específico del módulo notifications. Diseño hexagonal: 5 puertos, 4 adaptadores
-    (Firebase FCM, Firebase Auth lookup, ConsoleEmail, ConsoleSMS).
+    SDD específico del módulo notifications. Diseño hexagonal: 6 puertos (+ NotificationReadModelPort),
+    4 adaptadores de despacho externo, 1 repositorio Prisma (PrismaNotificationReadModelRepository),
+    capa HTTP de bandeja in-app. Refleja estado implementado y activo en producción.
 - id: TDD-KAIROS-MVP-002-NOT
   path: docs/sources/tdd/tdd-notifications.md
   type: TDD
   module: Notificaciones
-  version: '1.0'
-  date: '2026-10-01'
+  version: '1.1'
+  date: '2026-10-02'
   status: approved
-  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra GAP-TR07-01
+  estado_original: >
+    APROBADO v1.1 — rectificación SOURCE_CONFLICT: documenta TDD-NOT-ADR-006 (capa HTTP),
+    actualiza estructura de módulo con presentation/ y persistence/, y amplía cobertura de tests.
   sha256: unknown
   authority: technical
-  supersedes: null
+  supersedes: TDD-KAIROS-MVP-002-NOT-V1.0
   notes: >
     TDD específico del módulo notifications. Incluye ADR Jest ESM stubs (TDD-NOT-ADR-002),
-    estructura de módulo, modelo de dominio y guía de testing. Refleja 430/430 tests.
+    ADR capa HTTP (TDD-NOT-ADR-006), estructura de módulo completa, modelo de dominio y guía de testing.
 - id: BDD-KAIROS-MVP-002-FLT
   path: docs/sources/bdd/bdd-fleet.md
   type: BDD
@@ -87,6 +96,10 @@ sources:
   notes: >
     TDD específico del módulo fleet. Incluye modelo Prisma, contrato OpenAPI fleet.yaml v0.2.0,
     stack frontend (FleetListScreen, useFleetList, NewVehicleModal, MSW v2). Refleja 22/22 tests.
+    2026-10-02 (PROP-007-FINAL): rate-cards eliminados definitivamente del módulo fleet —
+    RateCardsController, RateCardRepositoryPort, PrismaRateCardRepository y handlers de rate-card
+    removidos. Tabla rate_card_versions eliminada (migración 20261002000000_drop_rate_card_versions).
+    Vehicle.dailyRate es la fuente definitiva del precio de cotización.
 - id: OPENAPI-NOTIFICATIONS-DISPATCH
   path: apps/api/src/modules/notifications/notification-dispatch.module.ts
   type: MODULE
@@ -469,6 +482,22 @@ sources:
     Contrato inicial del módulo Alquiler — cubre UC-ALQ-001 a UC-ALQ-006 (crear alquiler
     directo, crear desde reserva, validar documentos, registrar alcoholímetro, evaluar
     notaría/aprobar excepción, ampliaciones). PR #36 (feature/rental-extensions-api).
+  sha256: null
+  authority: contract
+  supersedes: null
+- id: OPENAPI-NOTIFICATIONS-V0.1.0
+  path: packages/contracts/openapi/notifications.yaml
+  type: OpenAPI
+  module: Notifications
+  version: '0.1.0'
+  date: '2026-10-02'
+  status: current
+  estado_original: >
+    Contrato inicial del módulo Notificaciones (TR-07) — bandeja in-app:
+    GET /notifications (lista las notificaciones del usuario autenticado, filtro unreadOnly)
+    y POST /notifications/read-all (marcado masivo, 204). Cierra SOURCE_CONFLICT
+    detectado en code-audit 2026-10-02. Fuente: NotificationsController +
+    bdd-notifications.md v1.1 + sdd-notifications.md v1.1.
   sha256: null
   authority: contract
   supersedes: null
