@@ -176,3 +176,17 @@ jobs:
             --allow-unauthenticated \
             --quiet
           rm -f /tmp/env-vars.yaml
+
+      # --- CORS en bucket GCS (fotos de vehiculos) ---
+      # Aplica la politica CORS al bucket para permitir uploads desde el
+      # navegador. El origin se resuelve por ambiente via APP_BASE_URL.
+      - name: Configurar CORS en bucket GCS
+        if: ${{ vars.GCS_BUCKET_NAME != '' }}
+        env:
+          APP_BASE_URL: ${{ vars.APP_BASE_URL }}
+          GCS_BUCKET_NAME: ${{ vars.GCS_BUCKET_NAME }}
+        run: |
+          envsubst < infra/gcs-cors.json > /tmp/gcs-cors.json
+          gcloud storage buckets update "gs://${GCS_BUCKET_NAME}" \
+            --cors-file=/tmp/gcs-cors.json
+          rm -f /tmp/gcs-cors.json
