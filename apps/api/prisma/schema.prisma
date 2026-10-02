@@ -916,6 +916,10 @@ model RentalContract {
 }
 
 /// TDD-03-alquiler seccion 9.3 / BR-DOC-002 - plantillas vigentes por empresa.
+/// Invariante "una sola version ACTIVE por (companyId, type)" aplicada por el
+/// indice unico parcial "contract_template_unique_active" (migracion
+/// 20261001010000_contract_template_unique_active) - Prisma no soporta
+/// indices parciales (`WHERE`) en el schema, por eso no aparece como @@unique aqui.
 model ContractTemplate {
   id            String    @id @default(uuid())
   companyId     String    @map("company_id")

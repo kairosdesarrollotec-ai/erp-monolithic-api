@@ -37,6 +37,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RENTAL', action: 'REQUEST_EXTENSION', label: 'Alquiler: solicitar ampliacion' },
   { module: 'RENTAL', action: 'AUTHORIZE_EXTENSION', label: 'Alquiler: autorizar ampliacion' },
   { module: 'RENTAL', action: 'REJECT_EXTENSION', label: 'Alquiler: rechazar ampliacion' },
+  { module: 'RENTAL', action: 'MANAGE_CONTRACT_TEMPLATES', label: 'Alquiler: gestionar plantillas de contrato' },
   { module: 'RENTAL', action: 'REPORT_EXTENSION_BREACH', label: 'Alquiler: registrar falta grave de ampliacion' },
   { module: 'ADMIN', action: 'MANAGE_USERS', label: 'Administración: gestionar usuarios' },
   { module: 'ADMIN', action: 'VIEW_AUDIT', label: 'Administración: ver auditoría' },

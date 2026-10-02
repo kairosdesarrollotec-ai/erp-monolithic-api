@@ -14,13 +14,16 @@ import { ListRentalEvidenceHandler } from './application/queries/list-rental-evi
 import { RequestExtensionHandler } from './application/commands/request-extension.handler';
 import { AuthorizeExtensionHandler } from './application/commands/authorize-extension.handler';
 import { RejectExtensionHandler } from './application/commands/reject-extension.handler';
+import { CreateContractTemplateHandler } from './application/commands/create-contract-template.handler';
 import { ReportExtensionBreachHandler } from './application/commands/report-extension-breach.handler';
 import { GetRentalHandler } from './application/queries/get-rental.handler';
 import { ListRentalsHandler } from './application/queries/list-rentals.handler';
+import { ListContractTemplatesHandler } from './application/queries/list-contract-templates.handler';
 import { RentalRepositoryPort } from './application/ports/rental-repository.port';
 import { RentalEvidenceRepositoryPort } from './application/ports/rental-evidence-repository.port';
 import { RentalEvidenceStoragePort } from './application/ports/rental-evidence-storage.port';
 import { PrismaRentalRepository } from './infrastructure/persistence/prisma-rental.repository';
+import { ContractTemplatesController } from './presentation/http/contract-templates.controller';
 import { PrismaRentalEvidenceRepository } from './infrastructure/persistence/prisma-rental-evidence.repository';
 import { GcsRentalEvidenceService } from './infrastructure/storage/gcs-rental-evidence.service';
 import { UsersModule } from '../users/users.module';
@@ -31,7 +34,7 @@ import { FleetModule } from '../fleet/fleet.module';
 
 @Module({
   imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule],
-  controllers: [RentalsController],
+  controllers: [RentalsController, ContractTemplatesController],
   providers: [
     CreateRentalHandler,
     CreateRentalFromReservationHandler,
@@ -47,9 +50,11 @@ import { FleetModule } from '../fleet/fleet.module';
     RequestExtensionHandler,
     AuthorizeExtensionHandler,
     RejectExtensionHandler,
+    CreateContractTemplateHandler,
     ReportExtensionBreachHandler,
     GetRentalHandler,
     ListRentalsHandler,
+    ListContractTemplatesHandler,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
     { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },
