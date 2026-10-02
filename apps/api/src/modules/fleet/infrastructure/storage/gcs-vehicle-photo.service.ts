@@ -55,4 +55,28 @@ export class GcsVehiclePhotoService implements VehiclePhotoStoragePort {
     const objectUrl = `https://storage.googleapis.com/${this.bucketName}/${objectKey}`;
     return { uploadUrl, objectUrl };
   }
+
+  async generateSignedReadUrl(objectUrl: string): Promise<string> {
+    if (!this.storage || !this.bucketName) {
+      return objectUrl;
+    }
+
+    const prefix = `https://storage.googleapis.com/${this.bucketName}/`;
+    if (!objectUrl.startsWith(prefix)) {
+      return objectUrl;
+    }
+
+    const objectKey = objectUrl.slice(prefix.length);
+
+    const [signedUrl] = await this.storage
+      .bucket(this.bucketName)
+      .file(objectKey)
+      .getSignedUrl({
+        version: 'v4',
+        action: 'read',
+        expires: Date.now() + 60 * 60 * 1000,
+      });
+
+    return signedUrl;
+  }
 }

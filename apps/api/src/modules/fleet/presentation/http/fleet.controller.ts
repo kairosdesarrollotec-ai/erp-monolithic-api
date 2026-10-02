@@ -35,6 +35,7 @@ import { ListVehiclesQueryDto } from './dto/list-vehicles-query.dto';
 import { GetVehicleQueryDto } from './dto/get-vehicle-query.dto';
 import { ListVehiclesResponse, VehicleResponse } from './dto/vehicle.response';
 import { toVehicleResponse } from './vehicle.mapper';
+import { VehiclePhotoStoragePort } from '../../application/ports/vehicle-photo-storage.port';
 
 @Controller('fleet')
 @UseGuards(FirebaseAuthGuard)
@@ -46,7 +47,13 @@ export class FleetController {
     private readonly listVehiclesHandler: ListVehiclesHandler,
     private readonly getVehicleHandler: GetVehicleHandler,
     private readonly requestPhotoUploadSessionHandler: RequestPhotoUploadSessionHandler,
+    private readonly photoStorage: VehiclePhotoStoragePort,
   ) {}
+
+  private async withSignedPhotoUrl(response: VehicleResponse): Promise<VehicleResponse> {
+    if (!response.photoUrl) return response;
+    return { ...response, photoUrl: await this.photoStorage.generateSignedReadUrl(response.photoUrl) };
+  }
 
   @Post('vehicles/photo-upload-sessions')
   @HttpCode(HttpStatus.CREATED)
@@ -88,7 +95,7 @@ export class FleetController {
       ),
     );
 
-    return toVehicleResponse(vehicle);
+    return this.withSignedPhotoUrl(toVehicleResponse(vehicle));
   }
 
   @Get('vehicles')
@@ -109,10 +116,11 @@ export class FleetController {
       ),
     );
 
-    return {
-      items: result.items.map(toVehicleResponse),
-      total: result.total,
-    };
+    const items = await Promise.all(
+      result.items.map((v) => this.withSignedPhotoUrl(toVehicleResponse(v))),
+    );
+
+    return { items, total: result.total };
   }
 
   @Get('vehicles/:id')
@@ -125,7 +133,7 @@ export class FleetController {
       new GetVehicleQuery(req.firebaseUid!, id, query.companyId, query.branchId),
     );
 
-    return toVehicleResponse(vehicle);
+    return this.withSignedPhotoUrl(toVehicleResponse(vehicle));
   }
 
   @Patch('vehicles/:id/status')
@@ -145,7 +153,7 @@ export class FleetController {
       ),
     );
 
-    return toVehicleResponse(vehicle);
+    return this.withSignedPhotoUrl(toVehicleResponse(vehicle));
   }
 
   @Patch('vehicles/:id')
@@ -172,6 +180,6 @@ export class FleetController {
       ),
     );
 
-    return toVehicleResponse(vehicle);
+    return this.withSignedPhotoUrl(toVehicleResponse(vehicle));
   }
 }
