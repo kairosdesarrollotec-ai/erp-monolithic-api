@@ -1,14 +1,14 @@
 ---
 modulo: Notificaciones
 proceso: Despacho externo de notificaciones transversales
-version: '1.0'
+version: '1.1'
 estado: APROBADO
-fecha_aprobacion: '2026-10-01'
+fecha_aprobacion: '2026-10-02'
 autores:
   - Equipo técnico KAIROS
 fuentes_base:
-  - bdd-notifications.md v1.0
-  - sdd-notifications.md v1.0
+  - bdd-notifications.md v1.1
+  - sdd-notifications.md v1.1
   - artifacts/traceability/notifications/TR-07-dispatch.md
 ---
 
@@ -17,6 +17,7 @@ fuentes_base:
 | Versión | Fecha | Autor | Cambio |
 | --- | --- | --- | --- |
 | 1.0 | 2026-10-01 | Equipo técnico KAIROS | Documento inicial — arquitectura técnica del módulo TR-07. Refleja el estado mergeado a main el 2026-10-01 (430/430 tests, 86/86 suites). |
+| 1.1 | 2026-10-02 | Equipo técnico KAIROS | Rectificación SOURCE_CONFLICT: documenta la capa HTTP (NotificationsController, contrato notifications.yaml v0.1.0), el read model in-app (NotificationReadModelPort / PrismaNotificationReadModelRepository) y TDD-NOT-ADR-006. Alinea fuentes a v1.1. |
 
 ---
 
@@ -34,7 +35,7 @@ fuentes_base:
 
 ## 2. Objetivo y alcance técnico
 
-Definir la implementación técnica del módulo `notifications` del backend NestJS: estructura de módulo, tipos de dominio, puertos (interfaces abstractas), adaptadores concretos, estrategia de testing con Jest ESM y las dependencias de infraestructura (Firebase Admin SDK).
+Definir la implementación técnica del módulo `notifications` del backend NestJS: estructura de módulo, tipos de dominio, puertos (interfaces abstractas), adaptadores concretos, capa HTTP de la bandeja in-app, estrategia de testing con Jest ESM y las dependencias de infraestructura (Firebase Admin SDK, Prisma).
 
 ---
 
@@ -69,6 +70,22 @@ Definir la implementación técnica del módulo `notifications` del backend Nest
 
 **Razón:** El módulo `outbox` y el módulo `notification-templates` también referencian `NotificationChannel`. Ubicarlo en `common` evita dependencias circulares entre módulos.
 
+### TDD-NOT-ADR-006: Capa HTTP de la bandeja in-app — NotificationsController
+
+**Decisión:** El módulo `notifications` expone dos endpoints REST bajo `@Controller('notifications')` protegidos con `@UseGuards(FirebaseAuthGuard)`:
+- `GET /notifications` — lista las notificaciones del usuario autenticado.
+- `POST /notifications/read-all` — marca todas las notificaciones como leídas (204).
+
+**Razón:** La bandeja in-app es una funcionalidad completamente implementada en producción (activa en `AppHeader` del frontend vía `useNotifications`). El contrato formal vive en `packages/contracts/openapi/notifications.yaml v0.1.0`.
+
+**Restricción de seguridad:** El `firebaseUid` del destinatario se extrae siempre de `req.firebaseUid` (token verificado por `FirebaseAuthGuard`); nunca de un parámetro de la petición. Esto garantiza que un usuario no puede consultar ni modificar las notificaciones de otro usuario (BR-NOT-008).
+
+**Estructura técnica:**
+- `NotificationsController` → `GetMyNotificationsHandler` → `NotificationReadModelPort`
+- `NotificationsController` → `MarkAllNotificationsReadHandler` → `NotificationReadModelPort`
+- `NotificationReadModelPort` implementado por `PrismaNotificationReadModelRepository`
+- Tabla Prisma: `notification_read_models` (aislamiento por `organizationId` + `recipientFirebaseUid`)
+
 ### TDD-NOT-ADR-005: setupFilesAfterEnv en jest-integration.json
 
 **Decisión:** `test/jest-integration.json` incluye `setupFilesAfterEnv: ["<rootDir>/src/jest-esm-globals.ts"]` y el mismo `moduleNameMapper` que el jest.config.json de unidad.
@@ -99,25 +116,43 @@ Definir la implementación técnica del módulo `notifications` del backend Nest
 ```
 apps/api/src/modules/notifications/
 ├── domain/
-│   └── external-notification.ts        # Tipos e interfaces puras; funciones mask*
+│   ├── external-notification.ts              # Tipos e interfaces puras; funciones mask*
+│   └── notification-event-projector.ts       # Proyecta eventos de dominio en notificaciones in-app
 ├── application/
 │   ├── commands/
-│   │   └── dispatch-notification.command.ts
+│   │   ├── dispatch-notification.command.ts
+│   │   ├── mark-all-notifications-read.command.ts
+│   │   └── mark-all-notifications-read.handler.ts
+│   ├── queries/
+│   │   ├── get-my-notifications.query.ts
+│   │   └── get-my-notifications.handler.ts
 │   └── ports/
-│       ├── notification-dispatcher.port.ts     # Puerto primario (abstract class)
+│       ├── notification-dispatcher.port.ts   # Puerto primario (abstract class)
+│       ├── notification-read-model.port.ts   # Puerto del read model in-app
 │       ├── email-sender.port.ts
 │       ├── push-notification.port.ts
 │       ├── sms-sender.port.ts
 │       └── recipient-contact-lookup.port.ts
 ├── infrastructure/
-│   └── adapters/
-│       ├── firebase-push-notification.adapter.ts
-│       ├── firebase-push-notification.adapter.spec.ts
-│       ├── firebase-recipient-contact-lookup.adapter.ts
-│       ├── firebase-recipient-contact-lookup.adapter.spec.ts
-│       ├── console-email-sender.adapter.ts
-│       └── console-sms-sender.adapter.ts
-└── notification-dispatch.module.ts
+│   ├── adapters/
+│   │   ├── firebase-push-notification.adapter.ts
+│   │   ├── firebase-push-notification.adapter.spec.ts
+│   │   ├── firebase-recipient-contact-lookup.adapter.ts
+│   │   ├── firebase-recipient-contact-lookup.adapter.spec.ts
+│   │   ├── console-email-sender.adapter.ts
+│   │   └── console-sms-sender.adapter.ts
+│   └── persistence/
+│       └── prisma-notification-read-model.repository.ts
+├── presentation/
+│   └── http/
+│       ├── notifications.controller.ts
+│       └── dto/
+│           ├── get-my-notifications-query.dto.ts
+│           ├── mark-all-notifications-read.dto.ts
+│           └── notification.response.ts
+├── notification-dispatch.module.ts
+├── notification-read-model.module.ts
+└── notifications.module.ts
 
 apps/api/src/common/domain/
 └── notification-channel.ts             # Enum NotificationChannel (EMAIL, SMS, PUSH)
@@ -293,3 +328,8 @@ beforeEach(() => {
 | Lookup retorna null si Firebase falla | firebase-recipient-contact-lookup.adapter.spec.ts |
 | computeOverallDeliveryStatus | external-notification.spec.ts |
 | maskEmail / maskPhoneNumber / maskPushToken | external-notification.spec.ts |
+| GET /notifications devuelve solo las notificaciones del usuario autenticado | get-my-notifications.handler.spec.ts |
+| GET /notifications con unreadOnly=true filtra correctamente | get-my-notifications.handler.spec.ts |
+| POST /notifications/read-all responde 204 e idempotente | mark-all-notifications-read.handler.spec.ts |
+| Proyección ReservationCreated genera notificación correcta | notification-event-projector.spec.ts |
+| Proyección evento desconocido → IGNORE | notification-event-projector.spec.ts |
