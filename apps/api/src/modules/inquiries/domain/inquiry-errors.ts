@@ -1,36 +1,29 @@
 import {
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  ServiceUnavailableException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+  DomainConflictError,
+  DomainPreconditionError,
+  DomainServiceUnavailableError,
+  DomainUnprocessableError,
+} from '../../../common/domain/domain-errors';
 
 /**
  * Conflicto real de version optimista: precondition failure sobre el
  * recurso (RFC 9110 13.1.2) - 412 INQUIRY_VERSION_CONFLICT
  * (TDD-CON-001.md 10.1).
  */
-export class InquiryVersionConflictError extends HttpException {
+export class InquiryVersionConflictError extends DomainPreconditionError {
+  readonly code = 'INQUIRY_VERSION_CONFLICT';
+
   constructor() {
-    super(
-      {
-        code: 'INQUIRY_VERSION_CONFLICT',
-        detail: 'La consulta fue modificada por otra operacion - vuelve a cargarla.',
-        statusCode: HttpStatus.PRECONDITION_FAILED,
-      },
-      HttpStatus.PRECONDITION_FAILED,
-    );
+    super('La consulta fue modificada por otra operacion - vuelve a cargarla.');
   }
 }
 
 /** BR-CON-002 - una consulta cerrada o ya convertida es terminal. */
-export class InquiryNotTransitionableError extends UnprocessableEntityException {
+export class InquiryNotTransitionableError extends DomainUnprocessableError {
+  readonly code = 'INQUIRY_NOT_TRANSITIONABLE';
+
   constructor(currentStatus: string) {
-    super({
-      code: 'INQUIRY_NOT_TRANSITIONABLE',
-      detail: `La consulta esta en estado ${currentStatus} y no admite esta transicion.`,
-    });
+    super(`La consulta esta en estado ${currentStatus} y no admite esta transicion.`);
   }
 }
 
@@ -39,19 +32,20 @@ export class InquiryNotTransitionableError extends UnprocessableEntityException 
  * vencidas"): la ultima cotizacion de la consulta ya no esta vigente
  * (`validUntil` <= ahora). Hay que volver a cotizar antes de convertir.
  */
-export class QuotationExpiredError extends ConflictException {
+export class QuotationExpiredError extends DomainConflictError {
+  readonly code = 'QUOTATION_EXPIRED';
+
   constructor(validUntil: Date) {
-    super({
-      code: 'QUOTATION_EXPIRED',
-      detail: `La cotizacion vigente de la consulta vencio el ${validUntil.toISOString()} - vuelve a cotizar antes de reservar.`,
-    });
+    super(`La cotizacion vigente de la consulta vencio el ${validUntil.toISOString()} - vuelve a cotizar antes de reservar.`);
   }
 }
 
 /** BR-CON-005 - el vehiculo no es elegible (o no pertenece a la empresa) para esta consulta. */
-export class VehicleNotEligibleError extends UnprocessableEntityException {
+export class VehicleNotEligibleError extends DomainUnprocessableError {
+  readonly code = 'VEHICLE_NOT_ELIGIBLE';
+
   constructor(reason: string) {
-    super({ code: 'VEHICLE_NOT_ELIGIBLE', detail: reason });
+    super(reason);
   }
 }
 
@@ -62,37 +56,19 @@ export class VehicleNotEligibleError extends UnprocessableEntityException {
  * (503) salvo habilitacion explicita (`KAIROS_ALLOW_PROVISIONAL_QUOTING`),
  * para que el flujo provisional no pueda quedar habilitado por omision.
  */
-export class QuotingNotProductionReadyError extends ServiceUnavailableException {
-  constructor(component: string) {
-    super({
-      code: 'QUOTING_NOT_PRODUCTION_READY',
-      detail: `${component} todavia es provisional y no esta habilitado para produccion.`,
-    });
-  }
-}
+export class QuotingNotProductionReadyError extends DomainServiceUnavailableError {
+  readonly code = 'QUOTING_NOT_PRODUCTION_READY';
 
-/**
- * @deprecated (oct 2026) Sin uso - RateCardPort/rate_card_versions ya no
- * es la fuente del precio de cotizacion (ver quote.handler.ts y
- * fleet-availability.port.ts). Se mantiene la clase sin borrar por si
- * algun consumidor externo del paquete todavia la importa; no se lanza
- * desde ningun handler.
- */
-export class RateCardNotConfiguredError extends ServiceUnavailableException {
-  constructor(operatingCompanyId: string) {
-    super({
-      code: 'RATE_CARD_NOT_CONFIGURED',
-      detail: `No hay tarifa configurada para la empresa ${operatingCompanyId} a esta fecha. Configure una tarifa antes de cotizar.`,
-    });
+  constructor(component: string) {
+    super(`${component} todavia es provisional y no esta habilitado para produccion.`);
   }
 }
 
 /** Una consulta se convierte a lo sumo en UNA reserva (UNIQUE reservations.inquiry_id). */
-export class InquiryAlreadyConvertedError extends ConflictException {
+export class InquiryAlreadyConvertedError extends DomainConflictError {
+  readonly code = 'INQUIRY_ALREADY_CONVERTED';
+
   constructor() {
-    super({
-      code: 'INQUIRY_ALREADY_CONVERTED',
-      detail: 'La consulta ya tiene una reserva asociada.',
-    });
+    super('La consulta ya tiene una reserva asociada.');
   }
 }

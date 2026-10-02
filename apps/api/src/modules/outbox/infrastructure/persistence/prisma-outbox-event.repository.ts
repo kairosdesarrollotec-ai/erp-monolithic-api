@@ -14,7 +14,7 @@ export class PrismaOutboxEventRepository implements OutboxEventRepositoryPort {
         aggregateType: input.aggregateType,
         aggregateId: input.aggregateId,
         eventType: input.eventType,
-        payload: input.payload as any,
+        payload: input.payload as unknown as Prisma.InputJsonValue, // JsonValue compat
       },
     });
   }

@@ -62,7 +62,7 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         entityType: 'reservation',
         entityId: input.reservationId,
         action: input.action,
-        changes: input.changes as any,
+        changes: input.changes as unknown as Prisma.InputJsonValue, // JsonValue compat
       },
     });
   }
@@ -75,7 +75,7 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         entityType: 'inquiry',
         entityId: input.inquiryId,
         action: input.action,
-        changes: input.changes as any,
+        changes: input.changes as unknown as Prisma.InputJsonValue, // JsonValue compat
       },
     });
   }
@@ -89,7 +89,7 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         entityType: 'admin_user_assignment',
         entityId: input.targetFirebaseUid,
         action: input.action,
-        changes: input.changes as any,
+        changes: input.changes as unknown as Prisma.InputJsonValue, // JsonValue compat
       },
     });
   }
@@ -103,7 +103,7 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         entityType: 'rental',
         entityId: input.rentalId,
         action: input.action,
-        changes: input.changes as any,
+        changes: input.changes as unknown as Prisma.InputJsonValue, // JsonValue compat
       },
     });
   }

@@ -1,9 +1,9 @@
 ---
 modulo: Notificaciones
 proceso: Despacho externo de notificaciones transversales
-version: '1.0'
+version: '1.1'
 estado: APROBADO
-fecha_aprobacion: '2026-10-01'
+fecha_aprobacion: '2026-10-02'
 autores:
   - Russbel Hernández (BA)
   - Equipo técnico KAIROS
@@ -19,6 +19,7 @@ fuentes_base:
 | Versión | Fecha | Autor | Cambio |
 | --- | --- | --- | --- |
 | 1.0 | 2026-10-01 | Russbel Hernández | Documento inicial — consolida comportamiento observable del módulo TR-07 implementado, a partir de BDD transversal §12 y evidencias de pruebas (430/430 tests). |
+| 1.1 | 2026-10-02 | Equipo técnico KAIROS | Rectificación SOURCE_CONFLICT: la bandeja de notificaciones in-app ya está implementada y activa en producción (NotificationsController, GET /notifications, POST /notifications/read-all). Se incorpora al alcance y se documentan BR-NOT-008..010 y SC-NOT-007..009. |
 
 ---
 
@@ -31,14 +32,17 @@ fuentes_base:
 - Transformación de un evento de dominio entrante en uno o más intentos de entrega por canal.
 - Registro del resultado de cada intento (DELIVERED, FAILED, SKIPPED).
 - Cálculo del estado agregado de despacho (ALL_DELIVERED, PARTIALLY_DELIVERED, FAILED, ALL_SKIPPED).
+- **Bandeja de notificaciones in-app** (TR-07, Centro de Notificaciones): cada usuario autenticado puede consultar sus propias notificaciones (GET /notifications) y marcarlas todas como leídas (POST /notifications/read-all).
+- Proyección de eventos de dominio (ReservationCreated, ReservationConfirmed, ReservationCancelled) en notificaciones de lectura para el actor que ejecutó la acción.
 
 ### 1.2 Excluido
 
 - Redacción del contenido (título, cuerpo) de las notificaciones — responsabilidad del módulo `notification-templates`.
 - Enrutamiento de eventos de dominio al despachador — responsabilidad del módulo `outbox` vía `OutboxRelay`.
 - Canal WhatsApp directo: los canales documentados como "WhatsApp" en BDD §12 se implementan como SMS hasta que se incorpore un proveedor WhatsApp Business API aprobado.
-- Notificaciones internas de sistema (bandeja in-app) — fuera del alcance del MVP.
 - Plantillas de contenido con formato propio por empresa — el despachador solo recibe título y cuerpo ya resueltos.
+- Marcado individual de una notificación como leída (solo marcado masivo por empresa/sede).
+- Eliminación o archivado de notificaciones.
 
 ### 1.3 Dependencias
 
@@ -55,12 +59,13 @@ fuentes_base:
 | --- | --- | --- |
 | OutboxRelay | Sistema | Invoca al despachador por cada evento publicado en el outbox |
 | NotificationDispatcherPort | Puerto de dominio | Punto de entrada del caso de uso de despacho |
-| Firebase Authentication | Sistema externo | Fuente de contacto del destinatario (UID → email, teléfono, FCM tokens) |
+| Firebase Authentication | Sistema externo | Fuente de contacto del destinatario (UID → email, teléfono, FCM tokens) y verificación del token de sesión |
 | Firebase Cloud Messaging | Sistema externo | Canal PUSH en producción |
 | Proveedor EMAIL (fase 1: consola) | Sistema externo / mock | Canal EMAIL — consola en dev/staging, proveedor real en producción |
 | Proveedor SMS (fase 1: consola) | Sistema externo / mock | Canal SMS — consola en dev/staging, proveedor real en producción |
 | Cliente / destinatario | Persona | Recibe la notificación en su dispositivo o bandeja de correo |
 | Personal operativo | Persona | Recibe notificaciones de grupo (WhatsApp/SMS grupal — ver BDD §12) |
+| Usuario autenticado (ERP) | Persona | Consulta su propia bandeja in-app (GET /notifications) y marca como leídas (POST /notifications/read-all) |
 
 ---
 
@@ -117,6 +122,20 @@ Datos resueltos desde Firebase Auth para el `recipientFirebaseUid`.
 | deliveries | ChannelDeliveryResult[] | Resultados por canal (DAT-NOT-003) |
 | overallStatus | OverallDeliveryStatus | ALL_DELIVERED, PARTIALLY_DELIVERED, FAILED, ALL_SKIPPED |
 | dispatchedAt | Date | Timestamp del despacho completo |
+
+### DAT-NOT-005: Notificación in-app (read model)
+
+Registro de lectura proyectado desde eventos de dominio para la bandeja in-app del usuario.
+
+| Campo | Tipo | Descripción |
+| --- | --- | --- |
+| id | UUID | Identificador único de la notificación in-app |
+| notificationType | string | Tipo de evento origen (ej. `ReservationCreated`, `ReservationConfirmed`, `ReservationCancelled`) |
+| isEscalated | boolean | Indica si la notificación fue marcada como urgente/escalada |
+| title | string | Texto renderizado de la notificación (resultado de la plantilla aplicada al evento) |
+| deepLink | string | Ruta interna del ERP para navegar directamente al recurso relacionado (ej. `/reservas/{id}`) |
+| readAt | ISO 8601 string \| null | Timestamp de lectura; null si la notificación no ha sido leída |
+| createdAt | ISO 8601 string | Timestamp de creación de la notificación |
 
 ---
 
@@ -193,6 +212,21 @@ El llamador (OutboxRelay vía notification-templates) es responsable de decidir 
 **Prioridad:** Alta
 
 Cada despacho genera un `ExternalNotificationDispatchResult` que queda accesible para auditoría. El `overallStatus` se calcula según la combinación de resultados de canal (ALL_DELIVERED, PARTIALLY_DELIVERED, FAILED, ALL_SKIPPED).
+
+### BR-NOT-008: Aislamiento de bandeja in-app — solo las propias notificaciones
+**Prioridad:** Crítica
+
+El endpoint `GET /notifications` devuelve exclusivamente las notificaciones cuyo destinatario es el Firebase UID del token de sesión presentado. El backend nunca acepta un `recipientId` como parámetro de consulta — la identidad del destinatario se extrae siempre del token de autenticación (`req.firebaseUid`). Un usuario no puede consultar ni marcar como leídas las notificaciones de otro usuario.
+
+### BR-NOT-009: Filtro unreadOnly
+**Prioridad:** Media
+
+Cuando el parámetro `unreadOnly=true` está presente en `GET /notifications`, el backend devuelve únicamente las notificaciones con `readAt = null`. Cuando es `false` o está ausente, devuelve todas las notificaciones del usuario para la empresa/sede indicada.
+
+### BR-NOT-010: Marcado masivo de notificaciones como leídas
+**Prioridad:** Alta
+
+`POST /notifications/read-all` marca como leídas todas las notificaciones del usuario autenticado (`req.firebaseUid`) en el contexto de empresa y sede indicados en el cuerpo de la petición. La operación es idempotente: si no hay notificaciones sin leer, responde 204 sin error. El timestamp de `readAt` se fija en el momento en que se ejecuta el comando.
 
 ---
 
@@ -275,6 +309,32 @@ ALL_DELIVERED  PARTIALLY_     ALL_SKIPPED
 **Dado** que otro usuario tiene `customClaims.fcmTokens: ['token-a', 'token-b']` (array)
 **Cuando** el adaptador de lookup lee el customClaim
 **Entonces** `pushTokens` contiene `['token-a', 'token-b']`
+
+### SC-NOT-007: Bandeja in-app devuelve solo las notificaciones del usuario autenticado
+
+**Dado** que el usuario A tiene 3 notificaciones y el usuario B tiene 2 notificaciones en la misma empresa/sede
+**Cuando** el usuario A llama a `GET /notifications` con su token de sesión
+**Entonces** la respuesta contiene exactamente 3 notificaciones, todas con `recipientFirebaseUid = uid(A)`
+**Y** las notificaciones del usuario B no aparecen en la respuesta
+
+### SC-NOT-008: Filtro unreadOnly devuelve solo las notificaciones no leídas
+
+**Dado** que el usuario tiene 4 notificaciones, 2 con `readAt != null` y 2 con `readAt = null`
+**Cuando** llama a `GET /notifications?companyId=...&branchId=...&unreadOnly=true`
+**Entonces** la respuesta contiene exactamente 2 notificaciones (las no leídas)
+**Y** ambas tienen `readAt: null`
+
+### SC-NOT-009: POST /notifications/read-all marca todas las notificaciones del usuario como leídas
+
+**Dado** que el usuario tiene 3 notificaciones sin leer en la empresa/sede indicada
+**Cuando** llama a `POST /notifications/read-all` con `{ companyId, branchId }`
+**Entonces** la respuesta es 204 sin cuerpo
+**Y** un posterior `GET /notifications?unreadOnly=true` devuelve un array vacío
+**Y** `GET /notifications` sin filtro devuelve las 3 notificaciones con `readAt != null`
+
+**Dado** que el usuario no tiene notificaciones sin leer
+**Cuando** llama a `POST /notifications/read-all`
+**Entonces** la respuesta es también 204 (idempotente)
 
 ### SC-NOT-006: Despacho con múltiples canales — resultado parcial
 
