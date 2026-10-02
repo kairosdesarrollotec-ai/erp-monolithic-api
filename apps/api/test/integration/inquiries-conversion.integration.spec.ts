@@ -50,7 +50,6 @@ describe('Consulta -> Reserva (Postgres real)', () => {
     } as unknown as WorkContextAuthorizationService;
     const guard = new ProvisionalQuotingGuard(
       { productionReady: false } as any,
-      { productionReady: false } as any,
       { production: false, allowProvisional: false },
     );
     const audit = { recordInquiryEvent: async () => undefined } as any;
