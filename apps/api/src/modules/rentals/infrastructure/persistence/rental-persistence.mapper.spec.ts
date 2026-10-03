@@ -78,13 +78,13 @@ describe('RentalPersistenceMapper', () => {
       resolvedAt: null,
     });
 
-    expect(mapped.status).toBe(ExtensionStatus.PENDING);
+    expect(mapped.status).toBe('PENDING');
     expect(mapped.rentalId).toBe('rental-1');
   });
 
   it('correctly maps complete RentalWithRelations row to RentalRecord', () => {
     const now = new Date();
-    const row: RentalWithRelations = {
+    const row = {
       id: 'r-1',
       organizationId: 'org-1',
       operatingCompanyId: 'comp-1',
@@ -132,12 +132,12 @@ describe('RentalPersistenceMapper', () => {
       notaryEvaluation: null,
       contract: null,
       deposit: null,
-    };
+    } as unknown as RentalWithRelations;
 
     const record = toRentalRecord(row);
     expect(record.id).toBe('r-1');
     expect(record.customerName).toBe('Juan Perez');
     expect(record.vehiclePlate).toBe('ABC-123');
-    expect(record.status).toBe(RentalStatus.ACTIVE);
+    expect(record.status).toBe('ACTIVE');
   });
 });

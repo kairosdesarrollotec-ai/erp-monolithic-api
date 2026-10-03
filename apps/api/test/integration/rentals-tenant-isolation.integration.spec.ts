@@ -3,6 +3,9 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
 import { PrismaTransactionManager } from '../../src/common/persistence/prisma-transaction-manager';
 import { PrismaRentalRepository } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental.repository';
+import { PrismaContractTemplatePersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-contract-template.persistence';
+import { PrismaRentalExtensionPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-extension.persistence';
+import { PrismaRentalNotaryContractPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-notary-contract.persistence';
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../src/modules/authorization/matrix-authorization.service';
@@ -40,6 +43,16 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
 
   function buildPrismaService(): PrismaService {
     return prisma as unknown as PrismaService;
+  }
+
+  function buildRentalRepository(): PrismaRentalRepository {
+    const ps = buildPrismaService();
+    return new PrismaRentalRepository(
+      ps,
+      new PrismaContractTemplatePersistence(ps),
+      new PrismaRentalExtensionPersistence(ps),
+      new PrismaRentalNotaryContractPersistence(ps),
+    );
   }
 
   function buildWorkContext(companyId: string, branchId: string) {
@@ -128,7 +141,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
 
   it('alquiler de Empresa A NO es visible desde el contexto de Empresa B (GetRental retorna 404)', async () => {
     const ps = buildPrismaService();
-    const rentalRepo = new PrismaRentalRepository(ps);
+    const rentalRepo = buildRentalRepository();
     const outbox = new PrismaOutboxEventRepository(ps);
     const txManager = new PrismaTransactionManager(ps);
     const matrixAuth = buildMatrixAuth();
@@ -163,7 +176,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
 
   it('listRentals en Empresa B no retorna alquileres de Empresa A', async () => {
     const ps = buildPrismaService();
-    const rentalRepo = new PrismaRentalRepository(ps);
+    const rentalRepo = buildRentalRepository();
     const outbox = new PrismaOutboxEventRepository(ps);
     const txManager = new PrismaTransactionManager(ps);
     const matrixAuth = buildMatrixAuth();
@@ -196,7 +209,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
 
   it('aislamiento de repositorio directo: findById con scope de Empresa B no retorna alquiler de Empresa A', async () => {
     const ps = buildPrismaService();
-    const rentalRepo = new PrismaRentalRepository(ps);
+    const rentalRepo = buildRentalRepository();
     const outbox = new PrismaOutboxEventRepository(ps);
     const txManager = new PrismaTransactionManager(ps);
     const matrixAuth = buildMatrixAuth();
