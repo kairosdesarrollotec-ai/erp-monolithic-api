@@ -23,6 +23,9 @@ import { RentalRepositoryPort } from './application/ports/rental-repository.port
 import { RentalEvidenceRepositoryPort } from './application/ports/rental-evidence-repository.port';
 import { RentalEvidenceStoragePort } from './application/ports/rental-evidence-storage.port';
 import { PrismaRentalRepository } from './infrastructure/persistence/prisma-rental.repository';
+import { PrismaContractTemplatePersistence } from './infrastructure/persistence/prisma-contract-template.persistence';
+import { PrismaRentalExtensionPersistence } from './infrastructure/persistence/prisma-rental-extension.persistence';
+import { PrismaRentalNotaryContractPersistence } from './infrastructure/persistence/prisma-rental-notary-contract.persistence';
 import { ContractTemplatesController } from './presentation/http/contract-templates.controller';
 import { PrismaRentalEvidenceRepository } from './infrastructure/persistence/prisma-rental-evidence.repository';
 import { GcsRentalEvidenceService } from './infrastructure/storage/gcs-rental-evidence.service';
@@ -55,6 +58,9 @@ import { FleetModule } from '../fleet/fleet.module';
     GetRentalHandler,
     ListRentalsHandler,
     ListContractTemplatesHandler,
+    PrismaContractTemplatePersistence,
+    PrismaRentalExtensionPersistence,
+    PrismaRentalNotaryContractPersistence,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
     { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },
