@@ -1,4 +1,5 @@
-import { BadRequestException, ForbiddenException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { QuotingNotProductionReadyError } from '../../domain/inquiry-errors';
 import { QuoteHandler } from './quote.handler';
 import { QuoteCommand } from './quote.command';
 import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
@@ -124,8 +125,8 @@ describe('QuoteHandler', () => {
 
       const error = await handler.execute(command()).catch((e) => e);
 
-      expect(error).toBeInstanceOf(ServiceUnavailableException);
-      expect(error.getResponse()).toEqual(expect.objectContaining({ code: 'QUOTING_NOT_PRODUCTION_READY' }));
+      expect(error).toBeInstanceOf(QuotingNotProductionReadyError);
+      expect(error).toEqual(expect.objectContaining({ code: 'QUOTING_NOT_PRODUCTION_READY', httpStatus: 503 }));
       expect(inquiries.quote).not.toHaveBeenCalled();
     });
 

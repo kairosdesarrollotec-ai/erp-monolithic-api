@@ -8,6 +8,7 @@ import { METHOD_METADATA, PATH_METADATA, HTTP_CODE_METADATA, INTERCEPTORS_METADA
 import { getMetadataStorage } from 'class-validator';
 import { $Enums } from '@prisma/client';
 import { RentalsController } from './rentals.controller';
+import { ContractTemplatesController } from './contract-templates.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
 import { ValidateDocumentsDto } from './dto/validate-documents.dto';
@@ -77,14 +78,14 @@ function dtoFields(dto: new () => unknown): { all: string[]; required: string[] 
 
 const HTTP: Record<number, string> = { [RequestMethod.GET]: 'get', [RequestMethod.POST]: 'post' };
 
-function controllerRoutes() {
-  const proto = RentalsController.prototype as any;
+function routesOf(controller: new (...args: any[]) => unknown, basePath: string) {
+  const proto = controller.prototype as any;
   return Object.getOwnPropertyNames(proto)
     .filter((name) => name !== 'constructor' && Reflect.hasMetadata(METHOD_METADATA, proto[name]))
     .map((name) => {
       const handler = proto[name];
       const sub = Reflect.getMetadata(PATH_METADATA, handler) as string;
-      const openApiPath = ('/rentals' + (sub === '/' ? '' : `/${sub}`))
+      const openApiPath = (basePath + (sub === '/' ? '' : `/${sub}`))
         .replace(/:id/g, '{id}')
         .replace(/:reservationId/g, '{reservationId}');
       const method = HTTP[Reflect.getMetadata(METHOD_METADATA, handler)];
@@ -92,6 +93,19 @@ function controllerRoutes() {
       const interceptors = (Reflect.getMetadata(INTERCEPTORS_METADATA, handler) ?? []) as unknown[];
       return { name, openApiPath, method, httpCode, idempotent: interceptors.includes(IdempotencyInterceptor) };
     });
+}
+
+/**
+ * Incluye tambien ContractTemplatesController (ruta mas especifica
+ * 'rentals/contract-templates') - vive aparte de RentalsController por
+ * registrarse como sub-dominio de rentals (ver contract-templates.controller.ts),
+ * pero comparte el mismo rentals.yaml (v1.1.0, hallazgo E-05).
+ */
+function controllerRoutes() {
+  return [
+    ...routesOf(RentalsController, '/rentals'),
+    ...routesOf(ContractTemplatesController, '/rentals/contract-templates'),
+  ];
 }
 
 function buildRentalRecord(overrides: Partial<RentalRecord> = {}): RentalRecord {
