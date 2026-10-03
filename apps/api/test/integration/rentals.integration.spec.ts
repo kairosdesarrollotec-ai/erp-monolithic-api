@@ -3,6 +3,9 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
 import { PrismaTransactionManager } from '../../src/common/persistence/prisma-transaction-manager';
 import { PrismaRentalRepository } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental.repository';
+import { PrismaContractTemplatePersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-contract-template.persistence';
+import { PrismaRentalExtensionPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-extension.persistence';
+import { PrismaRentalNotaryContractPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-notary-contract.persistence';
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
 import { PrismaFleetVehicleRepository } from '../../src/modules/fleet/infrastructure/persistence/prisma-fleet-vehicle.repository';
 import { PrismaRentalEvidenceRepository } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-evidence.repository';
@@ -46,6 +49,16 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
 
   function buildPrismaService(): PrismaService {
     return prisma as unknown as PrismaService;
+  }
+
+  function buildRentalRepository(): PrismaRentalRepository {
+    const ps = buildPrismaService();
+    return new PrismaRentalRepository(
+      ps,
+      new PrismaContractTemplatePersistence(ps),
+      new PrismaRentalExtensionPersistence(ps),
+      new PrismaRentalNotaryContractPersistence(ps),
+    );
   }
 
   function buildWorkContext(companyId = company, branchId = branch) {
@@ -114,7 +127,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
 
   it('ciclo DRAFT → VALIDATION → NOTARY_EVALUATION → CONTRACTING → PENDING_DELIVERY → ACTIVE', async () => {
     const ps = buildPrismaService();
-    const rentalRepo = new PrismaRentalRepository(ps);
+    const rentalRepo = buildRentalRepository();
     const outbox = new PrismaOutboxEventRepository(ps);
     const txManager = new PrismaTransactionManager(ps);
     const workContext = buildWorkContext();
@@ -275,7 +288,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
 
   it('alcoholimetro DESFAVORABLE cancela el alquiler por tolerancia cero (BR-ALQ-005)', async () => {
     const ps = buildPrismaService();
-    const rentalRepo = new PrismaRentalRepository(ps);
+    const rentalRepo = buildRentalRepository();
     const outbox = new PrismaOutboxEventRepository(ps);
     const txManager = new PrismaTransactionManager(ps);
     const workContext = buildWorkContext();
