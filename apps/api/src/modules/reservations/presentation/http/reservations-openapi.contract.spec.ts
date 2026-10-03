@@ -16,7 +16,7 @@ import { RESERVATION_LIST_MAX_LIMIT, RESERVATION_LIST_DEFAULT_LIMIT } from '../.
 import { toReservationResponse } from './reservation.mapper';
 import { ReservationRecord } from '../../application/ports/reservation-repository.port';
 
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 /**
  * Verifica que packages/contracts/openapi/reservations.yaml y el backend

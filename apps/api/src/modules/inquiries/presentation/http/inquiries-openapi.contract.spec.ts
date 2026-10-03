@@ -17,7 +17,7 @@ import { INQUIRY_LIST_DEFAULT_LIMIT, INQUIRY_LIST_MAX_LIMIT } from '../../domain
 import { toInquiryResponse, toInquirySummaryResponse } from './inquiry.mapper';
 import { buildInquiry, buildQuotation } from '../../testing/inquiry-test-fixtures';
 
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 /**
  * Hallazgo MEDIO de revalidacion PR#7 ("el CI no ejecuta contract tests

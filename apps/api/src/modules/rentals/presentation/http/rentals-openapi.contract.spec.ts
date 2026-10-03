@@ -25,7 +25,7 @@ import { RENTAL_LIST_MAX_LIMIT, RENTAL_LIST_DEFAULT_LIMIT } from '../../domain/r
 import { toRentalResponse } from './rental.mapper';
 import { RentalRecord } from '../../application/ports/rental-repository.port';
 
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 const SPEC_PATH = path.resolve(
   __dirname,

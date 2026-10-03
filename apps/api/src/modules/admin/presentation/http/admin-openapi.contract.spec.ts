@@ -15,7 +15,7 @@ import { DeactivateAssignmentDto } from './dto/deactivate-assignment.dto';
 import { WORKER_ROLES } from '../../../users/domain/worker-role';
 import { NOTIFICATION_CHANNELS } from '../../../notification-templates/domain/notification-variable-catalog';
 
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 /**
  * Verifica que packages/contracts/openapi/admin.yaml y el backend no

@@ -8,11 +8,12 @@ import { METHOD_METADATA, PATH_METADATA, HTTP_CODE_METADATA } from '@nestjs/comm
 import { getMetadataStorage } from 'class-validator';
 import { UsersController } from './users.controller';
 import { AuditController } from '../../../audit/presentation/http/audit.controller';
+import { HealthController } from '../../../health/health.controller';
 import { SelectWorkContextDto } from './dto/select-work-context.dto';
 import { RecordLoginAttemptDto } from '../../../audit/presentation/http/dto/record-login-attempt.dto';
 import { WORKER_ROLES } from '../../../users/domain/worker-role';
 
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 /**
  * Verifica que packages/contracts/openapi/transversal.yaml y el backend
@@ -89,6 +90,7 @@ describe('Contrato OpenAPI transversal.yaml vs backend', () => {
   const routes: RouteInfo[] = [
     ...routesFor(AuditController, 'audit'),
     ...routesFor(UsersController, 'users/me'),
+    ...routesFor(HealthController, 'health'),
   ];
 
   it('cada ruta de los controllers existe en OpenAPI y viceversa', () => {
