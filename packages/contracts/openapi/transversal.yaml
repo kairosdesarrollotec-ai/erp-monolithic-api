@@ -23,6 +23,34 @@ info:
     los re-valida de forma independiente contra las asignaciones vigentes
     del usuario (deny-by-default) - nunca confia en una seleccion previa.
 paths:
+  /health:
+    get:
+      operationId: checkHealth
+      summary: Liveness/readiness probe de infraestructura
+      x-internal: true
+      description: >
+        Endpoint de infraestructura para health checks de plataforma (Kubernetes,
+        Cloud Run, load balancers). No forma parte de ningún proceso de negocio ni
+        contrato entre módulos. Excluido deliberadamente de audits de contrato
+        (ver decision-log AUDIT-2026-10-02-ORPHANS). No requiere autenticación.
+      responses:
+        '200':
+          description: Servicio operativo
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, timestamp]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: kairos-api
+                  timestamp:
+                    type: string
+                    format: date-time
   /audit/login-attempts:
     post:
       operationId: recordLoginAttempt
