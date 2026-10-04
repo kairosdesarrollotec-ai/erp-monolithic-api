@@ -29,6 +29,13 @@ import { PrismaRentalNotaryContractPersistence } from './infrastructure/persiste
 import { ContractTemplatesController } from './presentation/http/contract-templates.controller';
 import { PrismaRentalEvidenceRepository } from './infrastructure/persistence/prisma-rental-evidence.repository';
 import { GcsRentalEvidenceService } from './infrastructure/storage/gcs-rental-evidence.service';
+import { RequestRentalDocumentUploadSessionHandler } from './application/commands/request-rental-document-upload-session.handler';
+import { RecordRentalDocumentHandler } from './application/commands/record-rental-document.handler';
+import { ListRentalDocumentsHandler } from './application/queries/list-rental-documents.handler';
+import { RentalDocumentRepositoryPort } from './application/ports/rental-document-repository.port';
+import { RentalDocumentStoragePort } from './application/ports/rental-document-storage.port';
+import { PrismaRentalDocumentRepository } from './infrastructure/persistence/prisma-rental-document.repository';
+import { GcsRentalDocumentService } from './infrastructure/storage/gcs-rental-document.service';
 import { UsersModule } from '../users/users.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { AuditModule } from '../audit/audit.module';
@@ -61,9 +68,14 @@ import { FleetModule } from '../fleet/fleet.module';
     PrismaContractTemplatePersistence,
     PrismaRentalExtensionPersistence,
     PrismaRentalNotaryContractPersistence,
+    RequestRentalDocumentUploadSessionHandler,
+    RecordRentalDocumentHandler,
+    ListRentalDocumentsHandler,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
     { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },
+    { provide: RentalDocumentRepositoryPort, useClass: PrismaRentalDocumentRepository },
+    { provide: RentalDocumentStoragePort, useClass: GcsRentalDocumentService },
   ],
   exports: [RentalRepositoryPort],
 })

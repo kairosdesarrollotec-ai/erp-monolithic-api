@@ -15,6 +15,7 @@ export function toVehicleResponse(vehicle: FleetVehicle): VehicleResponse {
     category: vehicle.category ?? null,
     status: vehicle.status,
     dailyRate: vehicle.dailyRate ?? null,
+    depositMinimum: vehicle.depositMinimum ?? null,
     photoUrl: vehicle.photoUrl ?? null,
     createdAt: vehicle.createdAt.toISOString(),
     updatedAt: vehicle.updatedAt.toISOString(),

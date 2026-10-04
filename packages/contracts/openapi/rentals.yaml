@@ -413,6 +413,88 @@ paths:
         '404':
           description: Alquiler no encontrado
 
+  /rentals/{id}/documents/upload-url:
+    post:
+      operationId: requestRentalDocumentUploadSession
+      summary: Obtener URL firmada de GCS para subir un documento del cliente (Bug-04 / ALQ-02)
+      description: >
+        Devuelve una URL de carga firmada de GCS para subir el archivo directamente desde el
+        navegador. Después de subir el archivo, llamar a POST /rentals/{id}/documents para
+        registrar el documento. Requiere Idempotency-Key.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestRentalDocumentUploadSessionRequest' }
+      responses:
+        '201':
+          description: URL de carga generada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentUploadSessionResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: No autorizado }
+        '404': { description: Alquiler no encontrado }
+
+  /rentals/{id}/documents:
+    post:
+      operationId: recordRentalDocument
+      summary: Registrar un documento del cliente ya subido a GCS (Bug-04 / ALQ-02)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordRentalDocumentRequest' }
+      responses:
+        '201':
+          description: Documento registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalDocumentResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: No autorizado }
+        '404': { description: Alquiler no encontrado }
+    get:
+      operationId: listRentalDocuments
+      summary: Listar documentos del cliente adjuntos a un alquiler
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: companyId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: branchId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lista de documentos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RentalDocumentResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: No autorizado }
+        '404': { description: Alquiler no encontrado }
+
   /rentals/{id}/commands/request-extension:
     post:
       operationId: requestExtension
@@ -706,6 +788,12 @@ components:
         documentRef: { type: string }
         depositAmount: { type: string }
         depositCurrency: { type: string, enum: [PEN, USD] }
+        signatureData:
+          type: string
+          nullable: true
+          description: >
+            Firma digital del cliente capturada en canvas como PNG base64 (data URI sin el prefijo
+            "data:image/png;base64,"). Opcional - se almacena junto al contrato cuando se proporciona.
 
     CompleteDeliveryRequest:
       type: object
@@ -898,6 +986,10 @@ components:
         vehiclePlate: { type: string }
         vehicleBrand: { type: string }
         vehicleModel: { type: string }
+        vehicleDepositMinimum:
+          type: number
+          nullable: true
+          description: Monto mínimo de garantía configurado para el vehículo (PEN).
         planCode: { type: string }
         status: { $ref: '#/components/schemas/RentalStatus' }
         startAt: { type: string, format: date-time, nullable: true }
@@ -979,3 +1071,62 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    RentalDocumentType:
+      type: string
+      enum: [LICENSE, ID_DOCUMENT, PROOF_OF_ADDRESS, BANK_STATEMENT, OTHER]
+      description: Tipo de documento del cliente adjunto a un alquiler.
+
+    RequestRentalDocumentUploadSessionRequest:
+      type: object
+      required: [companyId, branchId, documentType, contentType, contentLength]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        documentType: { $ref: '#/components/schemas/RentalDocumentType' }
+        contentType:
+          type: string
+          description: MIME type del archivo (image/jpeg, image/png, application/pdf).
+        contentLength:
+          type: integer
+          minimum: 1
+          maximum: 10485760
+          description: Tamaño en bytes del archivo. Máximo 10 MB.
+
+    DocumentUploadSessionResponse:
+      type: object
+      required: [uploadUrl, objectUrl, expiresAt]
+      properties:
+        uploadUrl:
+          type: string
+          format: uri
+          description: URL firmada de GCS para PUT directo (válida 15 minutos).
+        objectUrl:
+          type: string
+          format: uri
+          description: URL permanente del objeto en GCS. Pasar a POST /rentals/{id}/documents.
+        expiresAt:
+          type: string
+          format: date-time
+
+    RecordRentalDocumentRequest:
+      type: object
+      required: [companyId, branchId, documentType, objectUrl]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        documentType: { $ref: '#/components/schemas/RentalDocumentType' }
+        objectUrl:
+          type: string
+          format: uri
+          description: objectUrl devuelto por POST /rentals/{id}/documents/upload-url, ya subido a GCS.
+
+    RentalDocumentResponse:
+      type: object
+      required: [id, rentalId, documentType, objectUrl, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        documentType: { $ref: '#/components/schemas/RentalDocumentType' }
+        objectUrl: { type: string, format: uri }
+        createdAt: { type: string, format: date-time }

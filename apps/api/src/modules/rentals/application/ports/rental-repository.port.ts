@@ -81,6 +81,7 @@ export interface RentalRecord {
   vehiclePlate: string;
   vehicleBrand: string;
   vehicleModel: string;
+  vehicleDepositMinimum: number | null;
   planCode: string;
   status: RentalStatus;
   startAt: Date | null;
@@ -153,6 +154,7 @@ export interface FormalizeContractInput {
   depositAmount: string;
   currency: string;
   updatedBy: string;
+  signatureData?: string;
 }
 
 export interface CompleteDeliveryInput {

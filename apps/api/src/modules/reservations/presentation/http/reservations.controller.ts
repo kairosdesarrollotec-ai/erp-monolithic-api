@@ -5,6 +5,7 @@ import {
   Get,
   Headers,
   HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Post,
@@ -41,6 +42,12 @@ import { ReservationResponse } from './dto/reservation.response';
 import { toReservationResponse } from './reservation.mapper';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { RESERVATION_LIST_MAX_LIMIT } from '../../domain/reservation-pagination';
+import { RequestReservationDocumentUploadSessionHandler } from '../../application/commands/request-reservation-document-upload-session.handler';
+import { RecordReservationDocumentHandler } from '../../application/commands/record-reservation-document.handler';
+import { ListReservationDocumentsHandler } from '../../application/queries/list-reservation-documents.handler';
+import { RequestReservationDocumentUploadSessionDto } from './dto/request-reservation-document-upload-session.dto';
+import { RecordReservationDocumentDto } from './dto/record-reservation-document.dto';
+import { ReservationDocumentRecord } from '../../application/ports/reservation-document-repository.port';
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
@@ -59,6 +66,9 @@ export class ReservationsController {
     private readonly cancelReservation: CancelReservationHandler,
     private readonly getReservation: GetReservationHandler,
     private readonly listReservations: ListReservationsHandler,
+    private readonly requestDocumentUploadSession: RequestReservationDocumentUploadSessionHandler,
+    private readonly recordDocument: RecordReservationDocumentHandler,
+    private readonly listDocuments: ListReservationDocumentsHandler,
   ) {}
 
   @Post()
@@ -230,5 +240,55 @@ export class ReservationsController {
       ),
     );
     return toReservationResponse(cancelled);
+  }
+
+  @Post(':id/documents/upload-url')
+  @HttpCode(HttpStatus.CREATED)
+  async requestDocumentUploadSessionEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RequestReservationDocumentUploadSessionDto,
+  ): Promise<{ uploadUrl: string; objectUrl: string }> {
+    return this.requestDocumentUploadSession.execute({
+      firebaseUid: req.firebaseUid!,
+      companyId: dto.companyId,
+      branchId: dto.branchId,
+      reservationId: id,
+      documentType: dto.documentType,
+      contentType: dto.contentType,
+      contentLength: dto.contentLength,
+    });
+  }
+
+  @Post(':id/documents')
+  @HttpCode(HttpStatus.CREATED)
+  async recordDocumentEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordReservationDocumentDto,
+  ): Promise<ReservationDocumentRecord> {
+    return this.recordDocument.execute({
+      firebaseUid: req.firebaseUid!,
+      companyId: dto.companyId,
+      branchId: dto.branchId,
+      reservationId: id,
+      documentType: dto.documentType,
+      objectUrl: dto.objectUrl,
+    });
+  }
+
+  @Get(':id/documents')
+  async listDocumentsEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('companyId') companyId: string,
+    @Query('branchId') branchId: string,
+  ): Promise<ReservationDocumentRecord[]> {
+    return this.listDocuments.execute({
+      firebaseUid: req.firebaseUid!,
+      companyId,
+      branchId,
+      reservationId: id,
+    });
   }
 }

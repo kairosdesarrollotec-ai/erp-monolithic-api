@@ -86,20 +86,23 @@ sources:
   path: docs/sources/tdd/tdd-fleet.md
   type: TDD
   module: Flota
-  version: '1.0'
-  date: '2026-10-01'
+  version: '1.1'
+  date: '2026-10-03'
   status: approved
-  estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
+  estado_original: APROBADO v1.1 — Bug 8: campo depositMinimum en Vehicle, fleet.yaml v0.3.0
   sha256: unknown
   authority: technical
-  supersedes: null
+  supersedes: TDD-KAIROS-MVP-002-FLT-V1.0
   notes: >
-    TDD específico del módulo fleet. Incluye modelo Prisma, contrato OpenAPI fleet.yaml v0.2.0,
+    TDD específico del módulo fleet. Incluye modelo Prisma, contrato OpenAPI fleet.yaml v0.3.0,
     stack frontend (FleetListScreen, useFleetList, NewVehicleModal, MSW v2). Refleja 22/22 tests.
     2026-10-02 (PROP-007-FINAL): rate-cards eliminados definitivamente del módulo fleet —
     RateCardsController, RateCardRepositoryPort, PrismaRateCardRepository y handlers de rate-card
     removidos. Tabla rate_card_versions eliminada (migración 20261002000000_drop_rate_card_versions).
     Vehicle.dailyRate es la fuente definitiva del precio de cotización.
+    2026-10-03 (Bug 8): depositMinimum Decimal? @db.Decimal(12,2) en Vehicle;
+    migración 20261003_vehicles_deposit_minimum; fleet.yaml v0.3.0 con campo depositMinimum
+    en CreateVehicleRequest, UpdateVehicleRequest y VehicleResponse (nullable).
 - id: OPENAPI-NOTIFICATIONS-DISPATCH
   path: apps/api/src/modules/notifications/notification-dispatch.module.ts
   type: MODULE
@@ -328,24 +331,24 @@ sources:
   path: docs/sources/tdd/tdd-02-reserva.md
   type: TDD
   module: Reserva
-  version: '2.2'
-  date: 31 de agosto de 2026
+  version: '2.3'
+  date: '2026-10-03'
   status: approved
-  estado_original: Aprobado — pre-auditoría 2026-10-01. §11.1 actualizado con nota DEC-CON-001-FINAL (POST /reservations con inquiryId → 409 INQUIRY_CONVERSION_REQUIRED). Demás secciones coherentes con PR#7.
-  sha256: 1bcb1efaa2040a874a7a5c8d87686971254e467a37f82a0bbb07226e51dc1a1b
+  estado_original: Aprobado v2.3 — Bug 3: ReservationDocumentStoragePort, ReservationDocumentRepositoryPort, ReservationDocumentsController, tabla reservation_documents (GCS).
+  sha256: unknown
   authority: technical
-  supersedes: null
+  supersedes: TDD-KAIROS-MVP-002-RES-V2.2
 - id: TDD-KAIROS-MVP-002-ALQ
   path: docs/sources/tdd/tdd-03-alquiler.md
   type: TDD
   module: Alquiler
-  version: '2.1'
-  date: 31 de agosto de 2026
+  version: '2.2'
+  date: '2026-10-03'
   status: approved
-  estado_original: Aprobado — pre-auditoría 2026-10-01 sin hallazgos bloqueantes. Módulo no implementado aún; coherente con TDD transversal y decisiones arquitectónicas.
-  sha256: 2613c8d423267f8c7fe802b5c0036ec2631ac1463fece220446fc3ed2b8a0acb
+  estado_original: Aprobado v2.2 — Bug 4 (RentalDocumentsController/GCS), Bug 7 (signatureData en rental_contracts), Bug 8 (vehicleDepositMinimum propagado a RentalResponse).
+  sha256: unknown
   authority: technical
-  supersedes: null
+  supersedes: TDD-KAIROS-MVP-002-ALQ-V2.1
 - id: TDD-KAIROS-MVP-002-DEV
   path: docs/sources/tdd/tdd-04-devolucion.md
   type: TDD
@@ -445,46 +448,47 @@ sources:
   sha256: 2ba213934be69b4fbd8317b5b409c4fc1c733a9d11ab0aa1ba591bf7ab5d55c3
   authority: contract
   supersedes: null
-- id: OPENAPI-FLEET-V0.2.0
+- id: OPENAPI-FLEET-V0.3.0
   path: packages/contracts/openapi/fleet.yaml
   type: OpenAPI
   module: Fleet
-  version: '0.2.0'
-  date: 2026-09-30
+  version: '0.3.0'
+  date: '2026-10-03'
   status: approved
   estado_original: >
-    Contrato del módulo Flota — CRUD de vehículos + foto via URL firmada GCS
-    (PROP-008 / ADR-KAI-005). brand y model opcionales en PATCH (semántica REST).
-  sha256: 854eeab613b8c5e2a8ffa910547a37bb9f3302ce03db99afe66f31bf8574fa7b
+    Contrato del módulo Flota v0.3.0 — agrega campo depositMinimum (nullable) en
+    CreateVehicleRequest, UpdateVehicleRequest y VehicleResponse (Bug 8).
+  sha256: unknown
   authority: contract
-  supersedes: OPENAPI-FLEET-V0.1.0
-- id: OPENAPI-RESERVATIONS-V0.2.0
+  supersedes: OPENAPI-FLEET-V0.2.0
+- id: OPENAPI-RESERVATIONS-V0.3.0
   path: packages/contracts/openapi/reservations.yaml
   type: OpenAPI
   module: Reservations
-  version: '0.2.0'
-  date: 2026-09-21
+  version: '0.3.0'
+  date: '2026-10-03'
   status: approved
   estado_original: >
-    Contrato del módulo Reservas — CRUD + paginación + UUIDs + branchId obligatorio
-    en bandeja + códigos 428/412/409 corregidos (NOTA-PR6).
+    Contrato del módulo Reservas v0.3.0 — agrega endpoints de documentos GCS:
+    POST /reservations/:id/documents/upload-url, POST /reservations/:id/documents,
+    GET /reservations/:id/documents (Bug 3).
   sha256: null
   authority: contract
-  supersedes: null
-- id: OPENAPI-RENTALS-V1.0.0
+  supersedes: OPENAPI-RESERVATIONS-V0.2.0
+- id: OPENAPI-RENTALS-V1.1.0
   path: packages/contracts/openapi/rentals.yaml
   type: OpenAPI
   module: Rentals
-  version: '1.0.0'
-  date: 2026-09-30
+  version: '1.1.0'
+  date: '2026-10-03'
   status: current
   estado_original: >
-    Contrato inicial del módulo Alquiler — cubre UC-ALQ-001 a UC-ALQ-006 (crear alquiler
-    directo, crear desde reserva, validar documentos, registrar alcoholímetro, evaluar
-    notaría/aprobar excepción, ampliaciones). PR #36 (feature/rental-extensions-api).
+    Contrato del módulo Alquiler v1.1.0 — agrega endpoints de documentos GCS
+    (Bug 4: POST/GET /rentals/:id/documents), campo signatureData en formalize-contract
+    (Bug 7), campo vehicleDepositMinimum en RentalResponse (Bug 8).
   sha256: null
   authority: contract
-  supersedes: null
+  supersedes: OPENAPI-RENTALS-V1.0.0
 - id: OPENAPI-NOTIFICATIONS-V0.1.0
   path: packages/contracts/openapi/notifications.yaml
   type: OpenAPI

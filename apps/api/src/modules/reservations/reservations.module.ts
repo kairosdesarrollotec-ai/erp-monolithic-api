@@ -8,7 +8,14 @@ import { CancelReservationHandler } from './application/commands/cancel-reservat
 import { GetReservationHandler } from './application/queries/get-reservation.handler';
 import { ListReservationsHandler } from './application/queries/list-reservations.handler';
 import { ReservationRepositoryPort } from './application/ports/reservation-repository.port';
+import { ReservationDocumentRepositoryPort } from './application/ports/reservation-document-repository.port';
+import { ReservationDocumentStoragePort } from './application/ports/reservation-document-storage.port';
 import { PrismaReservationRepository } from './infrastructure/persistence/prisma-reservation.repository';
+import { PrismaReservationDocumentRepository } from './infrastructure/persistence/prisma-reservation-document.repository';
+import { GcsReservationDocumentService } from './infrastructure/storage/gcs-reservation-document.service';
+import { RequestReservationDocumentUploadSessionHandler } from './application/commands/request-reservation-document-upload-session.handler';
+import { RecordReservationDocumentHandler } from './application/commands/record-reservation-document.handler';
+import { ListReservationDocumentsHandler } from './application/queries/list-reservation-documents.handler';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
@@ -30,7 +37,12 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     CancelReservationHandler,
     GetReservationHandler,
     ListReservationsHandler,
+    RequestReservationDocumentUploadSessionHandler,
+    RecordReservationDocumentHandler,
+    ListReservationDocumentsHandler,
     { provide: ReservationRepositoryPort, useClass: PrismaReservationRepository },
+    { provide: ReservationDocumentRepositoryPort, useClass: PrismaReservationDocumentRepository },
+    { provide: ReservationDocumentStoragePort, useClass: GcsReservationDocumentService },
   ],
   exports: [ReservationRepositoryPort],
 })

@@ -19,6 +19,7 @@ fuentes_base:
 | Versión | Fecha | Autor | Cambio |
 | --- | --- | --- | --- |
 | 1.0 | 2026-10-01 | Russbel Hernández | Documento inicial — diseño funcional del módulo Fleet implementado (22/22 tests frontend). |
+| v0.3.0 | 2026-10-03 | Bug 8: Se agrega `depositMinimum DECIMAL(12,2) NULL` al modelo Vehicle. Propagado a CreateVehicleRequest, UpdateVehicleRequest y VehicleResponse en OpenAPI fleet.yaml v0.3.0. Frontend: NewVehicleModal.tsx expone el campo. | — |
 
 ---
 
@@ -149,6 +150,19 @@ Filtros soportados en listado:
 - `status` (opcional)
 - `plate` (opcional, búsqueda parcial)
 - Paginación: `page`, `limit` (default 20, máx 100)
+
+### 5.6 Modelo de datos — Entidad Vehicle (campos relevantes)
+
+| Campo | Tipo | Nulable | Descripción |
+| --- | --- | --- | --- |
+| `id` | UUID | No | Identificador único del vehículo |
+| `companyId` | UUID | No | Empresa propietaria |
+| `branchId` | UUID | No | Sede asignada |
+| `plate` | String | No | Placa (única por empresa) |
+| `status` | Enum | No | Estado operativo del vehículo (BR-FLT-006) |
+| `photoUrl` | String | Sí | URL HTTPS de GCS de la foto del vehículo |
+| `dailyRate` | Decimal(12,2) | Sí | Tarifa diaria base en PEN |
+| `depositMinimum` | Decimal(12,2) | Sí | Monto mínimo de garantía en PEN que debe registrarse al formalizar el contrato. Opcional; si está definido, el módulo Rentals debe validar que el monto de garantía sea ≥ este valor (Bug 8 / PROP-013). |
 
 ---
 

@@ -13,6 +13,7 @@ export interface VehicleResponse {
   category?: string | null;
   status: VehicleStatus;
   dailyRate?: number | null;
+  depositMinimum?: number | null;
   photoUrl?: string | null;
   createdAt: string;
   updatedAt: string;

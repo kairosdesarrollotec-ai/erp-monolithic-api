@@ -12,6 +12,7 @@ export interface CreateVehicleInput {
   category?: string | null;
   status?: VehicleStatus;
   dailyRate?: number | null;
+  depositMinimum?: number | null;
   photoUrl?: string | null;
 }
 
@@ -23,6 +24,7 @@ export interface UpdateVehicleInput {
   color?: string | null;
   category?: string | null;
   dailyRate?: number | null;
+  depositMinimum?: number | null;
   photoUrl?: string | null;
 }
 

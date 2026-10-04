@@ -182,6 +182,88 @@ paths:
         '409': { description: 'RESERVATION_STATE_CONFLICT - la reserva ya esta en un estado terminal (CANCELLED/CONVERTED)' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
         '428': { description: IF_MATCH_REQUIRED }
+
+  /reservations/{id}/documents/upload-url:
+    post:
+      operationId: requestReservationDocumentUploadSession
+      summary: Obtener URL firmada de GCS para subir un comprobante de pago u otro documento (Bug-03)
+      description: >
+        Devuelve una URL de carga firmada de GCS. Después de subir, llamar a
+        POST /reservations/{id}/documents para registrar el documento.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestReservationDocumentUploadSessionRequest' }
+      responses:
+        '201':
+          description: URL de carga generada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReservationDocumentUploadSessionResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: No autorizado }
+        '404': { description: Reserva no encontrada }
+
+  /reservations/{id}/documents:
+    post:
+      operationId: recordReservationDocument
+      summary: Registrar un documento ya subido a GCS (comprobante de pago, etc.) (Bug-03)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordReservationDocumentRequest' }
+      responses:
+        '201':
+          description: Documento registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReservationDocumentResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: No autorizado }
+        '404': { description: Reserva no encontrada }
+    get:
+      operationId: listReservationDocuments
+      summary: Listar documentos adjuntos a una reserva
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: companyId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: branchId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lista de documentos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReservationDocumentResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: No autorizado }
+        '404': { description: Reserva no encontrada }
+
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: 'Firebase ID token' }
@@ -253,4 +335,58 @@ components:
           type: array
           items: { type: string }
         confirmedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    ReservationDocumentType:
+      type: string
+      enum: [PAYMENT_VOUCHER, ID_DOCUMENT, OTHER]
+      description: Tipo de documento adjunto a una reserva.
+
+    RequestReservationDocumentUploadSessionRequest:
+      type: object
+      required: [companyId, branchId, documentType, contentType, contentLength]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        documentType: { $ref: '#/components/schemas/ReservationDocumentType' }
+        contentType:
+          type: string
+          description: MIME type del archivo (image/jpeg, image/png, application/pdf).
+        contentLength:
+          type: integer
+          minimum: 1
+          maximum: 10485760
+          description: Tamaño en bytes. Máximo 10 MB.
+
+    ReservationDocumentUploadSessionResponse:
+      type: object
+      required: [uploadUrl, objectUrl, expiresAt]
+      properties:
+        uploadUrl:
+          type: string
+          format: uri
+          description: URL firmada de GCS para PUT directo (válida 15 minutos).
+        objectUrl:
+          type: string
+          format: uri
+          description: URL permanente del objeto. Pasar a POST /reservations/:id/documents.
+        expiresAt: { type: string, format: date-time }
+
+    RecordReservationDocumentRequest:
+      type: object
+      required: [companyId, branchId, documentType, objectUrl]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        documentType: { $ref: '#/components/schemas/ReservationDocumentType' }
+        objectUrl: { type: string, format: uri }
+
+    ReservationDocumentResponse:
+      type: object
+      required: [id, reservationId, documentType, objectUrl, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        reservationId: { type: string, format: uuid }
+        documentType: { $ref: '#/components/schemas/ReservationDocumentType' }
+        objectUrl: { type: string, format: uri }
         createdAt: { type: string, format: date-time }

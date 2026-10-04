@@ -9,5 +9,6 @@ export class FormalizeContractCommand {
     public readonly documentRef: string,
     public readonly depositAmount: string,
     public readonly depositCurrency: string,
+    public readonly signatureData?: string,
   ) {}
 }

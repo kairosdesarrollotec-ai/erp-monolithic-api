@@ -490,6 +490,11 @@ components:
           minimum: 0
           nullable: true
           description: Tarifa diaria de alquiler en moneda local.
+        depositMinimum:
+          type: number
+          minimum: 0
+          nullable: true
+          description: Monto mínimo de garantía para este vehículo (PEN). Si se omite no se configura mínimo.
         photoUrl:
           type: string
           format: uri
@@ -538,6 +543,11 @@ components:
           type: number
           minimum: 0
           nullable: true
+        depositMinimum:
+          type: number
+          minimum: 0
+          nullable: true
+          description: Monto mínimo de garantía (PEN). Si se omite, el valor existente no cambia.
         photoUrl:
           type: string
           format: uri
@@ -613,6 +623,10 @@ components:
         dailyRate:
           type: number
           nullable: true
+        depositMinimum:
+          type: number
+          nullable: true
+          description: Monto mínimo de garantía configurado para este vehículo (PEN).
         photoUrl:
           type: string
           nullable: true
