@@ -1,15 +1,15 @@
 ---
 modulo: Flota (Fleet)
 proceso: Gestión del catálogo de vehículos
-version: '1.0'
+version: '1.1'
 estado: APROBADO
-fecha_aprobacion: '2026-10-01'
+fecha_aprobacion: '2026-10-03'
 autores:
   - Equipo técnico KAIROS
 fuentes_base:
   - bdd-fleet.md v1.0
   - sdd-fleet.md v1.0
-  - packages/contracts/openapi/fleet.yaml v0.2.0
+  - packages/contracts/openapi/fleet.yaml v0.3.0
   - artifacts/traceability/fleet/FLOTA-01-traceability.md
 ---
 
@@ -18,6 +18,7 @@ fuentes_base:
 | Versión | Fecha | Autor | Cambio |
 | --- | --- | --- | --- |
 | 1.0 | 2026-10-01 | Equipo técnico KAIROS | Documento inicial — arquitectura técnica del módulo Fleet. Refleja el estado mergeado a main (PR #51 frontend, PR #37 backend). Tests: 22/22 frontend (10 component + 12 client MSW). |
+| 1.1 | 2026-10-03 | Equipo técnico KAIROS | Bug 8 — campo `depositMinimum` en modelo Vehicle y contrato fleet.yaml v0.3.0. |
 
 ---
 
@@ -27,7 +28,7 @@ fuentes_base:
 | --- | --- |
 | BDD | bdd-fleet.md v1.0 |
 | SDD | sdd-fleet.md v1.0 |
-| Contrato OpenAPI | packages/contracts/openapi/fleet.yaml v0.2.0 |
+| Contrato OpenAPI | packages/contracts/openapi/fleet.yaml v0.3.0 |
 | Trazabilidad | artifacts/traceability/fleet/FLOTA-01-traceability.md |
 | PR backend mergeado | #37 (feat/fleet-gcs-photo-upload → main) |
 | PR frontend mergeado | #51 (feat/fleet-gcs-photo-upload → main) |
@@ -145,6 +146,7 @@ model Vehicle {
   status           VehicleStatus @default(AVAILABLE)
   photoUrl         String?
   dailyRate        Decimal?      @db.Decimal(10, 2)
+  depositMinimum   Decimal?      @db.Decimal(12, 2)
   notes            String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -164,7 +166,7 @@ enum VehicleStatus {
 
 ### 5.3 Contrato OpenAPI
 
-Archivo: `packages/contracts/openapi/fleet.yaml` v0.2.0
+Archivo: `packages/contracts/openapi/fleet.yaml` v0.3.0
 
 Operaciones documentadas:
 - `POST /fleet/vehicles/photo-upload-sessions` → 201 PhotoUploadSessionResponse | 400 | 401 | 403 | 413 | 503
@@ -302,10 +304,17 @@ interface VehicleResponse {
   status: VehicleStatus;
   photoUrl?: string;
   dailyRate?: number;
+  depositMinimum?: number | null;
   notes?: string;
   createdAt: string;
   updatedAt: string;
 }
+```
+
+### CreateVehicleRequest / UpdateVehicleRequest (adición Bug 8)
+```typescript
+// Campo adicional en ambos DTOs
+depositMinimum?: number;  // validación Zod: z.number().min(0).optional()
 ```
 
 ### vehicleSchema (Zod)
@@ -318,6 +327,19 @@ const vehicleSchema = z.object({
   category: z.enum(['Sedan', 'SUV', 'Pickup', 'Van', 'Moto', 'Otro']),
   photoUrl: z.string().url().optional(),
   dailyRate: z.number().positive().optional(),
+  depositMinimum: z.number().min(0).optional(),
   notes: z.string().max(500).optional(),
 });
 ```
+
+---
+
+## 9. Registro de cambios posteriores al documento inicial
+
+### Bug 8 — depositMinimum (2026-10-03)
+
+- Prisma: `depositMinimum Decimal? @db.Decimal(12,2)` en el modelo `Vehicle`.
+- Migración: `20261003_vehicles_deposit_minimum` — `ALTER TABLE vehicles ADD COLUMN deposit_minimum DECIMAL(12,2) NULL;`
+- OpenAPI: `fleet.yaml` v0.3.0 — campo `depositMinimum` en `CreateVehicleRequest`, `UpdateVehicleRequest`, `VehicleResponse` (nullable).
+- Frontend: `NewVehicleModal.tsx` campo "Garantía mínima (S/)", validación Zod opcional ≥ 0.
+- Tests: `SC-FLT-011`, `SC-FLT-012`.

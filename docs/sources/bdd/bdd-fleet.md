@@ -164,6 +164,11 @@ La `uploadUrl` retornada por `POST /fleet/vehicles/photo-upload-sessions` tiene 
 
 El endpoint `POST /fleet/vehicles/photo-upload-sessions` retorna 503 si la variable de entorno `GCS_BUCKET_NAME` no está configurada. Las fotos son opcionales en los datos del vehículo, pero si se desea registrar foto el servicio GCS debe estar disponible.
 
+### BR-FLT-010: Garantía mínima del vehículo
+**Prioridad:** Media
+
+El campo `depositMinimum` de un vehículo expresa el monto mínimo de garantía (PEN) que el cliente debe pagar al formalizar el contrato de alquiler de ese vehículo. Es opcional (nullable). Si está definido, el sistema debe bloquear la formalización del contrato cuando el monto de garantía ingresado sea inferior a `depositMinimum`. El campo se configura en el formulario de creación/edición del vehículo y se propaga a la respuesta del alquiler como `vehicleDepositMinimum`.
+
 ---
 
 ## 5. Máquina de estados del vehículo
@@ -248,3 +253,17 @@ Estado inicial al registrar un vehículo: `AVAILABLE`.
 **Cuando** el operador solicita `GET /fleet/vehicles?status=AVAILABLE`
 **Entonces** solo se retornan vehículos con estado `AVAILABLE` de esa empresa/sede
 **Y** no se incluyen vehículos de otras sedes ni otras empresas
+
+### SC-FLT-011: Creación de vehículo con garantía mínima
+
+**Dado** que el operador autenticado tiene acceso a la sede correspondiente
+**Cuando** crea un vehículo con `depositMinimum: 500.00`
+**Entonces** el vehículo se persiste con ese valor
+**Y** `GET /fleet/vehicles/{id}` retorna `depositMinimum: 500.00` en la respuesta
+
+### SC-FLT-012: Actualización de vehículo borra garantía mínima
+
+**Dado** que el vehículo tiene `depositMinimum: 500.00`
+**Cuando** se actualiza con `depositMinimum: null` o sin incluir el campo
+**Entonces** el campo queda en `null` (sin restricción de garantía)
+**Y** `GET /fleet/vehicles/{id}` retorna `depositMinimum: null`

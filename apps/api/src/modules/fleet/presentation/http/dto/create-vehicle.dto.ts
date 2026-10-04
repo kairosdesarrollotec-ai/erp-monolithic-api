@@ -60,6 +60,12 @@ export class CreateVehicleDto {
   dailyRate?: number;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  depositMinimum?: number;
+
+  @IsOptional()
   @IsUrl({ protocols: ['https'], require_tld: true })
   @Matches(/^https:\/\/storage\.googleapis\.com\//, {
     message: 'photoUrl must be a Google Cloud Storage HTTPS URL',

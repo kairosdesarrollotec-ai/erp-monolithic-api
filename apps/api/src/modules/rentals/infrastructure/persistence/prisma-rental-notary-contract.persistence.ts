@@ -73,12 +73,14 @@ export class PrismaRentalNotaryContractPersistence {
         documentRef: input.documentRef,
         status: 'SIGNED',
         signedAt: new Date(),
+        signatureData: input.signatureData ?? null,
       },
       update: {
         templateVersionId: input.templateVersionId,
         documentRef: input.documentRef,
         status: 'SIGNED',
         signedAt: new Date(),
+        signatureData: input.signatureData ?? null,
       },
     });
 

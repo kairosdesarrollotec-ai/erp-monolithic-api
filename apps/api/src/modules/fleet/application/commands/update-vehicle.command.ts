@@ -10,6 +10,7 @@ export class UpdateVehicleCommand {
     public readonly color?: string,
     public readonly category?: string,
     public readonly dailyRate?: number,
+    public readonly depositMinimum?: number,
     public readonly photoUrl?: string,
     public readonly assignedBranchId?: string,
   ) {}

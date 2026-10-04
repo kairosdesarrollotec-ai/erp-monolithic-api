@@ -435,6 +435,7 @@ model Vehicle {
   category           String?  @default("SEDAN")
   status             String   @default("AVAILABLE") // AVAILABLE | RENTED | MAINTENANCE | OUT_OF_SERVICE
   dailyRate          Decimal? @map("daily_rate") @db.Decimal(10, 2)
+  depositMinimum     Decimal? @map("deposit_minimum") @db.Decimal(10, 2)
   photoUrl           String?  @map("photo_url")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
@@ -694,6 +695,7 @@ model Reservation {
 
   acceptance ReservationAcceptance?
   rental     Rental?
+  documents  ReservationDocument[]
 
   // Hallazgo critico PR#6 ("IDOR entre sedes/empresas"): este indice
   // respalda el filtro de scope completo (organizationId +
@@ -830,6 +832,7 @@ model Rental {
   deposit          RentalDeposit?
   extensions       RentalExtension[]
   evidence         RentalEvidence[]
+  documents        RentalDocument[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
@@ -909,12 +912,43 @@ model RentalContract {
   documentRef       String            @map("document_ref")
   status            String            @default("PENDING") // PENDING | SIGNED | VOID
   signedAt          DateTime?         @map("signed_at")
+  signatureData     String?           @map("signature_data") @db.Text
   createdAt         DateTime          @default(now()) @map("created_at")
 
   rental   Rental           @relation(fields: [rentalId], references: [id], onDelete: Cascade)
   template ContractTemplate @relation(fields: [templateVersionId], references: [id])
 
   @@map("rental_contracts")
+}
+
+/// Bug-07 / ALQ-06 - documentos adjuntos del cliente en la etapa de validaciones.
+/// Se suben a GCS y se registra la URL. Tipos: LICENSE | ID_DOCUMENT | PROOF_OF_ADDRESS | BANK_STATEMENT | OTHER.
+model RentalDocument {
+  id           String   @id @default(uuid())
+  rentalId     String   @map("rental_id")
+  documentType String   @map("document_type") @db.VarChar(40)
+  objectUrl    String   @map("object_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  rental Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@map("rental_documents")
+}
+
+/// Bug-03 - comprobante de pago adjunto a una reserva.
+/// Se sube a GCS y se registra la URL. Types: PAYMENT_VOUCHER | OTHER.
+model ReservationDocument {
+  id            String   @id @default(uuid())
+  reservationId String   @map("reservation_id")
+  documentType  String   @map("document_type") @db.VarChar(40)
+  objectUrl     String   @map("object_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@map("reservation_documents")
 }
 
 /// TDD-03-alquiler seccion 9.3 / BR-DOC-002 - plantillas vigentes por empresa.

@@ -22,6 +22,7 @@ function toDomain(row: {
   category: string | null;
   status: string;
   dailyRate: Prisma.Decimal | null;
+  depositMinimum: Prisma.Decimal | null;
   photoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +40,7 @@ function toDomain(row: {
     category: row.category,
     status: row.status as VehicleStatus,
     dailyRate: row.dailyRate !== null ? Number(row.dailyRate) : null,
+    depositMinimum: row.depositMinimum !== null ? Number(row.depositMinimum) : null,
     photoUrl: row.photoUrl,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -65,6 +67,7 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
         category: input.category ?? undefined,
         status: input.status ?? 'AVAILABLE',
         dailyRate: input.dailyRate !== undefined && input.dailyRate !== null ? new Prisma.Decimal(input.dailyRate) : undefined,
+        depositMinimum: input.depositMinimum !== undefined && input.depositMinimum !== null ? new Prisma.Decimal(input.depositMinimum) : undefined,
         photoUrl: input.photoUrl ?? undefined,
       },
     });
@@ -175,6 +178,10 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
         dailyRate:
           input.dailyRate !== undefined && input.dailyRate !== null
             ? new Prisma.Decimal(input.dailyRate)
+            : undefined,
+        depositMinimum:
+          input.depositMinimum !== undefined && input.depositMinimum !== null
+            ? new Prisma.Decimal(input.depositMinimum)
             : undefined,
         photoUrl: input.photoUrl ?? undefined,
       },

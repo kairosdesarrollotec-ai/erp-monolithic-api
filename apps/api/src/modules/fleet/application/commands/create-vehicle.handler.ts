@@ -42,6 +42,7 @@ export class CreateVehicleHandler {
       category: command.category?.trim() || 'SEDAN',
       status: command.status ?? 'AVAILABLE',
       dailyRate: command.dailyRate,
+      depositMinimum: command.depositMinimum,
       photoUrl: command.photoUrl?.trim() || null,
     });
   }

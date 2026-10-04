@@ -54,6 +54,7 @@ export class UpdateVehicleHandler {
       color: command.color?.trim() || null,
       category: command.category?.trim() || existing.category,
       dailyRate: command.dailyRate,
+      depositMinimum: command.depositMinimum,
       photoUrl: command.photoUrl?.trim() || null,
     });
   }

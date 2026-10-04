@@ -13,6 +13,7 @@ export interface FleetVehicle {
   category?: string | null;
   status: VehicleStatus;
   dailyRate?: number | null;
+  depositMinimum?: number | null;
   photoUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;

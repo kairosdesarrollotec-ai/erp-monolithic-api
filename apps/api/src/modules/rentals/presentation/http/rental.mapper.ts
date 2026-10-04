@@ -16,6 +16,7 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
     vehiclePlate: record.vehiclePlate,
     vehicleBrand: record.vehicleBrand,
     vehicleModel: record.vehicleModel,
+    vehicleDepositMinimum: record.vehicleDepositMinimum,
     planCode: record.planCode,
     status: record.status,
     startAt: record.startAt ? record.startAt.toISOString() : null,

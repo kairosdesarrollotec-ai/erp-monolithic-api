@@ -51,6 +51,7 @@ export interface RentalResponse {
   vehiclePlate: string;
   vehicleBrand: string;
   vehicleModel: string;
+  vehicleDepositMinimum: number | null;
   planCode: string;
   status: RentalStatus;
   startAt: string | null;

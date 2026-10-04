@@ -13,6 +13,7 @@ export class CreateVehicleCommand {
     public readonly category?: string,
     public readonly status?: VehicleStatus,
     public readonly dailyRate?: number,
+    public readonly depositMinimum?: number,
     public readonly photoUrl?: string,
     public readonly assignedBranchId?: string,
   ) {}

@@ -17,4 +17,9 @@ export class FormalizeContractDto {
 
   @IsIn(['PEN', 'USD'])
   depositCurrency!: string;
+
+  /** Firma digital capturada como base64 PNG. Opcional. */
+  @IsOptional()
+  @IsString()
+  signatureData?: string;
 }

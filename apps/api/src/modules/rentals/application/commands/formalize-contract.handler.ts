@@ -99,6 +99,7 @@ export class FormalizeContractHandler {
           depositAmount: command.depositAmount,
           currency: command.depositCurrency,
           updatedBy: command.firebaseUid,
+          signatureData: command.signatureData,
         },
         tx,
       );
