@@ -1,6 +1,7 @@
 import { Injectable, PayloadTooLargeException } from '@nestjs/common';
 import { VehiclePhotoStoragePort } from '../ports/vehicle-photo-storage.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { assertFleetWrite } from '../policies/fleet-role.policy';
 
 const MAX_PHOTO_BYTES = 12 * 1024 * 1024; // 12 MB — SDD-00 §16.5
 
@@ -22,11 +23,14 @@ export class RequestPhotoUploadSessionHandler {
   async execute(
     command: RequestPhotoUploadSessionCommand,
   ): Promise<{ uploadUrl: string; objectUrl: string }> {
-    await this.authorization.authorize({
+    const context = await this.authorization.authorize({
       firebaseUid: command.firebaseUid,
       companyId: command.companyId,
       branchId: command.branchId,
     });
+
+    // F6 — solo roles de escritura de flota pueden generar URLs de subida (TDD-00 §8.2/§8.3)
+    assertFleetWrite(context.role);
 
     if (command.contentLength > MAX_PHOTO_BYTES) {
       throw new PayloadTooLargeException(
