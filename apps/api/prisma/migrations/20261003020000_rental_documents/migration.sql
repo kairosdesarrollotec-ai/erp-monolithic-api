@@ -1,11 +1,11 @@
 -- Bug-04: Customer documents uploaded during rental Stage 1 (licencia, DNI, etc.).
 -- Follows the same GCS-signed-URL pattern as RentalEvidence.
 CREATE TABLE "rental_documents" (
-  "id"            UUID          NOT NULL DEFAULT gen_random_uuid(),
+  "id"            TEXT          NOT NULL,
   "rental_id"     TEXT          NOT NULL,
   "document_type" VARCHAR(40)   NOT NULL,
   "object_url"    TEXT          NOT NULL,
-  "created_at"    TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+  "created_at"    TIMESTAMP(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT "rental_documents_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "rental_documents_rental_id_fkey"
