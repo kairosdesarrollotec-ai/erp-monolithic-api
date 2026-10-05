@@ -24,6 +24,7 @@ describe('FormalizeContractHandler', () => {
     vehiclePlate: 'JKL-004',
     vehicleBrand: 'Toyota',
     vehicleModel: 'Yaris',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'CONTRACTING',
     startAt: new Date(),

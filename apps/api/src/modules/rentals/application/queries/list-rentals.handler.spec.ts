@@ -19,6 +19,7 @@ describe('ListRentalsHandler', () => {
     vehiclePlate: 'PQR-006',
     vehicleBrand: 'Honda',
     vehicleModel: 'Civic',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'DRAFT',
     startAt: new Date(),

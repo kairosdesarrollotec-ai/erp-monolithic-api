@@ -8,11 +8,11 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "test": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-require-module\" jest",
-    "test:e2e": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-require-module\" jest --config ./test/jest-e2e.json",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-require-module\" jest --no-watchman",
+    "test:e2e": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-require-module\" jest --no-watchman --config ./test/jest-e2e.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
-    "test:integration": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-require-module\" jest --config ./test/jest-integration.json"
+    "test:integration": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-require-module\" jest --no-watchman --config ./test/jest-integration.json"
   },
   "dependencies": {
     "@google-cloud/storage": "^8.2.0",
@@ -24,7 +24,6 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "firebase-admin": "^14.0.0",
-    "helmet": "^8.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -37,9 +36,8 @@
     "@types/jest": "^29.5.13",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.7.4",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^9.0.0",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^10.11.0",
     "jest": "^29.7.0",
     "js-yaml": "^5.4.2",
     "prisma": "^5.20.0",
@@ -47,7 +45,7 @@
     "ts-jest": "^29.4.14",
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.0.0"
+    "typescript-eslint": "^8.70.1"
   },
   "jest": {
     "moduleFileExtensions": [

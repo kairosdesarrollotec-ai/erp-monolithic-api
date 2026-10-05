@@ -35,6 +35,7 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
     vehiclePlate: 'ABC-123',
     vehicleBrand: 'Toyota',
     vehicleModel: 'Corolla',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'DRAFT',
     startAt: fakeReservation.startAt,

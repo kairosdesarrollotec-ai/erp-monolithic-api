@@ -23,6 +23,7 @@ describe('RegisterAlcoholTestHandler', () => {
     vehiclePlate: 'ABC-123',
     vehicleBrand: 'Toyota',
     vehicleModel: 'Corolla',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'VALIDATION',
     startAt: new Date(),

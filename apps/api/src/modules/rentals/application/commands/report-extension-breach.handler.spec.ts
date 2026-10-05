@@ -23,6 +23,7 @@ describe('ReportExtensionBreachHandler', () => {
     vehiclePlate: 'XYZ-789',
     vehicleBrand: 'Nissan',
     vehicleModel: 'Versa',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'EXTENSION_PENDING',
     startAt: new Date('2026-10-01T00:00:00Z'),

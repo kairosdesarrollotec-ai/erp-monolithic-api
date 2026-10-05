@@ -25,6 +25,7 @@ describe('CompleteDeliveryHandler', () => {
     vehiclePlate: 'XYZ-789',
     vehicleBrand: 'Nissan',
     vehicleModel: 'Versa',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'PENDING_DELIVERY',
     startAt: null,

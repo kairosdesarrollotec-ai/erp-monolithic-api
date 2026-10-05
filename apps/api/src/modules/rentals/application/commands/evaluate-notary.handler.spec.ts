@@ -24,6 +24,7 @@ describe('EvaluateNotaryHandler', () => {
     vehiclePlate: 'DEF-002',
     vehicleBrand: 'Nissan',
     vehicleModel: 'Versa',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'NOTARY_EVALUATION',
     startAt: new Date(),
@@ -43,7 +44,8 @@ describe('EvaluateNotaryHandler', () => {
     biometricVerified?: boolean;
     vehicleModel?: string;
   }) {
-    const opts = { previousRentalsCount: 0, biometricVerified: false, vehicleModel: 'Versa', ...overrides };
+    const opts = { previousRentalsCount: 0, biometricVerified: false, vehicleModel: 'Versa',
+    vehicleDepositMinimum: null, ...overrides };
 
     const rentals = {
       findById: jest.fn().mockResolvedValue(fakeRental),
