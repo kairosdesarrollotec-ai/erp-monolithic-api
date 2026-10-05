@@ -1,0 +1,929 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Returns API
+  version: 1.1.0
+  description: >
+    Contrato del módulo Devolución (DEV-01 a DEV-10, BDD-04-devolucion.md, SDD-04-devolucion.md, TDD-04-devolucion.md).
+    Implementa el ciclo de vida completo de devolución: programación, recepción provisional con custodia preventiva (DR-DEV-003),
+    prueba de alcolímetro de salida con tolerancia cero (BR-DEV-005), checklist de inspección con evidencia fotográfica (BR-DEV-009, TR-08),
+    evaluación de daños estéticos por tarifario de paños (BR-DEV-006) y técnicos mediante informe externo de Motrix, cobro de días de
+    paralización por inmovilización (BR-DEV-011), liquidación financiera de garantía (BR-DEV-001, DR-DEV-001) y cierre definitivo.
+    Versión 1.1.0: resolución provisional de Gerencia ante alcolímetro desfavorable (PROP-014), semáforo de riesgo del cliente
+    NORMAL/AMBAR/ROJO (BR-DEV-007/008), documento de responsabilidad firmado en la inspección (PROP-015), tarifa de paralización
+    tomada del vehículo y catálogo del tarifario estético.
+
+paths:
+  /returns:
+    post:
+      operationId: createReturn
+      summary: Programar o registrar inicio de devolución (DEV-01)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleReturnRequest' }
+      responses:
+        '201':
+          description: Devolución creada exitosamente en estado PROGRAMADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler no encontrado en la empresa/sede
+        '409':
+          description: El alquiler ya cuenta con una devolución activa (RENTAL_ALREADY_HAS_ACTIVE_RETURN) o no está en estado ACTIVE/RETURN_IN_PROGRESS (RENTAL_NOT_RETURNABLE)
+        '500':
+          description: Error interno del servidor
+
+    get:
+      operationId: listReturns
+      summary: Bandeja de devoluciones con filtros y paginación keyset (DEV-01 / DEV-02)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/ReturnStatus' } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: cursorCreatedAt, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: cursorId, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de devoluciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReturnResponse' }
+        '400':
+          description: Parámetros de cursor inválidos o limit fuera de rango
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '500':
+          description: Error interno del servidor
+
+  /returns/receive-provisional:
+    post:
+      operationId: receiveProvisional
+      summary: Recepción física provisional del vehículo en base (DEV-03 / DR-DEV-003)
+      description: >
+        Toma custodia física preventiva en base VeloxRent (kilometraje, combustible y presencia del cliente)
+        sin extinguir obligaciones contractuales (estado RECEPCION_PROVISIONAL). Si el alquiler ya tiene una devolución
+        PROGRAMADA la avanza; si no, crea el expediente directamente en RECEPCION_PROVISIONAL. El alquiler pasa a RETURN_IN_PROGRESS.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReceiveProvisionalRequest' }
+      responses:
+        '201':
+          description: Vehículo recibido provisionalmente bajo custodia de VeloxRent
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler no encontrado en la empresa/sede
+        '409':
+          description: El alquiler no está en estado ACTIVE o RETURN_IN_PROGRESS (RENTAL_NOT_RETURNABLE), o su devolución ya avanzó más allá de PROGRAMADA (RENTAL_ALREADY_HAS_ACTIVE_RETURN)
+        '500':
+          description: Error interno del servidor
+
+  /returns/cosmetic-tariff:
+    get:
+      operationId: getCosmeticTariff
+      summary: Catálogo del tarifario oficial de daños estéticos por paño (BDD 9.6.1 / BR-DEV-006)
+      description: >
+        Lista los códigos válidos de `damagedZone` para assess-damage con su nombre y precio fijo en soles. Solo lectura;
+        no requiere If-Match.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Tarifario de daños estéticos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CosmeticTariffResponse' }
+        '400':
+          description: Parámetros de empresa/sede inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}:
+    get:
+      operationId: getReturn
+      summary: Detalle completo del expediente de devolución
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Expediente de devolución
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/register-alcohol-test:
+    post:
+      operationId: registerAlcoholTest
+      summary: Registrar resultado de prueba de alcolímetro de salida (DEV-04 / BR-DEV-005)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterReturnAlcoholTestRequest' }
+      responses:
+        '200':
+          description: Prueba registrada; pasa a INSPECCION si favorable, o permanece en custodia y escala a Gerencia si desfavorable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (debe estar en RECEPCION_PROVISIONAL)
+        '412':
+          description: Versión no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/resolve-alcohol-escalation:
+    post:
+      operationId: resolveAlcoholEscalation
+      summary: Gerencia resuelve la escalada por alcolímetro desfavorable/rechazado (DEV-04 / BR-DEV-005, PROP-014 provisional)
+      description: >
+        Solo rol GERENCIA (deny-by-default). Válido únicamente con status RECEPCION_PROVISIONAL y alcoholTestResult
+        DESFAVORABLE o RECHAZADO; en otro caso 409 RETURN_STATE_CONFLICT.
+        CONTINUE_TO_INSPECTION pasa el expediente a INSPECCION (custodia VELOXRENT). KEEP_IN_CUSTODY lo mantiene en
+        RECEPCION_PROVISIONAL y puede volver a resolverse mientras siga allí (cada decisión se audita:
+        RETURN_ALCOHOL_ESCALATION_RESOLVED; evento DevolucionAlcoholResueltoPorGerencia.v1).
+        markCustomerRed=true lleva Customer.status a ROJO (solo hacia adelante). Decisión PROVISIONAL: los documentos no
+        definen las opciones. La última decisión se expone en ReturnResponse.alcoholEscalation.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveAlcoholEscalationRequest' }
+      responses:
+        '200':
+          description: Decisión registrada; el expediente pasa a INSPECCION o permanece en RECEPCION_PROVISIONAL
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400':
+          description: Datos inválidos (decision fuera del enum, notes con menos de 5 caracteres)
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol no permitido (solo GERENCIA) o contexto no autorizado
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible - no está en RECEPCION_PROVISIONAL o el alcolímetro no fue DESFAVORABLE/RECHAZADO (RETURN_STATE_CONFLICT)
+        '412':
+          description: Versión no coincide (If-Match)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/complete-inspection:
+    post:
+      operationId: completeInspection
+      summary: Completar checklist de inspección y categorizar estado de daños (DEV-04 / DEV-05)
+      description: >
+        Requiere el estado INSPECCION, la evidencia mínima registrada (35 fotos + 3 videos, BR-DEV-009) y el documento de
+        responsabilidad firmado (responsibilityDocument, DAT-DEV-005 / EX-DEV-001). Si quien devuelve no es el titular
+        (signerIsHolder=false) debe informarse signerRelationToHolder; los datos del tercero se conservan solo en este
+        documento/`notes`. PROVISIONAL: validez jurídica de la firma pendiente de Legal (mismo criterio que PROP-012).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteInspectionRequest' }
+      responses:
+        '200':
+          description: Inspección completada; transiciona a SIN_DANOS o CON_DANOS
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (debe estar en INSPECCION)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Falta evidencia obligatoria del checklist de retorno - mínimo 35 fotos y 3 videos registrados (MISSING_REQUIRED_EVIDENCE, BR-DEV-009) o falta/está incompleto el documento de responsabilidad (MISSING_RESPONSIBILITY_DOCUMENT)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/assess-damage:
+    post:
+      operationId: assessDamage
+      summary: Evaluar daño estético por tarifario o registrar derivación técnica a Motrix (DEV-06 / DEV-07 / BR-DEV-006)
+      description: >
+        AESTHETIC - damagedZone es obligatoria y debe pertenecer al tarifario por paño; el monto SIEMPRE lo fija el tarifario
+        (estimatedAmount enviado por el cliente se ignora) y no admite externalReportReference.
+        TECHNICAL - externalReportReference obligatoria (informe externo de Motrix); estimatedAmount es el monto manual del informe y,
+        mientras falte, el daño cuenta como incidencia abierta (bloquea close-financial y close, DR-DEV-001).
+        El expediente permanece en CON_DANOS y su versión se incrementa (ver returnVersion/returnEtag en la respuesta).
+        Semáforo del cliente (Customer.status, solo avanza NORMAL -> AMBAR -> ROJO, BR-DEV-007/008): severidad GRAVE -> ROJO
+        siempre; LEVE o MODERADO con customerAcceptsCost=true -> AMBAR; en otro caso sin cambio. El resultado vuelve en
+        customerRiskStatus. El monto de un daño técnico es manual (sin tarifario).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssessDamageRequest' }
+      responses:
+        '200':
+          description: Daño evaluado exitosamente y registrado en la devolución
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnDamageResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (debe estar en CON_DANOS)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Daño técnico requiere externalReportReference o paño estético no reconocido
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/charge-immobilization:
+    post:
+      operationId: chargeImmobilization
+      summary: Aplicar cobro de días de paralización por inmovilización en taller (DEV-07 / BR-DEV-011)
+      description: >
+        La tarifa diaria NO se envía: se toma del dailyRate vigente del vehículo del alquiler (TDD §9.3) y se devuelve en
+        ImmobilizationChargeResponse.dailyRate. Si el vehículo no tiene dailyRate -> 422 INVALID_IMMOBILIZATION_CHARGE.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChargeImmobilizationRequest' }
+      responses:
+        '201':
+          description: Cargo por paralización generado e imputado a la liquidación
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ImmobilizationChargeResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución (o damageId) no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (debe estar en CON_DANOS o CIERRE_FINANCIERO)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: No han transcurrido 24 horas naturales desde la recepción (IMMOBILIZATION_PERIOD_NOT_ELAPSED), no hay daño técnico, el vehículo no tiene dailyRate o los días exceden los pendientes de cobro (INVALID_IMMOBILIZATION_CHARGE)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/close-financial:
+    post:
+      operationId: closeFinancial
+      summary: Realizar cierre y balance financiero de garantía y penalidades (DEV-08 / BR-DEV-001)
+      description: >
+        refundAmount + retainedAmount debe ser igual a la garantía constituida del alquiler y retainedAmount debe cubrir los cargos de
+        paralización ya imputados. finalSettlementAmount del expediente queda con el valor de retainedAmount. No procede con
+        incidencias abiertas (INCIDENT_STILL_OPEN -> 422, DR-DEV-001).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloseFinancialRequest' }
+      responses:
+        '200':
+          description: Liquidación financiera completada; transiciona a CIERRE_FINANCIERO
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (debe estar en SIN_DANOS o CON_DANOS)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Existen incidencias abiertas (INCIDENT_STILL_OPEN, TDD §11.4) o la liquidación no cuadra con la garantía / no cubre los cargos de paralización (INVALID_FINANCIAL_SETTLEMENT)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/close:
+    post:
+      operationId: closeReturn
+      summary: Firma final de acta y cierre formal de la devolución (DEV-09 / DEV-10 / DR-DEV-001)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloseReturnRequest' }
+      responses:
+        '200':
+          description: Devolución cerrada; alquiler pasa a CLOSED y flota se actualiza a AVAILABLE o MAINTENANCE
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (debe estar en CIERRE_FINANCIERO)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Existen incidencias técnicas abiertas pendientes (INCIDENT_STILL_OPEN, TDD §11.4)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/evidence/upload-url:
+    post:
+      operationId: requestReturnEvidenceUploadSession
+      summary: Solicitar URL firmada para subir evidencia fotográfica/video de retorno (TR-08)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestReturnEvidenceUploadSessionRequest' }
+      responses:
+        '201':
+          description: URL firmada de GCS generada para subida directa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnEvidenceUploadSessionResponse' }
+        '400':
+          description: Datos inválidos o tipo de archivo no admitido
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: La devolución no está en un estado que admita evidencia (RECEPCION_PROVISIONAL, INSPECCION o CON_DANOS)
+        '500':
+          description: Error interno del servidor
+        '503':
+          description: Almacenamiento de evidencia no configurado
+
+  /returns/{id}/evidence:
+    post:
+      operationId: recordReturnEvidence
+      summary: Registrar evidencia de retorno tras subida a GCS (TR-08)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordReturnEvidenceRequest' }
+      responses:
+        '201':
+          description: Evidencia vinculada exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnEvidenceResponse' }
+        '400':
+          description: Datos inválidos o objectUrl no emitida por upload-url para esta devolución
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: La devolución no está en un estado que admita evidencia (RECEPCION_PROVISIONAL, INSPECCION o CON_DANOS)
+        '500':
+          description: Error interno del servidor
+
+    get:
+      operationId: listReturnEvidence
+      summary: Listar evidencias registradas de una devolución
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de evidencias registradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReturnEvidenceResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '500':
+          description: Error interno del servidor
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: 'Firebase ID token'
+      description: 'ID token de Firebase Authentication, enviado como "Authorization: Bearer <idToken>"'
+
+  schemas:
+    ReturnStatus:
+      type: string
+      enum:
+        - PROGRAMADA
+        - RECEPCION_PROVISIONAL
+        - INSPECCION
+        - SIN_DANOS
+        - CON_DANOS
+        - CIERRE_FINANCIERO
+        - CERRADA
+        - CANCELADA
+
+    CustodyHolder:
+      type: string
+      enum:
+        - CLIENTE
+        - VELOXRENT
+        - TALLER
+
+    DamageOrigin:
+      type: string
+      enum:
+        - AESTHETIC
+        - TECHNICAL
+
+    DamageSeverity:
+      type: string
+      enum:
+        - LEVE
+        - MODERADO
+        - GRAVE
+
+    ReturnFuelLevel:
+      type: string
+      enum:
+        - EMPTY
+        - ONE_QUARTER
+        - HALF
+        - THREE_QUARTERS
+        - FULL
+
+    AlcoholTestResult:
+      type: string
+      enum:
+        - FAVORABLE
+        - DESFAVORABLE
+        - RECHAZADO
+
+    ReturnEvidenceType:
+      type: string
+      enum:
+        - PHOTO
+        - VIDEO
+
+    CustomerRiskStatus:
+      type: string
+      description: Semáforo de riesgo del cliente (NORMAL equivale a SIN_OBSERVACIÓN). Solo avanza NORMAL -> AMBAR -> ROJO.
+      enum:
+        - NORMAL
+        - AMBAR
+        - ROJO
+
+    AlcoholEscalationDecision:
+      type: string
+      description: Decisión PROVISIONAL de Gerencia ante alcolímetro desfavorable (PROP-014).
+      enum:
+        - CONTINUE_TO_INSPECTION
+        - KEEP_IN_CUSTODY
+
+    CosmeticZone:
+      type: string
+      description: Código del tarifario de daños estéticos (ver GET /returns/cosmetic-tariff). El backend normaliza mayúsculas/guiones.
+      enum:
+        - PULIDO_Y_ENCERADO
+        - ESPEJOS
+        - CAPOT
+        - MALETERA
+        - PUERTA_CONDUCTOR
+        - PUERTA_PASAJERO_DELANTERA
+        - PUERTA_LATERAL_IZQUIERDA
+        - PUERTA_LATERAL_DERECHA
+        - LATERAL_DELANTERA_IZQUIERDA
+        - LATERAL_DELANTERA_DERECHA
+        - LATERAL_POSTERIOR_IZQUIERDA
+        - LATERAL_POSTERIOR_DERECHA
+        - TECHO
+        - COMBUSTIBLE_POR_LINEA
+
+    ScheduleReturnRequest:
+      type: object
+      required: [companyId, branchId, rentalId, scheduledAt]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        scheduledAt: { type: string, format: date-time }
+        notes: { type: string }
+
+    ReceiveProvisionalRequest:
+      type: object
+      required: [companyId, branchId, rentalId, mileageAtReturn, fuelLevelAtReturn]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        mileageAtReturn: { type: integer, minimum: 0 }
+        fuelLevelAtReturn: { $ref: '#/components/schemas/ReturnFuelLevel' }
+        customerPresent: { type: boolean }
+        notes: { type: string }
+
+    RegisterReturnAlcoholTestRequest:
+      type: object
+      required: [companyId, branchId, result]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        result: { $ref: '#/components/schemas/AlcoholTestResult' }
+        notes: { type: string }
+
+    ResolveAlcoholEscalationRequest:
+      type: object
+      required: [companyId, branchId, decision, markCustomerRed, notes]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        decision: { $ref: '#/components/schemas/AlcoholEscalationDecision' }
+        markCustomerRed: { type: boolean }
+        notes: { type: string, minLength: 5, maxLength: 1000 }
+
+    ResponsibilityDocumentRequest:
+      type: object
+      required: [signerName, signerIsHolder, signatureData]
+      description: BR-DEV-009 / DAT-DEV-005 / EX-DEV-001. Validez jurídica de la firma pendiente de Legal (PROP-012 / PROP-015).
+      properties:
+        signerName: { type: string, maxLength: 200 }
+        signerIsHolder: { type: boolean }
+        signerRelationToHolder:
+          type: string
+          maxLength: 200
+          description: Obligatorio si signerIsHolder=false
+        signatureData:
+          type: string
+          maxLength: 500000
+          description: Firma digital capturada (base64 PNG)
+
+    CompleteInspectionRequest:
+      type: object
+      required: [companyId, branchId, hasDamages, responsibilityDocument]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        hasDamages: { type: boolean }
+        damagesDescription: { type: string }
+        notes: { type: string }
+        responsibilityDocument: { $ref: '#/components/schemas/ResponsibilityDocumentRequest' }
+
+    AssessDamageRequest:
+      type: object
+      required: [companyId, branchId, origin, severity]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        origin: { $ref: '#/components/schemas/DamageOrigin' }
+        severity: { $ref: '#/components/schemas/DamageSeverity' }
+        damagedZone: { $ref: '#/components/schemas/CosmeticZone' }
+        estimatedAmount: { type: number, minimum: 0 }
+        externalReportReference: { type: string }
+        description: { type: string }
+        customerAcceptsCost:
+          type: boolean
+          description: LEVE/MODERADO con true -> semáforo AMBAR (BR-DEV-007)
+
+    ChargeImmobilizationRequest:
+      type: object
+      required: [companyId, branchId, daysCharged]
+      description: La tarifa diaria no se envía; se toma del dailyRate vigente del vehículo (TDD §9.3).
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        damageId: { type: string, format: uuid }
+        daysCharged: { type: integer, minimum: 1 }
+        notes: { type: string }
+
+    CloseFinancialRequest:
+      type: object
+      required: [companyId, branchId, refundAmount, retainedAmount]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        refundAmount: { type: number, minimum: 0 }
+        retainedAmount: { type: number, minimum: 0 }
+        notes: { type: string }
+
+    CloseReturnRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        signatureData: { type: string }
+        generateWarrantyAct: { type: boolean }
+        notes: { type: string }
+
+    RequestReturnEvidenceUploadSessionRequest:
+      type: object
+      required: [companyId, branchId, type, zone, contentType, contentLength]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/ReturnEvidenceType' }
+        zone: { type: string }
+        contentType:
+          type: string
+          enum: [image/jpeg, image/png, image/webp, video/mp4, video/webm]
+          description: PHOTO exige image/*; VIDEO exige video/*
+        contentLength:
+          type: integer
+          minimum: 1
+          maximum: 52428800
+          description: Tamaño máximo 50 MB para videos de checklist; las fotos están limitadas a 12 MB (400 si se excede)
+
+    ReturnEvidenceUploadSessionResponse:
+      type: object
+      required: [uploadUrl, objectUrl, expiresAt]
+      properties:
+        uploadUrl: { type: string, format: uri }
+        objectUrl: { type: string, format: uri }
+        expiresAt: { type: string, format: date-time }
+
+    RecordReturnEvidenceRequest:
+      type: object
+      required: [companyId, branchId, type, zone, objectUrl]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/ReturnEvidenceType' }
+        zone: { type: string }
+        objectUrl: { type: string, format: uri }
+
+    ReturnEvidenceResponse:
+      type: object
+      required: [id, returnId, type, zone, objectUrl, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        returnId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/ReturnEvidenceType' }
+        zone: { type: string }
+        objectUrl: { type: string, format: uri }
+        createdAt: { type: string, format: date-time }
+
+    ReturnDamageResponse:
+      type: object
+      required: [id, returnId, origin, severity, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        returnId: { type: string, format: uuid }
+        origin: { $ref: '#/components/schemas/DamageOrigin' }
+        severity: { $ref: '#/components/schemas/DamageSeverity' }
+        damagedZone: { type: string, nullable: true }
+        estimatedAmount: { type: number, nullable: true }
+        externalReportReference: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        returnVersion:
+          type: integer
+          description: Versión del expediente tras el comando (usar como If-Match del siguiente comando)
+        returnEtag: { type: string }
+        customerRiskStatus:
+          $ref: '#/components/schemas/CustomerRiskStatus'
+          description: Semáforo del cliente resultante tras assess-damage (solo avanza)
+
+    CosmeticTariffItem:
+      type: object
+      required: [code, name, pricePen]
+      properties:
+        code: { $ref: '#/components/schemas/CosmeticZone' }
+        name: { type: string }
+        pricePen: { type: number }
+
+    CosmeticTariffResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CosmeticTariffItem' }
+
+    AlcoholEscalationResponse:
+      type: object
+      required: [decision, markCustomerRed, notes, decidedById, decidedAt]
+      properties:
+        decision: { $ref: '#/components/schemas/AlcoholEscalationDecision' }
+        markCustomerRed: { type: boolean }
+        notes: { type: string }
+        decidedById: { type: string }
+        decidedAt: { type: string, format: date-time }
+
+    ResponsibilityDocumentResponse:
+      type: object
+      description: Nunca expone signatureData.
+      required: [signerName, signerIsHolder, signerRelationToHolder, signedAt]
+      properties:
+        signerName: { type: string }
+        signerIsHolder: { type: boolean }
+        signerRelationToHolder: { type: string, nullable: true }
+        signedAt: { type: string, format: date-time }
+
+    ImmobilizationChargeResponse:
+      type: object
+      required: [id, returnId, daysCharged, dailyRate, totalAmount, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        returnId: { type: string, format: uuid }
+        damageId: { type: string, format: uuid, nullable: true }
+        daysCharged: { type: integer }
+        dailyRate: { type: number }
+        totalAmount: { type: number }
+        notes: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        returnVersion:
+          type: integer
+          description: Versión del expediente tras el comando (usar como If-Match del siguiente comando)
+        returnEtag: { type: string }
+
+    ReturnResponse:
+      type: object
+      required:
+        - id
+        - organizationId
+        - operatingCompanyId
+        - branchId
+        - rentalId
+        - vehicleId
+        - customerId
+        - status
+        - custodyHolder
+        - customerPresent
+        - scheduledAt
+        - createdAt
+        - createdBy
+        - updatedAt
+        - updatedBy
+        - version
+        - etag
+        - damages
+        - immobilizationCharges
+        - alcoholEscalation
+        - responsibilityDocument
+      properties:
+        id: { type: string, format: uuid }
+        organizationId: { type: string, format: uuid }
+        operatingCompanyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        vehicleId: { type: string, format: uuid }
+        customerId: { type: string, format: uuid }
+        vehiclePlate: { type: string, nullable: true }
+        customerName: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/ReturnStatus' }
+        custodyHolder: { $ref: '#/components/schemas/CustodyHolder' }
+        customerPresent: { type: boolean }
+        mileageAtReturn: { type: integer, nullable: true }
+        fuelLevelAtReturn: { $ref: '#/components/schemas/ReturnFuelLevel', nullable: true }
+        alcoholTestResult: { $ref: '#/components/schemas/AlcoholTestResult', nullable: true }
+        alcoholTestNotes: { type: string, nullable: true }
+        alcoholEscalation:
+          nullable: true
+          description: Última decisión de Gerencia ante alcolímetro desfavorable (null si no hubo)
+          allOf:
+            - $ref: '#/components/schemas/AlcoholEscalationResponse'
+        responsibilityDocument:
+          nullable: true
+          description: Documento de responsabilidad firmado en la inspección (null antes de completarla); sin signatureData
+          allOf:
+            - $ref: '#/components/schemas/ResponsibilityDocumentResponse'
+        scheduledAt: { type: string, format: date-time }
+        receivedAt: { type: string, format: date-time, nullable: true }
+        inspectedAt: { type: string, format: date-time, nullable: true }
+        closedAt: { type: string, format: date-time, nullable: true }
+        finalSettlementAmount:
+          type: number
+          nullable: true
+          description: Monto retenido de la garantía fijado en close-financial (retainedAmount)
+        notes: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        createdBy: { type: string }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { type: string }
+        version: { type: integer }
+        etag: { type: string }
+        damages:
+          type: array
+          items: { $ref: '#/components/schemas/ReturnDamageResponse' }
+        immobilizationCharges:
+          type: array
+          items: { $ref: '#/components/schemas/ImmobilizationChargeResponse' }
