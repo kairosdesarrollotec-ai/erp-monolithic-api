@@ -41,6 +41,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
 import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { FleetModule } from '../fleet/fleet.module';
+import { RentalCreationGuard } from './application/services/rental-creation.guard';
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
 
 @Module({
@@ -72,12 +73,13 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     RequestRentalDocumentUploadSessionHandler,
     RecordRentalDocumentHandler,
     ListRentalDocumentsHandler,
+    RentalCreationGuard,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
     { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },
     { provide: RentalDocumentRepositoryPort, useClass: PrismaRentalDocumentRepository },
     { provide: RentalDocumentStoragePort, useClass: GcsRentalDocumentService },
   ],
-  exports: [RentalRepositoryPort],
+  exports: [RentalRepositoryPort, RentalCreationGuard],
 })
 export class RentalsModule {}

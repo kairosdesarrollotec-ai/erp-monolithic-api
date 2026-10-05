@@ -19,6 +19,7 @@ import {
   ContractTemplateRecord,
   CreateContractTemplateInput,
   ReportExtensionBreachInput,
+  RentalInquiryRecord,
 } from '../../application/ports/rental-repository.port';
 import { RentalStatus } from '../../domain/rental-status';
 import { RentalVersionConflictError } from '../../domain/rental-errors';
@@ -106,15 +107,17 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     return found ? toRentalRecord(found as RentalWithRelations) : null;
   }
 
-  async findCustomerById(id: string): Promise<{
+  async findCustomerById(id: string, tx?: Prisma.TransactionClient): Promise<{
     id: string;
     organizationId: string;
     operatingCompanyId: string;
     fullName: string;
     documentNumber: string;
+    status: string;
     isBiometricVerified?: boolean;
   } | null> {
-    return this.prisma.customer.findUnique({
+    const client = tx ?? this.prisma;
+    return client.customer.findUnique({
       where: { id },
       select: {
         id: true,
@@ -122,31 +125,76 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
         operatingCompanyId: true,
         fullName: true,
         documentNumber: true,
+        status: true,
       },
     });
   }
 
-  async findVehicleById(id: string): Promise<{
+  async findVehicleById(id: string, tx?: Prisma.TransactionClient): Promise<{
     id: string;
     organizationId: string;
     operatingCompanyId: string;
+    branchId: string | null;
     plate: string;
     brand: string;
     model: string;
     status: string;
   } | null> {
-    return this.prisma.vehicle.findUnique({
+    const client = tx ?? this.prisma;
+    return client.vehicle.findUnique({
       where: { id },
       select: {
         id: true,
         organizationId: true,
         operatingCompanyId: true,
+        branchId: true,
         plate: true,
         brand: true,
         model: true,
         status: true,
       },
     });
+  }
+
+  async findInquiryForRental(id: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null> {
+    const client = tx ?? this.prisma;
+    const row = await client.inquiry.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        organizationId: true,
+        operatingCompanyId: true,
+        branchId: true,
+        customerId: true,
+        status: true,
+        quotations: {
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, vehicleId: true, estimatedDays: true, validUntil: true, createdAt: true },
+        },
+      },
+    });
+    return row;
+  }
+
+  async hasBlockingVehicleCommitment(
+    vehicleId: string,
+    organizationId: string,
+    startsAt: Date,
+    endsAt: Date,
+    tx?: Prisma.TransactionClient,
+  ): Promise<boolean> {
+    const client = tx ?? this.prisma;
+    const overlap = await client.vehicleCommitment.findFirst({
+      where: {
+        vehicleId,
+        organizationId,
+        status: { in: ['ACTIVE', 'CONSOLIDATED'] },
+        startsAt: { lt: endsAt },
+        endsAt: { gt: startsAt },
+      },
+      select: { id: true },
+    });
+    return overlap !== null;
   }
 
   async findReservationById(id: string): Promise<{
@@ -321,7 +369,9 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
       input.expectedVersion,
       {
         status: 'ACTIVE',
-        startAt: new Date(),
+        // Solo alquiler directo: el origen Reserva conserva las fechas acordadas.
+        ...(input.startAt ? { startAt: input.startAt } : {}),
+        ...(input.expectedEndAt ? { expectedEndAt: input.expectedEndAt } : {}),
         updatedBy: input.updatedBy,
       },
       tx,

@@ -23,7 +23,7 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
  * gestiona consultas: se le da lectura, no escritura. Cualquier otro rol
  * (CAMPO, FINANZAS, RRHH) queda denegado por defecto.
  */
-export type InquiryAction = 'READ' | 'REGISTER' | 'QUOTE' | 'CLOSE' | 'CONVERT_TO_RESERVATION';
+export type InquiryAction = 'READ' | 'REGISTER' | 'QUOTE' | 'CLOSE' | 'CONVERT_TO_RESERVATION' | 'CONVERT_TO_RENTAL';
 
 const WRITE_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE']);
 const READ_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'AUDITORIA', 'ADMINISTRACION']);
@@ -34,6 +34,7 @@ const INQUIRY_ROLE_POLICY: Readonly<Record<InquiryAction, ReadonlySet<WorkerRole
   QUOTE: WRITE_ROLES,
   CLOSE: WRITE_ROLES,
   CONVERT_TO_RESERVATION: WRITE_ROLES,
+  CONVERT_TO_RENTAL: WRITE_ROLES,
 };
 
 export function isInquiryRoleAllowed(role: WorkerRole, action: InquiryAction): boolean {

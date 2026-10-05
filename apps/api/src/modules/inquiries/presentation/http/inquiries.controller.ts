@@ -25,6 +25,8 @@ import { CloseInquiryHandler } from '../../application/commands/close-inquiry.ha
 import { CloseInquiryCommand } from '../../application/commands/close-inquiry.command';
 import { ConvertToReservationHandler } from '../../application/commands/convert-to-reservation.handler';
 import { ConvertToReservationCommand } from '../../application/commands/convert-to-reservation.command';
+import { ConvertToRentalHandler } from '../../application/commands/convert-to-rental.handler';
+import { ConvertToRentalCommand } from '../../application/commands/convert-to-rental.command';
 import { GetInquiryHandler } from '../../application/queries/get-inquiry.handler';
 import { GetInquiryQuery } from '../../application/queries/get-inquiry.query';
 import { ListInquiriesHandler } from '../../application/queries/list-inquiries.handler';
@@ -34,12 +36,15 @@ import { RegisterInquiryDto } from './dto/register-inquiry.dto';
 import { QuoteDto } from './dto/quote.dto';
 import { CloseInquiryDto } from './dto/close-inquiry.dto';
 import { ConvertToReservationDto } from './dto/convert-to-reservation.dto';
+import { ConvertToRentalDto } from './dto/convert-to-rental.dto';
 import { ListInquiriesQueryDto } from './dto/list-inquiries-query.dto';
 import { GetInquiryQueryDto } from './dto/get-inquiry-query.dto';
 import { InquiryResponse, InquirySummaryResponse } from './dto/inquiry.response';
 import { ConvertToReservationResponse } from './dto/convert-to-reservation.response';
+import { ConvertToRentalResponse } from './dto/convert-to-rental.response';
 import { toInquiryResponse, toInquirySummaryResponse } from './inquiry.mapper';
 import { toReservationResponse } from '../../../reservations/presentation/http/reservation.mapper';
+import { toRentalResponse } from '../../../rentals/presentation/http/rental.mapper';
 
 function toUtcDate(dateOnly: string | undefined): Date | undefined {
   return dateOnly ? new Date(`${dateOnly}T00:00:00.000Z`) : undefined;
@@ -47,8 +52,7 @@ function toUtcDate(dateOnly: string | undefined): Date | undefined {
 
 /**
  * TDD-CON-001.md seccion 11 - contrato HTTP de Consulta (HU-26), definido en
- * packages/contracts/openapi/inquiries.yaml. No expone `PATCH status` ni
- * `convert-to-rental` (depende de HU-28, PROP-007).
+ * packages/contracts/openapi/inquiries.yaml. No expone `PATCH status`.
  *
  * Revalidacion PR#7 (d7a6124):
  * - ALTO "idempotencia": `IdempotencyInterceptor` (reserva atomica de la
@@ -66,6 +70,7 @@ export class InquiriesController {
     private readonly quote: QuoteHandler,
     private readonly closeInquiry: CloseInquiryHandler,
     private readonly convertToReservation: ConvertToReservationHandler,
+    private readonly convertToRental: ConvertToRentalHandler,
     private readonly getInquiry: GetInquiryHandler,
     private readonly listInquiries: ListInquiriesHandler,
   ) {}
@@ -211,6 +216,31 @@ export class InquiriesController {
     return {
       inquiry: toInquiryResponse(result.inquiry),
       reservation: toReservationResponse(result.reservation),
+    };
+  }
+
+  @Post(':id/commands/convert-to-rental')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(IdempotencyInterceptor)
+  async convertToRentalCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ConvertToRentalDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ConvertToRentalResponse> {
+    const result = await this.convertToRental.execute(
+      new ConvertToRentalCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.planCode,
+      ),
+    );
+    return {
+      inquiry: toInquiryResponse(result.inquiry),
+      rental: toRentalResponse(result.rental),
     };
   }
 }

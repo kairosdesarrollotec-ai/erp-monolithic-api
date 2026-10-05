@@ -7,6 +7,7 @@ import { TransactionManagerPort } from '../../../common/application/ports/transa
 import { ClockPort } from '../../../common/application/ports/clock.port';
 import { MatrixAuthorizationService } from '../../authorization/matrix-authorization.service';
 import { assertInquiryRoleAllowed, InquiryAction } from '../application/policies/inquiry-role-policy';
+import { assertRentalRoleAllowed, RentalAction } from '../../rentals/application/policies/rental-role-policy';
 import { assertReservationRoleAllowed, ReservationAction } from '../../reservations/application/policies/reservation-role-policy';
 
 /** Fixtures compartidas por los tests unitarios del modulo Inquiries (no se usan en runtime). */
@@ -79,6 +80,7 @@ export function buildInquiryRepository(existing: InquiryRecord | null = buildInq
     quote: jest.fn().mockImplementation(async () => buildInquiry({ status: 'COTIZADA', version: 2 })),
     close: jest.fn().mockImplementation(async () => buildInquiry({ status: 'CERRADA_SIN_CONVERSION', version: 2 })),
     convertToReservation: jest.fn().mockImplementation(async () => buildInquiry({ status: 'CONVERTIDA', version: 3 })),
+    convertToRental: jest.fn().mockImplementation(async () => buildInquiry({ status: 'CONVERTIDA', version: 3 })),
   };
 }
 
@@ -116,11 +118,13 @@ export class FixedClock extends ClockPort {
 export function buildMatrixAuth(): jest.Mocked<MatrixAuthorizationService> {
   return {
     isAllowed: jest.fn().mockResolvedValue(true),
-    assertAllowed: jest.fn().mockImplementation(async (_orgId: string, role: WorkerRole, module: 'INQUIRY' | 'RESERVATION', action: any) => {
+    assertAllowed: jest.fn().mockImplementation(async (_orgId: string, role: WorkerRole, module: 'INQUIRY' | 'RESERVATION' | 'RENTAL', action: any) => {
       if (module === 'INQUIRY') {
         assertInquiryRoleAllowed(role, action as InquiryAction);
       } else if (module === 'RESERVATION') {
         assertReservationRoleAllowed(role, action as ReservationAction);
+      } else if (module === 'RENTAL') {
+        assertRentalRoleAllowed(role, action as RentalAction);
       }
     }),
   } as unknown as jest.Mocked<MatrixAuthorizationService>;

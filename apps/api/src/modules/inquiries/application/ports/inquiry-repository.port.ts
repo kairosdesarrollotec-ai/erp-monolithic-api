@@ -127,6 +127,8 @@ export interface ConvertToReservationInput extends InquiryScope {
   expectedVersion: number;
 }
 
+export type ConvertToRentalInput = ConvertToReservationInput;
+
 export interface CustomerRecord {
   id: string;
   organizationId: string;
@@ -173,6 +175,13 @@ export abstract class InquiryRepositoryPort {
 
   abstract convertToReservation(
     input: ConvertToReservationInput,
+    fromStatuses: InquiryStatus[],
+    tx: Prisma.TransactionClient,
+  ): Promise<InquiryRecord>;
+
+  /** Mismo contrato que `convertToReservation` (COTIZADA -> CONVERTIDA), para Alquiler directo. */
+  abstract convertToRental(
+    input: ConvertToRentalInput,
     fromStatuses: InquiryStatus[],
     tx: Prisma.TransactionClient,
   ): Promise<InquiryRecord>;
