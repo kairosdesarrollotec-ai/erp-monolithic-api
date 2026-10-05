@@ -20,6 +20,7 @@ describe('GetRentalHandler', () => {
     vehiclePlate: 'MNO-005',
     vehicleBrand: 'Toyota',
     vehicleModel: 'Corolla',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'DRAFT',
     startAt: new Date(),

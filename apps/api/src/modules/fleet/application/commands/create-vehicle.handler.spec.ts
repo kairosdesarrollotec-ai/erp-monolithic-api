@@ -29,6 +29,7 @@ describe('CreateVehicleHandler', () => {
       ' SUV ',
       'AVAILABLE',
       190,
+      undefined,
       'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
     );
 
@@ -97,7 +98,7 @@ describe('CreateVehicleHandler', () => {
 
     const command = new CreateVehicleCommand(
       'uid-1', COMPANY, BRANCH, 'BBB-111', 'Nissan', 'Frontier',
-      undefined, undefined, undefined, undefined, undefined, undefined, 'branch-other',
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'branch-other',
     );
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);

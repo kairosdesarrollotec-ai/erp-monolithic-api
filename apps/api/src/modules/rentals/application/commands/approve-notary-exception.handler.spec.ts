@@ -25,6 +25,7 @@ describe('ApproveNotaryExceptionHandler', () => {
     vehiclePlate: 'GHI-003',
     vehicleBrand: 'Nissan',
     vehicleModel: 'Versa',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'NOTARY_EVALUATION',
     startAt: new Date(),

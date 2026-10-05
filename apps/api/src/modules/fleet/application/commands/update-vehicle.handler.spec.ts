@@ -28,6 +28,7 @@ describe('UpdateVehicleHandler', () => {
       ' Negro ',
       ' SUV ',
       190,
+      undefined,
       'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
     );
 

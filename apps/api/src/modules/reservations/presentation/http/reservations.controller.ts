@@ -243,6 +243,7 @@ export class ReservationsController {
   }
 
   @Post(':id/documents/upload-url')
+  @UseInterceptors(IdempotencyInterceptor)
   @HttpCode(HttpStatus.CREATED)
   async requestDocumentUploadSessionEndpoint(
     @Req() req: AuthenticatedRequest,
@@ -261,6 +262,7 @@ export class ReservationsController {
   }
 
   @Post(':id/documents')
+  @UseInterceptors(IdempotencyInterceptor)
   @HttpCode(HttpStatus.CREATED)
   async recordDocumentEndpoint(
     @Req() req: AuthenticatedRequest,

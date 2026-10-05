@@ -2,13 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DomainExceptionFilter } from './common/http/domain-exception.filter';
-import helmet from 'helmet';
+import { securityHeadersMiddleware } from './common/http/security-headers.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // F7 — cabeceras de seguridad HTTP (TDD-00 §8.1)
-  app.use(helmet());
+  app.use(securityHeadersMiddleware);
 
   // F2 — CORS restrictivo: solo orígenes declarados en ALLOWED_ORIGINS (TDD-00 §8.1)
   const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '')

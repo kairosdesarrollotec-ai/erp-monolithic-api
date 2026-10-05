@@ -9,6 +9,7 @@ import { getMetadataStorage } from 'class-validator';
 import { $Enums } from '@prisma/client';
 import { RentalsController } from './rentals.controller';
 import { ContractTemplatesController } from './contract-templates.controller';
+import { RentalDocumentsController } from './rental-documents.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
 import { ValidateDocumentsDto } from './dto/validate-documents.dto';
@@ -105,6 +106,7 @@ function controllerRoutes() {
   return [
     ...routesOf(RentalsController, '/rentals'),
     ...routesOf(ContractTemplatesController, '/rentals/contract-templates'),
+    ...routesOf(RentalDocumentsController, '/rentals/:id/documents'),
   ];
 }
 
@@ -123,6 +125,7 @@ function buildRentalRecord(overrides: Partial<RentalRecord> = {}): RentalRecord 
     vehiclePlate: 'ABC-123',
     vehicleBrand: 'Toyota',
     vehicleModel: 'Corolla',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'DRAFT',
     startAt: new Date('2026-10-01T09:00:00Z'),

@@ -23,6 +23,7 @@ describe('CreateRentalHandler', () => {
     vehiclePlate: 'PER-999',
     vehicleBrand: 'Toyota',
     vehicleModel: 'Corolla',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'DRAFT',
     startAt: new Date(),

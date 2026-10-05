@@ -23,6 +23,7 @@ describe('ValidateDocumentsHandler', () => {
     vehiclePlate: 'XYZ-001',
     vehicleBrand: 'Kia',
     vehicleModel: 'Rio',
+    vehicleDepositMinimum: null,
     planCode: 'NORMAL',
     status: 'DRAFT',
     startAt: new Date(),
