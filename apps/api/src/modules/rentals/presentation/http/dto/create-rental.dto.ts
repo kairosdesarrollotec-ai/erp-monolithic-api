@@ -1,4 +1,4 @@
-import { IsDateString, IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateRentalDto {
   @IsUUID() companyId!: string;

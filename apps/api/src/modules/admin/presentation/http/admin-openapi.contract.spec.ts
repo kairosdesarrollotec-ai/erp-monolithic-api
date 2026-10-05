@@ -26,7 +26,7 @@ const SPEC_PATH = path.resolve(
   __dirname,
   '../../../../../../../packages/contracts/openapi/admin.yaml',
 );
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const spec = yaml.load(fs.readFileSync(SPEC_PATH, 'utf8')) as any;
 
 type Operation = { operationId: string; parameters?: any[]; responses: Record<string, unknown>; requestBody?: any };

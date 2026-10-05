@@ -7,27 +7,24 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // Type-aware linting solo para src/ — tsconfig.json + tsconfig.spec.json
+    // cubren todos los archivos de src (incluidos *.spec.ts).
+    files: ['src/**/*.ts'],
     languageOptions: {
       parserOptions: {
-        project: true,
+        // tsconfig.json (producción) + tsconfig.spec.json (spec files excluidos de producción)
+        project: ['tsconfig.json', 'tsconfig.spec.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
     rules: {
-      // Evitar @nestjs/common en capa domain/ (hallazgo E2 audit estructural)
-      '@typescript-eslint/no-restricted-imports': [
-        'warn',
-        {
-          patterns: [
-            {
-              group: ['@nestjs/*'],
-              message: 'No importar @nestjs/* en la capa domain/. Mover a application/ o infrastructure/.',
-            },
-          ],
-        },
-      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-floating-promises': 'error',
+      // Parámetros con prefijo _ son ignorados (overrides de interfaces, etc.)
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
   {
@@ -48,11 +45,22 @@ export default tseslint.config(
     },
   },
   {
-    // Tests: relajar reglas de any y floating-promises
-    files: ['src/**/*.spec.ts', 'test/**/*.ts'],
+    // Spec files y helpers de test en src/: relajar reglas type-aware
+    files: ['src/**/*.spec.ts', 'src/**/testing/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
+    // Tests de integración en test/: usan ESM/bundler (distinto tsconfig),
+    // no participan en type-aware linting.
+    files: ['test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
 );

@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { ReservationRecord } from '../ports/reservation-repository.port';
 import { ReservationRepositoryPort } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';

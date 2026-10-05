@@ -27,7 +27,7 @@ import * as yaml from 'js-yaml';
  * forma de las respuestas.
  */
 const SPEC_PATH = path.resolve(__dirname, '../../../../../../../packages/contracts/openapi/inquiries.yaml');
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const spec = yaml.load(fs.readFileSync(SPEC_PATH, 'utf8')) as any;
 
 type Operation = { operationId: string; parameters?: any[]; responses: Record<string, unknown>; requestBody?: any };
