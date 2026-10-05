@@ -1,7 +1,7 @@
 -- Bug-03: Payment voucher and other documents attached to a reservation.
 CREATE TABLE "reservation_documents" (
   "id"              UUID          NOT NULL DEFAULT gen_random_uuid(),
-  "reservation_id"  UUID          NOT NULL,
+  "reservation_id"  TEXT          NOT NULL,
   "document_type"   VARCHAR(40)   NOT NULL,
   "object_url"      TEXT          NOT NULL,
   "created_at"      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
