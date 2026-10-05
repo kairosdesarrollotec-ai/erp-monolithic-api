@@ -8,7 +8,7 @@ CREATE TABLE "reservation_documents" (
 
   CONSTRAINT "reservation_documents_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "reservation_documents_reservation_id_fkey"
-    FOREIGN KEY ("reservation_id") REFERENCES "reservations"("id") ON DELETE CASCADE
+    FOREIGN KEY ("reservation_id") REFERENCES "reservations"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE INDEX "reservation_documents_reservation_id_idx" ON "reservation_documents"("reservation_id");
