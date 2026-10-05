@@ -1,22 +1,9 @@
 {
-  "_description": "Known HIGH/CRITICAL vulnerabilities pending major framework upgrades. Each entry must have a tracked remediation and a target_date. Review monthly and remove entries as they are fixed. Adding an entry here means committing to a remediation plan — it is NOT a permanent exemption.",
-  "_sla": {
-    "critical": "7 days",
-    "high": "30 days from discovery; entries here have an approved extension",
-    "moderate": "90 days"
-  },
-  "entries": [
-    {
-      "id": "JEST-BRACES-HIGH-2026-10-03",
-      "severity": "high",
-      "package": "jest (and all @jest/* sub-packages, micromatch, braces)",
-      "advisory": "GHSA braces — stack-exhaustion DoS via deeply nested patterns (transitive via jest v29 → micromatch → braces)",
-      "scope": "devDependencies only — does NOT affect production runtime",
-      "reason": "jest v29 is used as the test framework for the NestJS backend. The vulnerable package (braces) is a transitive devDependency. It is not reachable from production code or the deployed API. Fix requires upgrading jest v29 → v30, which is a major breaking change requiring coordinated test migration (runner API changes, expect API changes, snapshot format changes).",
-      "remediation": "Upgrade jest to v30 and migrate all test files (runner API, expect API, snapshot format). Estimated effort: ~2 days. Coordinate with the full backend test suite (API unit + integration + contract tests).",
-      "target_date": "2027-01-03",
-      "owner": "backend-team",
-      "discovered_at": "2026-10-03"
-    }
-  ]
+    "_description": "Known HIGH/CRITICAL vulnerabilities pending major framework upgrades. Each entry must have a tracked remediation and a target_date. Review monthly and remove entries as they are fixed. Adding an entry here means committing to a remediation plan — it is NOT a permanent exemption.",
+    "_sla": {
+        "critical": "7 days",
+        "high": "30 days from discovery; entries here have an approved extension",
+        "moderate": "90 days"
+    },
+    "entries": []
 }
