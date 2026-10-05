@@ -2,7 +2,7 @@
 -- Follows the same GCS-signed-URL pattern as RentalEvidence.
 CREATE TABLE "rental_documents" (
   "id"            UUID          NOT NULL DEFAULT gen_random_uuid(),
-  "rental_id"     UUID          NOT NULL,
+  "rental_id"     TEXT          NOT NULL,
   "document_type" VARCHAR(40)   NOT NULL,
   "object_url"    TEXT          NOT NULL,
   "created_at"    TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
