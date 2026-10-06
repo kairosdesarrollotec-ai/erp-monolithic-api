@@ -12,6 +12,7 @@ import {
   QuoteInquiryInput,
   CloseInquiryInput,
   ConvertToReservationInput,
+  ConvertToRentalInput,
   CustomerRecord,
 } from '../../application/ports/inquiry-repository.port';
 import { InquiryStatus } from '../../domain/inquiry-status';
@@ -240,6 +241,23 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
   }
 
   async convertToReservation(
+    input: ConvertToReservationInput,
+    fromStatuses: InquiryStatus[],
+    tx: Prisma.TransactionClient,
+  ): Promise<InquiryRecord> {
+    return this.markConverted(input, fromStatuses, tx);
+  }
+
+  async convertToRental(
+    input: ConvertToRentalInput,
+    fromStatuses: InquiryStatus[],
+    tx: Prisma.TransactionClient,
+  ): Promise<InquiryRecord> {
+    return this.markConverted(input, fromStatuses, tx);
+  }
+
+  /** BR-CON-002: COTIZADA -> CONVERTIDA condicionada por version y estado de origen. */
+  private async markConverted(
     input: ConvertToReservationInput,
     fromStatuses: InquiryStatus[],
     tx: Prisma.TransactionClient,

@@ -505,6 +505,20 @@ sources:
   sha256: null
   authority: contract
   supersedes: null
+- id: OPENAPI-INQUIRIES-V0.4.0
+  path: packages/contracts/openapi/inquiries.yaml
+  type: OpenAPI
+  module: Inquiries
+  version: '0.4.0'
+  date: '2026-10-06'
+  status: current
+  estado_original: >
+    Contrato del módulo Consultas v0.4.0 — incluye POST /inquiries/{id}/commands/convert-to-rental
+    (UC-CON-004), cadena completa BDD BR-CON-002 + SC-CON-003 → SDD CON-P09 → TDD v2.0.
+    Registrado en source-manifest en PR #55 (feature/inquiry-to-rental-api).
+  sha256: null
+  authority: contract
+  supersedes: null
 - id: UX-UI-V3.1-KAIROS
   path: docs/sources/ux-ui/especificacion-ux-ui-v3.1-para-prototipado-del-erp-kairos.md
   type: UX

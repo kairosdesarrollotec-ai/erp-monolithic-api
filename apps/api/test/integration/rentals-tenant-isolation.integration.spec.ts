@@ -10,6 +10,8 @@ import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastruc
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../src/modules/authorization/matrix-authorization.service';
 import { PrismaRolePermissionMatrixRepository } from '../../src/modules/admin/infrastructure/persistence/prisma-role-permission-matrix.repository';
+import { RentalCreationGuard } from '../../src/modules/rentals/application/services/rental-creation.guard';
+import { SystemClock } from '../../src/common/application/ports/clock.port';
 import { CreateRentalHandler } from '../../src/modules/rentals/application/commands/create-rental.handler';
 import { CreateRentalCommand } from '../../src/modules/rentals/application/commands/create-rental.command';
 import { GetRentalHandler } from '../../src/modules/rentals/application/queries/get-rental.handler';
@@ -149,7 +151,15 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
     const workContextA = buildWorkContext(companyA, branchA);
 
     // Crear alquiler en Empresa A
-    const createHandler = new CreateRentalHandler(rentalRepo, workContextA, matrixAuth, txManager, audit, outbox);
+    const createHandler = new CreateRentalHandler(
+      rentalRepo,
+      workContextA,
+      matrixAuth,
+      txManager,
+      audit,
+      outbox,
+      new RentalCreationGuard(rentalRepo, new SystemClock()),
+    );
     const rentalA = await createHandler.execute(
       new CreateRentalCommand(
         UID_A,
@@ -184,7 +194,15 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
     const workContextA = buildWorkContext(companyA, branchA);
 
     // Crear un alquiler en Empresa A
-    const createHandler = new CreateRentalHandler(rentalRepo, workContextA, matrixAuth, txManager, audit, outbox);
+    const createHandler = new CreateRentalHandler(
+      rentalRepo,
+      workContextA,
+      matrixAuth,
+      txManager,
+      audit,
+      outbox,
+      new RentalCreationGuard(rentalRepo, new SystemClock()),
+    );
     await createHandler.execute(
       new CreateRentalCommand(
         UID_A,
@@ -217,7 +235,15 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
     const workContextA = buildWorkContext(companyA, branchA);
 
     // Crear alquiler en Empresa A
-    const createHandler = new CreateRentalHandler(rentalRepo, workContextA, matrixAuth, txManager, audit, outbox);
+    const createHandler = new CreateRentalHandler(
+      rentalRepo,
+      workContextA,
+      matrixAuth,
+      txManager,
+      audit,
+      outbox,
+      new RentalCreationGuard(rentalRepo, new SystemClock()),
+    );
     const rentalA = await createHandler.execute(
       new CreateRentalCommand(
         UID_A,
