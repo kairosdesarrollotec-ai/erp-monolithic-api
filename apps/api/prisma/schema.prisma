@@ -264,6 +264,7 @@ model Company {
   contractTemplates ContractTemplate[]
   documentTemplates DocumentTemplate[]
   returns      RentalReturn[]
+  incidents    Incident[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -292,6 +293,7 @@ model Branch {
   vehicles     Vehicle[]
   rentals      Rental[]
   returns      RentalReturn[]
+  incidents    Incident[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -843,6 +845,7 @@ model Rental {
   evidence         RentalEvidence[]
   documents        RentalDocument[]
   rentalReturn     RentalReturn?
+  incidents        Incident[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
@@ -1136,6 +1139,7 @@ model RentalReturn {
   damages               ReturnDamage[]
   immobilizationCharges ImmobilizationCharge[]
   evidences             ReturnEvidence[]
+  incidents             Incident[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
@@ -1200,6 +1204,14 @@ model ReturnEvidence {
   @@map("return_evidence")
 }
 
+/// INC-01/INC-02 (PANTALLAS-V2-B-SOPORTE.md) - tipo de incidencia. Catalogo minimo, ampliable.
+enum IncidentType {
+  KEY_LOSS
+  CRASH_OR_DAMAGE
+  TRAFFIC_FINE_OR_INTERVENTION
+  TOWING
+  OTHER
+}
 
 
 /// PROP-015b — Plantillas de documentos para firma del cliente (BR-DEV-009).
@@ -1220,4 +1232,80 @@ model DocumentTemplate {
   @@unique([companyId, type, version])
   @@index([companyId, type, isActive])
   @@map("document_templates")
+}
+
+/// Severidad de la incidencia (decision de producto: LEVE/MODERADA/GRAVE; el TDD usa MODERADO para danos de Devolucion).
+enum IncidentSeverity {
+  LEVE
+  MODERADA
+  GRAVE
+}
+
+/// SDD 11.1: Abierta -> Cerrada / Via legal. Solo ABIERTA bloquea la liberacion de garantia (DEV-09, NFR-KAI-008).
+enum IncidentStatus {
+  ABIERTA
+  CERRADA
+  VIA_LEGAL
+}
+
+/// Tipo de entrada del historial append-only (INC-02).
+enum IncidentActionKind {
+  REPORTED
+  ACTION
+  RESOLVED
+  CLOSED
+  REFERRED_LEGAL
+}
+
+/// SDD-DEV-001 11.1 / diccionario de datos 1.8 (RIO) - Incidencia ligada a un Alquiler y, opcionalmente, a una Devolucion.
+/// FK compuestas (id, operating_company_id) hacia Rental/RentalReturn: la base impide ligar una incidencia a un expediente de otra empresa.
+/// responsibleUserId/createdBy/updatedBy guardan el firebaseUid (mismo criterio que el resto de los modulos).
+model Incident {
+  id                 String           @id @default(uuid())
+  organizationId     String           @map("organization_id")
+  operatingCompanyId String           @map("operating_company_id")
+  branchId           String           @map("branch_id")
+  rentalId           String           @map("rental_id")
+  returnId           String?          @map("return_id")
+  type               IncidentType
+  severity           IncidentSeverity
+  status             IncidentStatus   @default(ABIERTA)
+  description        String
+  suggestion         String?
+  reportedAt         DateTime         @map("reported_at")
+  responsibleUserId  String           @map("responsible_user_id")
+  resolutionSummary  String?          @map("resolution_summary")
+  resolvedAt         DateTime?        @map("resolved_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  createdBy          String           @map("created_by")
+  updatedAt          DateTime         @default(now()) @updatedAt @map("updated_at")
+  updatedBy          String           @map("updated_by")
+  version            Int              @default(1)
+
+  operatingCompany Company       @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  branch           Branch        @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
+  rental           Rental        @relation(fields: [rentalId, operatingCompanyId], references: [id, operatingCompanyId])
+  rentalReturn     RentalReturn? @relation(fields: [returnId, operatingCompanyId], references: [id, operatingCompanyId], onDelete: Restrict)
+
+  actions IncidentAction[]
+
+  @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)], map: "incidents_scope_status_created_idx")
+  @@index([rentalId, status], map: "incidents_rental_id_status_idx")
+  @@index([returnId], map: "incidents_return_id_idx")
+  @@map("incidents")
+}
+
+/// INC-02 - historial append-only de una incidencia: nunca se edita ni se borra una entrada, solo se agrega.
+model IncidentAction {
+  id           String             @id @default(uuid())
+  incidentId   String             @map("incident_id")
+  kind         IncidentActionKind
+  description  String
+  authorUserId String             @map("author_user_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Restrict)
+
+  @@index([incidentId, createdAt], map: "incident_actions_incident_id_created_at_idx")
+  @@map("incident_actions")
 }
