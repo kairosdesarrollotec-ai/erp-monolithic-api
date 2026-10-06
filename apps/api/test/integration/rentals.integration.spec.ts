@@ -12,6 +12,8 @@ import { PrismaRentalEvidenceRepository } from '../../src/modules/rentals/infras
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../src/modules/authorization/matrix-authorization.service';
 import { PrismaRolePermissionMatrixRepository } from '../../src/modules/admin/infrastructure/persistence/prisma-role-permission-matrix.repository';
+import { RentalCreationGuard } from '../../src/modules/rentals/application/services/rental-creation.guard';
+import { SystemClock } from '../../src/common/application/ports/clock.port';
 import { CreateRentalHandler } from '../../src/modules/rentals/application/commands/create-rental.handler';
 import { CreateRentalCommand } from '../../src/modules/rentals/application/commands/create-rental.command';
 import { ValidateDocumentsHandler } from '../../src/modules/rentals/application/commands/validate-documents.handler';
@@ -137,7 +139,15 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     const evidenceRepository = new PrismaRentalEvidenceRepository(ps);
 
     // 1. Crear alquiler
-    const createHandler = new CreateRentalHandler(rentalRepo, workContext, matrixAuth, txManager, audit, outbox);
+    const createHandler = new CreateRentalHandler(
+      rentalRepo,
+      workContext,
+      matrixAuth,
+      txManager,
+      audit,
+      outbox,
+      new RentalCreationGuard(rentalRepo, new SystemClock()),
+    );
     const rental = await createHandler.execute(
       new CreateRentalCommand(
         UID,
@@ -307,7 +317,23 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       },
     });
 
-    const createHandler = new CreateRentalHandler(rentalRepo, workContext, matrixAuth, txManager, audit, outbox);
+    const createHandler = new CreateRentalHandler(
+
+      rentalRepo,
+
+      workContext,
+
+      matrixAuth,
+
+      txManager,
+
+      audit,
+
+      outbox,
+
+      new RentalCreationGuard(rentalRepo, new SystemClock()),
+
+    );
     const rental = await createHandler.execute(
       new CreateRentalCommand(
         UID,
