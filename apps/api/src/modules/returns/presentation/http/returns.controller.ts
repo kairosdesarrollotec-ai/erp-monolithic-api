@@ -43,6 +43,8 @@ import { GetCosmeticTariffHandler } from '../../application/queries/get-cosmetic
 import { GetCosmeticTariffQuery } from '../../application/queries/get-cosmetic-tariff.query';
 import { ListReturnsHandler } from '../../application/queries/list-returns.handler';
 import { ListReturnsQuery } from '../../application/queries/list-returns.query';
+import { GetResponsibilityTemplateHandler } from '../../application/queries/get-responsibility-template.handler';
+import { GetResponsibilityTemplateQuery } from '../../application/queries/get-responsibility-template.query';
 import { RETURN_LIST_DEFAULT_LIMIT, RETURN_LIST_MAX_LIMIT } from '../../domain/return-pagination';
 import { ScheduleReturnDto } from './dto/schedule-return.dto';
 import { ReceiveProvisionalDto } from './dto/receive-provisional.dto';
@@ -67,6 +69,7 @@ import {
   toReturnDamageResponse,
   toReturnResponse,
 } from './return.mapper';
+import { ResponsibilityTemplateResponse, toResponsibilityTemplateResponse } from './dto/responsibility-template.response';
 
 /**
  * Devolución (DEV-01..10) - contrato: packages/contracts/openapi/returns.yaml.
@@ -88,6 +91,7 @@ export class ReturnsController {
     private readonly getReturn: GetReturnHandler,
     private readonly getCosmeticTariff: GetCosmeticTariffHandler,
     private readonly listReturns: ListReturnsHandler,
+    private readonly getResponsibilityTemplate: GetResponsibilityTemplateHandler,
   ) {}
 
   @Post()
@@ -177,6 +181,19 @@ export class ReturnsController {
       new GetReturnQuery(id, req.firebaseUid!, query.companyId, query.branchId),
     );
     return toReturnResponse(found);
+  }
+
+  /** PROP-015b — plantilla de documento de responsabilidad para la firma del cliente (BR-DEV-009). */
+  @Get(':id/responsibility-template')
+  async responsibilityTemplate(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ReturnScopeQueryDto,
+  ): Promise<ResponsibilityTemplateResponse> {
+    const template = await this.getResponsibilityTemplate.execute(
+      new GetResponsibilityTemplateQuery(id, req.firebaseUid!, query.companyId, query.branchId),
+    );
+    return toResponsibilityTemplateResponse(template);
   }
 
   @Post(':id/commands/register-alcohol-test')

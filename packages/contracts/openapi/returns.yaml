@@ -153,6 +153,35 @@ paths:
         '500':
           description: Error interno del servidor
 
+  /returns/{id}/responsibility-template:
+    get:
+      operationId: getResponsibilityTemplate
+      summary: Obtener plantilla del documento de responsabilidad para firma del cliente (PROP-015b / BR-DEV-009)
+      description: |
+        Retorna el contenido de la plantilla activa del documento de responsabilidad asociado a la empresa
+        operativa de la devolución. El frontend debe mostrar este contenido al cliente antes de solicitar la firma.
+        Requiere que la devolución exista y que el usuario tenga acceso a ella.
+      tags: [returns]
+      parameters:
+        - $ref: '#/components/parameters/returnId'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/branchId'
+      responses:
+        '200':
+          description: Plantilla activa del documento de responsabilidad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponsibilityTemplateResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada o plantilla no configurada para la empresa
+        '500':
+          description: Error interno del servidor
+
   /returns/{id}/commands/register-alcohol-test:
     post:
       operationId: registerAlcoholTest
@@ -531,6 +560,25 @@ components:
       description: 'ID token de Firebase Authentication, enviado como "Authorization: Bearer <idToken>"'
 
   schemas:
+    ResponsibilityTemplateResponse:
+      type: object
+      required: [type, name, content, version]
+      properties:
+        type:
+          type: string
+          description: Tipo de plantilla (e.g. RETURN_RESPONSIBILITY)
+          example: RETURN_RESPONSIBILITY
+        name:
+          type: string
+          description: Nombre descriptivo de la plantilla
+          example: Documento de Responsabilidad - Devolución VeloxRent
+        content:
+          type: string
+          description: Contenido de la plantilla que el cliente debe firmar
+        version:
+          type: integer
+          description: Versión activa de la plantilla
+
     ReturnStatus:
       type: string
       enum:

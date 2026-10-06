@@ -33,14 +33,17 @@ import { PrismaReturnEvidencePersistence } from './infrastructure/persistence/pr
 import { PrismaReturnCustomerRiskPersistence } from './infrastructure/persistence/prisma-return-customer-risk.persistence';
 import { PrismaReturnDepositSettlementPersistence } from './infrastructure/persistence/prisma-return-deposit-settlement.persistence';
 import { GcsReturnEvidenceService } from './infrastructure/storage/gcs-return-evidence.service';
+import { DocumentTemplatesModule } from '../document-templates/document-templates.module';
+import { GetResponsibilityTemplateHandler } from './application/queries/get-responsibility-template.handler';
 
 /**
  * Módulo Devolución (DEV-01..10). Integra Rentals (RentalRepositoryPort: lectura y transición del alquiler),
  * Fleet (FleetVehicleRepositoryPort: estado del vehículo al cerrar), Audit y Outbox. PrismaModule (global)
  * aporta TransactionManagerPort y ClockPort; IdempotencyModule (global) el interceptor.
+ * DocumentTemplatesModule provee la plantilla del documento de responsabilidad (PROP-015b).
  */
 @Module({
-  imports: [UsersModule, AuditModule, OutboxModule, RentalsModule, FleetModule],
+  imports: [UsersModule, AuditModule, OutboxModule, RentalsModule, FleetModule, DocumentTemplatesModule],
   controllers: [ReturnsController, ReturnEvidenceController],
   providers: [
     ReturnAccessService,
@@ -59,6 +62,7 @@ import { GcsReturnEvidenceService } from './infrastructure/storage/gcs-return-ev
     GetCosmeticTariffHandler,
     ListReturnsHandler,
     ListReturnEvidenceHandler,
+    GetResponsibilityTemplateHandler,
     PrismaReturnDamagePersistence,
     PrismaImmobilizationChargePersistence,
     PrismaReturnEvidencePersistence,
