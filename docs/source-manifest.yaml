@@ -168,8 +168,10 @@ sources:
   module: Devolución
   version: '1.9'
   date: unknown
-  status: pending_review
-  estado_original: unknown
+  status: approved
+  estado_original: approved
+  approved_at: '2026-10-06'
+  approved_by: Russbel/usuario sesión implementación
   sha256: 0804f3000bb130f744320ed3ca97e2d3af751c3599c1f9b465929faf6a0de454
   authority: business
   supersedes: null
@@ -267,8 +269,10 @@ sources:
   module: Devolución
   version: '2.2'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  status: approved
+  estado_original: APROBADO — 2026-10-06
+  approved_at: '2026-10-06'
+  approved_by: Russbel/usuario sesión implementación
   sha256: 4693e6f50c5404572ab34d6db4c4ab57e727550648d73dfd73fc00b24d6e6227
   authority: functional
   supersedes: null
