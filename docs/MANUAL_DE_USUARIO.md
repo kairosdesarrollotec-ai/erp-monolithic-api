@@ -1,6 +1,6 @@
 # Manual de Usuario — KAIROS / VeloxRent ERP
 
-> **Versión del Manual:** 1.0 (Corte al 30 de septiembre de 2026)  
+> **Versión del Manual:** 1.2 (Corte al 5 de octubre de 2026)  
 > **Ámbito:** Guía de interacción paso a paso con el sistema web (`erp-portal-web`) y sus servicios integrados (`erp-monolithic-api`).  
 > **Política de Actualización:** Este documento se actualiza al cierre de cada jornada diaria con los nuevos módulos, flujos y pantallas que se integren al sistema.
 
@@ -52,9 +52,19 @@
    - 10.5 [Matriz Notarial Automática y Tercer Camino / Excepción Gerencial (BR-ALQ-003/004)](#105-matriz-notarial-automática-y-tercer-camino--excepción-gerencial-br-alq-003004)
    - 10.6 [Formalización de Contrato y Depósito en Garantía (BR-DOC-002/003)](#106-formalización-de-contrato-y-depósito-en-garantía-br-doc-002003)
    - 10.7 [Entrega Física y Checklist de Inspección con Evidencia Obligatoria (BR-INS-003/004)](#107-entrega-física-y-checklist-de-inspección-con-evidencia-obligatoria-br-ins-003004)
-11. [Módulos en Construcción (Hoja de Ruta)](#11-módulos-en-construcción-hoja-de-ruta)
-12. [Glosario de Términos y Estados](#12-glosario-de-términos-y-estados)
-13. [Bitácora Diaria de Cambios del Manual](#13-bitácora-diaria-de-cambios-del-manual)
+11. [Módulo de Devoluciones (DEV-01 a DEV-10)](#11-módulo-de-devoluciones-dev-01-a-dev-10)
+   - 11.1 [Ciclo de Vida de la Devolución](#111-ciclo-de-vida-de-la-devolución)
+   - 11.2 [Bandeja de Devoluciones y Alquileres Activos (DEV-01)](#112-bandeja-de-devoluciones-y-alquileres-activos-dev-01)
+   - 11.3 [Recepción Provisional (DEV-02)](#113-recepción-provisional-dev-02)
+   - 11.4 [Prueba de Alcoholímetro (DEV-03)](#114-prueba-de-alcoholímetro-dev-03)
+   - 11.5 [Checklist, Evidencias y Documento de Responsabilidad (DEV-04)](#115-checklist-evidencias-y-documento-de-responsabilidad-dev-04)
+   - 11.6 [Resultado de la Inspección: Hub de la Devolución (DEV-05)](#116-resultado-de-la-inspección-hub-de-la-devolución-dev-05)
+   - 11.7 [Registro de Daños (DEV-06, DEV-07, DEV-08)](#117-registro-de-daños-dev-06-dev-07-dev-08)
+   - 11.8 [Garantía y Cierre (DEV-09 y DEV-10)](#118-garantía-y-cierre-dev-09-y-dev-10)
+   - 11.9 [Alcance Actual y Pendientes](#119-alcance-actual-y-pendientes)
+12. [Módulos en Construcción (Hoja de Ruta)](#12-módulos-en-construcción-hoja-de-ruta)
+13. [Glosario de Términos y Estados](#13-glosario-de-términos-y-estados)
+14. [Bitácora Diaria de Cambios del Manual](#14-bitácora-diaria-de-cambios-del-manual)
 
 ---
 
@@ -173,8 +183,8 @@ Se activa mediante el botón de menú hamburguesa (☰) y se puede cerrar hacien
 | **Flota** | `/flota` | ✅ Operativo |
 | **Clientes** | `/clientes` | ✅ Operativo |
 | **Administración** | `/admin/usuarios` | ✅ Operativo (Sólo Administradores) |
-| **Alquileres** | — | ⏳ Próximamente (En desarrollo) |
-| **Devoluciones** | — | ⏳ Próximamente (En desarrollo) |
+| **Alquileres** | `/alquileres` | ✅ Operativo |
+| **Devoluciones** | `/devoluciones` | ✅ Operativo |
 | **Pagos y Garantías** | — | ⏳ Próximamente (En desarrollo) |
 | **Incidentes** | — | ⏳ Próximamente (En desarrollo) |
 | **Personal** | — | ⏳ Próximamente (En desarrollo) |
@@ -595,24 +605,131 @@ Existen dos vías operativas para iniciar un alquiler en la sede activa:
 
 ---
 
-## 11. Módulos en Construcción (Hoja de Ruta)
+## 11. Módulo de Devoluciones (DEV-01 a DEV-10)
+
+* **Ruta:** `/devoluciones`
+* **Propósito:** Recibir el vehículo al final del alquiler, inspeccionarlo, registrar daños y cargos, y liquidar la garantía hasta cerrar el expediente de devolución.
+* **Disponible para:** Front-office y roles con permiso sobre Devoluciones en la sede activa. La decisión ante un alcoholímetro desfavorable corresponde a Gerencia.
+
+---
+
+### 11.1 Ciclo de Vida de la Devolución
+
+La devolución avanza por estados en orden estricto:
+
+1. **`PROGRAMADA`:** Devolución creada a partir de un alquiler activo.
+2. **`RECEPCION_PROVISIONAL`:** El vehículo llegó a sede y queda en custodia; todavía no se cierra el contrato.
+3. **`INSPECCION`:** Prueba de alcoholímetro, checklist y evidencias en curso.
+4. **`SIN_DANOS` / `CON_DANOS`:** Resultado de la inspección.
+5. **`CIERRE_FINANCIERO`:** Liquidación de garantía y cargos.
+6. **`CERRADA`:** Expediente finiquitado.
+7. **`CANCELADA`:** Devolución anulada antes de cerrarse.
+
+La **custodia del vehículo no equivale al cierre contractual**: recibir la unidad no libera la garantía ni cierra el alquiler.
+
+---
+
+### 11.2 Bandeja de Devoluciones y Alquileres Activos (DEV-01)
+
+1. Ingrese desde el menú **Devoluciones** o desde la bandeja de **Alquileres** con el botón **"Iniciar devolución"** (o **"Continuar devolución"** si ya hay una en curso).
+2. La bandeja lista las devoluciones de la sede activa con su estado, y un panel con los **alquileres activos** que aún no tienen devolución.
+3. Al presionar **"Iniciar devolución"** sobre un alquiler activo, el sistema crea la devolución y lo lleva a la recepción.
+4. Un expediente de otra empresa o sede se muestra como *no encontrado*.
+
+---
+
+### 11.3 Recepción Provisional (DEV-02)
+
+1. Registre la llegada del vehículo con sus datos de recepción (fecha y hora, kilometraje y nivel de combustible).
+2. Si quien devuelve el vehículo **no es el titular**, registre sus datos en el campo de **notas**; quedan guardados en el expediente.
+3. Presione **"Continuar"** para pasar al alcoholímetro.
+
+---
+
+### 11.4 Prueba de Alcoholímetro (DEV-03)
+
+1. Registre el resultado de la prueba: **Favorable** o **Desfavorable**.
+2. **Favorable:** se continúa al checklist de inspección.
+3. **Desfavorable:** la devolución **no continúa** al checklist. Se deriva a **Gerencia**, que decide:
+   * **Continuar a inspección:** el expediente sigue su curso sin marcar al cliente en rojo.
+   * **Dejar el vehículo en custodia:** exige registrar **notas** y confirmar; la decisión queda visible en el expediente.
+4. Un alcoholímetro desfavorable puede marcar al cliente en **semáforo rojo** (BR-DEV-005).
+
+---
+
+### 11.5 Checklist, Evidencias y Documento de Responsabilidad (DEV-04)
+
+1. Complete el **checklist de inspección de retorno**.
+2. Suba las **fotos y videos** exigidos. Las evidencias se cargan de forma real mediante URL firmada; mientras la evidencia esté incompleta, el botón **"Continuar a Resultado"** permanece deshabilitado.
+3. Obtenga la **firma del documento de responsabilidad** en el recuadro de firma. El botón solo se habilita con el documento firmado.
+4. Si **quien firma no es el titular**, el sistema exige indicar su **relación con el titular**.
+
+> **Nota:** el uso de este documento firmado es provisional hasta la validación del área Legal.
+
+---
+
+### 11.6 Resultado de la Inspección: Hub de la Devolución (DEV-05)
+
+1. Muestra el **comparador de zonas** del vehículo (entrega vs. retorno) y el resumen de la inspección.
+2. Desde aquí se decide el siguiente paso:
+   * **Sin daños:** se pasa directo a la garantía (**"Liberar garantía"**).
+   * **Con daños:** se registran los daños antes de continuar. No existe **"Liberar garantía"** mientras haya daños por liquidar.
+3. El **semáforo del cliente** (Normal, Ámbar o Rojo) se muestra en pantalla. **El semáforo nunca retrocede:** una vez en un nivel más grave, no baja automáticamente.
+
+---
+
+### 11.7 Registro de Daños (DEV-06, DEV-07, DEV-08)
+
+1. **Gravedad (DEV-06):** clasifique el daño. Un daño **grave** marca al cliente en **ROJO**.
+2. **Daño estético (DEV-07):**
+   * Elija la **zona dañada**.
+   * El **monto lo fija el sistema** según el tarifario del vehículo; se muestra como *"Monto del tarifario"* y no se escribe a mano.
+   * Marque **"Cliente acepta el costo"** si corresponde.
+   * Presione **"Registrar daño estético"**. El cliente pasa a semáforo **Ámbar**.
+   * Si el vehículo no tiene tarifario definido, el sistema rechaza el registro y avisa.
+3. **Daño técnico (DEV-08):**
+   * Siempre requiere un **informe técnico externo de Motrix**.
+   * El **monto se ingresa manualmente**, porque no existe tarifa exacta.
+4. Al terminar, presione **"Continuar a garantía"**.
+
+---
+
+### 11.8 Garantía y Cierre (DEV-09 y DEV-10)
+
+1. **Garantía (DEV-09):**
+   * **Sin daños:** use **"Liberar garantía"**. Se pide confirmar el **monto exacto** antes de ejecutar.
+   * **Con daños:** el costo estético se **descuenta de la garantía**. El monto retenido se mantiene hasta definir si el daño supera la garantía.
+   * No se libera la garantía si hay un **incidente abierto**.
+2. **Inmovilización:** si el vehículo queda inmovilizado más de 24 horas, se cargan los días de inmovilización.
+3. **Cierre (DEV-10):** revise el resumen financiero y presione **"Cerrar devolución"**. La pantalla muestra **"Firmado por …"** como dato de solo lectura, tomado del documento de responsabilidad.
+4. Al cerrar, la devolución pasa a **`CERRADA`**.
+
+---
+
+### 11.9 Alcance Actual y Pendientes
+
+* No incluido todavía: recordatorio automático antes de la devolución, cobro automático de inmovilización, alerta de garantía a las 24 h, registro formal de incidentes (módulo Incidencias) y devolución sin conexión (depende de la sincronización offline).
+* La multa por combustible se definirá por vehículo cuando se conozca la unidad.
+* El rol Subgerencia se incorporará con la administración de roles.
+
+---
+
+## 12. Módulos en Construcción (Hoja de Ruta)
 
 Los siguientes módulos forman parte del diseño integral del ERP y se incorporarán en las próximas etapas de desarrollo:
 
-1. **Devoluciones (DEV):**
-   * Hub de recepción y retorno de vehículos (DEV-05): inspección de retorno, cálculo de cobros adicionales por combustible faltante o kilometraje excedente, liberación o cobro sobre la garantía de depósito.
-2. **Pagos y Garantías (PAG):**
+1. **Pagos y Garantías (PAG):**
    * Integración con pasarelas de pago con tarjeta, conciliación de transferencias bancarias y gestión formal de retenciones y devoluciones de garantía.
-3. **Incidentes y Siniestros (INC):**
+2. **Incidentes y Siniestros (INC):**
    * Registro de siniestros, fallas mecánicas en ruta, gestión de vehículos de reemplazo y partes policiales / aseguradoras.
-4. **Administración de Personal (PER / ADP):**
+3. **Administración de Personal (PER / ADP):**
    * Turnos de trabajo, control de asistencia en sedes y legajos de colaboradores.
-5. **Reportes Gerenciales (REP):**
+4. **Reportes Gerenciales (REP):**
    * Analítica de rentabilidad de flota, tasa de ocupación por categoría vehicular y rendimiento de ventas por sede.
 
 ---
 
-## 12. Glosario de Términos y Estados
+## 13. Glosario de Términos y Estados
 
 * **Empresa / Sede:** Estructura jerárquica de dos niveles. Una Empresa representa una razón social jurídica; una Sede representa un local físico u oficina de atención.
 * **AVAILABLE (Disponible):** Vehículo que se encuentra operativo, limpio y sin reserva activa, apto para asignación inmediata.
@@ -630,18 +747,23 @@ Los siguientes módulos forman parte del diseño integral del ERP y se incorpora
 * **RETURN_IN_PROGRESS (Retorno en Curso):** Unidad arribada a sede para chequeo de recepción física y liquidación de garantía.
 * **CLOSED (Alquiler Cerrado):** Expediente finiquitado con devolución de vehículo conforme y depósito de garantía liquidado.
 * **CANCELLED (Alquiler Cancelado):** Alquiler rescindido por alcolímetro positivo/rechazado o desistimiento antes de entrega.
+* **PROGRAMADA / RECEPCION_PROVISIONAL / INSPECCION (Devolución):** Etapas previas al resultado: devolución creada, vehículo recibido en custodia, e inspección en curso.
+* **SIN_DANOS / CON_DANOS:** Resultado de la inspección de retorno.
+* **CIERRE_FINANCIERO / CERRADA (Devolución):** Liquidación de garantía y cargos, y expediente de devolución finiquitado.
+* **Semáforo del cliente (Normal / Ámbar / Rojo):** Nivel de riesgo del cliente según su historial. Una vez que empeora, no retrocede automáticamente.
 * **Tercer Camino (Third Path):** Mecanismo de excepción para clientes de bajo riesgo que permite exonerar el trámite notarial clásico mediante biometría y aprobación expresa de Gerencia.
 * **Uso Turístico Exclusivo:** Política contractual y de cobertura aseguradora que exige que los vehículos sean destinados únicamente a recreación y turismo, restringiendo el uso para transporte público, carga o actividades no autorizadas.
 * **Deep Link:** Enlace directo que conduce al usuario a la tarea u objeto exacto dentro del sistema sin necesidad de navegar manualmente por las listas.
 
 ---
 
-## 13. Bitácora Diaria de Cambios del Manual
+## 14. Bitácora Diaria de Cambios del Manual
 
 | Fecha | Versión | Cambios Realizados | Responsable |
 |---|---|---|---|
 | **2026-09-30** | **v1.0** | **Creación inicial del manual integral.** Cobertura completa de Login, MFA, Activación, Selección de Sede, Header/Sidebar, Dashboard, Clientes (alta/edición/búsqueda), Flota (alta con foto/edición/estados/baja), Consultas (CON-01 a CON-04 con validación turística y clientes vinculados), Reservas (RES-01 a RES-05) y Administración (ADM-01 a ADM-05). | Equipo de Ingeniería KAIROS |
 | **2026-09-30** | **v1.1** | **Integración del Módulo de Alquileres (ALQ-01 a ALQ-11).** Documentación del ciclo de vida completo de 10 estados, creación directa y desde reserva confirmada (RES-05), validación documental (BR-CON-004), prueba de alcolímetro de tolerancia cero (BR-ALQ-005), matriz notarial y tercer camino con aprobación gerencial (BR-ALQ-003/004), formalización de contrato con garantía (BR-DOC-002/003), y protocolo de entrega física con 35 fotos + 3 videos y transición a RENTED (BR-INS-003/004). | Equipo de Ingeniería KAIROS |
+| **2026-10-05** | **v1.2** | **Integración del Módulo de Devoluciones (DEV-01 a DEV-10).** Ciclo de vida, recepción provisional, alcoholímetro con decisión de Gerencia, checklist con evidencias y documento de responsabilidad firmado, hub de resultado, registro de daños estéticos y técnicos, garantía y cierre. Se corrige el estado de Alquileres y Devoluciones en el Centro de Módulos. | Equipo de Ingeniería KAIROS |
 
 ---
 *Este manual es un documento vivo del proyecto KAIROS ERP. Se mantendrá actualizado al final de cada jornada de desarrollo.*

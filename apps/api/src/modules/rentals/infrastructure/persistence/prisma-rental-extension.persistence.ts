@@ -137,7 +137,7 @@ export class PrismaRentalExtensionPersistence {
       data: { status: 'RETAINED' },
     });
 
-    // Reutiliza el campo Customer.status ("NORMAL" | "ROJO")
+    // Reutiliza el campo Customer.status ("NORMAL" | "AMBAR" | "ROJO"; ROJO es el estado terminal del semáforo, BR-DEV-008)
     await client.customer.update({
       where: { id: input.customerId },
       data: { status: 'ROJO' },

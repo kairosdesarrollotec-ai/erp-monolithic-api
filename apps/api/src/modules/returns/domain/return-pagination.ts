@@ -1,0 +1,2 @@
+export const RETURN_LIST_DEFAULT_LIMIT = 20;
+export const RETURN_LIST_MAX_LIMIT = 100;
