@@ -79,6 +79,11 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
   const UID_A = 'uid-it-incident-a';
   const UID_B = 'uid-it-incident-b';
   const clock = new StepClock(new Date('2026-10-06T12:00:00.000Z'));
+  /**
+   * Avanza el reloj: dos entradas del historial con el mismo createdAt se desempatan por id (UUID aleatorio) y el orden
+   * dejaria de ser el de insercion. En produccion cada accion es una peticion distinta; en el test hay que separarlas.
+   */
+  const tick = (seconds = 1): void => clock.set(new Date(clock.now().getTime() + seconds * 1000));
 
   function buildPrismaService(): PrismaService {
     return prisma as unknown as PrismaService;
@@ -207,6 +212,7 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
   it.each(['MODERADA', 'GRAVE'] as const)('%s: resolver directo -> 422; cerrar desde el detalle con resumen -> CERRADA', async (severity) => {
     const stack = stackA();
     const created = await stack.create.execute(createCmd({ severity }));
+    tick();
 
     await expect(stack.resolve.execute(new ResolveIncidentCommand(created.id, UID_A, companyA, branchA, 1, 'x'))).rejects.toThrow(IncidentDirectResolveNotAllowedError);
     const untouched = await stack.get.execute(new GetIncidentQuery(created.id, UID_A, companyA, branchA));
@@ -221,6 +227,7 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
   it('If-Match desactualizado -> VERSION_CONFLICT y nada se escribe (ni entrada, ni auditoria, ni outbox)', async () => {
     const stack = stackA();
     const created = await stack.create.execute(createCmd());
+    tick();
     await stack.addAction.execute(new AddIncidentActionCommand(created.id, UID_A, companyA, branchA, 1, 'Primera accion'));
 
     await expect(stack.addAction.execute(new AddIncidentActionCommand(created.id, UID_A, companyA, branchA, 1, 'Accion con version vieja'))).rejects.toThrow(
@@ -237,6 +244,7 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
   it('derivar a via legal -> VIA_LEGAL terminal: ya no admite acciones, cierre ni nueva derivacion (INCIDENT_NOT_OPEN)', async () => {
     const stack = stackA();
     const created = await stack.create.execute(createCmd({ severity: 'GRAVE' }));
+    tick();
 
     const referred = await stack.refer.execute(new ReferIncidentToLegalCommand(created.id, UID_A, companyA, branchA, 1, 'Cliente no responde'));
     expect(referred).toMatchObject({ status: 'VIA_LEGAL', version: 2, resolutionSummary: null, resolvedAt: null });
