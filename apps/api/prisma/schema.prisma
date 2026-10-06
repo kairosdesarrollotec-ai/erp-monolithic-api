@@ -262,6 +262,8 @@ model Company {
   inquiries    Inquiry[]
   rentals      Rental[]
   contractTemplates ContractTemplate[]
+  documentTemplates DocumentTemplate[]
+  returns      RentalReturn[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -289,6 +291,7 @@ model Branch {
   inquiries    Inquiry[]
   vehicles     Vehicle[]
   rentals      Rental[]
+  returns      RentalReturn[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -401,7 +404,11 @@ model Customer {
   /// Decision de diseno nueva (no existia un modulo/campo real de
   /// Clientes para esto): estado "rojo"/lista negra del cliente,
   /// introducido para BR-ALQ-013 (falta grave de ampliacion de
-  /// alquiler). NORMAL | ROJO.
+  /// alquiler). Semaforo de riesgo (BR-DEV-007/008, TD-DEV-002):
+  /// NORMAL | AMBAR | ROJO. NORMAL equivale a SIN_OBSERVACION en los
+  /// documentos. Solo avanza NORMAL -> AMBAR -> ROJO, nunca retrocede
+  /// (helper de dominio modules/returns/domain/customer-risk-status.ts).
+  /// Es String: no requiere migracion.
   status             String              @default("NORMAL")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
@@ -411,6 +418,7 @@ model Customer {
   inquiries        Inquiry[]
   rentals          Rental[]
   rentalParties    RentalParty[]
+  returns          RentalReturn[]
 
   @@unique([id, operatingCompanyId])
   @@unique([operatingCompanyId, documentType, documentNumber])
@@ -445,6 +453,7 @@ model Vehicle {
   reservations     Reservation[]
   quotations       Quotation[]
   rentals          Rental[]
+  returns          RentalReturn[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
@@ -833,6 +842,7 @@ model Rental {
   extensions       RentalExtension[]
   evidence         RentalEvidence[]
   documents        RentalDocument[]
+  rentalReturn     RentalReturn?
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
@@ -1022,3 +1032,192 @@ model RentalExtension {
   @@map("rental_extensions")
 }
 
+/// TDD-04-devolucion seccion 8.1 - 8 estados del ciclo de vida de Devolución.
+enum ReturnStatus {
+  PROGRAMADA
+  RECEPCION_PROVISIONAL
+  INSPECCION
+  SIN_DANOS
+  CON_DANOS
+  CIERRE_FINANCIERO
+  CERRADA
+  CANCELADA
+}
+
+/// TDD-04-devolucion seccion 7.2 - Custodia fisica preventiva del vehiculo.
+enum CustodyHolder {
+  CLIENTE
+  VELOXRENT
+  TALLER
+}
+
+/// TDD-04-devolucion seccion 7.2 / BR-DEV-006 - Origen del daño.
+enum DamageOrigin {
+  AESTHETIC
+  TECHNICAL
+}
+
+/// TDD-04-devolucion seccion 7.2 / BR-DEV-007 - Severidad del daño.
+enum DamageSeverity {
+  LEVE
+  MODERADO
+  GRAVE
+}
+
+/// TDD-04-devolucion seccion 7.2 / BDD-04-devolucion - Nivel de combustible.
+enum ReturnFuelLevel {
+  EMPTY
+  ONE_QUARTER
+  HALF
+  THREE_QUARTERS
+  FULL
+}
+
+/// PROP-014 (PROVISIONAL) - Decision de Gerencia ante alcolimetro de salida desfavorable.
+enum AlcoholEscalationDecision {
+  CONTINUE_TO_INSPECTION
+  KEEP_IN_CUSTODY
+}
+
+/// TDD-04-devolucion seccion 9.5 / TR-08 - Tipo de evidencia de retorno.
+enum ReturnEvidenceType {
+  PHOTO
+  VIDEO
+}
+
+/// TDD-04-devolucion seccion 7.1 / 9.2 - Agregado principal de Devolución (DEV-01..10).
+model RentalReturn {
+  id                    String             @id @default(uuid())
+  organizationId        String             @map("organization_id")
+  operatingCompanyId    String             @map("operating_company_id")
+  branchId              String             @map("branch_id")
+  rentalId              String             @unique @map("rental_id")
+  vehicleId             String             @map("vehicle_id")
+  customerId            String             @map("customer_id")
+  status                ReturnStatus       @default(PROGRAMADA)
+  custodyHolder         CustodyHolder      @default(CLIENTE) @map("custody_holder")
+  customerPresent       Boolean            @default(true) @map("customer_present")
+  mileageAtReturn       Int?               @map("mileage_at_return")
+  fuelLevelAtReturn     ReturnFuelLevel?   @map("fuel_level_at_return")
+  alcoholTestResult     AlcoholTestResult? @map("alcohol_test_result")
+  alcoholTestNotes      String?            @map("alcohol_test_notes")
+  /// PROP-014 (PROVISIONAL): resolucion de Gerencia ante alcolimetro desfavorable/rechazado. La ultima decision
+  /// queda en la fila; cada decision se audita (RETURN_ALCOHOL_ESCALATION_RESOLVED).
+  alcoholEscalationDecision    AlcoholEscalationDecision? @map("alcohol_escalation_decision")
+  alcoholEscalationMarkedRed   Boolean?                   @map("alcohol_escalation_marked_red")
+  alcoholEscalationNotes       String?                    @map("alcohol_escalation_notes")
+  alcoholEscalationDecidedById String?                    @map("alcohol_escalation_decided_by_id")
+  alcoholEscalationDecidedAt   DateTime?                  @map("alcohol_escalation_decided_at")
+  /// BR-DEV-009 / DAT-DEV-005 / EX-DEV-001: documento de responsabilidad firmado al completar la inspeccion.
+  /// PROVISIONAL: validez juridica pendiente de Legal (mismo criterio que PROP-012). signatureData no se expone en API.
+  responsibilitySignerName     String?                    @map("responsibility_signer_name")
+  responsibilitySignerIsHolder Boolean?                   @map("responsibility_signer_is_holder")
+  responsibilitySignerRelation String?                    @map("responsibility_signer_relation")
+  responsibilitySignatureData  String?                    @map("responsibility_signature_data")
+  responsibilitySignedAt       DateTime?                  @map("responsibility_signed_at")
+  scheduledAt           DateTime           @map("scheduled_at")
+  receivedAt            DateTime?          @map("received_at")
+  inspectedAt           DateTime?          @map("inspected_at")
+  closedAt              DateTime?          @map("closed_at")
+  finalSettlementAmount Decimal?           @map("final_settlement_amount") @db.Decimal(12, 2)
+  notes                 String?
+  createdAt             DateTime           @default(now()) @map("created_at")
+  createdBy             String             @map("created_by")
+  updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at")
+  updatedBy             String             @map("updated_by")
+  version               Int                @default(1)
+
+  operatingCompany Company  @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  branch           Branch   @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
+  rental           Rental   @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  vehicle          Vehicle  @relation(fields: [vehicleId, operatingCompanyId], references: [id, operatingCompanyId])
+  customer         Customer @relation(fields: [customerId, operatingCompanyId], references: [id, operatingCompanyId])
+
+  damages               ReturnDamage[]
+  immobilizationCharges ImmobilizationCharge[]
+  evidences             ReturnEvidence[]
+
+  @@unique([id, operatingCompanyId])
+  @@index([operatingCompanyId, status, createdAt(sort: Desc)])
+  @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)])
+  @@index([rentalId])
+  @@map("returns")
+}
+
+/// TDD-04-devolucion seccion 9.2 - Daño detectado en devolución (estético o técnico).
+model ReturnDamage {
+  id                      String         @id @default(uuid())
+  returnId                String         @map("return_id")
+  origin                  DamageOrigin
+  severity                DamageSeverity
+  damagedZone             String?        @map("damaged_zone")
+  estimatedAmount         Decimal?       @map("estimated_amount") @db.Decimal(12, 2)
+  externalReportReference String?        @map("external_report_reference")
+  description             String?
+  createdAt               DateTime       @default(now()) @map("created_at")
+
+  rentalReturn          RentalReturn           @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  immobilizationCharges ImmobilizationCharge[]
+
+  @@index([returnId])
+  @@map("return_damages")
+}
+
+/// TDD-04-devolucion seccion 9.3 / BR-DEV-011 - Cargo por paralización en taller.
+model ImmobilizationCharge {
+  id          String   @id @default(uuid())
+  returnId    String   @map("return_id")
+  damageId    String?  @map("damage_id")
+  daysCharged Int      @map("days_charged")
+  dailyRate   Decimal  @map("daily_rate") @db.Decimal(12, 2)
+  totalAmount Decimal  @map("total_amount") @db.Decimal(12, 2)
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rentalReturn RentalReturn  @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  damage       ReturnDamage? @relation(fields: [damageId], references: [id], onDelete: SetNull)
+
+  @@index([returnId])
+  @@map("immobilization_charges")
+}
+
+/// TDD-04-devolucion seccion 9.5 / TR-08 - Evidencia fotográfica y video de devolución.
+model ReturnEvidence {
+  id                 String             @id @default(uuid())
+  organizationId     String             @map("organization_id")
+  operatingCompanyId String             @map("operating_company_id")
+  returnId           String             @map("return_id")
+  type               ReturnEvidenceType
+  zone               String
+  objectUrl          String             @map("object_url")
+  uploadedBy         String             @map("uploaded_by")
+  uploadedAt         DateTime           @default(now()) @map("uploaded_at")
+
+  rentalReturn RentalReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([returnId, type])
+  @@index([organizationId, operatingCompanyId, returnId])
+  @@map("return_evidence")
+}
+
+
+
+/// PROP-015b — Plantillas de documentos para firma del cliente (BR-DEV-009).
+/// Una versión activa por combinación companyId + type.
+model DocumentTemplate {
+  id        String   @id @default(uuid())
+  companyId String   @map("company_id")
+  type      String   @db.VarChar(50)
+  name      String   @db.VarChar(200)
+  content   String
+  version   Int
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, type, version])
+  @@index([companyId, type, isActive])
+  @@map("document_templates")
+}

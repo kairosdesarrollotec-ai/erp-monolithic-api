@@ -1,0 +1,204 @@
+import {
+  DomainConflictError,
+  DomainError,
+  DomainForbiddenError,
+  DomainNotFoundError,
+  DomainPreconditionError,
+  DomainServiceUnavailableError,
+  DomainUnprocessableError,
+} from '../../../common/domain/domain-errors';
+
+export class ReturnNotFoundError extends DomainNotFoundError {
+  readonly code = 'RETURN_NOT_FOUND';
+
+  constructor(id?: string) {
+    super(id ? `Devolución ${id} no encontrada.` : 'Devolución no encontrada.');
+  }
+}
+
+export class ReturnVersionConflictError extends DomainPreconditionError {
+  readonly code = 'RETURN_VERSION_CONFLICT';
+
+  constructor() {
+    super('La devolución fue modificada por otra operación - vuelve a cargarla.');
+  }
+}
+
+export class ReturnStateConflictError extends DomainConflictError {
+  readonly code = 'RETURN_STATE_CONFLICT';
+
+  constructor(action: string, status: string, reason?: string) {
+    super(reason ?? `No se puede ${action} una devolución en estado ${status}.`);
+  }
+}
+
+export class InvalidReturnStateTransitionError extends DomainConflictError {
+  readonly code = 'INVALID_RETURN_STATE_TRANSITION';
+
+  constructor(from: string, to: string) {
+    super(`Transición no permitida de ${from} a ${to}.`);
+  }
+}
+
+export class ReturnScopeForbiddenError extends DomainForbiddenError {
+  readonly code = 'RETURN_SCOPE_FORBIDDEN';
+
+  constructor() {
+    super('La devolución no pertenece al contexto de trabajo del usuario.');
+  }
+}
+
+export class TechnicalDamageRequiresExternalReportError extends DomainUnprocessableError {
+  readonly code = 'TECHNICAL_DAMAGE_REQUIRES_EXTERNAL_REPORT';
+
+  constructor() {
+    super(
+      'Todo daño técnico requiere la referencia del informe externo pericial de Motrix — no existe tarifario ni cálculo interno (BR-DEV-006).',
+    );
+  }
+}
+
+export class UnknownCosmeticZoneError extends DomainUnprocessableError {
+  readonly code = 'UNKNOWN_COSMETIC_ZONE';
+
+  constructor(zone: string) {
+    super(
+      `La zona "${zone}" no corresponde al tarifario oficial de daños estéticos por paño (BDD Tabla 9.6.1).`,
+    );
+  }
+}
+
+/** TDD-DEV-001 §11.4: INCIDENT_STILL_OPEN responde 422 (regla de negocio no satisfecha), no 409. */
+export class ActiveIncidentsBlockCloseError extends DomainUnprocessableError {
+  readonly code = 'INCIDENT_STILL_OPEN';
+
+  constructor(openIncidents: readonly string[] = []) {
+    super(
+      'No se puede cerrar la devolución: existen incidencias o evaluaciones de daños abiertas pendientes de resolver (DR-DEV-001, NFR-KAI-008).',
+      openIncidents.length > 0 ? { openIncidents: [...openIncidents] } : undefined,
+    );
+  }
+}
+
+export class ImmobilizationPeriodNotElapsedError extends DomainUnprocessableError {
+  readonly code = 'IMMOBILIZATION_PERIOD_NOT_ELAPSED';
+
+  constructor() {
+    super(
+      'Han transcurrido menos de 24 horas naturales desde la recepción del vehículo sin respuesta del cliente; aún no corresponde el cargo por inmovilización (BR-DEV-011).',
+    );
+  }
+}
+
+export class RentalAlreadyHasActiveReturnError extends DomainConflictError {
+  readonly code = 'RENTAL_ALREADY_HAS_ACTIVE_RETURN';
+
+  constructor(rentalId: string) {
+    super(`El alquiler ${rentalId} ya cuenta con un expediente de devolución en curso.`);
+  }
+}
+
+export class RentalNotReturnableError extends DomainConflictError {
+  readonly code = 'RENTAL_NOT_RETURNABLE';
+
+  constructor(status: string) {
+    super(`No se puede iniciar devolución para un alquiler en estado ${status}. Debe estar en ACTIVE o RETURN_IN_PROGRESS.`);
+  }
+}
+
+export class ReturnRoleNotAllowedError extends DomainForbiddenError {
+  readonly code = 'ROLE_NOT_ALLOWED';
+
+  constructor(role: string, action: string) {
+    super(`El rol ${role} no tiene permiso para realizar la acción ${action} sobre una Devolución.`);
+  }
+}
+
+export class ReturnRentalNotFoundError extends DomainNotFoundError {
+  readonly code = 'RENTAL_NOT_FOUND';
+
+  constructor(rentalId?: string) {
+    super(rentalId ? `Alquiler ${rentalId} no encontrado en la empresa/sede.` : 'Alquiler no encontrado en la empresa/sede.');
+  }
+}
+
+export class ReturnDamageNotFoundError extends DomainNotFoundError {
+  readonly code = 'RETURN_DAMAGE_NOT_FOUND';
+
+  constructor(damageId: string) {
+    super(`El daño ${damageId} no pertenece a esta devolución.`);
+  }
+}
+
+export class InvalidAestheticDamageError extends DomainUnprocessableError {
+  readonly code = 'INVALID_AESTHETIC_DAMAGE';
+
+  constructor() {
+    super(
+      'Un daño estético se valora únicamente con el tarifario por paño; no admite referencia a informe externo (BR-DEV-006).',
+    );
+  }
+}
+
+export class MissingReturnEvidenceError extends DomainUnprocessableError {
+  readonly code = 'MISSING_REQUIRED_EVIDENCE';
+
+  constructor(missingDetails: string[]) {
+    super(
+      `No se puede completar la inspección: falta evidencia obligatoria del checklist de retorno (BR-DEV-009). ${missingDetails.join('; ')}.`,
+      { missing: missingDetails },
+    );
+  }
+}
+
+export class MissingResponsibilityDocumentError extends DomainUnprocessableError {
+  readonly code = 'MISSING_RESPONSIBILITY_DOCUMENT';
+
+  constructor(detail?: string) {
+    super(
+      detail ??
+        'No se puede completar la inspección: falta el documento de responsabilidad firmado por quien devuelve el vehículo (BR-DEV-009, DAT-DEV-005, EX-DEV-001).',
+    );
+  }
+}
+
+export class InvalidImmobilizationChargeError extends DomainUnprocessableError {
+  readonly code = 'INVALID_IMMOBILIZATION_CHARGE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class InvalidFinancialSettlementError extends DomainUnprocessableError {
+  readonly code = 'INVALID_FINANCIAL_SETTLEMENT';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class ReturnDepositAlreadySettledError extends DomainConflictError {
+  readonly code = 'DEPOSIT_ALREADY_SETTLED';
+
+  constructor(status: string) {
+    super(`La garantía del alquiler ya fue liquidada (estado ${status}).`);
+  }
+}
+
+export class InvalidReturnEvidenceError extends DomainError {
+  readonly code = 'INVALID_RETURN_EVIDENCE';
+  readonly httpStatus = 400;
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class ReturnStorageUnavailableError extends DomainServiceUnavailableError {
+  readonly code = 'EVIDENCE_STORAGE_UNAVAILABLE';
+
+  constructor() {
+    super('Almacenamiento de evidencia no configurado (variables de entorno GCS faltantes).');
+  }
+}

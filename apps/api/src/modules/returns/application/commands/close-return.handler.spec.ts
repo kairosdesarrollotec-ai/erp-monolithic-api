@@ -1,0 +1,135 @@
+import { CloseReturnHandler } from './close-return.handler';
+import { CloseReturnCommand } from './close-return.command';
+import {
+  ActiveIncidentsBlockCloseError,
+  RentalNotReturnableError,
+  ReturnRoleNotAllowedError,
+  ReturnStateConflictError,
+} from '../../domain/return-errors';
+import {
+  applyUpdate,
+  buildDamage,
+  buildDeps,
+  buildRentalRecord,
+  buildReturnRecord,
+  buildTechnicalDamage,
+  FIXED_NOW,
+  fakeTx,
+} from '../../testing/return-test-fixtures';
+import { ReturnRecord } from '../ports/return-repository.port';
+import { RentalRecord } from '../../../rentals/application/ports/rental-repository.port';
+
+describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
+  function build(overrides: Partial<ReturnRecord> = {}, rental: Partial<RentalRecord> = {}, role: 'GERENCIA' | 'CAMPO' = 'GERENCIA') {
+    const deps = buildDeps({ role });
+    const base = buildReturnRecord({
+      status: 'CIERRE_FINANCIERO',
+      custodyHolder: 'VELOXRENT',
+      version: 11,
+      finalSettlementAmount: 0,
+      ...overrides,
+    });
+    deps.returns.findById.mockResolvedValue(base);
+    deps.returns.update.mockImplementation(async (input) => applyUpdate(base, input));
+    deps.rentals.findById.mockResolvedValue(buildRentalRecord({ status: 'RETURN_IN_PROGRESS', version: 12, ...rental }));
+    const handler = new CloseReturnHandler(
+      deps.access,
+      deps.returns,
+      deps.rentals,
+      deps.fleetVehicles,
+      deps.transactionManager,
+      deps.clock,
+      deps.auditRepository,
+      deps.outboxRepository,
+    );
+    return { deps, handler };
+  }
+
+  const cmd = () => new CloseReturnCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 11, 'data:image/png;base64,AAA', true, 'cierre');
+
+  it('sin daños: CERRADA, alquiler CLOSED y vehículo AVAILABLE; publica DevolucionCompletada.v1', async () => {
+    const { deps, handler } = build();
+
+    const result = await handler.execute(cmd());
+
+    expect(result.status).toBe('CERRADA');
+    expect(result.closedAt).toEqual(FIXED_NOW);
+    expect(deps.rentals.transitionStatus).toHaveBeenCalledWith(
+      'rent-1',
+      expect.objectContaining({ organizationId: 'org-1' }),
+      'CLOSED',
+      12,
+      'uid-1',
+      fakeTx,
+    );
+    expect(deps.fleetVehicles.updateStatus).toHaveBeenCalledWith(
+      'veh-1',
+      { organizationId: 'org-1', operatingCompanyId: 'comp-1' },
+      'AVAILABLE',
+    );
+    expect(deps.outboxRepository.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'DevolucionCompletada.v1',
+        payload: expect.objectContaining({ vehicleStatus: 'AVAILABLE', warrantyActRequested: true }),
+      }),
+      fakeTx,
+    );
+    // La firma no se copia a auditoría, solo se deja constancia.
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'RETURN_CLOSED', changes: expect.objectContaining({ signed: true }) }),
+      fakeTx,
+    );
+  });
+
+  it('con daño técnico: el vehículo pasa a MAINTENANCE', async () => {
+    const { deps, handler } = build({ damages: [buildDamage(), buildTechnicalDamage()] });
+    await handler.execute(cmd());
+    expect(deps.fleetVehicles.updateStatus).toHaveBeenCalledWith('veh-1', expect.anything(), 'MAINTENANCE');
+  });
+
+  it('Fleet se actualiza al final, después de auditoría y outbox (dentro de la misma transacción)', async () => {
+    const { deps, handler } = build();
+    await handler.execute(cmd());
+    const fleetOrder = deps.fleetVehicles.updateStatus.mock.invocationCallOrder[0];
+    expect(fleetOrder).toBeGreaterThan(deps.auditRepository.recordRentalEvent.mock.invocationCallOrder[0]);
+    expect(fleetOrder).toBeGreaterThan(deps.outboxRepository.publish.mock.invocationCallOrder[0]);
+  });
+
+  it('DR-DEV-001: un daño técnico sin monto (incidencia abierta) impide el cierre', async () => {
+    const { deps, handler } = build({ damages: [buildTechnicalDamage({ estimatedAmount: null })] });
+    await expect(handler.execute(cmd())).rejects.toThrow(ActiveIncidentsBlockCloseError);
+    expect(deps.returns.update).not.toHaveBeenCalled();
+    expect(deps.fleetVehicles.updateStatus).not.toHaveBeenCalled();
+    expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
+  });
+
+  it('INCIDENT_STILL_OPEN responde 422 (TDD §11.4), no 409', async () => {
+    const { handler } = build({ damages: [buildTechnicalDamage({ estimatedAmount: null })] });
+    const error = await handler.execute(cmd()).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ActiveIncidentsBlockCloseError);
+    expect((error as ActiveIncidentsBlockCloseError).code).toBe('INCIDENT_STILL_OPEN');
+    expect((error as ActiveIncidentsBlockCloseError).httpStatus).toBe(422);
+  });
+
+  it('alquiler ya CLOSED: no vuelve a transicionarlo', async () => {
+    const { deps, handler } = build({}, { status: 'CLOSED' });
+    await handler.execute(cmd());
+    expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
+  });
+
+  it('alquiler en un estado que no puede cerrarse -> RentalNotReturnableError', async () => {
+    const { deps, handler } = build({}, { status: 'EXTENSION_PENDING' });
+    await expect(handler.execute(cmd())).rejects.toThrow(RentalNotReturnableError);
+    expect(deps.fleetVehicles.updateStatus).not.toHaveBeenCalled();
+  });
+
+  it.each(['SIN_DANOS', 'CON_DANOS', 'INSPECCION', 'CERRADA'] as const)('estado %s -> ReturnStateConflictError', async (status) => {
+    const { handler } = build({ status });
+    await expect(handler.execute(cmd())).rejects.toThrow(ReturnStateConflictError);
+  });
+
+  it('rol CAMPO no puede cerrar', async () => {
+    const { handler } = build({}, {}, 'CAMPO');
+    await expect(handler.execute(cmd())).rejects.toThrow(ReturnRoleNotAllowedError);
+  });
+});
