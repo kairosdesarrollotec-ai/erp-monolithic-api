@@ -5,5 +5,18 @@
         "high": "30 days from discovery; entries here have an approved extension",
         "moderate": "90 days"
     },
-    "entries": []
+    "entries": [
+        {
+            "id": "SPRINTF-JS-MODERATE-2026-10-06",
+            "severity": "moderate",
+            "package": "sprintf-js <=1.1.3 (transitive via @istanbuljs/load-nyc-config → argparse)",
+            "advisory": "GHSA-hp3w-g68c-fv3c — sprintf-js DoS via unbounded precision specifiers (CVSS 5.3)",
+            "scope": "devDependencies only — jest coverage toolchain, NOT present in production runtime (npm audit --omit=dev reports 0 vulnerabilities)",
+            "reason": "sprintf-js@1.0.3 is a transitive dep of @istanbuljs/load-nyc-config used by ts-jest for coverage. No viable fix: npm audit suggests ts-jest@29.1.2 which is a downgrade from 29.4.14 and does not actually remove sprintf-js. The vulnerability is only reachable via crafted format strings in jest coverage reporter context — not deployable attack surface.",
+            "remediation": "Monitor @istanbuljs/load-nyc-config for a release that drops sprintf-js or upgrades to >=1.1.4. Alternatively, evaluate dropping nyc/istanbul coverage from ts-jest config if coverage is run via a different tool.",
+            "target_date": "2027-01-06",
+            "owner": "backend-team",
+            "discovered_at": "2026-10-06"
+        }
+    ]
 }
