@@ -85,7 +85,7 @@ export class ResolveAlcoholEscalationHandler {
 
       const risk = command.markCustomerRed
         ? await this.customerRisk.escalate(
-            { customerId: updated.customerId, operatingCompanyId: scope.operatingCompanyId, target: 'ROJO' },
+            { customerId: updated.customerId, organizationId: context.organizationId, operatingCompanyId: scope.operatingCompanyId, target: 'ROJO' },
             tx,
           )
         : null;

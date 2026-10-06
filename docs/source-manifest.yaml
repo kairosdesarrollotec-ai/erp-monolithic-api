@@ -489,6 +489,24 @@ sources:
   sha256: null
   authority: contract
   supersedes: OPENAPI-RENTALS-V1.0.0
+- id: OPENAPI-RETURNS-V1.1.0
+  path: packages/contracts/openapi/returns.yaml
+  type: OpenAPI
+  module: Returns
+  version: '1.1.0'
+  date: '2026-10-05'
+  status: current
+  estado_original: >
+    Contrato del módulo Devolución v1.1.0 — cubre UC-DEV-001..005: ciclo completo de
+    devolución (recepción provisional, alcolímetro, resolución de Gerencia PROP-014,
+    inspección + documento de responsabilidad PROP-015, evaluación de daños,
+    cargo por paralización, cierre financiero y cierre definitivo).
+    Incluye endpoints POST /returns, receive-provisional, register-alcohol-test,
+    resolve-alcohol-escalation, complete-inspection, assess-damage,
+    charge-immobilization, close-financial, close, evidencias y tarifario cosmético.
+  sha256: null
+  authority: contract
+  supersedes: null
 - id: OPENAPI-NOTIFICATIONS-V0.1.0
   path: packages/contracts/openapi/notifications.yaml
   type: OpenAPI

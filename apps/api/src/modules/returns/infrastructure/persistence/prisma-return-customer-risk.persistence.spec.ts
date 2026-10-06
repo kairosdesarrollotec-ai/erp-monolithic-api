@@ -18,13 +18,13 @@ describe('PrismaReturnCustomerRiskPersistence (semáforo de solo avance)', () =>
     return { customer, tx, persistence: new PrismaReturnCustomerRiskPersistence() };
   }
 
-  const input = (target: 'NORMAL' | 'AMBAR' | 'ROJO') => ({ customerId: 'cust-1', operatingCompanyId: 'comp-1', target });
+  const input = (target: 'NORMAL' | 'AMBAR' | 'ROJO') => ({ customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target });
 
   it('NORMAL -> AMBAR y AMBAR -> ROJO actualizan Customer.status con filtro de solo avance', async () => {
     const a = build('NORMAL');
     await expect(a.persistence.escalate(input('AMBAR'), a.tx)).resolves.toEqual({ previous: 'NORMAL', current: 'AMBAR' });
     expect(a.customer.updateMany).toHaveBeenCalledWith({
-      where: { id: 'cust-1', operatingCompanyId: 'comp-1', status: { notIn: ['AMBAR', 'ROJO'] } },
+      where: { id: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', status: { notIn: ['AMBAR', 'ROJO'] } },
       data: { status: 'AMBAR' },
     });
 

@@ -11,7 +11,7 @@ export abstract class ReturnCustomerRiskPort {
    * equivale a una lectura. Devuelve el estado previo y el resultante.
    */
   abstract escalate(
-    input: { customerId: string; operatingCompanyId: string; target: CustomerRiskStatus },
+    input: { customerId: string; organizationId: string; operatingCompanyId: string; target: CustomerRiskStatus },
     tx: Prisma.TransactionClient,
   ): Promise<{ previous: CustomerRiskStatus; current: CustomerRiskStatus }>;
 }

@@ -93,6 +93,7 @@ export class AssessDamageHandler {
       const risk = await this.customerRisk.escalate(
         {
           customerId: updated.customerId,
+          organizationId: context.organizationId,
           operatingCompanyId: scope.operatingCompanyId,
           target: resolveRiskTargetAfterDamage(resolved.severity, command.customerAcceptsCost) ?? 'NORMAL',
         },

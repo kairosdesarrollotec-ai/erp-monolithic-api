@@ -15,10 +15,10 @@ import {
 @Injectable()
 export class PrismaReturnCustomerRiskPersistence implements ReturnCustomerRiskPort {
   async escalate(
-    input: { customerId: string; operatingCompanyId: string; target: CustomerRiskStatus },
+    input: { customerId: string; organizationId: string; operatingCompanyId: string; target: CustomerRiskStatus },
     tx: Prisma.TransactionClient,
   ): Promise<{ previous: CustomerRiskStatus; current: CustomerRiskStatus }> {
-    const where = { id: input.customerId, operatingCompanyId: input.operatingCompanyId };
+    const where = { id: input.customerId, organizationId: input.organizationId, operatingCompanyId: input.operatingCompanyId };
     const before = await tx.customer.findFirst({ where, select: { status: true } });
     const previous = normalizeCustomerRiskStatus(before?.status);
     if (!before || escalateCustomerRiskStatus(previous, input.target) === previous) {
