@@ -283,6 +283,8 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       audit,
       outbox,
       evidenceRepository,
+      new RentalCreationGuard(rentalRepo, new SystemClock()),
+      new SystemClock(),
     );
     const delivered = await completeHandler.execute(
       new CompleteDeliveryCommand(rentalId, UID, company, branch, formalized.version, 35, 3),
