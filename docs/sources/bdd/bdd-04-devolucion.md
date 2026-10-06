@@ -270,7 +270,25 @@ Feature: Alcolímetro desfavorable en la devolución
     Then el vehículo queda en recepción provisional, sin cerrar la devolución
     And se deriva a Gerencia
     And el cliente queda como candidato a "rojo"
+
+  @SC-DEV-009.02
+  Scenario: Gerencia decide continuar con la inspección tras alcolímetro desfavorable
+    Given una devolución en recepción provisional con alcolímetro desfavorable derivada a Gerencia
+    When Gerencia emite la decisión CONTINUE_TO_INSPECTION con notas obligatorias
+    Then la devolución avanza al estado INSPECCION y el vehículo queda en custodia VELOXRENT
+    And si Gerencia marcó al cliente como rojo, el estado del cliente pasa a ROJO de forma definitiva
+    And la decisión queda auditada con notas y el usuario de Gerencia que la tomó
+
+  @SC-DEV-009.03
+  Scenario: Gerencia decide mantener el vehículo en custodia tras alcolímetro desfavorable
+    Given una devolución en recepción provisional con alcolímetro desfavorable derivada a Gerencia
+    When Gerencia emite la decisión KEEP_IN_CUSTODY con notas obligatorias
+    Then la devolución permanece en RECEPCION_PROVISIONAL y puede ser re-resuelta por Gerencia
+    And si Gerencia marcó al cliente como rojo, el estado del cliente pasa a ROJO de forma definitiva
+    And la decisión queda auditada con notas y el usuario de Gerencia que la tomó
 ```
+
+> Escenarios SC-DEV-009.02 y SC-DEV-009.03 agregados 2026-10-06 — aprobados por negocio (PROP-014 en decision-log.md). Las opciones de resolución (CONTINUE_TO_INSPECTION / KEEP_IN_CUSTODY) fueron confirmadas el 2026-10-06.
 
 ### 16.6.7 Documento de responsabilidad al devolver (BR-DEV-009) — nuevo, 02 sep 2026
 
