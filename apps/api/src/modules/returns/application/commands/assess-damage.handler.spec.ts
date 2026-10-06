@@ -116,7 +116,7 @@ describe('AssessDamageHandler (DEV-06 / DEV-07 / BR-DEV-006)', () => {
       const result = await handler.execute(technical('GRAVE'));
       expect(result.customerRiskStatus).toBe('ROJO');
       expect(deps.customerRisk.escalate).toHaveBeenCalledWith(
-        { customerId: 'cust-1', operatingCompanyId: 'comp-1', target: 'ROJO' },
+        { customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target: 'ROJO' },
         fakeTx,
       );
       expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(

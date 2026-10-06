@@ -126,13 +126,13 @@ function controllerRoutes() {
 describe('Contrato OpenAPI returns.yaml vs backend', () => {
   const routes = controllerRoutes();
 
-  it('cada ruta del controller existe en OpenAPI y viceversa (15 operaciones)', () => {
+  it('cada ruta del controller existe en OpenAPI y viceversa (16 operaciones)', () => {
     const fromController = routes.map((r) => `${r.method} ${r.openApiPath}`).sort();
     const fromSpec = Object.entries(spec.paths)
       .flatMap(([p, ops]: [string, any]) => Object.keys(ops).map((m) => `${m} ${p}`))
       .sort();
     expect(fromController).toEqual(fromSpec);
-    expect(fromSpec).toHaveLength(15);
+    expect(fromSpec).toHaveLength(16);
   });
 
   it('el código de exito declarado en OpenAPI es el que devuelve NestJS', () => {
