@@ -4,6 +4,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
+import { AdministratorGuardService } from '../services/administrator-guard.service';
 import { DeactivateAssignmentCommand } from './deactivate-assignment.command';
 
 /**
@@ -21,6 +22,11 @@ import { DeactivateAssignmentCommand } from './deactivate-assignment.command';
  * Serializable que la baja (conteo + baja atomicos) para que dos bajas
  * concurrentes del penultimo y ultimo administrador no puedan dejar la
  * organizacion en 0 administradores por una condicion de carrera.
+ *
+ * ROLES DINAMICOS: "administrador" ya no es el nombre ADMINISTRACION sino un
+ * PERMISO: una asignacion vigente cuyo rol (activo) tiene a la vez
+ * ADMIN.MANAGE_PERMISSIONS y ADMIN.MANAGE_USERS en su ambito
+ * (AdministratorGuardService). El codigo de error se mantiene por contrato.
  */
 @Injectable()
 export class DeactivateAssignmentHandler {
@@ -28,6 +34,7 @@ export class DeactivateAssignmentHandler {
     private readonly workContext: WorkContextAuthorizationService,
     private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly adminUsers: AdminUserRepositoryPort,
+    private readonly administratorGuard: AdministratorGuardService,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
   ) {}
@@ -38,10 +45,20 @@ export class DeactivateAssignmentHandler {
       companyId: command.actorCompanyId,
       branchId: command.actorBranchId,
     });
-    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_USERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.roleId, 'MANAGE_USERS', { companyId: context.companyId, branchId: context.branchId });
 
     await this.transactionManager.run(
       async (tx) => {
+        // Si esta asignacion es la UNICA administradora vigente de la organizacion, no se puede dar de baja.
+        const administratorIds = await this.administratorGuard.administratorAssignmentIds(context.organizationId, tx);
+        if (administratorIds.length === 1 && administratorIds[0] === command.assignmentId) {
+          throw new ConflictException({
+            code: 'LAST_ADMINISTRATOR_CANNOT_BE_DEACTIVATED',
+            detail:
+              'No se puede dar de baja: es la unica asignacion con permisos de administracion (gestionar permisos y usuarios) activa en la organizacion.',
+          });
+        }
+
         const deactivated = await this.adminUsers.deactivateAssignment(
           command.assignmentId,
           context.organizationId,
@@ -49,21 +66,6 @@ export class DeactivateAssignmentHandler {
         );
         if (!deactivated) {
           throw new NotFoundException('Asignacion no encontrada.');
-        }
-
-        if (deactivated.role === 'ADMINISTRACION') {
-          const remainingActiveAdmins = await this.adminUsers.countActiveByRole(
-            context.organizationId,
-            'ADMINISTRACION',
-            tx,
-          );
-          if (remainingActiveAdmins === 0) {
-            throw new ConflictException({
-              code: 'LAST_ADMINISTRATOR_CANNOT_BE_DEACTIVATED',
-              detail:
-                'No se puede dar de baja: es la unica asignacion con rol ADMINISTRACION activa en la organizacion.',
-            });
-          }
         }
 
         await this.auditRepository.recordAdminEvent(

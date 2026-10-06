@@ -40,20 +40,28 @@ const CROSS_BRANCH_ROLES: ReadonlySet<WorkerRole> = new Set([
   'PLATFORM_ADMIN',
 ]);
 
-export function assertFleetWrite(role: WorkerRole): void {
-  if (!FLEET_WRITE_ROLES.has(role)) {
+/**
+ * TODO(roles-dinamicos, fase 4): este modulo AUN decide con un set de roles
+ * hard-coded, ahora contra `roleKey` (clave estable de los 8 roles de sistema,
+ * AuthorizedWorkContext.roleKey). Un rol creado a mano (key = null) queda
+ * DENEGADO aqui (deny-by-default) hasta que el modulo migre a la matriz ADM-02
+ * (MatrixAuthorizationService.assertAllowed por roleId) en su propio PR de la
+ * fase 4. No migrar en el PR de la fase 2.
+ */
+export function assertFleetWrite(role: WorkerRole | null): void {
+  if (role === null || !FLEET_WRITE_ROLES.has(role)) {
     throw new ForbiddenException({
       code: 'FLEET_WRITE_NOT_ALLOWED',
-      detail: `El rol "${role}" no tiene permiso para modificar la flota de vehículos.`,
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no tiene permiso para modificar la flota de vehículos.`,
     });
   }
 }
 
-export function assertFleetRead(role: WorkerRole): void {
-  if (!FLEET_READ_ROLES.has(role)) {
+export function assertFleetRead(role: WorkerRole | null): void {
+  if (role === null || !FLEET_READ_ROLES.has(role)) {
     throw new ForbiddenException({
       code: 'FLEET_READ_NOT_ALLOWED',
-      detail: `El rol "${role}" no tiene permiso para consultar la flota de vehículos.`,
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no tiene permiso para consultar la flota de vehículos.`,
     });
   }
 }
@@ -66,15 +74,15 @@ export function assertFleetRead(role: WorkerRole): void {
  * Sede B pasando assignedBranchId/filterBranchId de forma arbitraria.
  */
 export function assertCrossBranchAllowed(
-  role: WorkerRole,
+  role: WorkerRole | null,
   contextBranchId: string,
   targetBranchId: string | undefined | null,
 ): void {
   if (!targetBranchId || targetBranchId === contextBranchId) return;
-  if (!CROSS_BRANCH_ROLES.has(role)) {
+  if (role === null || !CROSS_BRANCH_ROLES.has(role)) {
     throw new ForbiddenException({
       code: 'CROSS_BRANCH_NOT_ALLOWED',
-      detail: `El rol "${role}" no puede operar sobre una sede diferente a la del contexto de trabajo activo.`,
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no puede operar sobre una sede diferente a la del contexto de trabajo activo.`,
     });
   }
 }

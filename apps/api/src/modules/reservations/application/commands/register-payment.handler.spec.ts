@@ -6,6 +6,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
+import { roleKeyOfTestRoleId, testRole } from '../../../users/testing/role-fixtures';
 
 function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRecord {
   return {
@@ -32,13 +33,13 @@ describe('RegisterPaymentHandler', () => {
     const workContext = {
       authorize: forbidden
         ? jest.fn().mockRejectedValue(new ForbiddenException())
-        : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+        : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
     const matrixAuth = {
       assertAllowed:
         matrixAssert ??
         jest.fn().mockImplementation(async (_orgId, r, _mod, action) => {
-          assertReservationRoleAllowed(r, action);
+          assertReservationRoleAllowed(roleKeyOfTestRoleId(r), action);
         }),
       isAllowed: jest.fn().mockResolvedValue(true),
     } as unknown as MatrixAuthorizationService;

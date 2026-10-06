@@ -216,8 +216,8 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
 
     await handler.execute(command());
 
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'CONVERT_TO_RESERVATION');
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'RESERVATION', 'CREATE');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'INQUIRY', 'CONVERT_TO_RESERVATION', expect.anything());
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'RESERVATION', 'CREATE', expect.anything());
   });
 
   it('rechaza si el rol no tiene permiso RESERVATION.CREATE aunque tenga INQUIRY.CONVERT_TO_RESERVATION', async () => {

@@ -43,7 +43,7 @@ export class RegisterInquiryHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'REGISTER');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'INQUIRY', 'REGISTER', { companyId: context.companyId, branchId: context.branchId });
 
     let customerId: string;
 

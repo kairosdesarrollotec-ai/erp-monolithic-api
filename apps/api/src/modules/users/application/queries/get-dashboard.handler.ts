@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { WorkContextAuthorizationService } from '../services/work-context-authorization.service';
 import { GetDashboardQuery } from './get-dashboard.query';
-import type { WorkerRole } from '../../domain/worker-role';
+import type { RoleRef } from '../../domain/worker-role';
 import { DashboardItemRepositoryPort } from '../../../dashboard-projections/application/ports/dashboard-item-repository.port';
 
 export interface DashboardTaskItemResult {
@@ -14,8 +14,8 @@ export interface DashboardTaskItemResult {
 }
 
 export type DashboardResult =
-  | { role: WorkerRole; state: 'EMPTY' }
-  | { role: WorkerRole; state: 'READY'; tasks: DashboardTaskItemResult[] };
+  | { role: RoleRef; state: 'EMPTY' }
+  | { role: RoleRef; state: 'READY'; tasks: DashboardTaskItemResult[] };
 
 /**
  * TR-06 (HU-24): punto de entrada del tablero por rol. Igual que TR-05
@@ -67,19 +67,28 @@ export class GetDashboardHandler {
       branchId: query.branchId,
     });
 
+    // ROLES DINAMICOS: el rol viaja como RoleRef {id, name, key}. El tablero por
+    // rol sigue funcionando contra `roleKey` (los 8 roles de sistema proyectan
+    // sus items por clave); un rol creado a mano (key = null) no tiene tablero
+    // proyectado todavia -> estado EMPTY.
+    const role: RoleRef = { id: context.roleId, name: context.roleName, key: context.roleKey };
+    if (context.roleKey === null) {
+      return { role, state: 'EMPTY' };
+    }
+
     const items = await this.dashboardItems.listActive({
       organizationId: context.organizationId,
       operatingCompanyId: context.companyId,
       branchId: context.branchId,
-      role: context.role,
+      role: context.roleKey,
     });
 
     if (items.length === 0) {
-      return { role: context.role, state: 'EMPTY' };
+      return { role, state: 'EMPTY' };
     }
 
     return {
-      role: context.role,
+      role,
       state: 'READY',
       tasks: items.map((item) => ({
         id: item.id,

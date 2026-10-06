@@ -28,7 +28,7 @@ export class CreateCustomerHandler {
       branchId: command.branchId,
     });
 
-    assertCustomerWrite(context.role);
+    assertCustomerWrite(context.roleKey);
 
     const existing = await this.customers.findByDocument(
       command.documentType.trim().toUpperCase(),

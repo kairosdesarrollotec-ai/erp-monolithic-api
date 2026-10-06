@@ -4,6 +4,7 @@ import { RentalRepositoryPort, ContractTemplateRecord } from '../ports/rental-re
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('CreateContractTemplateHandler', () => {
   const fakeTx = {} as any;
@@ -28,7 +29,7 @@ describe('CreateContractTemplateHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role,
+        ...testRole(role),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
@@ -52,7 +53,7 @@ describe('CreateContractTemplateHandler', () => {
     );
 
     expect(result).toEqual(fakeTemplate);
-    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'GERENCIA', 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES');
+    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-GERENCIA', 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES', expect.anything());
     expect(deps.rentals.createContractTemplate).toHaveBeenCalledWith(
       expect.objectContaining({ companyId: 'comp-1', type: 'RENTAL_CONTRACT' }),
       fakeTx,

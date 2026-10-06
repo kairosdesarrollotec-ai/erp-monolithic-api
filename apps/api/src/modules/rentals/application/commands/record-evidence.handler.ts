@@ -31,7 +31,7 @@ export class RecordEvidenceHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'UPLOAD_EVIDENCE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'UPLOAD_EVIDENCE', { companyId: context.companyId, branchId: context.branchId });
 
     if (!command.objectUrl.startsWith('https://storage.googleapis.com/')) {
       throw new BadRequestException('objectUrl debe ser una URL de GCS valida (obtenida de upload-url).');

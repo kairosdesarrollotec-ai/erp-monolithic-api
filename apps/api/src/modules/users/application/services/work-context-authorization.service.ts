@@ -7,7 +7,17 @@ export interface AuthorizedWorkContext {
   organizationId: string;
   companyId: string;
   branchId: string;
-  role: WorkerRole;
+  /**
+   * ROLES DINAMICOS (fase 2): el rol de la asignacion vigente. `roleId` es lo
+   * que se evalua contra la matriz (MatrixAuthorizationService.assertAllowed);
+   * `roleName` es solo para mostrar; `roleKey` es la clave estable de los 8
+   * roles de sistema (null en roles creados a mano) y solo la usan los modulos
+   * que aun deciden con sets hard-coded (Returns, Customers, Fleet - fase 4) y
+   * el tablero por rol. NUNCA se usa para decidir un permiso nuevo.
+   */
+  roleId: string;
+  roleName: string;
+  roleKey: WorkerRole | null;
 }
 
 export interface AuthorizeWorkContextInput {
@@ -98,7 +108,9 @@ export class WorkContextAuthorizationService {
       organizationId: assignment.organizationId,
       companyId: input.companyId,
       branchId: input.branchId,
-      role: assignment.role,
+      roleId: assignment.roleId,
+      roleName: assignment.roleName,
+      roleKey: assignment.roleKey,
     };
   }
 }

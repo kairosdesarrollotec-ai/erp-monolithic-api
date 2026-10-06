@@ -9,6 +9,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { RentalStateConflictError } from '../../domain/rental-errors';
 import { ForbiddenException } from '@nestjs/common';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('ApproveNotaryExceptionHandler', () => {
   const fakeRental: RentalRecord = {
@@ -60,7 +61,7 @@ describe('ApproveNotaryExceptionHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role,
+        ...testRole(role),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

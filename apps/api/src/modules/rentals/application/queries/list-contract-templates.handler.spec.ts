@@ -3,6 +3,7 @@ import { ListContractTemplatesQuery } from './list-contract-templates.query';
 import { RentalRepositoryPort, ContractTemplateRecord } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('ListContractTemplatesHandler', () => {
   const fakeTemplates: ContractTemplateRecord[] = [
@@ -38,7 +39,7 @@ describe('ListContractTemplatesHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'GERENCIA',
+        ...testRole('GERENCIA'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
@@ -56,7 +57,7 @@ describe('ListContractTemplatesHandler', () => {
     const result = await handler.execute(new ListContractTemplatesQuery('uid-1', 'comp-1', 'branch-1'));
 
     expect(result).toEqual(fakeTemplates);
-    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'GERENCIA', 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES');
+    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-GERENCIA', 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES', expect.anything());
     expect(deps.rentals.listContractTemplates).toHaveBeenCalledWith('comp-1');
   });
 });

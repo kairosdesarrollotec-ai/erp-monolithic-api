@@ -30,7 +30,7 @@ export class RequestPhotoUploadSessionHandler {
     });
 
     // F6 — solo roles de escritura de flota pueden generar URLs de subida (TDD-00 §8.2/§8.3)
-    assertFleetWrite(context.role);
+    assertFleetWrite(context.roleKey);
 
     if (command.contentLength > MAX_PHOTO_BYTES) {
       throw new PayloadTooLargeException(

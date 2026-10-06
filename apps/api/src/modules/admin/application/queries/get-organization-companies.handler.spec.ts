@@ -5,12 +5,13 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { AdminUserRepositoryPort, CompanyWithBranches } from '../ports/admin-user-repository.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildWorkContext(role: WorkerRole = 'ADMINISTRACION', rejects?: Error) {
   return {
     authorize: rejects
       ? jest.fn().mockRejectedValue(rejects)
-      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 }
 
@@ -28,7 +29,8 @@ function buildAdminUsers(companies: CompanyWithBranches[] = []) {
     findCompanyBranchOwnership: jest.fn(),
     createOrReactivateAssignment: jest.fn(),
     deactivateAssignment: jest.fn(),
-    countActiveByRole: jest.fn(),
+    companyBelongsToOrganization: jest.fn(),
+    listEffectiveAssignments: jest.fn(),
     listCompaniesWithBranches: jest.fn().mockResolvedValue(companies),
   };
   return repo;
@@ -51,7 +53,7 @@ describe('GetOrganizationCompaniesHandler', () => {
       companyId: 'company-1',
       branchId: 'branch-1',
     });
-    expect(adminAuthorization.assertAllowed).toHaveBeenCalledWith('org-1', 'ADMINISTRACION', 'MANAGE_USERS');
+    expect(adminAuthorization.assertAllowed).toHaveBeenCalledWith('org-1', 'role-ADMINISTRACION', 'MANAGE_USERS', expect.anything());
     expect(adminUsers.listCompaniesWithBranches).toHaveBeenCalledWith('org-1');
     expect(result).toEqual(companies);
   });

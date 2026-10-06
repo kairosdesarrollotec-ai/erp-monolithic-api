@@ -1,17 +1,22 @@
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsBoolean, IsIn, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { WORKER_ROLES, WorkerRole } from '../../../../users/domain/worker-role';
+import { ArrayMinSize, IsArray, IsBoolean, IsIn, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { PERMISSION_MODULES, type PermissionModule } from '../../../domain/permission-action-catalog';
 
 export class RolePermissionEntryDto {
-  @IsIn(WORKER_ROLES) role!: WorkerRole;
-  @IsIn(['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT']) module!: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL' | 'INCIDENT';
+  @IsUUID() roleId!: string;
+  @IsIn(PERMISSION_MODULES) module!: PermissionModule;
   @IsString() action!: string;
   @IsBoolean() allowed!: boolean;
 }
 
 export class SaveRolePermissionMatrixDto {
+  /** Contexto de trabajo del admin. */
   @IsUUID() companyId!: string;
   @IsUUID() branchId!: string;
+
+  /** Ambito de la nueva version; omitido/null = toda la organizacion. */
+  @IsOptional() @IsUUID() scopeCompanyId?: string | null;
+  @IsOptional() @IsUUID() scopeBranchId?: string | null;
 
   @IsArray()
   @ArrayMinSize(1)

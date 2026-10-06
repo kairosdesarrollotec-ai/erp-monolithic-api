@@ -1,20 +1,26 @@
-import type { WorkerRole } from '../../../../users/domain/worker-role';
+import type { PermissionModule } from '../../../domain/permission-action-catalog';
 
 export class RolePermissionEntryResponse {
-  role!: WorkerRole;
-  module!: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL' | 'INCIDENT';
+  roleId!: string;
+  module!: PermissionModule;
   action!: string;
   allowed!: boolean;
 }
 
 export class PermissionActionResponse {
-  module!: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL' | 'INCIDENT';
+  module!: PermissionModule;
   action!: string;
   label!: string;
 }
 
+export class MatrixScopeResponse {
+  companyId!: string | null;
+  branchId!: string | null;
+}
+
 export class RolePermissionMatrixResponse {
   version!: number;
+  scope!: MatrixScopeResponse;
   entries!: RolePermissionEntryResponse[];
   actionCatalog!: readonly PermissionActionResponse[];
 }

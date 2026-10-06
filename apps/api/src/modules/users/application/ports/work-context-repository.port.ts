@@ -1,12 +1,21 @@
 import type { Prisma } from '@prisma/client';
-import type { WorkerRole } from '../../domain/worker-role';
+import type { RoleRef, WorkerRole } from '../../domain/worker-role';
 
 export interface WorkContextAssignmentRecord {
   companyId: string;
   companyName: string;
   branchId: string;
   branchName: string;
-  role: WorkerRole;
+  /** ROLES DINAMICOS: referencia del rol de la asignacion (id, nombre visible, key de sistema o null). */
+  role: RoleRef;
+}
+
+/** Asignacion vigente resuelta para un contexto: organizacion + rol (RoleRef). */
+export interface ValidWorkContextAssignment {
+  organizationId: string;
+  roleId: string;
+  roleName: string;
+  roleKey: WorkerRole | null;
 }
 
 export interface SelectWorkContextInput {
@@ -38,7 +47,8 @@ export abstract class WorkContextRepositoryPort {
    * sigue siendo una asignacion vigente para el (nunca se confia en lo que
    * el cliente envio sin cruzarlo contra la asignacion real,
    * SDD-KAIROS-TRANSVERSAL.md 14.3) y devuelve el organizationId y el rol
-   * (PROVISIONAL, ver domain/worker-role.ts) de esa asignacion. null si no
+   * (roleId/roleName/roleKey, ver domain/worker-role.ts) de esa asignacion.
+   * Una asignacion cuyo rol esta desactivado NO es vigente (deny-by-default). null si no
    * es una asignacion valida y vigente del usuario.
    *
    * `tx` es opcional: cuando el llamador esta dentro de una transaccion
@@ -49,5 +59,5 @@ export abstract class WorkContextRepositoryPort {
   abstract findValidAssignment(
     input: SelectWorkContextInput,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ organizationId: string; role: WorkerRole } | null>;
+  ): Promise<ValidWorkContextAssignment | null>;
 }

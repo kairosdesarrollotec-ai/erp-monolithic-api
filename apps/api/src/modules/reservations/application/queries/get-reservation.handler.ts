@@ -26,7 +26,7 @@ export class GetReservationHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'READ_DETAIL');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RESERVATION', 'READ_DETAIL', { companyId: context.companyId, branchId: context.branchId });
 
     const reservation = await this.reservations.findById(query.id, {
       organizationId: context.organizationId,

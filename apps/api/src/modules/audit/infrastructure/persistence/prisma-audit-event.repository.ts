@@ -87,8 +87,8 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
       data: {
         organizationId: input.organizationId,
         actorUserId: input.actorUserId,
-        entityType: 'admin_user_assignment',
-        entityId: input.targetFirebaseUid,
+        entityType: input.entityType ?? 'admin_user_assignment',
+        entityId: input.entityId ?? input.targetFirebaseUid,
         action: input.action,
         changes: input.changes as unknown as Prisma.InputJsonValue, // JsonValue compat
       },

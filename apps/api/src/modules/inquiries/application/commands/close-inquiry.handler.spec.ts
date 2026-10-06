@@ -74,6 +74,6 @@ describe('CloseInquiryHandler', () => {
 
     await handler.execute(command());
 
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'CLOSE');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'INQUIRY', 'CLOSE', expect.anything());
   });
 });

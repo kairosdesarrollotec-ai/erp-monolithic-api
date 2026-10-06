@@ -1,9 +1,10 @@
 import { ForbiddenException } from '@nestjs/common';
 import { WorkContextAuthorizationService } from './work-context-authorization.service';
 import { WorkContextRepositoryPort } from '../ports/work-context-repository.port';
+import { testRole } from '../../testing/role-fixtures';
 
 describe('WorkContextAuthorizationService', () => {
-  function buildRepository(assignment: { organizationId: string; role: string } | null) {
+  function buildRepository(assignment: { organizationId: string; roleId: string; roleName: string; roleKey: any } | null) {
     const repository: jest.Mocked<WorkContextRepositoryPort> = {
       findAssignmentsByFirebaseUid: jest.fn(),
       findValidAssignment: jest.fn().mockResolvedValue(assignment),
@@ -12,7 +13,7 @@ describe('WorkContextAuthorizationService', () => {
   }
 
   it('devuelve un AuthorizedWorkContext (incluye el rol) cuando la asignacion es valida y vigente', async () => {
-    const repository = buildRepository({ organizationId: 'org-1', role: 'GERENCIA' });
+    const repository = buildRepository({ organizationId: 'org-1', ...testRole('GERENCIA') });
     const service = new WorkContextAuthorizationService(repository);
 
     const result = await service.authorize({
@@ -25,7 +26,7 @@ describe('WorkContextAuthorizationService', () => {
       organizationId: 'org-1',
       companyId: 'company-1',
       branchId: 'branch-1',
-      role: 'GERENCIA',
+      ...testRole('GERENCIA'),
     });
     expect(repository.findValidAssignment).toHaveBeenCalledWith(
       { firebaseUid: 'uid-1', companyId: 'company-1', branchId: 'branch-1' },
@@ -34,7 +35,7 @@ describe('WorkContextAuthorizationService', () => {
   });
 
   it('propaga el cliente de transaccion opcional al puerto de repositorio', async () => {
-    const repository = buildRepository({ organizationId: 'org-1', role: 'GERENCIA' });
+    const repository = buildRepository({ organizationId: 'org-1', ...testRole('GERENCIA') });
     const service = new WorkContextAuthorizationService(repository);
     const fakeTx = { __fakeTransactionClient: true } as never;
 

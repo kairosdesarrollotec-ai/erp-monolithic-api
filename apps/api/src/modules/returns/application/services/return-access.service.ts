@@ -29,7 +29,7 @@ export class ReturnAccessService {
       companyId: input.companyId,
       branchId: input.branchId,
     });
-    assertReturnRoleAllowed(context.role, action);
+    assertReturnRoleAllowed(context.roleKey, action);
     return {
       context,
       scope: {

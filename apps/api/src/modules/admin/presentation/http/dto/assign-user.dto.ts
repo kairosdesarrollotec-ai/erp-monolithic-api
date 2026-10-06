@@ -1,5 +1,4 @@
-import { IsEmail, IsIn, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
-import { WORKER_ROLES, WorkerRole } from '../../../../users/domain/worker-role';
+import { IsEmail, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class AssignUserDto {
   @IsUUID()
@@ -17,8 +16,8 @@ export class AssignUserDto {
   @IsUUID()
   targetBranchId!: string;
 
-  @IsIn(WORKER_ROLES)
-  targetRole!: WorkerRole;
+  @IsUUID()
+  targetRoleId!: string;
 
   /**
    * Solo obligatoria si el backend determina que el correo es nuevo en

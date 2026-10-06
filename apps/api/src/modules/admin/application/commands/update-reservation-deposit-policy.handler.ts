@@ -33,7 +33,7 @@ export class UpdateReservationDepositPolicyHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_PARAMETERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.roleId, 'MANAGE_PARAMETERS', { companyId: context.companyId, branchId: context.branchId });
 
     const amount = Number(command.amount);
     if (!Number.isFinite(amount) || amount <= 0) {

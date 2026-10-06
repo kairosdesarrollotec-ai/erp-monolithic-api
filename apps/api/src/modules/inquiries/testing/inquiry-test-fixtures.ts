@@ -9,6 +9,7 @@ import { MatrixAuthorizationService } from '../../authorization/matrix-authoriza
 import { assertInquiryRoleAllowed, InquiryAction } from '../application/policies/inquiry-role-policy';
 import { assertRentalRoleAllowed, RentalAction } from '../../rentals/application/policies/rental-role-policy';
 import { assertReservationRoleAllowed, ReservationAction } from '../../reservations/application/policies/reservation-role-policy';
+import { roleKeyOfTestRoleId, testRole } from '../../users/testing/role-fixtures';
 
 /** Fixtures compartidas por los tests unitarios del modulo Inquiries (no se usan en runtime). */
 export const ORG = 'org-1';
@@ -90,7 +91,7 @@ export function buildWorkContext(role: WorkerRole | 'forbidden' = 'FRONT_OFFICE'
     authorize:
       role === 'forbidden'
         ? jest.fn().mockRejectedValue(new ForbiddenException())
-        : jest.fn().mockResolvedValue({ organizationId: ORG, companyId: COMPANY, branchId: BRANCH, role }),
+        : jest.fn().mockResolvedValue({ organizationId: ORG, companyId: COMPANY, branchId: BRANCH, ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 }
 
@@ -120,11 +121,11 @@ export function buildMatrixAuth(): jest.Mocked<MatrixAuthorizationService> {
     isAllowed: jest.fn().mockResolvedValue(true),
     assertAllowed: jest.fn().mockImplementation(async (_orgId: string, role: WorkerRole, module: 'INQUIRY' | 'RESERVATION' | 'RENTAL', action: any) => {
       if (module === 'INQUIRY') {
-        assertInquiryRoleAllowed(role, action as InquiryAction);
+        assertInquiryRoleAllowed(roleKeyOfTestRoleId(role), action as InquiryAction);
       } else if (module === 'RESERVATION') {
-        assertReservationRoleAllowed(role, action as ReservationAction);
+        assertReservationRoleAllowed(roleKeyOfTestRoleId(role), action as ReservationAction);
       } else if (module === 'RENTAL') {
-        assertRentalRoleAllowed(role, action as RentalAction);
+        assertRentalRoleAllowed(roleKeyOfTestRoleId(role), action as RentalAction);
       }
     }),
   } as unknown as jest.Mocked<MatrixAuthorizationService>;

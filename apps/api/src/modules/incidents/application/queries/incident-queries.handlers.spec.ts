@@ -7,7 +7,7 @@ import { IncidentNotFoundError } from '../../domain/incident-errors';
 import { buildDeps, buildIncident } from '../../testing/incident-test-fixtures';
 
 describe('GetIncidentHandler / ListIncidentsHandler (INC-01 / INC-02 lectura)', () => {
-  it.each(['FRONT_OFFICE', 'GERENCIA', 'FINANZAS', 'AUDITORIA'] as const)('%s puede ver el detalle dentro de su scope', async (role) => {
+  it.each(['FRONT_OFFICE', 'GERENCIA', 'FINANZAS', 'AUDITORIA', 'CAMPO'] as const)('%s puede ver el detalle dentro de su scope', async (role) => {
     const deps = buildDeps({ role });
     deps.incidents.findById.mockResolvedValue(buildIncident());
     const handler = new GetIncidentHandler(deps.access, deps.incidents);
@@ -26,7 +26,7 @@ describe('GetIncidentHandler / ListIncidentsHandler (INC-01 / INC-02 lectura)', 
     );
   });
 
-  it.each(['ADMINISTRACION', 'CAMPO', 'RRHH'] as const)('%s no puede ver (403)', async (role) => {
+  it.each(['ADMINISTRACION', 'RRHH'] as const)('%s no puede ver (403)', async (role) => {
     const deps = buildDeps({ role });
     await expect(new GetIncidentHandler(deps.access, deps.incidents).execute(new GetIncidentQuery('inc-1', 'uid-1', 'comp-1', 'branch-1'))).rejects.toThrow(
       ForbiddenException,

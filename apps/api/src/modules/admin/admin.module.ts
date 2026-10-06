@@ -11,6 +11,10 @@ import { GetRolePermissionMatrixHandler } from './application/queries/get-role-p
 import { SaveRolePermissionMatrixHandler } from './application/commands/save-role-permission-matrix.handler';
 import { GetNotificationTemplatesHandler } from './application/queries/get-notification-templates.handler';
 import { SaveNotificationTemplateHandler } from './application/commands/save-notification-template.handler';
+import { RoleRepositoryPort } from './application/ports/role-repository.port';
+import { PrismaRoleRepository } from './infrastructure/persistence/prisma-role.repository';
+import { AdministratorGuardService } from './application/services/administrator-guard.service';
+import { MatrixScopeService } from './application/services/matrix-scope.service';
 import { AdminUserRepositoryPort } from './application/ports/admin-user-repository.port';
 import { PrismaAdminUserRepository } from './infrastructure/persistence/prisma-admin-user.repository';
 import { IdentityLookupPort } from './application/ports/identity-lookup.port';
@@ -48,6 +52,9 @@ import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter'
     GetNotificationTemplatesHandler,
     SaveNotificationTemplateHandler,
     AdminMatrixAuthorizationService,
+    AdministratorGuardService,
+    MatrixScopeService,
+    { provide: RoleRepositoryPort, useClass: PrismaRoleRepository },
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
     { provide: EmailNotificationPort, useClass: ResendEmailAdapter },

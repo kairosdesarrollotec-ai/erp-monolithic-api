@@ -7,12 +7,13 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 const FAKE_TX = { __fakeTx: true } as any;
 
 function buildDeps(role: WorkerRole = 'ADMINISTRACION') {
   const workContext = {
-    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
   const adminAuthorization: jest.Mocked<AdminMatrixAuthorizationService> = {

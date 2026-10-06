@@ -11,6 +11,7 @@ import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { RentalCreationGuard } from '../services/rental-creation.guard';
 import { CustomerBlockedError, RentalInquiryNotFoundError, VehicleNotAvailableForRentalError } from '../../domain/rental-errors';
 import { InquiryNotTransitionableError } from '../../../inquiries/domain/inquiry-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('CreateRentalHandler', () => {
   const fakeRental: RentalRecord = {
@@ -80,7 +81,7 @@ describe('CreateRentalHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'FRONT_OFFICE',
+        ...testRole('FRONT_OFFICE'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

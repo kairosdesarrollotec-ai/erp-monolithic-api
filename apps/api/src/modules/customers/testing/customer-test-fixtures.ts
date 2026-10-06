@@ -3,6 +3,7 @@ import { Customer } from '../domain/customer';
 import { CustomerRepositoryPort } from '../application/ports/customer-repository.port';
 import { WorkContextAuthorizationService } from '../../users/application/services/work-context-authorization.service';
 import type { WorkerRole } from '../../users/domain/worker-role';
+import { testRole } from '../../users/testing/role-fixtures';
 
 export const ORG = 'org-1';
 export const COMPANY = 'company-1';
@@ -71,6 +72,6 @@ export function buildWorkContext(role: WorkerRole | 'forbidden' = 'FRONT_OFFICE'
     authorize:
       role === 'forbidden'
         ? jest.fn().mockRejectedValue(new ForbiddenException())
-        : jest.fn().mockResolvedValue({ organizationId: ORG, companyId: COMPANY, branchId: BRANCH, role }),
+        : jest.fn().mockResolvedValue({ organizationId: ORG, companyId: COMPANY, branchId: BRANCH, ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 }

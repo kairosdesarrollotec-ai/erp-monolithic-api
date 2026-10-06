@@ -19,7 +19,7 @@ export class GetCustomerHandler {
       branchId: query.branchId,
     });
 
-    assertCustomerRead(context.role);
+    assertCustomerRead(context.roleKey);
 
     const customer = await this.customers.findById(query.id, {
       organizationId: context.organizationId,

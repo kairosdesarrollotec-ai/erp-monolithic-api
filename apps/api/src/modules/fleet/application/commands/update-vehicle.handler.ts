@@ -29,8 +29,8 @@ export class UpdateVehicleHandler {
       branchId: command.branchId,
     });
 
-    assertFleetWrite(context.role);
-    assertCrossBranchAllowed(context.role, context.branchId, command.assignedBranchId);
+    assertFleetWrite(context.roleKey);
+    assertCrossBranchAllowed(context.roleKey, context.branchId, command.assignedBranchId);
 
     const scope = {
       organizationId: context.organizationId,

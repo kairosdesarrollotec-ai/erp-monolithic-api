@@ -100,7 +100,7 @@ export class AdminController {
         dto.targetEmail,
         dto.targetCompanyId,
         dto.targetBranchId,
-        dto.targetRole,
+        dto.targetRoleId,
         dto.initialPassword,
       ),
     );
@@ -163,14 +163,14 @@ export class AdminController {
     @Query() query: GetRolePermissionMatrixQueryDto,
   ): Promise<RolePermissionMatrixResponse> {
     return this.getRolePermissionMatrix.execute(
-      new GetRolePermissionMatrixQuery(req.firebaseUid!, query.companyId, query.branchId),
+      new GetRolePermissionMatrixQuery(req.firebaseUid!, query.companyId, query.branchId, query.scopeCompanyId, query.scopeBranchId),
     );
   }
 
   @Post('permissions')
   async savePermissions(@Req() req: AuthenticatedRequest, @Body() dto: SaveRolePermissionMatrixDto) {
     return this.saveRolePermissionMatrix.execute(
-      new SaveRolePermissionMatrixCommand(req.firebaseUid!, dto.companyId, dto.branchId, dto.entries),
+      new SaveRolePermissionMatrixCommand(req.firebaseUid!, dto.companyId, dto.branchId, dto.entries, dto.scopeCompanyId, dto.scopeBranchId),
     );
   }
 

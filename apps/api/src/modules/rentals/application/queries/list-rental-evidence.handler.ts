@@ -21,7 +21,7 @@ export class ListRentalEvidenceHandler {
       branchId: query.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'UPLOAD_EVIDENCE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'UPLOAD_EVIDENCE', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

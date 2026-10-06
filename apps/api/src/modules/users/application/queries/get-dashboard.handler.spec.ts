@@ -4,11 +4,12 @@ import { GetDashboardQuery } from './get-dashboard.query';
 import { WorkContextAuthorizationService } from '../services/work-context-authorization.service';
 import type { WorkerRole } from '../../domain/worker-role';
 import { DashboardItemRepositoryPort, DashboardItemRecord } from '../../../dashboard-projections/application/ports/dashboard-item-repository.port';
+import { testRole } from '../../testing/role-fixtures';
 
 describe('GetDashboardHandler', () => {
   function buildAuthorization(
     context:
-      | { organizationId: string; companyId: string; branchId: string; role: WorkerRole }
+      | { organizationId: string; companyId: string; branchId: string; roleId: string; roleName: string; roleKey: WorkerRole | null }
       | Error,
   ) {
     const authorization: jest.Mocked<Pick<WorkContextAuthorizationService, 'authorize'>> = {
@@ -46,7 +47,7 @@ describe('GetDashboardHandler', () => {
       organizationId: 'org-1',
       companyId: 'company-1',
       branchId: 'branch-1',
-      role,
+      ...testRole(role),
     });
     const dashboardItems = buildDashboardItems([]);
     const handler = new GetDashboardHandler(authorization, dashboardItems);
@@ -64,7 +65,7 @@ describe('GetDashboardHandler', () => {
       branchId: 'branch-1',
       role,
     });
-    expect(result).toEqual({ role, state: 'EMPTY' });
+    expect(result).toEqual({ role: { id: `role-${role}`, name: role, key: role }, state: 'EMPTY' });
   });
 
   it('propaga el 403 de la autorizacion cuando la combinacion no es una asignacion vigente del usuario (revocada, caducada o cross-company/cross-branch)', async () => {
@@ -85,7 +86,7 @@ describe('GetDashboardHandler', () => {
       organizationId: 'org-1',
       companyId: 'company-1',
       branchId: 'branch-1',
-      role: 'FRONT_OFFICE',
+      ...testRole('FRONT_OFFICE'),
     });
     const dashboardItems = buildDashboardItems([
       {
@@ -105,7 +106,7 @@ describe('GetDashboardHandler', () => {
     const result = await handler.execute(new GetDashboardQuery('uid-1', 'company-1', 'branch-1'));
 
     expect(result).toEqual({
-      role: 'FRONT_OFFICE',
+      role: { id: 'role-FRONT_OFFICE', name: 'FRONT_OFFICE', key: 'FRONT_OFFICE' },
       state: 'READY',
       tasks: [
         {

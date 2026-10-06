@@ -37,7 +37,7 @@ export class EvaluateNotaryHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'EVALUATE_NOTARY');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'EVALUATE_NOTARY', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

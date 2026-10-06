@@ -160,7 +160,7 @@ describe('RegisterInquiryHandler', () => {
 
       await handler.execute(command());
 
-      expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'REGISTER');
+      expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'INQUIRY', 'REGISTER', expect.anything());
     });
   });
 });

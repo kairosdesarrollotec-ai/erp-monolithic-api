@@ -1,4 +1,4 @@
-import type { WorkerRole } from '../../../../users/domain/worker-role';
+import type { RoleRef } from '../../../../users/domain/worker-role';
 
 export class OrganizationUserResponse {
   id!: string;
@@ -8,7 +8,7 @@ export class OrganizationUserResponse {
   companyName!: string;
   branchId!: string;
   branchName!: string;
-  role!: WorkerRole;
+  role!: RoleRef;
   active!: boolean;
   mfaEnrolled!: boolean;
 }

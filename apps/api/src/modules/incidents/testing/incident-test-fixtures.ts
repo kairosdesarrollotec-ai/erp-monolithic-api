@@ -17,6 +17,7 @@ import {
 } from '../application/ports/incident-repository.port';
 import { IncidentAccessService } from '../application/services/incident-access.service';
 import { IncidentTransitionService } from '../application/services/incident-transition.service';
+import { roleKeyOfTestRoleId, testRole } from '../../users/testing/role-fixtures';
 
 export const FIXED_NOW = new Date('2026-10-06T15:00:00.000Z');
 export const fakeTx = {} as Prisma.TransactionClient;
@@ -106,11 +107,12 @@ export interface IncidentTestDeps {
 export function buildDeps(options: { role?: WorkerRole } = {}): IncidentTestDeps {
   const role = options.role ?? 'GERENCIA';
   const workContext = {
-    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'comp-1', branchId: 'branch-1', role }),
+    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'comp-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
   const matrixAuth = {
-    assertAllowed: jest.fn(async (_org: string, r: WorkerRole, module: string, action: string) => {
+    assertAllowed: jest.fn(async (_org: string, roleId: string, module: string, action: string) => {
+      const r = roleKeyOfTestRoleId(roleId);
       if (module !== 'INCIDENT' || !isIncidentRoleAllowed(r, action as IncidentAction)) {
         const { ForbiddenException } = await import('@nestjs/common');
         throw new ForbiddenException({ code: 'ROLE_NOT_ALLOWED', detail: `El rol ${r} no tiene permiso para ${module}.${action}` });

@@ -87,6 +87,6 @@ describe('ListInquiriesHandler', () => {
 
     await handler.execute(query());
 
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'READ');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'INQUIRY', 'READ', expect.anything());
   });
 });

@@ -19,7 +19,7 @@ export class UpdateVehicleStatusHandler {
       branchId: command.branchId,
     });
 
-    assertFleetWrite(context.role);
+    assertFleetWrite(context.roleKey);
 
     const vehicle = await this.vehicles.findById(command.vehicleId, {
       organizationId: context.organizationId,

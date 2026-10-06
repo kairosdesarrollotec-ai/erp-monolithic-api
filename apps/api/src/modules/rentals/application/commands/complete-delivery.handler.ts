@@ -62,7 +62,7 @@ export class CompleteDeliveryHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'COMPLETE_DELIVERY');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'COMPLETE_DELIVERY', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

@@ -9,6 +9,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
+import { roleKeyOfTestRoleId, testRole } from '../../../users/testing/role-fixtures';
 
 function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRecord {
   return {
@@ -56,7 +57,7 @@ function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
     cancel: jest.fn().mockResolvedValue(existing ? { ...existing, status: 'CANCELLED', version: existing.version + 1 } : undefined),
   };
   const workContext = {
-    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
   const audit: jest.Mocked<AuditEventRepositoryPort> = {
     recordLoginAttempt: jest.fn(),
@@ -75,7 +76,7 @@ function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
   };
   const matrixAuth = {
     assertAllowed: jest.fn().mockImplementation(async (_orgId, r, _mod, action) => {
-      assertReservationRoleAllowed(r, action);
+      assertReservationRoleAllowed(roleKeyOfTestRoleId(r), action);
     }),
     isAllowed: jest.fn().mockResolvedValue(true),
   } as unknown as MatrixAuthorizationService;

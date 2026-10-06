@@ -24,8 +24,9 @@ const ADMIN_ROLE_POLICY: Readonly<Record<AdminAction, ReadonlySet<WorkerRole>>> 
   MANAGE_NOTIFICATIONS: new Set(['ADMINISTRACION']),
 };
 
+// ROLES DINAMICOS (fase 2): esta politica ya NO decide en runtime; solo SIEMBRA la version 0 de la matriz ADM-02
+// (key de rol de sistema -> role_id). Sin atajo PLATFORM_ADMIN: su "todo permitido" es una fila sembrada.
 export function assertAdminRoleAllowed(role: WorkerRole, action: AdminAction): void {
-  if (role === 'PLATFORM_ADMIN') return;
   if (!ADMIN_ROLE_POLICY[action].has(role)) {
     throw new ForbiddenException({
       code: 'ROLE_NOT_ALLOWED',

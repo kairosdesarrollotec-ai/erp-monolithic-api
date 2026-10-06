@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
-import type { WorkerRole } from '../../../users/domain/worker-role';
+import { toWorkerRoleKey } from '../../../users/domain/worker-role';
 import {
   AdminAssignmentRecord,
   AdminUserRepositoryPort,
   CompanyBranchOwnership,
   CompanyWithBranches,
   CreateOrReactivateAssignmentInput,
+  EffectiveAssignmentRecord,
 } from '../../application/ports/admin-user-repository.port';
 
 type AssignmentWithNamesAndMfa = Prisma.UserCompanyAssignmentGetPayload<{
@@ -16,7 +17,7 @@ type AssignmentWithNamesAndMfa = Prisma.UserCompanyAssignmentGetPayload<{
     firebaseUid: true;
     companyId: true;
     branchId: true;
-    role: true;
+    roleRecord: { select: { id: true; name: true; key: true } };
     active: true;
     company: { select: { name: true } };
     branch: { select: { name: true } };
@@ -35,7 +36,7 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
         firebaseUid: true,
         companyId: true,
         branchId: true,
-        role: true,
+        roleRecord: { select: { id: true, name: true, key: true } },
         active: true,
         company: { select: { name: true } },
         branch: { select: { name: true } },
@@ -59,7 +60,11 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
       companyName: assignment.company.name,
       branchId: assignment.branchId,
       branchName: assignment.branch.name,
-      role: assignment.role,
+      role: {
+        id: assignment.roleRecord.id,
+        name: assignment.roleRecord.name,
+        key: toWorkerRoleKey(assignment.roleRecord.key),
+      },
       active: assignment.active,
       mfaEnrolledAt: mfaByUid.get(assignment.firebaseUid) ?? null,
     }));
@@ -75,6 +80,11 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
       select: { id: true, companyId: true },
     });
     return branch ? { companyId: branch.companyId, branchId: branch.id } : null;
+  }
+
+  async companyBelongsToOrganization(organizationId: string, companyId: string): Promise<boolean> {
+    const company = await this.prisma.company.findFirst({ where: { id: companyId, organizationId }, select: { id: true } });
+    return company !== null;
   }
 
   async createOrReactivateAssignment(
@@ -95,11 +105,11 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
         firebaseUid: input.firebaseUid,
         companyId: input.companyId,
         branchId: input.branchId,
-        role: input.role,
+        roleId: input.roleId,
         active: true,
       },
       update: {
-        role: input.role,
+        roleId: input.roleId,
         active: true,
         validUntil: null,
       },
@@ -112,11 +122,11 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
     id: string,
     organizationId: string,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ firebaseUid: string; role: WorkerRole } | null> {
+  ): Promise<{ firebaseUid: string; roleId: string } | null> {
     const client = tx ?? this.prisma;
     const existing = await client.userCompanyAssignment.findFirst({
       where: { id, organizationId },
-      select: { firebaseUid: true, role: true },
+      select: { firebaseUid: true, roleId: true },
     });
     if (!existing) return null;
 
@@ -124,13 +134,21 @@ export class PrismaAdminUserRepository implements AdminUserRepositoryPort {
       where: { id, organizationId },
       data: { active: false, validUntil: new Date() },
     });
-    return { firebaseUid: existing.firebaseUid, role: existing.role };
+    return { firebaseUid: existing.firebaseUid, roleId: existing.roleId };
   }
 
-  async countActiveByRole(organizationId: string, role: WorkerRole, tx?: Prisma.TransactionClient): Promise<number> {
+  async listEffectiveAssignments(organizationId: string, tx?: Prisma.TransactionClient): Promise<EffectiveAssignmentRecord[]> {
     const client = tx ?? this.prisma;
-    return client.userCompanyAssignment.count({
-      where: { organizationId, role, active: true },
+    const now = new Date();
+    return client.userCompanyAssignment.findMany({
+      where: {
+        organizationId,
+        active: true,
+        validFrom: { lte: now },
+        OR: [{ validUntil: null }, { validUntil: { gt: now } }],
+        roleRecord: { active: true },
+      },
+      select: { id: true, roleId: true, companyId: true, branchId: true },
     });
   }
 

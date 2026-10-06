@@ -45,7 +45,7 @@ export class ReportExtensionBreachHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'REPORT_EXTENSION_BREACH');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'REPORT_EXTENSION_BREACH', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

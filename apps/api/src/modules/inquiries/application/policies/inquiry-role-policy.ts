@@ -37,8 +37,9 @@ const INQUIRY_ROLE_POLICY: Readonly<Record<InquiryAction, ReadonlySet<WorkerRole
   CONVERT_TO_RENTAL: WRITE_ROLES,
 };
 
+// ROLES DINAMICOS (fase 2): esta politica ya NO decide en runtime; solo SIEMBRA la version 0 de la matriz ADM-02
+// (key de rol de sistema -> role_id). Sin atajo PLATFORM_ADMIN: su "todo permitido" es una fila sembrada.
 export function isInquiryRoleAllowed(role: WorkerRole, action: InquiryAction): boolean {
-  if (role === 'PLATFORM_ADMIN') return true;
   return INQUIRY_ROLE_POLICY[action]?.has(role) ?? false;
 }
 

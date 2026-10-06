@@ -52,6 +52,6 @@ describe('GetInquiryHandler', () => {
 
     await handler.execute(new GetInquiryQuery('inq-1', 'uid-1', COMPANY, BRANCH));
 
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'READ');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'INQUIRY', 'READ', expect.anything());
   });
 });

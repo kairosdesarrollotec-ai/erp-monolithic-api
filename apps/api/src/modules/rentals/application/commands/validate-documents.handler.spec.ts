@@ -7,6 +7,7 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { RentalStateConflictError } from '../../domain/rental-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('ValidateDocumentsHandler', () => {
   const fakeRental: RentalRecord = {
@@ -49,7 +50,7 @@ describe('ValidateDocumentsHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'FRONT_OFFICE',
+        ...testRole('FRONT_OFFICE'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

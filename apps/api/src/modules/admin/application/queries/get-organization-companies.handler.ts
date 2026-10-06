@@ -36,7 +36,7 @@ export class GetOrganizationCompaniesHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_USERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.roleId, 'MANAGE_USERS', { companyId: context.companyId, branchId: context.branchId });
 
     return this.adminUsers.listCompaniesWithBranches(context.organizationId);
   }

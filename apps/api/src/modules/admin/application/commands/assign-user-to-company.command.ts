@@ -1,5 +1,3 @@
-import type { WorkerRole } from '../../../users/domain/worker-role';
-
 export class AssignUserToCompanyCommand {
   constructor(
     public readonly actorFirebaseUid: string,
@@ -8,7 +6,7 @@ export class AssignUserToCompanyCommand {
     public readonly targetEmail: string,
     public readonly targetCompanyId: string,
     public readonly targetBranchId: string,
-    public readonly targetRole: WorkerRole,
+    public readonly targetRoleId: string,
     public readonly initialPassword?: string,
   ) {}
 }
