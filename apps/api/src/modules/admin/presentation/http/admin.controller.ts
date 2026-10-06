@@ -1,4 +1,6 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
+import { parseVersionIfMatch } from '../../../../common/http/etag';
 import { ListOrganizationUsersHandler } from '../../application/queries/list-organization-users.handler';
 import { ListOrganizationUsersQuery } from '../../application/queries/list-organization-users.query';
 import { GetOrganizationCompaniesHandler } from '../../application/queries/get-organization-companies.handler';
@@ -17,6 +19,14 @@ import { GetRolePermissionMatrixHandler } from '../../application/queries/get-ro
 import { GetRolePermissionMatrixQuery } from '../../application/queries/get-role-permission-matrix.query';
 import { SaveRolePermissionMatrixHandler } from '../../application/commands/save-role-permission-matrix.handler';
 import { SaveRolePermissionMatrixCommand } from '../../application/commands/save-role-permission-matrix.command';
+import { ListRolesHandler } from '../../application/queries/list-roles.handler';
+import { ListRolesQuery } from '../../application/queries/list-roles.query';
+import { CreateRoleHandler } from '../../application/commands/create-role.handler';
+import { CreateRoleCommand } from '../../application/commands/create-role.command';
+import { RenameRoleHandler } from '../../application/commands/rename-role.handler';
+import { RenameRoleCommand } from '../../application/commands/rename-role.command';
+import { DeactivateRoleHandler } from '../../application/commands/deactivate-role.handler';
+import { DeactivateRoleCommand } from '../../application/commands/deactivate-role.command';
 import { GetNotificationTemplatesHandler } from '../../application/queries/get-notification-templates.handler';
 import { GetNotificationTemplatesQuery } from '../../application/queries/get-notification-templates.query';
 import { SaveNotificationTemplateHandler } from '../../application/commands/save-notification-template.handler';
@@ -39,6 +49,12 @@ import { ReservationDepositPolicyResponse } from './dto/reservation-deposit-poli
 import { GetRolePermissionMatrixQueryDto } from './dto/get-role-permission-matrix-query.dto';
 import { SaveRolePermissionMatrixDto } from './dto/save-role-permission-matrix.dto';
 import { RolePermissionMatrixResponse } from './dto/role-permission-matrix.response';
+import { ListRolesQueryDto } from './dto/list-roles-query.dto';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { RenameRoleDto } from './dto/rename-role.dto';
+import { DeactivateRoleDto } from './dto/deactivate-role.dto';
+import { RoleResponse, RolesResponse } from './dto/role.response';
+import { toRoleResponse } from './role.mapper';
 import { GetNotificationTemplatesQueryDto } from './dto/get-notification-templates-query.dto';
 import { SaveNotificationTemplateDto } from './dto/save-notification-template.dto';
 import { NotificationTemplatesResponse } from './dto/notification-templates.response';
@@ -61,6 +77,10 @@ export class AdminController {
     private readonly updateReservationDepositPolicy: UpdateReservationDepositPolicyHandler,
     private readonly getRolePermissionMatrix: GetRolePermissionMatrixHandler,
     private readonly saveRolePermissionMatrix: SaveRolePermissionMatrixHandler,
+    private readonly listRoles: ListRolesHandler,
+    private readonly createRole: CreateRoleHandler,
+    private readonly renameRole: RenameRoleHandler,
+    private readonly deactivateRole: DeactivateRoleHandler,
     private readonly getNotificationTemplates: GetNotificationTemplatesHandler,
     private readonly saveNotificationTemplate: SaveNotificationTemplateHandler,
   ) {}
@@ -170,8 +190,67 @@ export class AdminController {
   @Post('permissions')
   async savePermissions(@Req() req: AuthenticatedRequest, @Body() dto: SaveRolePermissionMatrixDto) {
     return this.saveRolePermissionMatrix.execute(
-      new SaveRolePermissionMatrixCommand(req.firebaseUid!, dto.companyId, dto.branchId, dto.entries, dto.scopeCompanyId, dto.scopeBranchId),
+      new SaveRolePermissionMatrixCommand(
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        dto.entries,
+        dto.scopeCompanyId,
+        dto.scopeBranchId,
+      ),
     );
+  }
+
+  /** ADM-02 - roles dinamicos de la organizacion (ADMIN.MANAGE_PERMISSIONS). */
+  @Get('roles')
+  async roles(@Req() req: AuthenticatedRequest, @Query() query: ListRolesQueryDto): Promise<RolesResponse> {
+    const roles = await this.listRoles.execute(
+      new ListRolesQuery(req.firebaseUid!, query.companyId, query.branchId, query.includeInactive === 'true'),
+    );
+    return { roles: roles.map(toRoleResponse) };
+  }
+
+  @Post('roles')
+  async createRoleEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateRoleDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<RoleResponse> {
+    const created = await this.createRole.execute(new CreateRoleCommand(req.firebaseUid!, dto.companyId, dto.branchId, dto.name));
+    res.setHeader('ETag', `"${created.version}"`);
+    return toRoleResponse(created);
+  }
+
+  /** Renombrar con If-Match = version del rol (428 si falta, 412 VERSION_CONFLICT si cambio). */
+  @Patch('roles/:id')
+  async renameRoleEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RenameRoleDto,
+    @Headers('if-match') ifMatch: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<RoleResponse> {
+    const renamed = await this.renameRole.execute(
+      new RenameRoleCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch), dto.name),
+    );
+    res.setHeader('ETag', `"${renamed.version}"`);
+    return toRoleResponse(renamed);
+  }
+
+  @Post('roles/:id/deactivate')
+  @HttpCode(200)
+  async deactivateRoleEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: DeactivateRoleDto,
+    @Headers('if-match') ifMatch: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<RoleResponse> {
+    const deactivated = await this.deactivateRole.execute(
+      new DeactivateRoleCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch)),
+    );
+    res.setHeader('ETag', `"${deactivated.version}"`);
+    return toRoleResponse(deactivated);
   }
 
   @Get('notification-templates')

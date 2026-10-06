@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AdminController } from './presentation/http/admin.controller';
+import { MePermissionsController } from './presentation/http/me-permissions.controller';
 import { ListOrganizationUsersHandler } from './application/queries/list-organization-users.handler';
 import { GetOrganizationCompaniesHandler } from './application/queries/get-organization-companies.handler';
 import { AssignUserToCompanyHandler } from './application/commands/assign-user-to-company.handler';
@@ -11,6 +12,11 @@ import { GetRolePermissionMatrixHandler } from './application/queries/get-role-p
 import { SaveRolePermissionMatrixHandler } from './application/commands/save-role-permission-matrix.handler';
 import { GetNotificationTemplatesHandler } from './application/queries/get-notification-templates.handler';
 import { SaveNotificationTemplateHandler } from './application/commands/save-notification-template.handler';
+import { ListRolesHandler } from './application/queries/list-roles.handler';
+import { GetMyPermissionsHandler } from './application/queries/get-my-permissions.handler';
+import { CreateRoleHandler } from './application/commands/create-role.handler';
+import { RenameRoleHandler } from './application/commands/rename-role.handler';
+import { DeactivateRoleHandler } from './application/commands/deactivate-role.handler';
 import { RoleRepositoryPort } from './application/ports/role-repository.port';
 import { PrismaRoleRepository } from './infrastructure/persistence/prisma-role.repository';
 import { AdministratorGuardService } from './application/services/administrator-guard.service';
@@ -38,7 +44,7 @@ import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter'
  */
 @Module({
   imports: [UsersModule, AuditModule, ParametersModule, NotificationTemplatesModule, AuthorizationModule],
-  controllers: [AdminController],
+  controllers: [AdminController, MePermissionsController],
   providers: [
     ListOrganizationUsersHandler,
     GetOrganizationCompaniesHandler,
@@ -49,6 +55,11 @@ import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter'
     UpdateReservationDepositPolicyHandler,
     GetRolePermissionMatrixHandler,
     SaveRolePermissionMatrixHandler,
+    ListRolesHandler,
+    CreateRoleHandler,
+    RenameRoleHandler,
+    DeactivateRoleHandler,
+    GetMyPermissionsHandler,
     GetNotificationTemplatesHandler,
     SaveNotificationTemplateHandler,
     AdminMatrixAuthorizationService,
