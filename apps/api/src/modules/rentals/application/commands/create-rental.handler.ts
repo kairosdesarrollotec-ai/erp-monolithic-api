@@ -76,7 +76,7 @@ export class CreateRentalHandler {
     return this.transactionManager.run(async (tx) => {
       let estimatedDays: number | undefined;
       if (command.inquiryId) {
-        const inquiry = await this.rentals.findInquiryForRental(command.inquiryId, tx);
+        const inquiry = await this.rentals.findInquiryForRental(command.inquiryId, context.organizationId, tx);
         if (
           !inquiry ||
           inquiry.organizationId !== context.organizationId ||

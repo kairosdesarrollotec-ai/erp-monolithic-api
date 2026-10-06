@@ -156,10 +156,10 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     });
   }
 
-  async findInquiryForRental(id: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null> {
+  async findInquiryForRental(id: string, organizationId: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null> {
     const client = tx ?? this.prisma;
     const row = await client.inquiry.findUnique({
-      where: { id },
+      where: { id, organizationId },
       select: {
         id: true,
         organizationId: true,

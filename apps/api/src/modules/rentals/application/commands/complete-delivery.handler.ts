@@ -31,8 +31,14 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  * de una Consulta, `expectedEndAt = startAt + estimatedDays` de la
  * cotizacion vinculada (sin columna nueva), re-chequeando la disponibilidad
  * del vehiculo para ese periodo. Los alquileres de origen Reserva conservan
- * las fechas acordadas y no se tocan. El descuento del monto de reserva
- * sigue pendiente de negocio (PENDIENTE_NEGOCIO P0-03).
+ * las fechas acordadas y no se tocan.
+ *
+ * BR-RES-002 (depósito de reserva → garantía de alquiler): regla confirmada el
+ * 03 sep 2026 — el monto de depósito de la reserva debe trasladarse íntegro
+ * como garantía del alquiler al convertir. La implementación en
+ * CreateRentalFromReservationHandler queda pendiente como deuda técnica
+ * documentada (TECH-DEBT-BR-RES-002; no aplica a alquileres directos ni de
+ * origen Consulta como este handler).
  */
 @Injectable()
 export class CompleteDeliveryHandler {
@@ -104,7 +110,7 @@ export class CompleteDeliveryHandler {
         startAt = deliveredAt;
         expectedEndAt = current.expectedEndAt ?? undefined;
         if (current.inquiryId) {
-          const inquiry = await this.rentals.findInquiryForRental(current.inquiryId, tx);
+          const inquiry = await this.rentals.findInquiryForRental(current.inquiryId, scope.organizationId, tx);
           const estimatedDays = inquiry?.quotations[0]?.estimatedDays;
           if (estimatedDays && estimatedDays > 0) {
             expectedEndAt = new Date(startAt.getTime() + estimatedDays * MS_PER_DAY);

@@ -269,7 +269,7 @@ export abstract class RentalRepositoryPort {
     model: string;
     status: string;
   } | null>;
-  abstract findInquiryForRental(id: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null>;
+  abstract findInquiryForRental(id: string, organizationId: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null>;
   /**
    * true si el vehiculo tiene un compromiso ACTIVE o CONSOLIDATED (reserva
    * confirmada, etc.) que se solapa con [startsAt, endsAt).
