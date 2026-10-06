@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import type { WorkerRole } from '../users/domain/worker-role';
 import { RolePermissionMatrixPort } from '../admin/application/ports/role-permission-matrix.port';
 
-export type MatrixModule = 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL';
+export type MatrixModule = 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL' | 'INCIDENT' | 'INCIDENT';
 
 /**
  * ADM-02 (Roles y permisos) - Servicio central de autorización por matriz.
@@ -56,6 +56,7 @@ export class MatrixAuthorizationService {
       if (module === 'RESERVATION') entityName = 'una Reserva';
       else if (module === 'INQUIRY') entityName = 'una Consulta';
       else if (module === 'RENTAL') entityName = 'un Alquiler';
+      else if (module === 'INCIDENT') entityName = 'una Incidencia';
       throw new ForbiddenException({
         code: 'ROLE_NOT_ALLOWED',
         detail: `El rol ${role} no tiene permiso para realizar la accion ${action} sobre ${entityName} segun la matriz de permisos vigente (version ${snapshot.version}).`,

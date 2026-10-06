@@ -80,6 +80,7 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       recordInquiryEvent: jest.fn(),
       recordAdminEvent: jest.fn(),
       recordRentalEvent: jest.fn().mockResolvedValue(undefined),
+      recordIncidentEvent: jest.fn(),
     };
 
     const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {

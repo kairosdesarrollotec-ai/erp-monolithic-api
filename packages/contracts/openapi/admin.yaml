@@ -380,7 +380,7 @@ components:
         currency: { type: string, enum: [PEN, USD] }
     PermissionModule:
       type: string
-      enum: [RESERVATION, INQUIRY, ADMIN]
+      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT]
     RolePermissionEntry:
       type: object
       required: [role, module, action, allowed]
