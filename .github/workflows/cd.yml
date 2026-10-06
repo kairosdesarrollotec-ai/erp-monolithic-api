@@ -30,7 +30,7 @@ name: CD
 #
 # Variables de ambiente requeridas adicionales (Settings > Environments > <nombre> > Variables):
 #   EMAIL_FROM               — Remitente verificado en Resend (ej. no-reply@kairosnexo.com)
-#   APP_BASE_URL             — URL base de la app web para el boton del correo de bienvenida
+#   APP_BASE_URL             — URL base de la app web (boton de bienvenida Y origen CORS permitido)
 #   GCS_BUCKET_NAME          — Nombre del bucket GCS para fotos de vehiculos
 
 on:
@@ -162,6 +162,8 @@ jobs:
               "EMAIL_FROM": os.environ["EMAIL_FROM"],
               "APP_BASE_URL": os.environ["APP_BASE_URL"],
               "GCS_BUCKET_NAME": os.environ["GCS_BUCKET_NAME"],
+              # CORS: permite peticiones desde el frontend de este ambiente (TDD-00 §8.1)
+              "ALLOWED_ORIGINS": os.environ["APP_BASE_URL"],
           }
           with open("/tmp/env-vars.yaml", "w") as f:
               for k, v in rows.items():
