@@ -26,6 +26,11 @@ export function findOpenIncidents(status: ReturnStatus, damages: readonly Damage
   return open;
 }
 
+/** Etiqueta con la que una incidencia ABIERTA real (modulo Incidencias) aparece en `INCIDENT_STILL_OPEN`. */
+export function openIncidentLabel(incidentId: string): string {
+  return `INCIDENCIA_ABIERTA(${incidentId})`;
+}
+
 /** Flota tras cerrar: todo daño técnico o grave deja la unidad en MAINTENANCE; si no, vuelve a AVAILABLE. */
 export function resolveVehicleStatusAfterReturn(damages: readonly DamageLike[]): VehicleStatusAfterReturn {
   return damages.some((d) => d.origin === 'TECHNICAL' || d.severity === 'GRAVE') ? 'MAINTENANCE' : 'AVAILABLE';

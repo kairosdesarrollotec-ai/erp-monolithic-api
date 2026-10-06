@@ -5,13 +5,14 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnDepositSettlementPort } from '../ports/return-deposit-settlement.port';
+import { ReturnOpenIncidentsPort } from '../ports/return-open-incidents.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import {
   ActiveIncidentsBlockCloseError,
   ReturnNotFoundError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
-import { appendNotes, findOpenIncidents, roundMoney } from '../../domain/return-rules';
+import { appendNotes, findOpenIncidents, openIncidentLabel, roundMoney } from '../../domain/return-rules';
 import { buildDepositSettlementPlan } from '../../domain/return-settlement';
 import { calculateFuelPenalty } from '../../domain/damage-calculator';
 import { assertCanTransitionReturn } from '../../domain/return-status';
@@ -19,7 +20,7 @@ import { CloseFinancialCommand } from './close-financial.command';
 
 /**
  * DEV-08 / BR-DEV-001 / DR-DEV-001 - Cierre y balance financiero de la garantía. La garantía NUNCA se liquida con
- * una incidencia abierta (NFR-KAI-008). Reembolso + retención deben repartir exactamente la garantía y cubrir
+ * una incidencia abierta (NFR-KAI-008): ni daños pendientes de evaluar ni incidencias ABIERTAS registradas en el módulo Incidencias. Reembolso + retención deben repartir exactamente la garantía y cubrir
  * los cargos de paralización ya imputados. Escribe los ajustes en la garantía del Alquiler (misma transacción).
  */
 @Injectable()
@@ -32,6 +33,7 @@ export class CloseFinancialHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    private readonly openIncidentsPort: ReturnOpenIncidentsPort,
   ) {}
 
   async execute(command: CloseFinancialCommand): Promise<ReturnRecord> {
@@ -55,7 +57,12 @@ export class CloseFinancialHandler {
       }
 
       // DR-DEV-001: la garantía no se libera con incidencia abierta.
-      const openIncidents = findOpenIncidents(current.status, current.damages ?? []);
+      // Incluye las incidencias ABIERTAS reales del modulo Incidencias ligadas al alquiler/devolucion (INC-01/INC-02).
+      const linkedIncidentIds = await this.openIncidentsPort.findOpenIncidentIds(
+        { rentalId: current.rentalId, returnId: current.id, scope },
+        tx,
+      );
+      const openIncidents = [...findOpenIncidents(current.status, current.damages ?? []), ...linkedIncidentIds.map(openIncidentLabel)];
       if (openIncidents.length > 0) {
         throw new ActiveIncidentsBlockCloseError(openIncidents);
       }

@@ -34,6 +34,7 @@ describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.openIncidents,
     );
     return { deps, handler };
   }
@@ -90,6 +91,27 @@ describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
     expect(error).toBeInstanceOf(ActiveIncidentsBlockCloseError);
     expect((error as ActiveIncidentsBlockCloseError).code).toBe('INCIDENT_STILL_OPEN');
     expect((error as ActiveIncidentsBlockCloseError).httpStatus).toBe(422);
+  });
+
+  it('DEV-09: una incidencia ABIERTA real del modulo Incidencias bloquea la liquidacion de la garantia', async () => {
+    const { deps, handler } = build();
+    deps.openIncidents.findOpenIncidentIds.mockResolvedValue(['inc-77', 'inc-78']);
+
+    const error = await handler.execute(cmd(500, 0)).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ActiveIncidentsBlockCloseError);
+    expect((error as ActiveIncidentsBlockCloseError).httpStatus).toBe(422);
+    expect((error as ActiveIncidentsBlockCloseError).extra).toEqual({
+      openIncidents: ['INCIDENCIA_ABIERTA(inc-77)', 'INCIDENCIA_ABIERTA(inc-78)'],
+    });
+    expect(deps.returns.update).not.toHaveBeenCalled();
+    expect(deps.settlement.settleDeposit).not.toHaveBeenCalled();
+  });
+
+  it('sin incidencias abiertas (cerradas o via legal no cuentan) la liquidacion procede', async () => {
+    const { deps, handler } = build();
+    deps.openIncidents.findOpenIncidentIds.mockResolvedValue([]);
+    await expect(handler.execute(cmd(500, 0))).resolves.toMatchObject({ status: 'CIERRE_FINANCIERO' });
   });
 
   it('DR-DEV-001: CON_DANOS sin daños evaluados (incidencia abierta) bloquea la liquidación', async () => {

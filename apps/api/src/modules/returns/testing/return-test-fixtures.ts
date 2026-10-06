@@ -12,6 +12,7 @@ import { CustomerRiskStatus, escalateCustomerRiskStatus } from '../domain/custom
 import { ReturnAccessService } from '../application/services/return-access.service';
 import { ReturnDepositSettlementPort } from '../application/ports/return-deposit-settlement.port';
 import { ReturnCustomerRiskPort } from '../application/ports/return-customer-risk.port';
+import { ReturnOpenIncidentsPort } from '../application/ports/return-open-incidents.port';
 import {
   ImmobilizationChargeRecord,
   ReturnDamageRecord,
@@ -182,6 +183,7 @@ export interface HandlerTestDeps {
   fleetVehicles: jest.Mocked<FleetVehicleRepositoryPort>;
   settlement: jest.Mocked<ReturnDepositSettlementPort>;
   customerRisk: jest.Mocked<ReturnCustomerRiskPort>;
+  openIncidents: jest.Mocked<ReturnOpenIncidentsPort>;
   transactionManager: jest.Mocked<TransactionManagerPort>;
   clock: ClockPort;
   auditRepository: jest.Mocked<AuditEventRepositoryPort>;
@@ -238,6 +240,11 @@ export function buildDeps(
     }),
   };
 
+  /** Por defecto el expediente no tiene incidencias abiertas en el modulo Incidencias. */
+  const openIncidents: jest.Mocked<ReturnOpenIncidentsPort> = {
+    findOpenIncidentIds: jest.fn().mockResolvedValue([]),
+  };
+
   const transactionManager: jest.Mocked<TransactionManagerPort> = {
     run: jest.fn((work: (tx: Prisma.TransactionClient) => Promise<unknown>) => work(fakeTx)) as never,
   };
@@ -249,6 +256,7 @@ export function buildDeps(
     recordInquiryEvent: jest.fn(),
     recordAdminEvent: jest.fn(),
     recordRentalEvent: jest.fn().mockResolvedValue(undefined),
+    recordIncidentEvent: jest.fn().mockResolvedValue(undefined),
   };
 
   const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {
@@ -263,6 +271,7 @@ export function buildDeps(
     fleetVehicles,
     settlement,
     customerRisk,
+    openIncidents,
     transactionManager,
     clock: new FixedClock(options.now ?? FIXED_NOW),
     auditRepository,

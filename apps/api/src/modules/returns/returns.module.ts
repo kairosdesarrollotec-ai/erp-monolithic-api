@@ -26,12 +26,14 @@ import { ReturnRepositoryPort } from './application/ports/return-repository.port
 import { ReturnEvidenceStoragePort } from './application/ports/return-evidence-storage.port';
 import { ReturnCustomerRiskPort } from './application/ports/return-customer-risk.port';
 import { ReturnDepositSettlementPort } from './application/ports/return-deposit-settlement.port';
+import { ReturnOpenIncidentsPort } from './application/ports/return-open-incidents.port';
 import { PrismaReturnRepository } from './infrastructure/persistence/prisma-return.repository';
 import { PrismaReturnDamagePersistence } from './infrastructure/persistence/prisma-return-damage.persistence';
 import { PrismaImmobilizationChargePersistence } from './infrastructure/persistence/prisma-immobilization-charge.persistence';
 import { PrismaReturnEvidencePersistence } from './infrastructure/persistence/prisma-return-evidence.persistence';
 import { PrismaReturnCustomerRiskPersistence } from './infrastructure/persistence/prisma-return-customer-risk.persistence';
 import { PrismaReturnDepositSettlementPersistence } from './infrastructure/persistence/prisma-return-deposit-settlement.persistence';
+import { PrismaReturnOpenIncidentsPersistence } from './infrastructure/persistence/prisma-return-open-incidents.persistence';
 import { GcsReturnEvidenceService } from './infrastructure/storage/gcs-return-evidence.service';
 import { DocumentTemplatesModule } from '../document-templates/document-templates.module';
 import { GetResponsibilityTemplateHandler } from './application/queries/get-responsibility-template.handler';
@@ -70,6 +72,8 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     { provide: ReturnEvidenceStoragePort, useClass: GcsReturnEvidenceService },
     { provide: ReturnCustomerRiskPort, useClass: PrismaReturnCustomerRiskPersistence },
     { provide: ReturnDepositSettlementPort, useClass: PrismaReturnDepositSettlementPersistence },
+    // DEV-09: incidencias ABIERTAS reales (tabla `incidents`, modulo Incidencias) bloquean close-financial y close.
+    { provide: ReturnOpenIncidentsPort, useClass: PrismaReturnOpenIncidentsPersistence },
   ],
 })
 export class ReturnsModule {}

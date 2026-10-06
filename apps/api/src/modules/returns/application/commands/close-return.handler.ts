@@ -7,6 +7,7 @@ import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
+import { ReturnOpenIncidentsPort } from '../ports/return-open-incidents.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import {
   ActiveIncidentsBlockCloseError,
@@ -15,7 +16,7 @@ import {
   ReturnRentalNotFoundError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
-import { appendNotes, findOpenIncidents, resolveVehicleStatusAfterReturn } from '../../domain/return-rules';
+import { appendNotes, findOpenIncidents, openIncidentLabel, resolveVehicleStatusAfterReturn } from '../../domain/return-rules';
 import { assertCanTransitionReturn } from '../../domain/return-status';
 import { CloseReturnCommand } from './close-return.command';
 
@@ -36,6 +37,7 @@ export class CloseReturnHandler {
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    private readonly openIncidentsPort: ReturnOpenIncidentsPort,
   ) {}
 
   async execute(command: CloseReturnCommand): Promise<ReturnRecord> {
@@ -62,7 +64,12 @@ export class CloseReturnHandler {
 
       // DR-DEV-001 / NFR-KAI-008: nunca se cierra con una incidencia abierta vinculada.
       const damages = current.damages ?? [];
-      const openIncidents = findOpenIncidents(current.status, damages);
+      // Incluye las incidencias ABIERTAS reales del modulo Incidencias ligadas al alquiler/devolucion (INC-01/INC-02).
+      const linkedIncidentIds = await this.openIncidentsPort.findOpenIncidentIds(
+        { rentalId: current.rentalId, returnId: current.id, scope },
+        tx,
+      );
+      const openIncidents = [...findOpenIncidents(current.status, damages), ...linkedIncidentIds.map(openIncidentLabel)];
       if (openIncidents.length > 0) {
         throw new ActiveIncidentsBlockCloseError(openIncidents);
       }
