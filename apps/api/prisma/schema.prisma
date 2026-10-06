@@ -113,18 +113,72 @@ model ReservationDepositPolicyVersion {
 /// real de enforcement en cada handler. Reemplazarlos por una consulta a
 /// esta tabla es trabajo futuro (requiere revisar cada handler uno por
 /// uno, no se hace en el mismo corte que la pantalla).
+///
+/// ROLES DINAMICOS (fase 2, ver claude/Diseno_Roles_Dinamicos_y_Permisos.md):
+/// la celda se identifica por `roleId` (tabla `roles`), ya no por el enum
+/// WorkerRole; la columna `role` queda DEPRECADA (nullable, nadie la lee ni
+/// la escribe, se retira en un PR posterior). Cada version es una foto
+/// completa de UN ambito: `companyId`/`branchId` NULL = toda la
+/// organizacion; `companyId` solo = toda la empresa; ambos = esa sede. La
+/// numeracion de `version` es unica por organizacion (compartida entre
+/// ambitos). Resolucion en tiempo de autorizacion: gana el ambito mas
+/// especifico (sede > empresa > organizacion); sin entrada = denegado.
 model RolePermissionMatrixVersion {
-  id             String     @id @default(uuid())
-  organizationId String     @map("organization_id")
+  id             String      @id @default(uuid())
+  organizationId String      @map("organization_id")
   version        Int
-  role           WorkerRole
+  /// DEPRECADA (roles dinamicos): reemplazada por `roleId`. No se lee ni se escribe.
+  role           WorkerRole?
+  roleId         String      @map("role_id")
+  /// Ambito de la version (NULL = toda la organizacion).
+  companyId      String?     @map("company_id")
+  branchId       String?     @map("branch_id")
   action         String
   allowed        Boolean
-  createdAt      DateTime   @default(now()) @map("created_at")
-  createdBy      String     @map("created_by")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  createdBy      String      @map("created_by")
 
-  @@unique([organizationId, version, role, action])
+  roleRecord Role    @relation(fields: [roleId, organizationId], references: [id, organizationId], map: "role_permission_matrix_versions_role_id_organization_id_fkey")
+  company    Company? @relation(fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Cascade, map: "role_permission_matrix_versions_company_id_organization_id_fkey")
+  branch     Branch?  @relation(fields: [branchId, companyId], references: [id, companyId], onDelete: Restrict, onUpdate: Cascade, map: "role_permission_matrix_versions_branch_id_company_id_fkey")
+
+  @@unique([organizationId, version, roleId, action], map: "role_permission_matrix_org_version_role_id_action_key")
+  @@index([organizationId, companyId, branchId, version], map: "role_permission_matrix_versions_scope_version_idx")
   @@map("role_permission_matrix_versions")
+}
+
+/// ROLES DINAMICOS (fase 2): un rol es un DATO de la organizacion, no un
+/// enum. Los 8 valores historicos de WorkerRole se siembran como roles de
+/// sistema (`isSystem`, con `key` estable = valor del enum); los creados a
+/// mano tienen `key` NULL. `PLATFORM_ADMIN` no se renombra, no se
+/// desactiva y su fila de la matriz no se edita desde ADM-02. Nunca se
+/// borra un rol (historial): se desactiva. `version` es la concurrencia
+/// optimista de renombrar/desactivar (ETag/If-Match).
+///
+/// Unicidad del nombre sin distinguir mayusculas: indice unico FUNCIONAL
+/// `roles_organization_id_lower_name_key` (organization_id, lower(name)),
+/// solo en SQL (Prisma no modela indices de expresion; los ignora en
+/// `migrate diff`, mismo caso que contract_template_unique_active).
+model Role {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  key            String?
+  name           String
+  isSystem       Boolean  @default(false) @map("is_system")
+  active         Boolean  @default(true)
+  version        Int      @default(1)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  assignments   UserCompanyAssignment[]
+  matrixEntries RolePermissionMatrixVersion[]
+
+  /// Soporte de las FK compuestas (roleId, organizationId) -> Role(id,
+  /// organizationId): la base impide asignar/permitir un rol de OTRA organizacion.
+  @@unique([id, organizationId], map: "roles_id_organization_id_key")
+  @@unique([organizationId, key], map: "roles_organization_id_key_key")
+  @@index([organizationId, active], map: "roles_organization_id_active_idx")
+  @@map("roles")
 }
 
 /// ADM-05 (PANTALLAS-V2-B-SOPORTE.md) - plantilla de notificacion por
@@ -265,6 +319,7 @@ model Company {
   documentTemplates DocumentTemplate[]
   returns      RentalReturn[]
   incidents    Incident[]
+  matrixVersions RolePermissionMatrixVersion[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -294,6 +349,7 @@ model Branch {
   rentals      Rental[]
   returns      RentalReturn[]
   incidents    Incident[]
+  matrixVersions RolePermissionMatrixVersion[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -345,8 +401,12 @@ model UserCompanyAssignment {
   firebaseUid    String     @map("firebase_uid")
   companyId      String     @map("company_id")
   branchId       String     @map("branch_id")
-  /// PROVISIONAL - ver nota arriba del modelo.
-  role           WorkerRole
+  /// DEPRECADA (roles dinamicos, fase 2): reemplazada por `roleId`. Nullable,
+  /// nadie la lee ni la escribe; se retira en un PR posterior. El enum
+  /// WorkerRole sigue vigente solo como catalogo de las `key` de los roles de
+  /// sistema y para `dashboard_items.role`.
+  role           WorkerRole?
+  roleId         String     @map("role_id")
   active         Boolean    @default(true)
   validFrom      DateTime   @default(now()) @map("valid_from")
   validUntil     DateTime?  @map("valid_until")
@@ -362,10 +422,14 @@ model UserCompanyAssignment {
   /// `organizationId` real de esa empresa.
   company Company @relation(fields: [companyId, organizationId], references: [id, organizationId])
   branch  Branch  @relation(fields: [branchId, companyId], references: [id, companyId])
+  /// FK compuesta (roleId, organizationId) -> Role(id, organizationId): el rol
+  /// de la asignacion debe ser de la MISMA organizacion.
+  roleRecord Role @relation(fields: [roleId, organizationId], references: [id, organizationId], map: "user_company_assignments_role_id_organization_id_fkey")
 
   @@unique([firebaseUid, companyId, branchId])
   @@index([firebaseUid])
   @@index([firebaseUid, active, validUntil])
+  @@index([roleId, active], map: "user_company_assignments_role_id_active_idx")
   @@map("user_company_assignments")
 }
 
