@@ -251,27 +251,20 @@ components:
         branchName:
           type: string
         role:
-          $ref: '#/components/schemas/WorkerRole'
-    WorkerRole:
-      type: string
+          $ref: '#/components/schemas/RoleRef'
+    RoleRef:
+      type: object
+      required: [id, name, key]
       description: >
-        PROVISIONAL (HU-24/TR-06) - modelo minimo de rol solo para enrutar
-        al tablero correcto. El modelo definitivo (matriz rol-accion-
-        empresa-sede versionada) vive en ADM-02, todavia no construido y
-        puede agregar, renombrar o remover valores de este enum cuando se
-        construya - un cliente generado hoy que trate este enum como
-        cerrado (switch exhaustivo sin default) puede romperse con ese
-        cambio futuro. Ver aclaracion de compatibilidad de clientes en
-        DashboardResponse.
-      enum:
-        - ADMINISTRACION
-        - AUDITORIA
-        - CAMPO
-        - FINANZAS
-        - FRONT_OFFICE
-        - GERENCIA
-        - PLATFORM_ADMIN
-        - RRHH
+        Roles dinamicos (ADM-02, admin.yaml 0.2.0): el rol ya no es un
+        enum cerrado. `id`/`name` identifican el rol del usuario en el
+        contexto vigente; `key` es el codigo estable de los roles de
+        sistema (null en roles creados a mano). El front NO decide acceso
+        por rol: usa GET /me/permissions.
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        key: { type: [string, 'null'] }
     DashboardResponse:
       type: object
       required: [role, state]
@@ -304,7 +297,7 @@ components:
         mas) para los clientes que necesiten una garantia mas fuerte.
       properties:
         role:
-          $ref: '#/components/schemas/WorkerRole'
+          $ref: '#/components/schemas/RoleRef'
         state:
           type: string
           description: >
