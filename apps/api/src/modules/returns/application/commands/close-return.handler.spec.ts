@@ -41,6 +41,7 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
       deps.clock,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.openIncidents,
     );
     return { deps, handler };
   }
@@ -101,6 +102,31 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
     expect(deps.returns.update).not.toHaveBeenCalled();
     expect(deps.fleetVehicles.updateStatus).not.toHaveBeenCalled();
     expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
+  });
+
+  it('DEV-09: una incidencia ABIERTA real del modulo Incidencias impide cerrar (INCIDENT_STILL_OPEN) y no toca flota ni alquiler', async () => {
+    const { deps, handler } = build();
+    deps.openIncidents.findOpenIncidentIds.mockResolvedValue(['inc-77']);
+
+    const error = await handler.execute(cmd()).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ActiveIncidentsBlockCloseError);
+    expect((error as ActiveIncidentsBlockCloseError).code).toBe('INCIDENT_STILL_OPEN');
+    expect((error as ActiveIncidentsBlockCloseError).httpStatus).toBe(422);
+    expect((error as ActiveIncidentsBlockCloseError).extra).toEqual({ openIncidents: ['INCIDENCIA_ABIERTA(inc-77)'] });
+    expect(deps.openIncidents.findOpenIncidentIds).toHaveBeenCalledWith(
+      { rentalId: 'rent-1', returnId: 'ret-1', scope: { organizationId: 'org-1', operatingCompanyId: 'comp-1', branchId: 'branch-1' } },
+      fakeTx,
+    );
+    expect(deps.returns.update).not.toHaveBeenCalled();
+    expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
+    expect(deps.fleetVehicles.updateStatus).not.toHaveBeenCalled();
+  });
+
+  it('con incidencias cerradas o via legal (la consulta no las devuelve) el cierre procede', async () => {
+    const { deps, handler } = build();
+    deps.openIncidents.findOpenIncidentIds.mockResolvedValue([]);
+    await expect(handler.execute(cmd())).resolves.toMatchObject({ status: 'CERRADA' });
   });
 
   it('INCIDENT_STILL_OPEN responde 422 (TDD §11.4), no 409', async () => {
