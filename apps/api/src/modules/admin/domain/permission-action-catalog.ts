@@ -2,11 +2,11 @@
  * ADM-02 (Roles y permisos) - catalogo de acciones reales que ya
  * existen como policies hardcodeadas en el backend
  * (reservation-role-policy.ts, inquiry-role-policy.ts,
- * admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
+ * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
 export interface PermissionActionDescriptor {
-  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL';
+  module: 'RESERVATION' | 'INQUIRY' | 'ADMIN' | 'RENTAL' | 'INCIDENT';
   action: string;
   label: string;
 }
@@ -40,6 +40,12 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RENTAL', action: 'REJECT_EXTENSION', label: 'Alquiler: rechazar ampliacion' },
   { module: 'RENTAL', action: 'MANAGE_CONTRACT_TEMPLATES', label: 'Alquiler: gestionar plantillas de contrato' },
   { module: 'RENTAL', action: 'REPORT_EXTENSION_BREACH', label: 'Alquiler: registrar falta grave de ampliacion' },
+  { module: 'INCIDENT', action: 'VIEW', label: 'Incidencia: ver bandeja y detalle' },
+  { module: 'INCIDENT', action: 'CREATE', label: 'Incidencia: registrar' },
+  { module: 'INCIDENT', action: 'ADD_ACTION', label: 'Incidencia: agregar acción al historial' },
+  { module: 'INCIDENT', action: 'RESOLVE', label: 'Incidencia: resolver (directo, solo severidad leve)' },
+  { module: 'INCIDENT', action: 'CLOSE', label: 'Incidencia: cerrar' },
+  { module: 'INCIDENT', action: 'REFER_LEGAL', label: 'Incidencia: derivar a vía legal' },
   { module: 'ADMIN', action: 'MANAGE_USERS', label: 'Administración: gestionar usuarios' },
   { module: 'ADMIN', action: 'VIEW_AUDIT', label: 'Administración: ver auditoría' },
   { module: 'ADMIN', action: 'MANAGE_PARAMETERS', label: 'Administración: gestionar parámetros' },

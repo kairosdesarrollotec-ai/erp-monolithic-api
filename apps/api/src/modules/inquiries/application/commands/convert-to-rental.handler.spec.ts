@@ -65,6 +65,7 @@ function build(options: {
   const audit = {
     recordInquiryEvent: jest.fn().mockResolvedValue(undefined),
     recordRentalEvent: jest.fn().mockResolvedValue(undefined),
+    recordIncidentEvent: jest.fn(),
   } as unknown as jest.Mocked<AuditEventRepositoryPort>;
   const outbox = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxEventRepositoryPort>;
   const transactions = buildTransactionManager();

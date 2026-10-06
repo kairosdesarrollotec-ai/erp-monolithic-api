@@ -47,6 +47,14 @@ export interface RecordRentalEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordIncidentEventInput {
+  organizationId: string;
+  actorUserId: string;
+  incidentId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -109,6 +117,15 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordRentalEvent(
     input: RecordRentalEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * INC-01/INC-02 (Incidencias) - registro, accion agregada, resolucion, cierre y derivacion a via legal.
+   * `tx` opcional para atomicidad con la mutacion (mismo criterio que recordRentalEvent).
+   */
+  abstract recordIncidentEvent(
+    input: RecordIncidentEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }
