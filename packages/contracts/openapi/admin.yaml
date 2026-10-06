@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Administracion API
-  version: 0.2.0
+  version: 0.2.1
   description: >
     Contrato del modulo Administracion (ADM-01..05, TR-07,
     PANTALLAS-V2-B-SOPORTE.md). Cierra el hallazgo ALTO de revalidacion
@@ -211,12 +211,16 @@ paths:
       parameters:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: scopeCompanyId, in: query, required: false, schema: { type: string, format: uuid }, description: 'Ambito a mostrar (aditivo 0.2.1); omitido = toda la organizacion. Si ese ambito no tiene version propia, hereda la de arriba (`scope` dice de donde sale).' }
+        - { name: scopeBranchId, in: query, required: false, schema: { type: string, format: uuid }, description: 'Requiere scopeCompanyId' }
       responses:
         '200':
           description: Matriz vigente + catalogo de acciones
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RolePermissionMatrixResponse' }
+        '400':
+          description: 'MATRIX_SCOPE_INVALID (sede sin empresa) o COMPANY_BRANCH_NOT_IN_ORGANIZATION (ambito ajeno)'
         '403':
           description: Sin contexto vigente, o rol sin MANAGE_PERMISSIONS
     post:
@@ -246,7 +250,14 @@ paths:
         '403':
           description: Sin contexto vigente, o rol sin MANAGE_PERMISSIONS
         '409':
-          description: 'INCOMPATIBLE_PERMISSION_COMBINATION - segregacion de funciones violada'
+          description: >
+            INCOMPATIBLE_PERMISSIONS - segregacion de funciones violada
+            (el codigo real del back es INCOMPATIBLE_PERMISSIONS; antes se
+            documentaba como INCOMPATIBLE_PERMISSION_COMBINATION) -
+            LAST_ADMINISTRATOR_ROLE - la nueva foto dejaria a la organizacion
+            sin ningun rol activo con asignaciones y con ADMIN.MANAGE_PERMISSIONS
+            y ADMIN.MANAGE_USERS - MATRIX_VERSION_CONFLICT - otra persona
+            guardo al mismo tiempo (recargar y reintentar)
   /admin/roles:
     get:
       operationId: listRoles
