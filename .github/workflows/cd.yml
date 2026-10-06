@@ -162,8 +162,9 @@ jobs:
               "EMAIL_FROM": os.environ["EMAIL_FROM"],
               "APP_BASE_URL": os.environ["APP_BASE_URL"],
               "GCS_BUCKET_NAME": os.environ["GCS_BUCKET_NAME"],
-              # CORS: permite peticiones desde el frontend de este ambiente (TDD-00 §8.1)
-              "ALLOWED_ORIGINS": os.environ["APP_BASE_URL"],
+              # CORS: permite peticiones desde el frontend de este ambiente (TDD-00 §8.1).
+              # El Origin header del navegador nunca lleva barra final; normalizamos aqui.
+              "ALLOWED_ORIGINS": os.environ["APP_BASE_URL"].rstrip("/"),
           }
           with open("/tmp/env-vars.yaml", "w") as f:
               for k, v in rows.items():
