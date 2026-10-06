@@ -5,11 +5,23 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
+import { InquiryNotTransitionableError } from '../../../inquiries/domain/inquiry-errors';
+import { RentalCreationGuard } from '../services/rental-creation.guard';
+import { RentalInquiryNotFoundError } from '../../domain/rental-errors';
 import { CreateRentalCommand } from './create-rental.command';
 
 /**
  * ALQ-01 / ALQ-02 - Crear Alquiler directo.
  * TDD-03-alquiler.md seccion 8.2 / SDD seccion 10.
+ *
+ * Endurecimiento (flujo Consulta -> Alquiler directo, BR-CON-002/003):
+ * - cliente ROJO -> 422 CUSTOMER_BLOCKED (el AMBAR no bloquea);
+ * - vehiculo AVAILABLE, de la misma sede y sin solape con reservas o
+ *   compromisos -> 409 VEHICLE_NOT_AVAILABLE;
+ * - `inquiryId`, si llega, debe existir en la misma empresa y estar COTIZADA
+ *   (404 INQUIRY_NOT_FOUND / 422 INQUIRY_NOT_TRANSITIONABLE). El camino
+ *   canonico Consulta -> Alquiler es `convert-to-rental`, que ademas marca la
+ *   consulta CONVERTIDA.
  */
 @Injectable()
 export class CreateRentalHandler {
@@ -20,6 +32,7 @@ export class CreateRentalHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    private readonly creationGuard: RentalCreationGuard,
   ) {}
 
   async execute(command: CreateRentalCommand): Promise<RentalRecord> {
@@ -43,6 +56,8 @@ export class CreateRentalHandler {
       });
     }
 
+    this.creationGuard.assertCustomerNotBlocked(customer);
+
     const vehicle = await this.rentals.findVehicleById(command.vehicleId);
     if (!vehicle || vehicle.operatingCompanyId !== context.companyId) {
       throw new NotFoundException({
@@ -59,6 +74,33 @@ export class CreateRentalHandler {
     }
 
     return this.transactionManager.run(async (tx) => {
+      let estimatedDays: number | undefined;
+      if (command.inquiryId) {
+        const inquiry = await this.rentals.findInquiryForRental(command.inquiryId, tx);
+        if (
+          !inquiry ||
+          inquiry.organizationId !== context.organizationId ||
+          inquiry.operatingCompanyId !== context.companyId
+        ) {
+          throw new RentalInquiryNotFoundError();
+        }
+        if (inquiry.status !== 'COTIZADA') {
+          throw new InquiryNotTransitionableError(inquiry.status);
+        }
+        estimatedDays = inquiry.quotations[0]?.estimatedDays;
+      }
+
+      await this.creationGuard.assertVehicleAvailable(
+        vehicle,
+        context.branchId,
+        this.creationGuard.resolveWindow({
+          startAt: command.startAt,
+          expectedEndAt: command.expectedEndAt,
+          estimatedDays,
+        }),
+        tx,
+      );
+
       const created = await this.rentals.create(
         {
           organizationId: context.organizationId,

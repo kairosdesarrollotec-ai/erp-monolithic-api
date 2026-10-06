@@ -162,6 +162,34 @@ export interface CompleteDeliveryInput {
   scope: RentalScope;
   expectedVersion: number;
   updatedBy: string;
+  /**
+   * Alquiler directo (Consulta/sin origen): fecha real de entrega y fin
+   * esperado derivado. Se omiten en alquileres de origen Reserva, que
+   * conservan las fechas acordadas (BDD-RES-001 / DAT-RES-007).
+   */
+  startAt?: Date;
+  expectedEndAt?: Date;
+}
+
+/** Cotizacion de la consulta vinculada, solo los campos que Alquiler necesita. */
+export interface RentalInquiryQuotation {
+  id: string;
+  vehicleId: string;
+  estimatedDays: number;
+  validUntil: Date;
+  createdAt: Date;
+}
+
+/** Vista minima de Consulta para validar `inquiryId` y derivar fechas de entrega. */
+export interface RentalInquiryRecord {
+  id: string;
+  organizationId: string;
+  operatingCompanyId: string;
+  branchId: string;
+  customerId: string | null;
+  status: string;
+  /** Mas reciente primero. */
+  quotations: RentalInquiryQuotation[];
 }
 
 export interface ListRentalsFilter extends RentalScope {
@@ -220,23 +248,39 @@ export interface ReportExtensionBreachInput {
 export abstract class RentalRepositoryPort {
   abstract create(input: CreateRentalInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract findById(id: string, scope: RentalScope, tx?: Prisma.TransactionClient): Promise<RentalRecord | null>;
-  abstract findCustomerById(id: string): Promise<{
+  abstract findCustomerById(id: string, tx?: Prisma.TransactionClient): Promise<{
     id: string;
     organizationId: string;
     operatingCompanyId: string;
     fullName: string;
     documentNumber: string;
+    /** Semaforo de riesgo: NORMAL | ROJO (el ambar no tiene columna propia). */
+    status: string;
     isBiometricVerified?: boolean;
   } | null>;
-  abstract findVehicleById(id: string): Promise<{
+  abstract findVehicleById(id: string, tx?: Prisma.TransactionClient): Promise<{
     id: string;
     organizationId: string;
     operatingCompanyId: string;
+    /** null = vehiculo compartido entre sedes de la empresa. */
+    branchId: string | null;
     plate: string;
     brand: string;
     model: string;
     status: string;
   } | null>;
+  abstract findInquiryForRental(id: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null>;
+  /**
+   * true si el vehiculo tiene un compromiso ACTIVE o CONSOLIDATED (reserva
+   * confirmada, etc.) que se solapa con [startsAt, endsAt).
+   */
+  abstract hasBlockingVehicleCommitment(
+    vehicleId: string,
+    organizationId: string,
+    startsAt: Date,
+    endsAt: Date,
+    tx?: Prisma.TransactionClient,
+  ): Promise<boolean>;
   abstract findReservationById(id: string): Promise<{
     id: string;
     organizationId: string;

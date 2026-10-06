@@ -1,6 +1,7 @@
 import {
   DomainConflictError,
   DomainForbiddenError,
+  DomainNotFoundError,
   DomainPreconditionError,
   DomainUnprocessableError,
 } from '../../../common/domain/domain-errors';
@@ -108,5 +109,39 @@ export class VehicleUnavailableForExtensionError extends DomainUnprocessableErro
 
   constructor() {
     super('El vehiculo tiene otro compromiso (reserva o alquiler) que impide autorizar la ampliacion.');
+  }
+}
+
+/**
+ * BDD-ALQ-001.md 21.1 DT-ALQ-05 / SDD-DEV-001.md 12.1 - un cliente en
+ * semaforo ROJO queda bloqueado para nuevas operaciones (BR-DEV-008: sin
+ * rehabilitacion). El AMBAR ("cliente observado") NO bloquea: sigue siendo
+ * cliente activo (Ficha AS-IS Alquiler, seccion 7).
+ */
+export class CustomerBlockedError extends DomainUnprocessableError {
+  readonly code = 'CUSTOMER_BLOCKED';
+
+  constructor() {
+    super('El cliente esta en estado ROJO y no puede iniciar un nuevo alquiler.');
+  }
+}
+
+export type VehicleNotAvailableReason = 'STATUS' | 'BRANCH' | 'COMMITMENT_OVERLAP';
+
+/** SDD-KAIROS 12.6 - VEHICLE_NOT_AVAILABLE (409): solapamiento o vehiculo no disponible. */
+export class VehicleNotAvailableForRentalError extends DomainConflictError {
+  readonly code = 'VEHICLE_NOT_AVAILABLE';
+
+  constructor(reason: VehicleNotAvailableReason, detail: string) {
+    super(detail, { reason });
+  }
+}
+
+/** El inquiryId indicado no existe en la empresa del contexto de trabajo. */
+export class RentalInquiryNotFoundError extends DomainNotFoundError {
+  readonly code = 'INQUIRY_NOT_FOUND';
+
+  constructor() {
+    super('La consulta indicada no existe en esta empresa.');
   }
 }

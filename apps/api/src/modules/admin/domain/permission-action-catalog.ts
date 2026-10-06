@@ -25,6 +25,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'INQUIRY', action: 'QUOTE', label: 'Consulta: cotizar' },
   { module: 'INQUIRY', action: 'CLOSE', label: 'Consulta: cerrar' },
   { module: 'INQUIRY', action: 'CONVERT_TO_RESERVATION', label: 'Consulta: convertir a reserva' },
+  { module: 'INQUIRY', action: 'CONVERT_TO_RENTAL', label: 'Consulta: convertir a alquiler' },
   { module: 'RENTAL', action: 'CREATE', label: 'Alquiler: crear' },
   { module: 'RENTAL', action: 'READ', label: 'Alquiler: leer' },
   { module: 'RENTAL', action: 'VALIDATE_DOCUMENTS', label: 'Alquiler: validar documentos' },

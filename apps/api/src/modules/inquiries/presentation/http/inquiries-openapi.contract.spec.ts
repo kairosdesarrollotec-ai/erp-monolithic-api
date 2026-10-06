@@ -12,6 +12,7 @@ import { RegisterInquiryDto } from './dto/register-inquiry.dto';
 import { QuoteDto } from './dto/quote.dto';
 import { CloseInquiryDto } from './dto/close-inquiry.dto';
 import { ConvertToReservationDto } from './dto/convert-to-reservation.dto';
+import { ConvertToRentalDto } from './dto/convert-to-rental.dto';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { INQUIRY_LIST_DEFAULT_LIMIT, INQUIRY_LIST_MAX_LIMIT } from '../../domain/inquiry-pagination';
 import { toInquiryResponse, toInquirySummaryResponse } from './inquiry.mapper';
@@ -119,6 +120,7 @@ describe('Contrato OpenAPI inquiries.yaml vs backend', () => {
     ['QuoteRequest', QuoteDto],
     ['CloseInquiryRequest', CloseInquiryDto],
     ['ConvertToReservationRequest', ConvertToReservationDto],
+    ['ConvertToRentalRequest', ConvertToRentalDto],
   ])('%s: mismos campos y mismos obligatorios que el DTO', (schemaName, dto) => {
     const contract = flatten(spec.components.schemas[schemaName]);
     const fields = dtoFields(dto as new () => unknown);

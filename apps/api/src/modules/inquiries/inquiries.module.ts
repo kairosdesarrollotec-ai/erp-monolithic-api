@@ -4,6 +4,7 @@ import { RegisterInquiryHandler } from './application/commands/register-inquiry.
 import { QuoteHandler } from './application/commands/quote.handler';
 import { CloseInquiryHandler } from './application/commands/close-inquiry.handler';
 import { ConvertToReservationHandler } from './application/commands/convert-to-reservation.handler';
+import { ConvertToRentalHandler } from './application/commands/convert-to-rental.handler';
 import { GetInquiryHandler } from './application/queries/get-inquiry.handler';
 import { ListInquiriesHandler } from './application/queries/list-inquiries.handler';
 import { InquiryRepositoryPort } from './application/ports/inquiry-repository.port';
@@ -21,6 +22,7 @@ import { ReservationsModule } from '../reservations/reservations.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { ParametersModule } from '../parameters/parameters.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
+import { RentalsModule } from '../rentals/rentals.module';
 
 /**
  * HU-26 (Consulta, CON-01..CON-04).
@@ -28,6 +30,8 @@ import { AuthorizationModule } from '../authorization/authorization.module';
  * - AuthorizationModule: MatrixAuthorizationService (enforcement versionado ADM-02).
  * - ReservationsModule: ReservationRepositoryPort, para crear la Reserva
  *   dentro de la misma transaccion de la conversion (caso de uso unico).
+ * - RentalsModule: RentalRepositoryPort + RentalCreationGuard, para crear el
+ *   Alquiler dentro de la misma transaccion de convert-to-rental.
  * - PrismaModule/IdempotencyModule (@Global): TransactionManagerPort,
  *   ClockPort, IdempotencyInterceptor.
  * - FleetAvailabilityPort: PrismaFleetAvailabilityAdapter (productionReady=true),
@@ -39,13 +43,14 @@ import { AuthorizationModule } from '../authorization/authorization.module';
  *   produccion sin variable de entorno.
  */
 @Module({
-  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule, AuthorizationModule],
+  imports: [UsersModule, AuditModule, ReservationsModule, OutboxModule, ParametersModule, AuthorizationModule, RentalsModule],
   controllers: [InquiriesController],
   providers: [
     RegisterInquiryHandler,
     QuoteHandler,
     CloseInquiryHandler,
     ConvertToReservationHandler,
+    ConvertToRentalHandler,
     GetInquiryHandler,
     ListInquiriesHandler,
     ProvisionalQuotingGuard,

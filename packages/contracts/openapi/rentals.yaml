@@ -33,9 +33,11 @@ paths:
         '403':
           description: No autorizado para el contexto o rol insuficiente
         '404':
-          description: Cliente o vehículo no encontrado en la empresa
+          description: Cliente, vehículo o consulta (inquiryId) no encontrado en la empresa
+        '409':
+          description: VEHICLE_NOT_AVAILABLE - vehículo no AVAILABLE, de otra sede o con reserva/compromiso solapado
         '422':
-          description: Período de alquiler inválido
+          description: Período de alquiler inválido, CUSTOMER_BLOCKED (cliente ROJO) o INQUIRY_NOT_TRANSITIONABLE (inquiryId no está COTIZADA)
         '500':
           description: Error interno del servidor
 
@@ -295,6 +297,11 @@ paths:
     post:
       operationId: completeDelivery
       summary: Completar entrega física del vehículo con checklist (BR-INS-003/004)
+      description: >
+        Alquiler directo (sin reserva): fija startAt = ahora y, si viene de una
+        consulta, expectedEndAt = startAt + estimatedDays de la cotizacion
+        vinculada, re-chequeando la disponibilidad del vehiculo. Alquiler de
+        origen Reserva: conserva las fechas acordadas.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -315,7 +322,7 @@ paths:
         '403':
           description: No autorizado para el contexto o rol insuficiente
         '409':
-          description: Estado incompatible (debe estar en PENDING_DELIVERY)
+          description: Estado incompatible (debe estar en PENDING_DELIVERY), o VEHICLE_NOT_AVAILABLE al re-chequear disponibilidad (solo alquiler directo)
         '412':
           description: Versión no coincide (If-Match)
         '422':

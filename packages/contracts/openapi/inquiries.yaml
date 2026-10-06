@@ -1,13 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Inquiries API
-  version: 0.3.0
+  version: 0.4.0
   description: >
     Contrato del modulo Consulta (HU-26, TDD-CON-001.md seccion 11):
     registrar (con el snapshot de CON-02), cotizar, cerrar sin conversion,
-    convertir a reserva (caso de uso unico, crea la Reservation en la misma
-    transaccion) y las consultas de bandeja (CON-01) y detalle (CON-04). No
-    incluye convert-to-rental (depende de HU-28). No expone `PATCH status`.
+    convertir a reserva y convertir a alquiler directo (casos de uso unicos:
+    crean la Reservation / el Rental en la misma transaccion) y las consultas
+    de bandeja (CON-01) y detalle (CON-04). No expone `PATCH status`.
 
 
     Cambios 0.3.0 (revalidacion PR#7, d7a6124):
@@ -190,6 +190,57 @@ paths:
         '422': { description: 'INQUIRY_NOT_TRANSITIONABLE - la consulta no esta COTIZADA' }
         '428': { description: IF_MATCH_REQUIRED }
         '503': { $ref: '#/components/responses/QuotingNotProductionReady' }
+  /inquiries/{id}/commands/convert-to-rental:
+    post:
+      operationId: convertInquiryToRental
+      summary: Convierte la consulta y crea el Rental directo (DRAFT) vinculado en una sola transaccion (CON-P09, BR-CON-002)
+      description: >
+        CASO DE USO UNICO para crear un Alquiler directo desde una Consulta.
+        En una transaccion Serializable: transiciona COTIZADA -> CONVERTIDA,
+        crea el Rental en DRAFT vinculado por inquiryId (vehiculo de la
+        cotizacion VIGENTE mas reciente, nunca del payload) y audita +
+        publica el evento RentalCreatedFromInquiry.v1. El Rental se crea SIN
+        startAt/expectedEndAt: se fijan en
+        POST /rentals/{id}/commands/complete-delivery (startAt = ahora,
+        expectedEndAt = startAt + estimatedDays de la cotizacion).
+        Precondiciones: COTIZADA, cliente formal asociado, cotizacion vigente
+        (validUntil posterior a ahora), cliente que no este en ROJO
+        (CUSTOMER_BLOCKED; el AMBAR no bloquea), y vehiculo AVAILABLE, de la
+        sede de la consulta (o compartido) y sin solape con reservas o
+        compromisos en [ahora, ahora + estimatedDays). La garantia no se
+        calcula aqui: se captura en formalize-contract.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/InquiryId' }
+        - { $ref: '#/components/parameters/IfMatch' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConvertToRentalRequest' }
+      responses:
+        '200':
+          description: Consulta convertida y alquiler DRAFT creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConvertToRentalResponse' }
+        '400': { description: 'CUSTOMER_REQUIRED_FOR_CONVERSION' }
+        '403': { description: 'Empresa/sede no autorizada, o ROLE_NOT_ALLOWED (CONVERT_TO_RENTAL de Consulta y CREATE de Alquiler)' }
+        '404': { description: 'Consulta no encontrada en el scope, CUSTOMER_NOT_FOUND o VEHICLE_NOT_FOUND' }
+        '409':
+          description: >
+            QUOTATION_EXPIRED (volver a cotizar), VEHICLE_NOT_AVAILABLE
+            (vehiculo no AVAILABLE, de otra sede o con compromiso solapado),
+            TRANSACTION_CONFLICT (conflicto concurrente persistente,
+            reintentar), IDEMPOTENCY_KEY_REUSED o IDEMPOTENCY_KEY_IN_PROGRESS
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '412': { description: INQUIRY_VERSION_CONFLICT }
+        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE (la consulta no esta COTIZADA) o CUSTOMER_BLOCKED (cliente ROJO)' }
+        '428': { description: IF_MATCH_REQUIRED }
+        '503': { $ref: '#/components/responses/QuotingNotProductionReady' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: 'Firebase ID token' }
@@ -305,6 +356,12 @@ components:
           properties:
             channelMode: { $ref: '#/components/schemas/ChannelMode' }
             startAt: { type: string, format: date-time, description: 'Debe ser futura' }
+    ConvertToRentalRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          properties:
+            planCode: { type: string, enum: [NORMAL, PLUS, LIBRE], default: NORMAL }
     InquirySummaryResponse:
       type: object
       required:
@@ -369,4 +426,12 @@ components:
         inquiry: { $ref: '#/components/schemas/InquiryResponse' }
         reservation:
           description: 'Ver packages/contracts/openapi/reservations.yaml#/components/schemas/ReservationResponse'
+          type: object
+    ConvertToRentalResponse:
+      type: object
+      required: [inquiry, rental]
+      properties:
+        inquiry: { $ref: '#/components/schemas/InquiryResponse' }
+        rental:
+          description: 'Ver packages/contracts/openapi/rentals.yaml#/components/schemas/RentalResponse (status DRAFT, startAt/expectedEndAt null, inquiryId = id de la consulta)'
           type: object
