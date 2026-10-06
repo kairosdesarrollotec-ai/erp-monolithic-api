@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { ensureSystemRoles } from '../../src/modules/admin/infrastructure/persistence/system-roles-seeder';
 import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
 import { PrismaTransactionManager } from '../../src/common/persistence/prisma-transaction-manager';
@@ -41,6 +42,8 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
   let db: TestDatabase;
   let prisma: PrismaClient;
   const org = randomUUID();
+  /** key de rol de sistema -> role_id sembrado para `org` (roles dinamicos). */
+  let roleIds: Map<string, string>;
   const company = randomUUID();
   const branch = randomUUID();
   const customer = randomUUID();
@@ -65,7 +68,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
 
   function buildWorkContext(companyId = company, branchId = branch) {
     return {
-      authorize: async () => ({ organizationId: org, companyId, branchId, role: 'FRONT_OFFICE' as const }),
+      authorize: async () => ({ organizationId: org, companyId, branchId, roleId: roleIds.get('FRONT_OFFICE')!, roleName: 'FRONT_OFFICE', roleKey: 'FRONT_OFFICE' as const }),
     } as unknown as WorkContextAuthorizationService;
   }
 
@@ -88,6 +91,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
   beforeAll(async () => {
     db = await getTestDatabase();
     prisma = db.prisma;
+    roleIds = await ensureSystemRoles(prisma, org);
 
     await prisma.company.create({ data: { id: company, organizationId: org, name: 'Empresa IT Rental' } });
     await prisma.branch.create({ data: { id: branch, companyId: company, name: 'Sede IT Rental' } });

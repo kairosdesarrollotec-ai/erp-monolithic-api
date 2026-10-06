@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { ensureSystemRoles } from '../../src/modules/admin/infrastructure/persistence/system-roles-seeder';
 import { ForbiddenException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
@@ -62,6 +63,8 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
   let prisma: PrismaClient;
 
   const org = randomUUID();
+  /** key de rol de sistema -> role_id sembrado para `org` (roles dinamicos). */
+  let roleIds: Map<string, string>;
   const companyA = randomUUID();
   const branchA = randomUUID();
   const companyB = randomUUID();
@@ -91,7 +94,7 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
 
   function buildWorkContext(companyId: string, branchId: string, role: WorkerRole = 'FRONT_OFFICE') {
     return {
-      authorize: async () => ({ organizationId: org, companyId, branchId, role }),
+      authorize: async () => ({ organizationId: org, companyId, branchId, roleId: roleIds.get(role)!, roleName: role, roleKey: role }),
     } as unknown as WorkContextAuthorizationService;
   }
 
@@ -135,6 +138,7 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
   beforeAll(async () => {
     db = await getTestDatabase();
     prisma = db.prisma;
+    roleIds = await ensureSystemRoles(prisma, org);
 
     await prisma.company.createMany({
       data: [
@@ -260,7 +264,7 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
     const finanzas = buildStack(companyA, branchA, 'FINANZAS');
     await expect(finanzas.get.execute(new GetIncidentQuery(created.id, UID_A, companyA, branchA))).resolves.toMatchObject({ id: created.id });
     await expect(finanzas.close.execute(new CloseIncidentCommand(created.id, UID_A, companyA, branchA, 1, 'x'))).rejects.toThrow(ForbiddenException);
-    await expect(buildStack(companyA, branchA, 'CAMPO').list.execute(new ListIncidentsQuery(UID_A, companyA, branchA))).rejects.toThrow(ForbiddenException);
+    await expect(buildStack(companyA, branchA, 'ADMINISTRACION').list.execute(new ListIncidentsQuery(UID_A, companyA, branchA))).rejects.toThrow(ForbiddenException);
   });
 
   it('aislamiento multiempresa: la Empresa B no ve, lista, modifica ni liga incidencias de la Empresa A', async () => {

@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { ensureSystemRoles } from '../../src/modules/admin/infrastructure/persistence/system-roles-seeder';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
 import { PrismaTransactionManager } from '../../src/common/persistence/prisma-transaction-manager';
 import { ClockPort } from '../../src/common/application/ports/clock.port';
@@ -30,6 +31,8 @@ describe('Consulta -> Reserva (Postgres real)', () => {
   let db: TestDatabase;
   let prisma: PrismaClient;
   const org = randomUUID();
+  /** key de rol de sistema -> role_id sembrado para `org` (roles dinamicos). */
+  let roleIds: Map<string, string>;
   const company = randomUUID();
   const otherCompany = randomUUID();
   const branch = randomUUID();
@@ -46,7 +49,7 @@ describe('Consulta -> Reserva (Postgres real)', () => {
 
   function buildHandler() {
     const workContext = {
-      authorize: async () => ({ organizationId: org, companyId: company, branchId: branch, role: 'FRONT_OFFICE' as const }),
+      authorize: async () => ({ organizationId: org, companyId: company, branchId: branch, roleId: roleIds.get('FRONT_OFFICE')!, roleName: 'FRONT_OFFICE', roleKey: 'FRONT_OFFICE' as const }),
     } as unknown as WorkContextAuthorizationService;
     const guard = new ProvisionalQuotingGuard(
       { productionReady: false } as any,
@@ -104,6 +107,7 @@ describe('Consulta -> Reserva (Postgres real)', () => {
   beforeAll(async () => {
     db = await getTestDatabase();
     prisma = db.prisma;
+    roleIds = await ensureSystemRoles(prisma, org);
 
     await prisma.company.createMany({
       data: [
