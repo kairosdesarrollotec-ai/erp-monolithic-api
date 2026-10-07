@@ -14,3 +14,6 @@ apps/api/dist/
 
 # Framework interno de agentes/skills/reglas: vive en repo aparte, no en este
 .claude/
+
+# Driver de almacenamiento local (solo desarrollo)
+.local-storage/
