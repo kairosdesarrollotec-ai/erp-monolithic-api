@@ -83,6 +83,7 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
           orderBy: { scheduledAt: 'desc' },
         },
         onboarding: true,
+        vacancy: { select: { isMechanic: true } },
       },
     });
     if (!found) {
@@ -91,6 +92,7 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
 
     return {
       ...this.mapToRecord(found),
+      isMechanic: found.vacancy.isMechanic,
       interviews: found.interviews.map((i) => ({
         id: i.id,
         candidateId: i.candidateId,

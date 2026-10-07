@@ -26,6 +26,8 @@ export interface CandidateRecord {
 export interface CandidateDetailRecord extends CandidateRecord {
   interviews: CandidateInterviewRecord[];
   onboarding: OnboardingRecord | null;
+  /** Tomado de la vacante del candidato (REC-04: define si aplica contrato notarial / canales tecnicos). */
+  isMechanic: boolean;
   isRestrictedView?: boolean;
 }
 

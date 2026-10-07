@@ -57,6 +57,12 @@ describe('recruitment.yaml contract specification', () => {
     ]);
   });
 
+  it('CandidateDetailResponse expone isMechanic como campo obligatorio', () => {
+    const detail = spec.components.schemas.CandidateDetailResponse.allOf[1];
+    expect(detail.required).toContain('isMechanic');
+    expect(detail.properties.isMechanic.type).toBe('boolean');
+  });
+
   it('los comandos mutantes con concurrencia optimista exigen cabecera If-Match', () => {
     const mutatingWithIfMatch = [
       spec.paths['/vacancies/{id}/commands/publish'].post,

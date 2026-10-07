@@ -78,6 +78,7 @@ export function toCandidateDetailResponse(record: CandidateDetailRecord): Candid
     decisionNotes: record.decisionNotes,
     decidedAt: record.decidedAt ? record.decidedAt.toISOString() : null,
     isRestrictedView: record.isRestrictedView ?? false,
+    isMechanic: record.isMechanic,
     interviews: (record.interviews || []).map((i) => toCandidateInterviewResponse(i)),
     onboarding: record.onboarding ? toOnboardingResponse(record.onboarding) : null,
   };

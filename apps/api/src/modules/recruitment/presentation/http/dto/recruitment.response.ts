@@ -56,6 +56,8 @@ export interface CandidateDetailResponse extends CandidateResponse {
   decisionNotes: string | null;
   decidedAt: string | null;
   isRestrictedView: boolean;
+  /** Heredado de la vacante del candidato. */
+  isMechanic: boolean;
   interviews: CandidateInterviewResponse[];
   onboarding: OnboardingResponse | null;
 }

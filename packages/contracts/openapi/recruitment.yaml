@@ -504,8 +504,11 @@ components:
       allOf:
         - { $ref: '#/components/schemas/CandidateResponse' }
         - type: object
-          required: [isRestrictedView]
+          required: [isRestrictedView, isMechanic]
           properties:
+            isMechanic:
+              type: boolean
+              description: Tomado de la vacante del candidato (true = vacante de mecanico, aplican BR-REC-004 y contrato notarial).
             email: { type: string, nullable: true }
             phone: { type: string, nullable: true }
             cvDocumentId: { type: string, format: uuid, nullable: true }

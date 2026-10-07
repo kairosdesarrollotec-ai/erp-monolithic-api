@@ -155,7 +155,7 @@ describe('DecideCandidateHandler', () => {
     const decided = candidate({ decision: CandidateDecision.CONTRATADO, stage: CandidateStage.DECISION, version: 2 });
     s.candidates.findById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
-    s.candidates.findDetailById.mockResolvedValue({ ...decided, interviews: [], onboarding: null });
+    s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], onboarding: null });
     const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
     await handler.execute(cmd(CandidateDecision.CONTRATADO));
     expect(s.candidates.updateDecision).toHaveBeenCalledWith(
@@ -178,7 +178,7 @@ describe('DecideCandidateHandler', () => {
     const decided = candidate({ decision: CandidateDecision.RECHAZADO, stage: CandidateStage.DECISION, version: 2 });
     s.candidates.findById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
-    s.candidates.findDetailById.mockResolvedValue({ ...decided, interviews: [], onboarding: null });
+    s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], onboarding: null });
     const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
     await handler.execute(cmd(CandidateDecision.RECHAZADO));
     expect(s.outbox.publish).not.toHaveBeenCalled();
