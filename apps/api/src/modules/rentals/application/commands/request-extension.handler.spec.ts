@@ -11,6 +11,7 @@ import {
   ExtensionAdvanceNoticeError,
   ExtensionMaxDurationError,
 } from '../../domain/rental-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('RequestExtensionHandler', () => {
   const now = new Date('2026-10-05T00:00:00Z');
@@ -59,7 +60,7 @@ describe('RequestExtensionHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'FRONT_OFFICE',
+        ...testRole('FRONT_OFFICE'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

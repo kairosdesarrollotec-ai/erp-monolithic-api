@@ -5,6 +5,8 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
+import { RoleRepositoryPort } from '../ports/role-repository.port';
+import { RoleNotAssignableError } from '../../domain/role-errors';
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
 import { EmailNotificationPort } from '../ports/email-notification.port';
 import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
@@ -20,6 +22,12 @@ import { AssignUserToCompanyCommand } from './assign-user-to-company.command';
  *
  * Si el correo ya existe, se reutiliza el uid existente.
  *
+ * ROLES DINAMICOS: `targetRoleId` debe ser un rol ACTIVO de la organizacion
+ * del administrador (400 ROLE_NOT_ASSIGNABLE si no existe, esta inactivo o es
+ * de otra organizacion - no se distingue, IDOR). Se valida ANTES de crear la
+ * cuenta en Firebase para no dejar usuarios huerfanos. Solo se escribe
+ * role_id (la columna enum `role` esta deprecada).
+ *
  * Atomicidad: asignacion + auditoria corren en la misma transaccion.
  */
 @Injectable()
@@ -30,6 +38,7 @@ export class AssignUserToCompanyHandler {
     private readonly workContext: WorkContextAuthorizationService,
     private readonly adminAuthorization: AdminMatrixAuthorizationService,
     private readonly adminUsers: AdminUserRepositoryPort,
+    private readonly roles: RoleRepositoryPort,
     private readonly identity: IdentityLookupPort,
     private readonly userProfiles: UserProfileRepositoryPort,
     private readonly auditRepository: AuditEventRepositoryPort,
@@ -43,7 +52,7 @@ export class AssignUserToCompanyHandler {
       companyId: command.actorCompanyId,
       branchId: command.actorBranchId,
     });
-    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_USERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.roleId, 'MANAGE_USERS', { companyId: context.companyId, branchId: context.branchId });
 
     const ownership = await this.adminUsers.findCompanyBranchOwnership(
       context.organizationId,
@@ -55,6 +64,11 @@ export class AssignUserToCompanyHandler {
         code: 'COMPANY_BRANCH_NOT_IN_ORGANIZATION',
         detail: 'La empresa/sede indicada no pertenece a la organizacion del administrador.',
       });
+    }
+
+    const targetRole = await this.roles.findById(command.targetRoleId, context.organizationId);
+    if (!targetRole || !targetRole.active) {
+      throw new RoleNotAssignableError();
     }
 
     const existingUid = await this.identity.findUidByEmail(command.targetEmail);
@@ -86,7 +100,7 @@ export class AssignUserToCompanyHandler {
           firebaseUid: resolvedUid,
           companyId: command.targetCompanyId,
           branchId: command.targetBranchId,
-          role: command.targetRole,
+          roleId: targetRole.id,
         },
         tx,
       );
@@ -101,7 +115,9 @@ export class AssignUserToCompanyHandler {
             targetEmail: command.targetEmail,
             companyId: command.targetCompanyId,
             branchId: command.targetBranchId,
-            role: command.targetRole,
+            roleId: targetRole.id,
+            roleName: targetRole.name,
+            roleKey: targetRole.key,
           },
         },
         tx,

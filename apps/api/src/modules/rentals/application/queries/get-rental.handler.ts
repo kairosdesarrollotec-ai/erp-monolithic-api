@@ -19,7 +19,7 @@ export class GetRentalHandler {
       branchId: query.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'READ');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'READ', { companyId: context.companyId, branchId: context.branchId });
 
     const rental = await this.rentals.findById(query.id, {
       organizationId: context.organizationId,

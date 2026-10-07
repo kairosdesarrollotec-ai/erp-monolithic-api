@@ -7,12 +7,15 @@ import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA, HTTP_CODE_METADATA } from '@nestjs/common/constants';
 import { getMetadataStorage } from 'class-validator';
 import { AdminController } from './admin.controller';
+import { MePermissionsController } from './me-permissions.controller';
 import { AssignUserDto } from './dto/assign-user.dto';
 import { UpdateReservationDepositPolicyDto } from './dto/update-reservation-deposit-policy.dto';
 import { SaveRolePermissionMatrixDto } from './dto/save-role-permission-matrix.dto';
 import { SaveNotificationTemplateDto } from './dto/save-notification-template.dto';
 import { DeactivateAssignmentDto } from './dto/deactivate-assignment.dto';
-import { WORKER_ROLES } from '../../../users/domain/worker-role';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { RenameRoleDto } from './dto/rename-role.dto';
+import { DeactivateRoleDto } from './dto/deactivate-role.dto';
 import { NOTIFICATION_CHANNELS } from '../../../notification-templates/domain/notification-variable-catalog';
 
 import * as yaml from 'js-yaml';
@@ -20,7 +23,7 @@ import * as yaml from 'js-yaml';
 /**
  * Verifica que packages/contracts/openapi/admin.yaml y el backend no
  * diverjan: rutas/metodos, codigos HTTP, campos obligatorios de request
- * y enums (WorkerRole, NotificationChannel, PermissionModule).
+ * y enums (NotificationChannel, PermissionModule). El rol ya no es un enum: es RoleRef.
  */
 const SPEC_PATH = path.resolve(
   __dirname,
@@ -63,20 +66,25 @@ function dtoFields(dto: new () => unknown): { all: string[]; required: string[] 
   return { all, required: all.filter((p) => !optional.has(p)).sort() };
 }
 
-const HTTP: Record<number, string> = { [RequestMethod.GET]: 'get', [RequestMethod.POST]: 'post' };
+const HTTP: Record<number, string> = { [RequestMethod.GET]: 'get', [RequestMethod.POST]: 'post', [RequestMethod.PATCH]: 'patch' };
 
 function controllerRoutes() {
-  const proto = AdminController.prototype as any;
-  return Object.getOwnPropertyNames(proto)
-    .filter((name) => name !== 'constructor' && Reflect.hasMetadata(METHOD_METADATA, proto[name]))
-    .map((name) => {
-      const handler = proto[name];
-      const sub = Reflect.getMetadata(PATH_METADATA, handler) as string;
-      const openApiPath = ('/admin' + (sub === '/' ? '' : `/${sub}`)).replace(/:id/g, '{id}');
-      const method = HTTP[Reflect.getMetadata(METHOD_METADATA, handler)];
-      const httpCode = Reflect.getMetadata(HTTP_CODE_METADATA, handler) ?? (method === 'post' ? 201 : 200);
-      return { name, openApiPath, method, httpCode };
-    });
+  return [
+    { controller: AdminController, prefix: 'admin' },
+    { controller: MePermissionsController, prefix: 'me' },
+  ].flatMap(({ controller, prefix }) => {
+    const proto = controller.prototype as any;
+    return Object.getOwnPropertyNames(proto)
+      .filter((name) => name !== 'constructor' && Reflect.hasMetadata(METHOD_METADATA, proto[name]))
+      .map((name) => {
+        const handler = proto[name];
+        const sub = Reflect.getMetadata(PATH_METADATA, handler) as string;
+        const openApiPath = (`/${prefix}` + (sub === '/' ? '' : `/${sub}`)).replace(/:id/g, '{id}');
+        const method = HTTP[Reflect.getMetadata(METHOD_METADATA, handler)];
+        const httpCode = Reflect.getMetadata(HTTP_CODE_METADATA, handler) ?? (method === 'post' ? 201 : 200);
+        return { name, openApiPath, method, httpCode };
+      });
+  });
 }
 
 describe('Contrato OpenAPI admin.yaml vs backend', () => {
@@ -106,6 +114,8 @@ describe('Contrato OpenAPI admin.yaml vs backend', () => {
     ['UpdateReservationDepositPolicyRequest', UpdateReservationDepositPolicyDto],
     ['SaveRolePermissionMatrixRequest', SaveRolePermissionMatrixDto],
     ['SaveNotificationTemplateRequest', SaveNotificationTemplateDto],
+    ['CreateRoleRequest', CreateRoleDto],
+    ['RenameRoleRequest', RenameRoleDto],
   ])('%s: mismos campos obligatorios que el DTO', (schemaName, dto) => {
     const contract = flatten(spec.components.schemas[schemaName]);
     const fields = dtoFields(dto as new () => unknown);
@@ -119,8 +129,16 @@ describe('Contrato OpenAPI admin.yaml vs backend', () => {
     expect([...inlineBody.required].sort()).toEqual(fields.required);
   });
 
-  it('enum WorkerRole coincide entre admin.yaml y el dominio', () => {
-    expect([...spec.components.schemas.WorkerRole.enum].sort()).toEqual([...WORKER_ROLES].sort());
+  it('DeactivateRoleDto: mismos campos que el body inline de /admin/roles/{id}/deactivate', () => {
+    const inlineBody = spec.paths['/admin/roles/{id}/deactivate'].post.requestBody.content['application/json'].schema;
+    const fields = dtoFields(DeactivateRoleDto as new () => unknown);
+    expect(Object.keys(inlineBody.properties).sort()).toEqual(fields.all);
+    expect([...inlineBody.required].sort()).toEqual(fields.required);
+  });
+
+  it('el rol es un RoleRef {id,name,key} (roles dinamicos): ya no hay enum cerrado WorkerRole', () => {
+    expect(spec.components.schemas.WorkerRole).toBeUndefined();
+    expect([...spec.components.schemas.RoleRef.required].sort()).toEqual(['id', 'key', 'name']);
   });
 
   it('enum NotificationChannel coincide entre admin.yaml y el dominio', () => {

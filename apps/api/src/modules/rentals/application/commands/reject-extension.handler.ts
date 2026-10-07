@@ -40,7 +40,7 @@ export class RejectExtensionHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'REJECT_EXTENSION');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'REJECT_EXTENSION', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

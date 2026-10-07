@@ -6,12 +6,13 @@ import { AdminUserRepositoryPort, AdminAssignmentRecord } from '../ports/admin-u
 import { IdentityLookupPort } from '../ports/identity-lookup.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error) {
   return {
     authorize: rejects
       ? jest.fn().mockRejectedValue(rejects)
-      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as WorkContextAuthorizationService;
 }
 
@@ -29,7 +30,8 @@ function buildAdminUsers(records: AdminAssignmentRecord[] = []) {
     findCompanyBranchOwnership: jest.fn(),
     createOrReactivateAssignment: jest.fn(),
     deactivateAssignment: jest.fn(),
-    countActiveByRole: jest.fn(),
+    companyBelongsToOrganization: jest.fn(),
+    listEffectiveAssignments: jest.fn(),
     listCompaniesWithBranches: jest.fn(),
   };
   return repo;
@@ -54,7 +56,7 @@ describe('ListOrganizationUsersHandler', () => {
       companyName: 'VeloxRent',
       branchId: 'branch-1',
       branchName: 'Sede Central',
-      role: 'FRONT_OFFICE',
+      role: { id: 'role-FRONT_OFFICE', name: 'Front Office', key: 'FRONT_OFFICE' },
       active: true,
       mfaEnrolledAt: new Date('2026-09-01T00:00:00Z'),
     };
@@ -75,7 +77,7 @@ describe('ListOrganizationUsersHandler', () => {
         companyName: 'VeloxRent',
         branchId: 'branch-1',
         branchName: 'Sede Central',
-        role: 'FRONT_OFFICE',
+        role: { id: 'role-FRONT_OFFICE', name: 'Front Office', key: 'FRONT_OFFICE' },
         active: true,
         mfaEnrolled: true,
       },

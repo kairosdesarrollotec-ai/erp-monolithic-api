@@ -57,7 +57,7 @@ export class ConfirmReservationHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'CONFIRM');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RESERVATION', 'CONFIRM', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

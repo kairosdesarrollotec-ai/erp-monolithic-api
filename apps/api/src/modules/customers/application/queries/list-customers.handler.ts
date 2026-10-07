@@ -19,7 +19,7 @@ export class ListCustomersHandler {
       branchId: query.branchId,
     });
 
-    assertCustomerRead(context.role);
+    assertCustomerRead(context.roleKey);
 
     return this.customers.list({
       organizationId: context.organizationId,

@@ -82,18 +82,7 @@ describe('assertRentalRoleAllowed', () => {
     }
   });
 
-  it('PLATFORM_ADMIN tiene pase irrestricto', () => {
-    for (const action of [
-      'CREATE',
-      'READ',
-      'VALIDATE_DOCUMENTS',
-      'REGISTER_ALCOHOL_TEST',
-      'EVALUATE_NOTARY',
-      'APPROVE_NOTARY_EXCEPTION',
-      'FORMALIZE_CONTRACT',
-      'COMPLETE_DELIVERY',
-    ] as const) {
-      expect(() => assertRentalRoleAllowed('PLATFORM_ADMIN', action)).not.toThrow();
-    }
+  it('PLATFORM_ADMIN ya no tiene pase irrestricto: se rige por la matriz (sembrada en true)', () => {
+    expect(() => assertRentalRoleAllowed('PLATFORM_ADMIN', 'CREATE')).toThrow(ForbiddenException);
   });
 });

@@ -1,4 +1,4 @@
-import type { WorkerRole } from '../../../domain/worker-role';
+import type { RoleRef } from '../../../domain/worker-role';
 
 export interface DashboardTaskItem {
   id: string;
@@ -20,7 +20,7 @@ export interface DashboardTaskItem {
  * de compatibilidad en ese mismo YAML.
  */
 export class DashboardResponse {
-  role!: WorkerRole;
+  role!: RoleRef;
   state!: 'EMPTY' | 'READY';
   tasks?: DashboardTaskItem[];
 }

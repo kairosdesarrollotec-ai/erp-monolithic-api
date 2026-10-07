@@ -39,7 +39,7 @@ export class ApproveNotaryExceptionHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'APPROVE_NOTARY_EXCEPTION');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'APPROVE_NOTARY_EXCEPTION', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

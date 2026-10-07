@@ -20,6 +20,7 @@ import {
   ReturnRepositoryPort,
   UpdateReturnInput,
 } from '../application/ports/return-repository.port';
+import { testRole } from '../../users/testing/role-fixtures';
 
 export const FIXED_NOW = new Date('2026-10-05T12:00:00.000Z');
 
@@ -198,7 +199,7 @@ export function buildDeps(
       organizationId: 'org-1',
       companyId: 'comp-1',
       branchId: 'branch-1',
-      role: options.role ?? 'GERENCIA',
+      ...testRole(options.role ?? 'GERENCIA'),
     }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

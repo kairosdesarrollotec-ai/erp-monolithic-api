@@ -24,7 +24,7 @@ describe('PrismaWorkContextRepository', () => {
     it('filtra por active=true y vigencia [validFrom, validUntil) ademas de la clave unica', async () => {
       const prisma = buildPrisma({
         organizationId: 'org-1',
-        role: 'GERENCIA',
+        roleRecord: { id: 'role-GERENCIA', name: 'Gerencia', key: 'GERENCIA' },
       });
       const repository = new PrismaWorkContextRepository(prisma);
 
@@ -41,12 +41,13 @@ describe('PrismaWorkContextRepository', () => {
         companyId: 'company-1',
         branchId: 'branch-1',
         active: true,
+        roleRecord: { active: true },
       });
       expect(where.validFrom).toBeDefined();
       expect(where.OR).toEqual(
         expect.arrayContaining([{ validUntil: null }, { validUntil: { gt: expect.any(Date) } }]),
       );
-      expect(result).toEqual({ organizationId: 'org-1', role: 'GERENCIA' });
+      expect(result).toEqual({ organizationId: 'org-1', roleId: 'role-GERENCIA', roleName: 'Gerencia', roleKey: 'GERENCIA' });
     });
 
     it('devuelve null cuando no hay fila que cumpla clave + vigencia (revocada, caducada, o cross-company/cross-branch)', async () => {
@@ -63,8 +64,8 @@ describe('PrismaWorkContextRepository', () => {
     });
 
     it('participa de una transaccion cuando se le pasa un cliente tx', async () => {
-      const prisma = buildPrisma({ organizationId: 'org-1', role: 'GERENCIA' });
-      const tx = buildPrisma({ organizationId: 'org-1', role: 'GERENCIA' });
+      const prisma = buildPrisma({ organizationId: 'org-1', roleRecord: { id: 'role-GERENCIA', name: 'Gerencia', key: 'GERENCIA' } });
+      const tx = buildPrisma({ organizationId: 'org-1', roleRecord: { id: 'role-GERENCIA', name: 'Gerencia', key: 'GERENCIA' } });
       const repository = new PrismaWorkContextRepository(prisma);
 
       await repository.findValidAssignment(
@@ -83,7 +84,7 @@ describe('PrismaWorkContextRepository', () => {
         {
           companyId: 'c1',
           branchId: 'b1',
-          role: 'GERENCIA',
+          roleRecord: { id: 'role-GERENCIA', name: 'Gerencia', key: 'GERENCIA' },
           company: { name: 'VeloxRent' },
           branch: { name: 'Ayacucho — Sede Central' },
         },
@@ -104,7 +105,7 @@ describe('PrismaWorkContextRepository', () => {
           companyName: 'VeloxRent',
           branchId: 'b1',
           branchName: 'Ayacucho — Sede Central',
-          role: 'GERENCIA',
+          role: { id: 'role-GERENCIA', name: 'Gerencia', key: 'GERENCIA' },
         },
       ]);
     });

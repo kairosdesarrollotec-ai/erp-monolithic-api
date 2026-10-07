@@ -5,12 +5,13 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import type { WorkerRole } from '../../../users/domain/worker-role';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildAuthorization(role: WorkerRole = 'ADMINISTRACION', rejects?: Error) {
   return {
     authorize: rejects
       ? jest.fn().mockRejectedValue(rejects)
-      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as WorkContextAuthorizationService;
 }
 

@@ -31,7 +31,7 @@ export class AuthorizeExtensionHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'AUTHORIZE_EXTENSION');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'AUTHORIZE_EXTENSION', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

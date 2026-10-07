@@ -24,7 +24,7 @@ export class GetInquiryHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'READ');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'INQUIRY', 'READ', { companyId: context.companyId, branchId: context.branchId });
 
     const inquiry = await this.inquiries.findById(query.id, {
       organizationId: context.organizationId,

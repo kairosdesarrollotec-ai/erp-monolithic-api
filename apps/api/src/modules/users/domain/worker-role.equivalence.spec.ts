@@ -29,21 +29,15 @@ describe('WorkerRole - equivalencia entre Prisma, dominio y OpenAPI', () => {
     expect(prismaRoles).toEqual(domainRoles);
   });
 
-  it('el schema WorkerRole de packages/contracts/openapi/transversal.yaml tiene exactamente los mismos valores que el dominio', () => {
+  it('transversal.yaml ya no declara un enum cerrado WorkerRole: el rol es RoleRef {id,name,key} (roles dinamicos)', () => {
     const openapiPath = join(
       __dirname,
       '../../../../../../packages/contracts/openapi/transversal.yaml',
     );
     const openapi = readFileSync(openapiPath, 'utf8');
-    const workerRoleSchemaStart = openapi.indexOf('WorkerRole:');
-    expect(workerRoleSchemaStart).toBeGreaterThan(-1);
-    const afterSchemaName = openapi.slice(workerRoleSchemaStart);
-    const enumMatch = afterSchemaName.match(/enum:\n((?:\s*-\s+[A-Z_]+\n?)+)/);
-    expect(enumMatch).not.toBeNull();
-    const openapiRoles = Array.from(enumMatch![1].matchAll(/-\s+([A-Z_]+)/g))
-      .map(([, value]) => value)
-      .sort();
-
-    expect(openapiRoles).toEqual(domainRoles);
+    expect(openapi).not.toMatch(/^\s{4}WorkerRole:/m);
+    const roleRefStart = openapi.indexOf('RoleRef:');
+    expect(roleRefStart).toBeGreaterThan(-1);
+    expect(openapi.slice(roleRefStart, roleRefStart + 600)).toMatch(/required: \[id, name, key\]/);
   });
 });

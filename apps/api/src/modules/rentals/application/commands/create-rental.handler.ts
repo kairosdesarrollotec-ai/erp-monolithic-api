@@ -42,7 +42,7 @@ export class CreateRentalHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'CREATE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'CREATE', { companyId: context.companyId, branchId: context.branchId });
 
     const customer = await this.rentals.findCustomerById(command.customerId);
     if (

@@ -116,7 +116,7 @@ describe('QuoteHandler', () => {
 
     await handler.execute(command());
 
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'QUOTE');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'INQUIRY', 'QUOTE', expect.anything());
   });
 
   describe('adaptadores provisionales en produccion (hallazgo ALTO Fleet/tarifario)', () => {

@@ -9,7 +9,10 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { EmailNotificationPort } from '../ports/email-notification.port';
+import { RoleRepositoryPort } from '../ports/role-repository.port';
+import { RoleNotAssignableError } from '../../domain/role-errors';
 import type { WorkerRole } from '../../../users/domain/worker-role';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 const FAKE_TX = { __fakeTx: true } as any;
 
@@ -18,13 +21,14 @@ function buildDeps(opts: {
   forbidden?: boolean;
   targetUid?: string | null;
   ownership?: { companyId: string; branchId: string } | null;
+  targetRoleActive?: boolean | null;
 } = {}) {
-  const { role = 'ADMINISTRACION', forbidden = false, targetUid = 'uid-target', ownership = { companyId: 'company-2', branchId: 'branch-2' } } = opts;
+  const { role = 'ADMINISTRACION', forbidden = false, targetUid = 'uid-target', ownership = { companyId: 'company-2', branchId: 'branch-2' }, targetRoleActive = true } = opts;
 
   const workContext = {
     authorize: forbidden
       ? jest.fn().mockRejectedValue(new ForbiddenException())
-      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
   const adminAuthorization: jest.Mocked<AdminMatrixAuthorizationService> = {
@@ -38,9 +42,18 @@ function buildDeps(opts: {
     findCompanyBranchOwnership: jest.fn().mockResolvedValue(ownership),
     createOrReactivateAssignment: jest.fn().mockResolvedValue({ id: 'assign-1' }),
     deactivateAssignment: jest.fn(),
-    countActiveByRole: jest.fn(),
+    companyBelongsToOrganization: jest.fn(),
+    listEffectiveAssignments: jest.fn(),
     listCompaniesWithBranches: jest.fn(),
   };
+
+  const roles = {
+    findById: jest.fn().mockResolvedValue(
+      targetRoleActive === null
+        ? null
+        : { id: 'role-FRONT_OFFICE', organizationId: 'org-1', key: 'FRONT_OFFICE', name: 'FRONT_OFFICE', isSystem: true, active: targetRoleActive, version: 1 },
+    ),
+  } as unknown as jest.Mocked<RoleRepositoryPort>;
 
   const identity: jest.Mocked<IdentityLookupPort> = {
     findUidByEmail: jest.fn().mockResolvedValue(targetUid),
@@ -72,7 +85,7 @@ function buildDeps(opts: {
     sendWelcomeUser: jest.fn().mockResolvedValue(undefined),
   };
 
-  return { workContext, adminAuthorization, adminUsers, identity, userProfiles, audit, transactionManager, emailNotification };
+  return { workContext, adminAuthorization, adminUsers, roles, identity, userProfiles, audit, transactionManager, emailNotification };
 }
 
 function buildHandler(deps: ReturnType<typeof buildDeps>) {
@@ -80,6 +93,7 @@ function buildHandler(deps: ReturnType<typeof buildDeps>) {
     deps.workContext,
     deps.adminAuthorization,
     deps.adminUsers,
+    deps.roles,
     deps.identity,
     deps.userProfiles,
     deps.audit,
@@ -96,7 +110,7 @@ function buildCommand(overrides: Partial<AssignUserToCompanyCommand> = {}) {
     overrides.targetEmail ?? 'nuevo@veloxrent.pe',
     overrides.targetCompanyId ?? 'company-2',
     overrides.targetBranchId ?? 'branch-2',
-    overrides.targetRole ?? 'FRONT_OFFICE',
+    overrides.targetRoleId ?? 'role-FRONT_OFFICE',
     'initialPassword' in overrides ? overrides.initialPassword : 'Temporal@123',
   );
 }
@@ -117,7 +131,7 @@ describe('AssignUserToCompanyHandler', () => {
         firebaseUid: 'uid-target',
         companyId: 'company-2',
         branchId: 'branch-2',
-        role: 'FRONT_OFFICE',
+        roleId: 'role-FRONT_OFFICE',
       },
       FAKE_TX,
     );
@@ -193,6 +207,19 @@ describe('AssignUserToCompanyHandler', () => {
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(BadRequestException);
     expect(deps.adminUsers.createOrReactivateAssignment).not.toHaveBeenCalled();
     expect(deps.audit.recordAdminEvent).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['inexistente / de otra organizacion', null],
+    ['desactivado', false],
+  ])('rechaza con 400 ROLE_NOT_ASSIGNABLE si el rol destino es %s, sin crear cuenta ni asignacion', async (_label, active) => {
+    const deps = buildDeps({ targetUid: null, targetRoleActive: active as boolean | null });
+    const handler = buildHandler(deps);
+
+    await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(RoleNotAssignableError);
+    expect(deps.roles.findById).toHaveBeenCalledWith('role-FRONT_OFFICE', 'org-1');
+    expect(deps.identity.provisionUser).not.toHaveBeenCalled();
+    expect(deps.adminUsers.createOrReactivateAssignment).not.toHaveBeenCalled();
   });
 
   it('reutiliza uid existente sin exigir initialPassword (correo ya existe, el campo se ignora)', async () => {

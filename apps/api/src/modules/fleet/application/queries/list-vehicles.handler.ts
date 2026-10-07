@@ -19,8 +19,8 @@ export class ListVehiclesHandler {
       branchId: query.branchId,
     });
 
-    assertFleetRead(context.role);
-    assertCrossBranchAllowed(context.role, context.branchId, query.filterBranchId);
+    assertFleetRead(context.roleKey);
+    assertCrossBranchAllowed(context.roleKey, context.branchId, query.filterBranchId);
 
     return this.vehicles.list({
       organizationId: context.organizationId,

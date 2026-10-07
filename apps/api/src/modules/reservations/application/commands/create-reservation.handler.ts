@@ -32,7 +32,7 @@ export class CreateReservationHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'CREATE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RESERVATION', 'CREATE', { companyId: context.companyId, branchId: context.branchId });
 
     const customer = await this.reservations.findCustomerById(command.customerId);
     if (

@@ -1,56 +1,54 @@
 import { ForbiddenException } from '@nestjs/common';
 import { AdminMatrixAuthorizationService } from './admin-matrix-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
-import { RolePermissionMatrixPort, RolePermissionMatrixSnapshot } from '../ports/role-permission-matrix.port';
+import {
+  ORGANIZATION_SCOPE,
+  RolePermissionMatrixPort,
+  RolePermissionMatrixSnapshot,
+} from '../ports/role-permission-matrix.port';
 
-function buildMatrix(snapshot: RolePermissionMatrixSnapshot): jest.Mocked<RolePermissionMatrixPort> {
-  return {
-    getCurrentVersion: jest.fn().mockResolvedValue(snapshot),
+function buildService(layers: RolePermissionMatrixSnapshot[]) {
+  const matrix: jest.Mocked<RolePermissionMatrixPort> = {
+    getLayers: jest.fn().mockResolvedValue(layers),
+    getCurrentVersion: jest.fn(),
+    getAllCurrentSnapshots: jest.fn(),
     saveNewVersion: jest.fn(),
   };
+  return new AdminMatrixAuthorizationService(new MatrixAuthorizationService(matrix));
 }
 
 describe('AdminMatrixAuthorizationService', () => {
-  it('permite la accion cuando la matriz vigente tiene una entrada (rol, ADMIN, accion) con allowed=true', async () => {
-    const matrix = buildMatrix({
-      version: 1,
-      entries: [{ role: 'ADMINISTRACION', module: 'ADMIN', action: 'MANAGE_USERS', allowed: true }],
-    });
-    const service = new AdminMatrixAuthorizationService(new MatrixAuthorizationService(matrix));
+  it('permite la accion ADMIN cuando la matriz tiene allowed=true para el roleId', async () => {
+    const service = buildService([
+      {
+        version: 2,
+        scope: ORGANIZATION_SCOPE,
+        entries: [{ roleId: 'role-admin', module: 'ADMIN', action: 'MANAGE_USERS', allowed: true }],
+      },
+    ]);
 
-    await expect(service.assertAllowed('org-1', 'ADMINISTRACION', 'MANAGE_USERS')).resolves.toBeUndefined();
-    expect(matrix.getCurrentVersion).toHaveBeenCalledWith('org-1');
+    await expect(service.assertAllowed('org-1', 'role-admin', 'MANAGE_USERS')).resolves.toBeUndefined();
   });
 
-  it('deniega (403) cuando la entrada existe pero allowed=false', async () => {
-    const matrix = buildMatrix({
-      version: 1,
-      entries: [{ role: 'FRONT_OFFICE', module: 'ADMIN', action: 'MANAGE_USERS', allowed: false }],
-    });
-    const service = new AdminMatrixAuthorizationService(new MatrixAuthorizationService(matrix));
+  it('deniega con ADMIN_ACTION_NOT_ALLOWED_BY_MATRIX cuando allowed=false o no existe entrada', async () => {
+    const service = buildService([
+      {
+        version: 2,
+        scope: ORGANIZATION_SCOPE,
+        entries: [{ roleId: 'role-front', module: 'ADMIN', action: 'MANAGE_USERS', allowed: false }],
+      },
+    ]);
 
-    await expect(service.assertAllowed('org-1', 'FRONT_OFFICE', 'MANAGE_USERS')).rejects.toBeInstanceOf(
-      ForbiddenException,
-    );
+    await expect(service.assertAllowed('org-1', 'role-front', 'MANAGE_USERS')).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.assertAllowed('org-1', 'role-otro', 'VIEW_AUDIT')).rejects.toMatchObject({
+      response: { code: 'ADMIN_ACTION_NOT_ALLOWED_BY_MATRIX' },
+    });
   });
 
-  it('deniega por defecto (deny-by-default) cuando no hay ninguna entrada para (rol, ADMIN, accion)', async () => {
-    const matrix = buildMatrix({ version: 1, entries: [] });
-    const service = new AdminMatrixAuthorizationService(new MatrixAuthorizationService(matrix));
+  it('ya no existe el atajo PLATFORM_ADMIN: un rol sin entradas se deniega aunque se llame PLATFORM_ADMIN', async () => {
+    const service = buildService([{ version: 1, scope: ORGANIZATION_SCOPE, entries: [] }]);
 
-    await expect(service.assertAllowed('org-1', 'ADMINISTRACION', 'MANAGE_PERMISSIONS')).rejects.toBeInstanceOf(
-      ForbiddenException,
-    );
-  });
-
-  it('no confunde una entrada de otro modulo con el mismo nombre de accion', async () => {
-    const matrix = buildMatrix({
-      version: 1,
-      entries: [{ role: 'ADMINISTRACION', module: 'RESERVATION', action: 'MANAGE_USERS' as never, allowed: true }],
-    });
-    const service = new AdminMatrixAuthorizationService(new MatrixAuthorizationService(matrix));
-
-    await expect(service.assertAllowed('org-1', 'ADMINISTRACION', 'MANAGE_USERS')).rejects.toBeInstanceOf(
+    await expect(service.assertAllowed('org-1', 'role-PLATFORM_ADMIN', 'MANAGE_PERMISSIONS')).rejects.toBeInstanceOf(
       ForbiddenException,
     );
   });

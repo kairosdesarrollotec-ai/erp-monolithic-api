@@ -27,7 +27,7 @@ export class CreateContractTemplateHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES', { companyId: context.companyId, branchId: context.branchId });
 
     return this.transactionManager.run((tx) =>
       this.rentals.createContractTemplate(

@@ -16,6 +16,10 @@ export abstract class DomainError extends Error {
   }
 }
 
+export abstract class DomainBadRequestError extends DomainError {
+  readonly httpStatus = 400;
+}
+
 export abstract class DomainConflictError extends DomainError {
   readonly httpStatus = 409;
 }

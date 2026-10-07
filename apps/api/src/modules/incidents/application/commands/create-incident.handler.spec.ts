@@ -119,7 +119,7 @@ describe('CreateIncidentHandler (INC-01 Registrar incidencia)', () => {
     expect(deps.incidents.create).not.toHaveBeenCalled();
   });
 
-  it.each(['FINANZAS', 'AUDITORIA', 'ADMINISTRACION', 'CAMPO', 'RRHH'] as const)('rol %s no puede registrar (403)', async (role) => {
+  it.each(['FINANZAS', 'AUDITORIA', 'ADMINISTRACION', 'RRHH'] as const)('rol %s no puede registrar (403)', async (role) => {
     const { deps, handler } = build(role);
     await expect(handler.execute(cmd())).rejects.toThrow(ForbiddenException);
     expect(deps.incidents.create).not.toHaveBeenCalled();

@@ -33,6 +33,7 @@
 import * as admin from 'firebase-admin';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { ensureSystemRoles } from '../apps/api/src/modules/admin/infrastructure/persistence/system-roles-seeder';
 
 // ---------------------------------------------------------------------------
 // Constantes del negocio — empresas del Grupo KAIROS
@@ -181,6 +182,13 @@ async function main(): Promise<void> {
       });
       console.log(`DB: UserProfile creado (id=${profile.id})`);
 
+      // Roles dinamicos: la organizacion nueva necesita sus 8 roles de sistema
+      // (idempotente) ANTES de crear asignaciones; la asignacion usa role_id.
+      const roleIdByKey = await ensureSystemRoles(tx, config.organizationId);
+      const platformAdminRoleId = roleIdByKey.get('PLATFORM_ADMIN');
+      if (!platformAdminRoleId) throw new Error('No se pudo sembrar el rol de sistema PLATFORM_ADMIN');
+      console.log(`DB: roles de sistema sembrados (${roleIdByKey.size})`);
+
       for (const companySeed of KAIROS_COMPANIES) {
         const company = await tx.company.create({
           data: {
@@ -207,7 +215,7 @@ async function main(): Promise<void> {
             firebaseUid,
             companyId: company.id,
             branchId: branch.id,
-            role: 'PLATFORM_ADMIN',
+            roleId: platformAdminRoleId,
             active: true,
           },
         });

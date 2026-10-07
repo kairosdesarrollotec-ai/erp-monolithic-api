@@ -6,27 +6,29 @@ import { AdminUserRepositoryPort } from '../ports/admin-user-repository.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import type { WorkerRole } from '../../../users/domain/worker-role';
+import { AdministratorGuardService } from '../services/administrator-guard.service';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 const FAKE_TX = { __fakeTx: true } as any;
 
 function buildDeps(opts: {
   role?: WorkerRole;
   forbidden?: boolean;
-  deactivated?: { firebaseUid: string; role: WorkerRole } | null;
-  remainingActiveAdmins?: number;
+  deactivated?: { firebaseUid: string; roleId: string } | null;
+  administratorIds?: string[];
 } = {}) {
   const {
     role = 'ADMINISTRACION',
     forbidden = false,
-    deactivated = { firebaseUid: 'uid-target', role: 'FRONT_OFFICE' as WorkerRole },
-    remainingActiveAdmins = 1,
+    deactivated = { firebaseUid: 'uid-target', roleId: 'role-FRONT_OFFICE' },
+    administratorIds = ['assign-admin-1', 'assign-admin-2'],
   } = opts;
 
   const workContext = {
     authorize: forbidden
       ? jest.fn().mockRejectedValue(new ForbiddenException())
-      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role }),
+      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
   const adminAuthorization: jest.Mocked<AdminMatrixAuthorizationService> = {
@@ -38,11 +40,16 @@ function buildDeps(opts: {
   const adminUsers: jest.Mocked<AdminUserRepositoryPort> = {
     listAssignmentsByOrganization: jest.fn(),
     findCompanyBranchOwnership: jest.fn(),
+    companyBelongsToOrganization: jest.fn(),
     createOrReactivateAssignment: jest.fn(),
     deactivateAssignment: jest.fn().mockResolvedValue(deactivated),
-    countActiveByRole: jest.fn().mockResolvedValue(remainingActiveAdmins),
+    listEffectiveAssignments: jest.fn(),
     listCompaniesWithBranches: jest.fn(),
   };
+
+  const administratorGuard = {
+    administratorAssignmentIds: jest.fn().mockResolvedValue(administratorIds),
+  } as unknown as jest.Mocked<AdministratorGuardService>;
 
   const audit: jest.Mocked<AuditEventRepositoryPort> = {
     recordLoginAttempt: jest.fn(),
@@ -58,7 +65,15 @@ function buildDeps(opts: {
     run: jest.fn((work: any) => work(FAKE_TX)),
   };
 
-  return { workContext, adminAuthorization, adminUsers, audit, transactionManager };
+  const handler = new DeactivateAssignmentHandler(
+    workContext,
+    adminAuthorization,
+    adminUsers,
+    administratorGuard,
+    audit,
+    transactionManager,
+  );
+  return { handler, workContext, adminAuthorization, adminUsers, administratorGuard, audit, transactionManager };
 }
 
 function buildCommand(overrides: Partial<DeactivateAssignmentCommand> = {}) {
@@ -71,12 +86,18 @@ function buildCommand(overrides: Partial<DeactivateAssignmentCommand> = {}) {
 }
 
 describe('DeactivateAssignmentHandler', () => {
-  it('desactiva la asignacion y registra la auditoria administrativa dentro de la misma transaccion', async () => {
-    const { workContext, adminAuthorization, adminUsers, audit, transactionManager } = buildDeps();
-    const handler = new DeactivateAssignmentHandler(workContext, adminAuthorization, adminUsers, audit, transactionManager);
+  it('desactiva la asignacion y registra la auditoria administrativa dentro de la misma transaccion Serializable', async () => {
+    const { handler, adminUsers, audit, transactionManager, adminAuthorization } = buildDeps();
 
     await handler.execute(buildCommand());
 
+    expect(adminAuthorization.assertAllowed).toHaveBeenCalledWith(
+      'org-1',
+      'role-ADMINISTRACION',
+      'MANAGE_USERS',
+      { companyId: 'company-1', branchId: 'branch-1' },
+    );
+    expect(transactionManager.run).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: 'Serializable' });
     expect(adminUsers.deactivateAssignment).toHaveBeenCalledWith('assign-1', 'org-1', FAKE_TX);
     expect(audit.recordAdminEvent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -90,62 +111,48 @@ describe('DeactivateAssignmentHandler', () => {
     );
   });
 
-  it('rechaza cuando el rol autorizado no es ADMINISTRACION', async () => {
-    const { workContext, adminAuthorization, adminUsers, audit, transactionManager } = buildDeps({ role: 'FRONT_OFFICE' });
-    const handler = new DeactivateAssignmentHandler(workContext, adminAuthorization, adminUsers, audit, transactionManager);
+  it('rechaza cuando el rol autorizado no tiene ADMIN.MANAGE_USERS', async () => {
+    const { handler, adminUsers } = buildDeps({ role: 'FRONT_OFFICE' });
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(ForbiddenException);
     expect(adminUsers.deactivateAssignment).not.toHaveBeenCalled();
   });
 
   it('propaga el 403 de autorizacion cuando la empresa/sede del actor no es vigente', async () => {
-    const { workContext, adminAuthorization, adminUsers, audit, transactionManager } = buildDeps({ forbidden: true });
-    const handler = new DeactivateAssignmentHandler(workContext, adminAuthorization, adminUsers, audit, transactionManager);
+    const { handler } = buildDeps({ forbidden: true });
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('rechaza con 404 si la asignacion no existe o no pertenece a la organizacion del admin (IDOR)', async () => {
-    const { workContext, adminAuthorization, adminUsers, audit, transactionManager } = buildDeps({ deactivated: null });
-    const handler = new DeactivateAssignmentHandler(workContext, adminAuthorization, adminUsers, audit, transactionManager);
+    const { handler, audit } = buildDeps({ deactivated: null });
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(NotFoundException);
     expect(audit.recordAdminEvent).not.toHaveBeenCalled();
   });
 
-  it('rechaza con 409 si la asignacion es ADMINISTRACION y es la unica activa que queda en la organizacion (ultimo administrador)', async () => {
-    const { workContext, adminAuthorization, adminUsers, audit, transactionManager } = buildDeps({
-      deactivated: { firebaseUid: 'uid-target', role: 'ADMINISTRACION' },
-      remainingActiveAdmins: 0,
-    });
-    const handler = new DeactivateAssignmentHandler(workContext, adminAuthorization, adminUsers, audit, transactionManager);
+  it('rechaza con 409 si la asignacion es la UNICA con permisos de administracion vigente (ultimo administrador por permisos)', async () => {
+    const { handler, administratorGuard, adminUsers, audit } = buildDeps({ administratorIds: ['assign-1'] });
 
     await expect(handler.execute(buildCommand())).rejects.toBeInstanceOf(ConflictException);
-    expect(adminUsers.countActiveByRole).toHaveBeenCalledWith('org-1', 'ADMINISTRACION', FAKE_TX);
+    expect(administratorGuard.administratorAssignmentIds).toHaveBeenCalledWith('org-1', FAKE_TX);
+    expect(adminUsers.deactivateAssignment).not.toHaveBeenCalled();
     expect(audit.recordAdminEvent).not.toHaveBeenCalled();
   });
 
-  it('permite dar de baja una asignacion ADMINISTRACION si quedan otras activas en la organizacion', async () => {
-    const { workContext, adminAuthorization, adminUsers, audit, transactionManager } = buildDeps({
-      deactivated: { firebaseUid: 'uid-target', role: 'ADMINISTRACION' },
-      remainingActiveAdmins: 1,
-    });
-    const handler = new DeactivateAssignmentHandler(workContext, adminAuthorization, adminUsers, audit, transactionManager);
+  it('permite dar de baja una asignacion administradora si quedan otras administradoras vigentes', async () => {
+    const { handler, audit } = buildDeps({ administratorIds: ['assign-1', 'assign-2'] });
 
     await handler.execute(buildCommand());
 
     expect(audit.recordAdminEvent).toHaveBeenCalled();
   });
 
-  it('no cuenta administradores activos si el rol dado de baja no es ADMINISTRACION', async () => {
-    const { workContext, adminAuthorization, adminUsers, audit, transactionManager } = buildDeps({
-      deactivated: { firebaseUid: 'uid-target', role: 'FRONT_OFFICE' },
-    });
-    const handler = new DeactivateAssignmentHandler(workContext, adminAuthorization, adminUsers, audit, transactionManager);
+  it('permite dar de baja una asignacion que no es administradora aunque el unico administrador sea otro', async () => {
+    const { handler, audit } = buildDeps({ administratorIds: ['assign-admin-only'] });
 
     await handler.execute(buildCommand());
 
-    expect(adminUsers.countActiveByRole).not.toHaveBeenCalled();
     expect(audit.recordAdminEvent).toHaveBeenCalled();
   });
 });

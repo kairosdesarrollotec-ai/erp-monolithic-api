@@ -29,6 +29,14 @@ export interface RecordAdminEventInput {
   targetFirebaseUid: string;
   action: string;
   changes: Record<string, unknown>;
+  /**
+   * Opcionales (roles dinamicos): eventos administrativos cuya entidad NO es una
+   * asignacion de usuario (p. ej. ROLE_CREATED / ROLE_RENAMED / ROLE_DEACTIVATED
+   * usan entityType 'role' y entityId = id del rol). Por defecto:
+   * 'admin_user_assignment' y `targetFirebaseUid` (comportamiento historico).
+   */
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface RecordInquiryEventInput {

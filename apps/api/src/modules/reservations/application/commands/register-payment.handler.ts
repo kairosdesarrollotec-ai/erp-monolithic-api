@@ -33,7 +33,7 @@ export class RegisterPaymentHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'REGISTER_PAYMENT');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RESERVATION', 'REGISTER_PAYMENT', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

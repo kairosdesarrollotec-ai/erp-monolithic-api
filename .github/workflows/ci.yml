@@ -106,6 +106,9 @@ jobs:
       - name: Prueba de upgrade de Consulta sobre datos poblados
         run: bash apps/api/test/migrations/inquiries-upgrade.test.sh
 
+      - name: Prueba de upgrade de roles dinamicos sobre datos poblados
+        run: bash apps/api/test/migrations/roles-upgrade.test.sh
+
       - name: Tests de integracion (concurrencia y aislamiento)
         run: npm run test:integration:api
 

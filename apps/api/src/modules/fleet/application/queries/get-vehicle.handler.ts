@@ -19,7 +19,7 @@ export class GetVehicleHandler {
       branchId: query.branchId,
     });
 
-    assertFleetRead(context.role);
+    assertFleetRead(context.roleKey);
 
     const vehicle = await this.vehicles.findById(query.vehicleId, {
       organizationId: context.organizationId,

@@ -65,9 +65,10 @@ export class CancelReservationHandler {
     // de cancelacion usan el allow-list operativo normal.
     await this.matrixAuth.assertAllowed(
       context.organizationId,
-      context.role,
+      context.roleId,
       'RESERVATION',
       command.reason === 'NO_SHOW' ? 'CANCEL_NO_SHOW' : 'CANCEL_CUSTOMER_REQUESTED_CHANGE',
+      { companyId: context.companyId, branchId: context.branchId },
     );
 
     const scope = {

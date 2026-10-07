@@ -28,7 +28,7 @@ export class ValidateDocumentsHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'VALIDATE_DOCUMENTS');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'VALIDATE_DOCUMENTS', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

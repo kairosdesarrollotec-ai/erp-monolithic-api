@@ -33,7 +33,7 @@ export class IncidentAccessService {
       companyId: input.companyId,
       branchId: input.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INCIDENT', action);
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'INCIDENT', action, { companyId: context.companyId, branchId: context.branchId });
     return {
       context,
       scope: {

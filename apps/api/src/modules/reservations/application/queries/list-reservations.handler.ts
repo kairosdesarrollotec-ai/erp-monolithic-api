@@ -26,7 +26,7 @@ export class ListReservationsHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'READ_LIST');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RESERVATION', 'READ_LIST', { companyId: context.companyId, branchId: context.branchId });
 
     return this.reservations.list({
       organizationId: context.organizationId,

@@ -46,9 +46,9 @@ const RENTAL_ROLE_POLICY: Readonly<Record<RentalAction, ReadonlySet<WorkerRole>>
   REPORT_EXTENSION_BREACH: new Set(['GERENCIA']),
 };
 
+// ROLES DINAMICOS (fase 2): esta politica ya NO decide en runtime; solo SIEMBRA la version 0 de la matriz ADM-02
+// (key de rol de sistema -> role_id). Sin atajo PLATFORM_ADMIN: su "todo permitido" es una fila sembrada.
 export function assertRentalRoleAllowed(role: WorkerRole, action: RentalAction): void {
-  if (role === 'PLATFORM_ADMIN') return;
-
   const allowedRoles = RENTAL_ROLE_POLICY[action];
   if (!allowedRoles || !allowedRoles.has(role)) {
     throw new ForbiddenException({

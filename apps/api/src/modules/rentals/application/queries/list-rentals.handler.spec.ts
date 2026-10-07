@@ -3,6 +3,7 @@ import { ListRentalsQuery } from './list-rentals.query';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('ListRentalsHandler', () => {
   const fakeRental: RentalRecord = {
@@ -42,7 +43,7 @@ describe('ListRentalsHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'FRONT_OFFICE',
+        ...testRole('FRONT_OFFICE'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

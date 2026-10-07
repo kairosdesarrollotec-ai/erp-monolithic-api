@@ -39,7 +39,7 @@ export class CloseInquiryHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'CLOSE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'INQUIRY', 'CLOSE', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

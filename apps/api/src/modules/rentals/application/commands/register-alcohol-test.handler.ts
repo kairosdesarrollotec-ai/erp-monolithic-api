@@ -32,7 +32,7 @@ export class RegisterAlcoholTestHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'REGISTER_ALCOHOL_TEST');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'REGISTER_ALCOHOL_TEST', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

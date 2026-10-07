@@ -31,7 +31,7 @@ export class RequestEvidenceUploadSessionHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'UPLOAD_EVIDENCE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'UPLOAD_EVIDENCE', { companyId: context.companyId, branchId: context.branchId });
 
     const maxBytes = command.type === 'VIDEO' ? MAX_EVIDENCE_VIDEO_BYTES : MAX_EVIDENCE_PHOTO_BYTES;
     if (command.contentLength > maxBytes) {

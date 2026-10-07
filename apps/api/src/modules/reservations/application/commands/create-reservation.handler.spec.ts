@@ -5,6 +5,7 @@ import { ReservationRepositoryPort } from '../ports/reservation-repository.port'
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { assertReservationRoleAllowed } from '../policies/reservation-role-policy';
+import { roleKeyOfTestRoleId, testRole } from '../../../users/testing/role-fixtures';
 
 /**
  * CONFLICT-CON-001 (resuelto): `POST /reservations` crea reservas directamente.
@@ -81,7 +82,7 @@ describe('CreateReservationHandler', () => {
               organizationId: ORG,
               companyId: COMPANY,
               branchId: BRANCH,
-              role: result.role,
+              ...testRole(result.role),
             }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
   }
@@ -89,7 +90,7 @@ describe('CreateReservationHandler', () => {
   function buildMatrixAuth(): MatrixAuthorizationService {
     return {
       assertAllowed: jest.fn().mockImplementation(async (_orgId, role, _module, action) => {
-        assertReservationRoleAllowed(role, action);
+        assertReservationRoleAllowed(roleKeyOfTestRoleId(role), action);
       }),
       isAllowed: jest.fn().mockResolvedValue(true),
     } as unknown as MatrixAuthorizationService;

@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import type { WorkerRole } from '../../../users/domain/worker-role';
+import type { RoleRef } from '../../../users/domain/worker-role';
 
 export interface AdminAssignmentRecord {
   id: string;
@@ -8,7 +8,8 @@ export interface AdminAssignmentRecord {
   companyName: string;
   branchId: string;
   branchName: string;
-  role: WorkerRole;
+  /** ROLES DINAMICOS: RoleRef {id, name, key} del rol de la asignacion. */
+  role: RoleRef;
   active: boolean;
   mfaEnrolledAt: Date | null;
 }
@@ -18,7 +19,15 @@ export interface CreateOrReactivateAssignmentInput {
   firebaseUid: string;
   companyId: string;
   branchId: string;
-  role: WorkerRole;
+  /** Rol activo de la organizacion (ya validado por el handler). Solo se escribe role_id; la columna enum `role` esta deprecada. */
+  roleId: string;
+}
+
+export interface EffectiveAssignmentRecord {
+  id: string;
+  roleId: string;
+  companyId: string;
+  branchId: string;
 }
 
 export interface CompanyBranchOwnership {
@@ -59,6 +68,9 @@ export abstract class AdminUserRepositoryPort {
     branchId: string,
   ): Promise<CompanyBranchOwnership | null>;
 
+  /** La empresa pertenece a la organizacion del admin (ambito empresa de la matriz). */
+  abstract companyBelongsToOrganization(organizationId: string, companyId: string): Promise<boolean>;
+
   /**
    * Alta o reactivacion (upsert por la clave unica
    * (firebaseUid, companyId, branchId) ya existente en el modelo) - dar
@@ -80,22 +92,21 @@ export abstract class AdminUserRepositoryPort {
     id: string,
     organizationId: string,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ firebaseUid: string; role: WorkerRole } | null>;
+  ): Promise<{ firebaseUid: string; roleId: string } | null>;
 
   /**
-   * Cuenta las asignaciones activas con el rol dado en la organizacion
-   * (hallazgo ALTO de revalidacion PR#7, "ultimo administrador"): antes
-   * de dar de baja una asignacion ADMINISTRACION hay que saber si es la
-   * unica que queda, para no dejar la organizacion sin nadie que pueda
-   * gestionar usuarios/permisos. Debe leerse dentro de la misma
-   * transaccion Serializable que la baja, para evitar la carrera de dos
-   * bajas concurrentes dejando 0 administradores.
+   * Asignaciones VIGENTES (active, dentro de [validFrom, validUntil)) de la
+   * organizacion cuyo rol esta activo, con lo minimo para evaluar permisos
+   * por ambito. Base de la salvaguarda "ultimo administrador" (hallazgo ALTO
+   * de revalidacion PR#7): ahora se decide POR PERMISOS (rol con
+   * ADMIN.MANAGE_PERMISSIONS y ADMIN.MANAGE_USERS), no por el nombre
+   * ADMINISTRACION. Debe leerse dentro de la misma transaccion Serializable
+   * que la mutacion, para evitar la carrera de dos bajas/cambios concurrentes.
    */
-  abstract countActiveByRole(
+  abstract listEffectiveAssignments(
     organizationId: string,
-    role: WorkerRole,
     tx?: Prisma.TransactionClient,
-  ): Promise<number>;
+  ): Promise<EffectiveAssignmentRecord[]>;
 
   /**
    * Empresas y sedes de la organizacion (GET /admin/companies) - para

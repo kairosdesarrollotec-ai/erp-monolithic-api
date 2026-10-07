@@ -32,7 +32,7 @@ export class GetReservationDepositPolicyHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_PARAMETERS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.roleId, 'MANAGE_PARAMETERS', { companyId: context.companyId, branchId: context.branchId });
 
     const [current, history] = await Promise.all([
       this.depositPolicy.getCurrent(context.organizationId),

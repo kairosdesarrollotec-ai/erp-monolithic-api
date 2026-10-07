@@ -38,7 +38,7 @@ export class SaveNotificationTemplateHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'MANAGE_NOTIFICATIONS');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.roleId, 'MANAGE_NOTIFICATIONS', { companyId: context.companyId, branchId: context.branchId });
 
     if (!isKnownEventType(command.eventType)) {
       throw new BadRequestException({

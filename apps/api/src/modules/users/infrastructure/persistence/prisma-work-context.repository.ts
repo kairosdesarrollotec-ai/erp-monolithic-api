@@ -5,8 +5,9 @@ import {
   WorkContextRepositoryPort,
   WorkContextAssignmentRecord,
   SelectWorkContextInput,
+  ValidWorkContextAssignment,
 } from '../../application/ports/work-context-repository.port';
-import type { WorkerRole } from '../../domain/worker-role';
+import { toWorkerRoleKey } from '../../domain/worker-role';
 
 /**
  * Hallazgo MEDIO de revision de seguimiento de PR#5 (12fc688, "los casts
@@ -25,7 +26,7 @@ type AssignmentWithRoleAndNames = Prisma.UserCompanyAssignmentGetPayload<{
   select: {
     companyId: true;
     branchId: true;
-    role: true;
+    roleRecord: { select: { id: true; name: true; key: true } };
     company: { select: { name: true } };
     branch: { select: { name: true } };
   };
@@ -34,7 +35,7 @@ type AssignmentWithRoleAndNames = Prisma.UserCompanyAssignmentGetPayload<{
 type AssignmentWithOrgAndRole = Prisma.UserCompanyAssignmentGetPayload<{
   select: {
     organizationId: true;
-    role: true;
+    roleRecord: { select: { id: true; name: true; key: true } };
   };
 }>;
 
@@ -53,11 +54,12 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
           active: true,
           validFrom: { lte: now },
           OR: [{ validUntil: null }, { validUntil: { gt: now } }],
+          roleRecord: { active: true },
         },
         select: {
           companyId: true,
           branchId: true,
-          role: true,
+          roleRecord: { select: { id: true, name: true, key: true } },
           company: { select: { name: true } },
           branch: { select: { name: true } },
         },
@@ -69,14 +71,18 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
       companyName: assignment.company.name,
       branchId: assignment.branchId,
       branchName: assignment.branch.name,
-      role: assignment.role,
+      role: {
+        id: assignment.roleRecord.id,
+        name: assignment.roleRecord.name,
+        key: toWorkerRoleKey(assignment.roleRecord.key),
+      },
     }));
   }
 
   async findValidAssignment(
     input: SelectWorkContextInput,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ organizationId: string; role: WorkerRole } | null> {
+  ): Promise<ValidWorkContextAssignment | null> {
     const client = tx ?? this.prisma;
     const now = new Date();
     // findFirst (no findUnique) porque la vigencia (active/validFrom/
@@ -92,15 +98,22 @@ export class PrismaWorkContextRepository implements WorkContextRepositoryPort {
           active: true,
           validFrom: { lte: now },
           OR: [{ validUntil: null }, { validUntil: { gt: now } }],
+          // Un rol desactivado no habilita ningun contexto (deny-by-default).
+          roleRecord: { active: true },
         },
         select: {
           organizationId: true,
-          role: true,
+          roleRecord: { select: { id: true, name: true, key: true } },
         },
       });
 
     return assignment
-      ? { organizationId: assignment.organizationId, role: assignment.role }
+      ? {
+          organizationId: assignment.organizationId,
+          roleId: assignment.roleRecord.id,
+          roleName: assignment.roleRecord.name,
+          roleKey: toWorkerRoleKey(assignment.roleRecord.key),
+        }
       : null;
   }
 }

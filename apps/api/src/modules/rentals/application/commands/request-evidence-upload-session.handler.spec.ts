@@ -6,6 +6,7 @@ import {
 } from './request-evidence-upload-session.handler';
 import { RequestEvidenceUploadSessionCommand } from './request-evidence-upload-session.command';
 import { RentalStateConflictError } from '../../domain/rental-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildStoragePort() {
   return {
@@ -28,7 +29,7 @@ function buildWorkContext() {
       organizationId: 'org-1',
       companyId: 'comp-1',
       branchId: 'branch-1',
-      role: 'FRONT_OFFICE',
+      ...testRole('FRONT_OFFICE'),
     }),
   };
 }
@@ -49,7 +50,7 @@ describe('RequestEvidenceUploadSessionHandler', () => {
       new RequestEvidenceUploadSessionCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 'PHOTO', 'FRONTAL', 'image/jpeg', 500_000),
     );
 
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'FRONT_OFFICE', 'RENTAL', 'UPLOAD_EVIDENCE');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-FRONT_OFFICE', 'RENTAL', 'UPLOAD_EVIDENCE', expect.anything());
     expect(storage.generateSignedUploadUrl).toHaveBeenCalledWith({
       companyId: 'comp-1',
       rentalId: 'rent-1',

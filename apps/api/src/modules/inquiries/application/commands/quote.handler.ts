@@ -76,7 +76,7 @@ export class QuoteHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'QUOTE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'INQUIRY', 'QUOTE', { companyId: context.companyId, branchId: context.branchId });
     this.quotingGuard.assertReady();
 
     const scope = {

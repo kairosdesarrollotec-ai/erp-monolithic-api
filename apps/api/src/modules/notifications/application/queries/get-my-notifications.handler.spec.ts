@@ -2,10 +2,11 @@ import { GetMyNotificationsHandler } from './get-my-notifications.handler';
 import { GetMyNotificationsQuery } from './get-my-notifications.query';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { NotificationReadModelPort } from '../ports/notification-read-model.port';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildAuthorization() {
   return {
-    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role: 'FRONT_OFFICE' }),
+    authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole('FRONT_OFFICE') }),
   } as unknown as WorkContextAuthorizationService;
 }
 

@@ -4,6 +4,7 @@ import { GetRentalQuery } from './get-rental.query';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('GetRentalHandler', () => {
   const fakeRental: RentalRecord = {
@@ -43,7 +44,7 @@ describe('GetRentalHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'FRONT_OFFICE',
+        ...testRole('FRONT_OFFICE'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
@@ -90,6 +91,6 @@ describe('GetRentalHandler', () => {
     expect(deps.workContext.authorize).toHaveBeenCalledWith(
       expect.objectContaining({ firebaseUid: 'uid-1', companyId: 'comp-1', branchId: 'branch-1' }),
     );
-    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'FRONT_OFFICE', 'RENTAL', 'READ');
+    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-FRONT_OFFICE', 'RENTAL', 'READ', expect.anything());
   });
 });

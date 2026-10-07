@@ -8,6 +8,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { RentalStateConflictError } from '../../domain/rental-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('FormalizeContractHandler', () => {
   const fakeRental: RentalRecord = {
@@ -52,7 +53,7 @@ describe('FormalizeContractHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'FRONT_OFFICE',
+        ...testRole('FRONT_OFFICE'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

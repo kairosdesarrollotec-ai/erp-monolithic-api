@@ -51,7 +51,7 @@ export class RequestExtensionHandler {
       branchId: command.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'REQUEST_EXTENSION');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'REQUEST_EXTENSION', { companyId: context.companyId, branchId: context.branchId });
 
     const scope = {
       organizationId: context.organizationId,

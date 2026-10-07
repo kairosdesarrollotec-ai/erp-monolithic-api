@@ -12,6 +12,7 @@ import { RentalEvidenceRepositoryPort } from '../ports/rental-evidence-repositor
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { RentalCreationGuard } from '../services/rental-creation.guard';
 import { VehicleNotAvailableForRentalError } from '../../domain/rental-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 const NOW = new Date('2026-10-05T15:00:00Z');
 
@@ -85,7 +86,7 @@ describe('CompleteDeliveryHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'FRONT_OFFICE',
+        ...testRole('FRONT_OFFICE'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 

@@ -46,7 +46,7 @@ export class ListAuditEventsHandler {
       companyId: query.companyId,
       branchId: query.branchId,
     });
-    await this.adminAuthorization.assertAllowed(context.organizationId, context.role, 'VIEW_AUDIT');
+    await this.adminAuthorization.assertAllowed(context.organizationId, context.roleId, 'VIEW_AUDIT', { companyId: context.companyId, branchId: context.branchId });
 
     const events = await this.auditEvents.listEvents({
       organizationId: context.organizationId,

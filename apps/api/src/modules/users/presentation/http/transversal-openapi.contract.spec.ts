@@ -11,7 +11,6 @@ import { AuditController } from '../../../audit/presentation/http/audit.controll
 import { HealthController } from '../../../health/health.controller';
 import { SelectWorkContextDto } from './dto/select-work-context.dto';
 import { RecordLoginAttemptDto } from '../../../audit/presentation/http/dto/record-login-attempt.dto';
-import { WORKER_ROLES } from '../../../users/domain/worker-role';
 
 import * as yaml from 'js-yaml';
 
@@ -126,7 +125,9 @@ describe('Contrato OpenAPI transversal.yaml vs backend', () => {
     expect([...contract.required].sort()).toEqual(fields.required);
   });
 
-  it('enum WorkerRole coincide entre transversal.yaml y el dominio', () => {
-    expect([...spec.components.schemas.WorkerRole.enum].sort()).toEqual([...WORKER_ROLES].sort());
+  it('el rol es un RoleRef {id,name,key} (roles dinamicos): ya no hay enum cerrado WorkerRole en el contrato', () => {
+    expect(spec.components.schemas.WorkerRole).toBeUndefined();
+    expect(spec.components.schemas.RoleRef.required.sort()).toEqual(['id', 'key', 'name']);
+    expect(spec.components.schemas.DashboardResponse.properties.role.$ref).toBe('#/components/schemas/RoleRef');
   });
 });

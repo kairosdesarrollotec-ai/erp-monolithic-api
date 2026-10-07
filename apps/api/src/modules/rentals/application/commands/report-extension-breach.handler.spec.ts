@@ -7,6 +7,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { RentalStateConflictError } from '../../domain/rental-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('ReportExtensionBreachHandler', () => {
   const fakeRental: RentalRecord = {
@@ -64,7 +65,7 @@ describe('ReportExtensionBreachHandler', () => {
         organizationId: 'org-1',
         companyId: 'comp-1',
         branchId: 'branch-1',
-        role: 'GERENCIA',
+        ...testRole('GERENCIA'),
       }),
     } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
@@ -113,7 +114,7 @@ describe('ReportExtensionBreachHandler', () => {
     );
 
     expect(result.id).toBe('rent-1');
-    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'GERENCIA', 'RENTAL', 'REPORT_EXTENSION_BREACH');
+    expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-GERENCIA', 'RENTAL', 'REPORT_EXTENSION_BREACH', expect.anything());
     expect(deps.rentals.reportExtensionBreach).toHaveBeenCalledWith(
       expect.objectContaining({
         rentalId: 'rent-1',

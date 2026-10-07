@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { getTestDatabase, TestDatabase } from '../helpers/test-database';
+import { ensureSystemRoles } from '../../src/modules/admin/infrastructure/persistence/system-roles-seeder';
 
 /**
  * Test de integridad a nivel de base de datos REAL (Postgres), no un
@@ -42,6 +43,8 @@ describe('Integridad company/organization (Postgres real)', () => {
       data: { id: branchId, companyId, name: 'Sede (test integridad)' },
     });
 
+    const rolesB = await ensureSystemRoles(prisma, orgB); // el rol SI es de orgB: lo que falla es la empresa
+
     try {
       await expect(
         prisma.userCompanyAssignment.create({
@@ -50,7 +53,7 @@ describe('Integridad company/organization (Postgres real)', () => {
             firebaseUid,
             companyId,
             branchId,
-            role: 'ADMINISTRACION',
+            roleId: rolesB.get('ADMINISTRACION')!,
           },
         }),
       ).rejects.toThrow();
@@ -73,13 +76,14 @@ describe('Integridad company/organization (Postgres real)', () => {
       data: { id: branchId, companyId, name: 'Sede (test integridad OK)' },
     });
 
+    const rolesA = await ensureSystemRoles(prisma, orgA);
     const assignment = await prisma.userCompanyAssignment.create({
       data: {
         organizationId: orgA, // <- coincide con el organizationId real de companyId
         firebaseUid,
         companyId,
         branchId,
-        role: 'ADMINISTRACION',
+        roleId: rolesA.get('ADMINISTRACION')!,
       },
     });
 
@@ -88,5 +92,33 @@ describe('Integridad company/organization (Postgres real)', () => {
     await prisma.userCompanyAssignment.delete({ where: { id: assignment.id } });
     await prisma.branch.delete({ where: { id: branchId } });
     await prisma.company.delete({ where: { id: companyId } });
+  });
+
+  it('la base RECHAZA una asignacion con un rol de OTRA organizacion (FK compuesta role_id + organization_id)', async () => {
+    const orgA = randomUUID();
+    const orgB = randomUUID();
+    const companyId = randomUUID();
+    const branchId = randomUUID();
+
+    await prisma.company.create({ data: { id: companyId, organizationId: orgA, name: 'Empresa Org A (test rol ajeno)' } });
+    await prisma.branch.create({ data: { id: branchId, companyId, name: 'Sede (test rol ajeno)' } });
+    const rolesB = await ensureSystemRoles(prisma, orgB);
+
+    try {
+      await expect(
+        prisma.userCompanyAssignment.create({
+          data: {
+            organizationId: orgA, // empresa y asignacion coinciden...
+            firebaseUid: `test-integrity-${randomUUID()}`,
+            companyId,
+            branchId,
+            roleId: rolesB.get('ADMINISTRACION')!, // ...pero el rol es de orgB
+          },
+        }),
+      ).rejects.toThrow();
+    } finally {
+      await prisma.branch.delete({ where: { id: branchId } });
+      await prisma.company.delete({ where: { id: companyId } });
+    }
   });
 });

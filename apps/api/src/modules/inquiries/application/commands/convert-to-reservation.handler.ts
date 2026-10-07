@@ -69,8 +69,8 @@ export class ConvertToReservationHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'CONVERT_TO_RESERVATION');
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RESERVATION', 'CREATE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'INQUIRY', 'CONVERT_TO_RESERVATION', { companyId: context.companyId, branchId: context.branchId });
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RESERVATION', 'CREATE', { companyId: context.companyId, branchId: context.branchId });
     this.quotingGuard.assertReady();
 
     if (command.startAt.getTime() <= this.clock.now().getTime()) {

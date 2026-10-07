@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Administracion API
-  version: 0.1.0
+  version: 0.2.1
   description: >
     Contrato del modulo Administracion (ADM-01..05, TR-07,
     PANTALLAS-V2-B-SOPORTE.md). Cierra el hallazgo ALTO de revalidacion
@@ -211,12 +211,16 @@ paths:
       parameters:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: scopeCompanyId, in: query, required: false, schema: { type: string, format: uuid }, description: 'Ambito a mostrar (aditivo 0.2.1); omitido = toda la organizacion. Si ese ambito no tiene version propia, hereda la de arriba (`scope` dice de donde sale).' }
+        - { name: scopeBranchId, in: query, required: false, schema: { type: string, format: uuid }, description: 'Requiere scopeCompanyId' }
       responses:
         '200':
           description: Matriz vigente + catalogo de acciones
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RolePermissionMatrixResponse' }
+        '400':
+          description: 'MATRIX_SCOPE_INVALID (sede sin empresa) o COMPANY_BRANCH_NOT_IN_ORGANIZATION (ambito ajeno)'
         '403':
           description: Sin contexto vigente, o rol sin MANAGE_PERMISSIONS
     post:
@@ -246,7 +250,155 @@ paths:
         '403':
           description: Sin contexto vigente, o rol sin MANAGE_PERMISSIONS
         '409':
-          description: 'INCOMPATIBLE_PERMISSION_COMBINATION - segregacion de funciones violada'
+          description: >
+            INCOMPATIBLE_PERMISSIONS - segregacion de funciones violada
+            (el codigo real del back es INCOMPATIBLE_PERMISSIONS; antes se
+            documentaba como INCOMPATIBLE_PERMISSION_COMBINATION) -
+            LAST_ADMINISTRATOR_ROLE - la nueva foto dejaria a la organizacion
+            sin ningun rol activo con asignaciones y con ADMIN.MANAGE_PERMISSIONS
+            y ADMIN.MANAGE_USERS - MATRIX_VERSION_CONFLICT - otra persona
+            guardo al mismo tiempo (recargar y reintentar)
+  /admin/roles:
+    get:
+      operationId: listRoles
+      summary: ADM-02 - Listar roles de la organizacion (dinamicos)
+      description: >
+        Los roles son datos, no un enum: el administrador los crea,
+        renombra y desactiva. Los 8 roles historicos se siembran como
+        roles de sistema (`isSystem: true`, con `key` estable).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: includeInactive, in: query, required: false, schema: { type: boolean, default: false } }
+      responses:
+        '200':
+          description: Roles de la organizacion
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [roles]
+                properties:
+                  roles:
+                    type: array
+                    items: { $ref: '#/components/schemas/Role' }
+        '403':
+          description: Sin contexto vigente, o sin permiso ADMIN.MANAGE_PERMISSIONS
+    post:
+      operationId: createRole
+      summary: ADM-02 - Crear un rol (nace con cero permisos)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoleRequest' }
+      responses:
+        '201':
+          description: Rol creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '400':
+          description: 'ROLE_NAME_INVALID - vacio o mas de 60 caracteres'
+        '403':
+          description: Sin contexto vigente, o sin permiso ADMIN.MANAGE_PERMISSIONS
+        '409':
+          description: 'ROLE_NAME_TAKEN - ya existe un rol con ese nombre (sin distinguir mayusculas) en la organizacion'
+  /admin/roles/{id}:
+    patch:
+      operationId: renameRole
+      summary: ADM-02 - Renombrar un rol (If-Match con la version del rol)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string }, description: 'ETag = version del rol' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RenameRoleRequest' }
+      responses:
+        '200':
+          description: Rol renombrado
+          headers:
+            ETag: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '400':
+          description: ROLE_NAME_INVALID
+        '403':
+          description: 'Sin contexto/permiso, o ROLE_NOT_EDITABLE (el rol PLATFORM_ADMIN no se renombra)'
+        '404':
+          description: El rol no existe o no pertenece a la organizacion (IDOR)
+        '409':
+          description: ROLE_NAME_TAKEN
+        '412':
+          description: VERSION_CONFLICT - la version del rol cambio (If-Match desactualizado)
+        '428':
+          description: If-Match ausente
+  /admin/roles/{id}/deactivate:
+    post:
+      operationId: deactivateRole
+      summary: ADM-02 - Desactivar un rol (nunca borra; conserva historial)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [companyId, branchId]
+              properties:
+                companyId: { type: string, format: uuid }
+                branchId: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Rol desactivado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '403':
+          description: 'Sin contexto/permiso, o ROLE_NOT_EDITABLE (PLATFORM_ADMIN)'
+        '404':
+          description: El rol no existe o no pertenece a la organizacion (IDOR)
+        '409':
+          description: >
+            ROLE_HAS_ACTIVE_ASSIGNMENTS - hay asignaciones activas con ese
+            rol - LAST_ADMINISTRATOR_ROLE - desactivarlo dejaria la
+            organizacion sin ningun rol activo con asignaciones y con
+            ADMIN.MANAGE_PERMISSIONS y ADMIN.MANAGE_USERS
+        '412':
+          description: VERSION_CONFLICT
+        '428':
+          description: If-Match ausente
+  /me/permissions:
+    get:
+      operationId: getMyPermissions
+      summary: Permisos efectivos del usuario autenticado en el contexto de trabajo vigente
+      description: >
+        Unica fuente que usa el front para mostrar/ocultar modulos y
+        acciones; el back sigue autorizando cada comando por su cuenta.
+        Resuelve la matriz del ambito mas especifico (sede > empresa >
+        organizacion); sin entrada = denegado. La respuesta cambia solo
+        cuando cambia `matrixVersion` o la asignacion.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Permisos efectivos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EffectivePermissionsResponse' }
+        '403':
+          description: Sin asignacion vigente en esa empresa/sede
   /admin/notification-templates:
     get:
       operationId: getNotificationTemplates
@@ -291,9 +443,59 @@ components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: 'Firebase ID token' }
   schemas:
-    WorkerRole:
-      type: string
-      enum: [ADMINISTRACION, AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA, PLATFORM_ADMIN, RRHH]
+    RoleRef:
+      type: object
+      required: [id, name, key]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, description: 'Nombre visible, editable por el administrador' }
+        key:
+          type: [string, 'null']
+          description: >
+            Codigo estable de los roles de sistema (ADMINISTRACION,
+            AUDITORIA, CAMPO, FINANZAS, FRONT_OFFICE, GERENCIA,
+            PLATFORM_ADMIN, RRHH); null en roles creados a mano. El front
+            NO debe decidir acceso por `key`: usa /me/permissions.
+    Role:
+      type: object
+      required: [id, name, key, isSystem, active, version, assignmentCount]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        key: { type: [string, 'null'] }
+        isSystem: { type: boolean }
+        active: { type: boolean }
+        version: { type: integer, description: 'Concurrencia optimista (ETag/If-Match)' }
+        assignmentCount: { type: integer, minimum: 0, description: 'Asignaciones activas con este rol' }
+    CreateRoleRequest:
+      type: object
+      required: [companyId, branchId, name]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 60 }
+    RenameRoleRequest:
+      type: object
+      required: [companyId, branchId, name]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 60 }
+    EffectivePermission:
+      type: object
+      required: [module, action]
+      properties:
+        module: { $ref: '#/components/schemas/PermissionModule' }
+        action: { type: string }
+    EffectivePermissionsResponse:
+      type: object
+      required: [role, matrixVersion, permissions]
+      properties:
+        role: { $ref: '#/components/schemas/RoleRef' }
+        matrixVersion: { type: integer }
+        permissions:
+          type: array
+          items: { $ref: '#/components/schemas/EffectivePermission' }
     OrganizationBranch:
       type: object
       required: [branchId, branchName]
@@ -320,19 +522,19 @@ components:
         companyName: { type: string }
         branchId: { type: string, format: uuid }
         branchName: { type: string }
-        role: { $ref: '#/components/schemas/WorkerRole' }
+        role: { $ref: '#/components/schemas/RoleRef' }
         active: { type: boolean }
         mfaEnrolled: { type: boolean }
     AssignUserRequest:
       type: object
-      required: [companyId, branchId, targetEmail, targetCompanyId, targetBranchId, targetRole]
+      required: [companyId, branchId, targetEmail, targetCompanyId, targetBranchId, targetRoleId]
       properties:
         companyId: { type: string, format: uuid, description: 'Empresa vigente del admin (contexto de trabajo)' }
         branchId: { type: string, format: uuid, description: 'Sede vigente del admin (contexto de trabajo)' }
         targetEmail: { type: string, format: email }
         targetCompanyId: { type: string, format: uuid, description: 'Empresa destino de la asignacion' }
         targetBranchId: { type: string, format: uuid, description: 'Sede destino de la asignacion' }
-        targetRole: { $ref: '#/components/schemas/WorkerRole' }
+        targetRoleId: { type: string, format: uuid, description: 'Rol activo de la organizacion (GET /admin/roles)' }
         initialPassword:
           type: string
           minLength: 8
@@ -383,9 +585,9 @@ components:
       enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT]
     RolePermissionEntry:
       type: object
-      required: [role, module, action, allowed]
+      required: [roleId, module, action, allowed]
       properties:
-        role: { $ref: '#/components/schemas/WorkerRole' }
+        roleId: { type: string, format: uuid }
         module: { $ref: '#/components/schemas/PermissionModule' }
         action: { type: string }
         allowed: { type: boolean }
@@ -401,6 +603,12 @@ components:
       required: [version, entries, actionCatalog]
       properties:
         version: { type: integer }
+        scope:
+          type: object
+          description: 'Ambito de la version devuelta; companyId/branchId null = aplica a toda la organizacion/empresa'
+          properties:
+            companyId: { type: [string, 'null'], format: uuid }
+            branchId: { type: [string, 'null'], format: uuid }
         entries:
           type: array
           items: { $ref: '#/components/schemas/RolePermissionEntry' }
@@ -411,8 +619,10 @@ components:
       type: object
       required: [companyId, branchId, entries]
       properties:
-        companyId: { type: string, format: uuid }
-        branchId: { type: string, format: uuid }
+        companyId: { type: string, format: uuid, description: 'Contexto de trabajo del admin' }
+        branchId: { type: string, format: uuid, description: 'Contexto de trabajo del admin' }
+        scopeCompanyId: { type: [string, 'null'], format: uuid, description: 'Ambito de la nueva version; omitido/null = toda la organizacion' }
+        scopeBranchId: { type: [string, 'null'], format: uuid, description: 'Ambito de la nueva version; omitido/null = toda la empresa (o la organizacion si scopeCompanyId tambien es null)' }
         entries:
           type: array
           minItems: 1

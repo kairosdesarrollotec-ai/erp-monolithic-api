@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { RecordEvidenceHandler } from './record-evidence.handler';
 import { RecordEvidenceCommand } from './record-evidence.command';
 import { RentalStateConflictError } from '../../domain/rental-errors';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildEvidencePort() {
   return {
@@ -29,7 +30,7 @@ function buildWorkContext() {
       organizationId: 'org-1',
       companyId: 'comp-1',
       branchId: 'branch-1',
-      role: 'FRONT_OFFICE',
+      ...testRole('FRONT_OFFICE'),
     }),
   };
 }

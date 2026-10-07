@@ -29,20 +29,28 @@ const CUSTOMER_READ_ROLES: ReadonlySet<WorkerRole> = new Set([
   'PLATFORM_ADMIN',
 ]);
 
-export function assertCustomerWrite(role: WorkerRole): void {
-  if (!CUSTOMER_WRITE_ROLES.has(role)) {
+/**
+ * TODO(roles-dinamicos, fase 4): este modulo AUN decide con un set de roles
+ * hard-coded, ahora contra `roleKey` (clave estable de los 8 roles de sistema,
+ * AuthorizedWorkContext.roleKey). Un rol creado a mano (key = null) queda
+ * DENEGADO aqui (deny-by-default) hasta que el modulo migre a la matriz ADM-02
+ * (MatrixAuthorizationService.assertAllowed por roleId) en su propio PR de la
+ * fase 4. No migrar en el PR de la fase 2.
+ */
+export function assertCustomerWrite(role: WorkerRole | null): void {
+  if (role === null || !CUSTOMER_WRITE_ROLES.has(role)) {
     throw new ForbiddenException({
       code: 'CUSTOMER_WRITE_NOT_ALLOWED',
-      detail: `El rol "${role}" no tiene permiso para modificar clientes.`,
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no tiene permiso para modificar clientes.`,
     });
   }
 }
 
-export function assertCustomerRead(role: WorkerRole): void {
-  if (!CUSTOMER_READ_ROLES.has(role)) {
+export function assertCustomerRead(role: WorkerRole | null): void {
+  if (role === null || !CUSTOMER_READ_ROLES.has(role)) {
     throw new ForbiddenException({
       code: 'CUSTOMER_READ_NOT_ALLOWED',
-      detail: `El rol "${role}" no tiene permiso para consultar clientes.`,
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no tiene permiso para consultar clientes.`,
     });
   }
 }

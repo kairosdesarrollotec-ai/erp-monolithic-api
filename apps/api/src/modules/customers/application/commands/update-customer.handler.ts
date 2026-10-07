@@ -28,7 +28,7 @@ export class UpdateCustomerHandler {
       branchId: command.branchId,
     });
 
-    assertCustomerWrite(context.role);
+    assertCustomerWrite(context.roleKey);
 
     const scope = {
       organizationId: context.organizationId,

@@ -4,6 +4,7 @@ import { GetReservationQuery } from './get-reservation.query';
 import { ReservationRepositoryPort, ReservationRecord, ReservationScope } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildRecord(): ReservationRecord {
   return {
@@ -27,7 +28,7 @@ function buildDeps(record: ReservationRecord | null, opts: { forbidden?: boolean
   const workContext = {
     authorize: opts.forbidden
       ? jest.fn().mockRejectedValue(new ForbiddenException())
-      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', role: opts.role ?? 'FRONT_OFFICE' }),
+      : jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'company-1', branchId: 'branch-1', ...testRole(opts.role ?? 'FRONT_OFFICE') }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
   const matrixAuth = {
     assertAllowed: jest.fn().mockResolvedValue(undefined),
@@ -76,7 +77,7 @@ describe('GetReservationHandler', () => {
     const { reservations, workContext, matrixAuth } = buildDeps(buildRecord());
     const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
     await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'));
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'FRONT_OFFICE', 'RESERVATION', 'READ_DETAIL');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-FRONT_OFFICE', 'RESERVATION', 'READ_DETAIL', expect.anything());
   });
 
   it('rechaza si la matriz niega READ_DETAIL al rol del usuario', async () => {
@@ -94,6 +95,6 @@ describe('GetReservationHandler', () => {
     const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
     const result = await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'));
     expect(result.id).toBe('res-1');
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'AUDITORIA', 'RESERVATION', 'READ_DETAIL');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-AUDITORIA', 'RESERVATION', 'READ_DETAIL', expect.anything());
   });
 });

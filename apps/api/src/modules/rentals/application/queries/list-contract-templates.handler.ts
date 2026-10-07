@@ -19,7 +19,7 @@ export class ListContractTemplatesHandler {
       branchId: query.branchId,
     });
 
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES', { companyId: context.companyId, branchId: context.branchId });
 
     return this.rentals.listContractTemplates(query.companyId);
   }
