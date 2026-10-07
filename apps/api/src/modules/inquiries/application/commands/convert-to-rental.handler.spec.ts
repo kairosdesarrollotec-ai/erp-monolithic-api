@@ -223,8 +223,8 @@ describe('ConvertToRentalHandler (caso de uso unico Consulta -> Alquiler directo
     it('exige INQUIRY.CONVERT_TO_RENTAL y RENTAL.CREATE en la matriz', async () => {
       const { handler, matrixAuth } = build();
       await handler.execute(command());
-      expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'INQUIRY', 'CONVERT_TO_RENTAL');
-      expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'FRONT_OFFICE', 'RENTAL', 'CREATE');
+      expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'INQUIRY', 'CONVERT_TO_RENTAL', expect.anything());
+      expect(matrixAuth.assertAllowed).toHaveBeenCalledWith(ORG, 'role-FRONT_OFFICE', 'RENTAL', 'CREATE', expect.anything());
     });
 
     it('asignacion de contexto no vigente -> 403', async () => {
