@@ -4,6 +4,29 @@ import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { RecruitmentAccessService } from './application/services/recruitment-access.service';
+import { VacancyRepositoryPort } from './application/ports/vacancy-repository.port';
+import { PrismaVacancyRepository } from './infrastructure/persistence/prisma-vacancy.repository';
+import { CandidateRepositoryPort } from './application/ports/candidate-repository.port';
+import { PrismaCandidateRepository } from './infrastructure/persistence/prisma-candidate.repository';
+import { InterviewRepositoryPort } from './application/ports/interview-repository.port';
+import { PrismaInterviewRepository } from './infrastructure/persistence/prisma-interview.repository';
+import { OnboardingRepositoryPort } from './application/ports/onboarding-repository.port';
+import { PrismaOnboardingRepository } from './infrastructure/persistence/prisma-onboarding.repository';
+import { RegisterVacancyHandler } from './application/commands/register-vacancy.handler';
+import { PublishVacancyHandler } from './application/commands/publish-vacancy.handler';
+import { RegisterCandidateHandler } from './application/commands/register-candidate.handler';
+import { ChangeCandidateStageHandler } from './application/commands/change-candidate-stage.handler';
+import { ScheduleInterviewHandler } from './application/commands/schedule-interview.handler';
+import { RecordInterviewResultHandler } from './application/commands/record-interview-result.handler';
+import { DecideCandidateHandler } from './application/commands/decide-candidate.handler';
+import { CompleteOnboardingHandler } from './application/commands/complete-onboarding.handler';
+import { EvaluateProbationHandler } from './application/commands/evaluate-probation.handler';
+import { ListVacanciesHandler } from './application/queries/list-vacancies.handler';
+import { GetVacancyDetailHandler } from './application/queries/get-vacancy-detail.handler';
+import { GetCandidateDetailHandler } from './application/queries/get-candidate-detail.handler';
+import { VacanciesController } from './presentation/http/vacancies.controller';
+import { CandidatesController } from './presentation/http/candidates.controller';
+import { InterviewsController } from './presentation/http/interviews.controller';
 
 /**
  * Módulo de Reclutamiento y Selección (REC-01 a REC-08).
@@ -12,8 +35,26 @@ import { RecruitmentAccessService } from './application/services/recruitment-acc
  */
 @Module({
   imports: [UsersModule, AuditModule, OutboxModule, AuthorizationModule],
-  controllers: [],
-  providers: [RecruitmentAccessService],
-  exports: [RecruitmentAccessService],
+  controllers: [VacanciesController, CandidatesController, InterviewsController],
+  providers: [
+    RecruitmentAccessService,
+    { provide: VacancyRepositoryPort, useClass: PrismaVacancyRepository },
+    { provide: CandidateRepositoryPort, useClass: PrismaCandidateRepository },
+    { provide: InterviewRepositoryPort, useClass: PrismaInterviewRepository },
+    { provide: OnboardingRepositoryPort, useClass: PrismaOnboardingRepository },
+    RegisterVacancyHandler,
+    PublishVacancyHandler,
+    RegisterCandidateHandler,
+    ChangeCandidateStageHandler,
+    ScheduleInterviewHandler,
+    RecordInterviewResultHandler,
+    DecideCandidateHandler,
+    CompleteOnboardingHandler,
+    EvaluateProbationHandler,
+    ListVacanciesHandler,
+    GetVacancyDetailHandler,
+    GetCandidateDetailHandler,
+  ],
+  exports: [RecruitmentAccessService, VacancyRepositoryPort, CandidateRepositoryPort],
 })
 export class RecruitmentModule {}

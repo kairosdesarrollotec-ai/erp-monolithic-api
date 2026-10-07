@@ -141,6 +141,7 @@ export function buildDeps(options: { role?: WorkerRole } = {}): IncidentTestDeps
     recordAdminEvent: jest.fn(),
     recordRentalEvent: jest.fn(),
     recordIncidentEvent: jest.fn().mockResolvedValue(undefined),
+    recordRecruitmentEvent: jest.fn().mockResolvedValue(undefined),
   };
   const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {
     publish: jest.fn().mockResolvedValue(undefined),

@@ -99,3 +99,27 @@ export class ProbationAlreadyEvaluatedError extends DomainConflictError {
     super('El periodo de prueba ya fue evaluado para este colaborador.');
   }
 }
+
+export class OnboardingNotFoundError extends DomainNotFoundError {
+  readonly code = 'ONBOARDING_NOT_FOUND';
+
+  constructor() {
+    super('El proceso de incorporación no ha sido registrado para este candidato.');
+  }
+}
+
+export class CandidateStageRegressionError extends DomainUnprocessableError {
+  readonly code = 'CANDIDATE_STAGE_REGRESSION';
+
+  constructor(currentStage: string, targetStage: string) {
+    super(`No es posible retroceder la etapa del postulante de ${currentStage} a ${targetStage}.`);
+  }
+}
+
+export class OnboardingChecklistIncompleteError extends DomainUnprocessableError {
+  readonly code = 'ONBOARDING_CHECKLIST_INCOMPLETE';
+
+  constructor() {
+    super('Todos los ítems del checklist de incorporación deben completarse (inducción, equipo asignado y acta firmada).');
+  }
+}

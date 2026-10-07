@@ -26,6 +26,7 @@ describe('SelectWorkContextHandler', () => {
       recordAdminEvent: jest.fn().mockResolvedValue(undefined),
       recordRentalEvent: jest.fn().mockResolvedValue(undefined),
       recordIncidentEvent: jest.fn(),
+      recordRecruitmentEvent: jest.fn(),
     };
     const runMock = jest.fn((work: (tx: never) => Promise<unknown>) => work(fakeTx));
     const transactionManager: TransactionManagerPort = {
