@@ -1,0 +1,290 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Incidents API
+  version: 0.1.0
+  description: >
+    Contrato del módulo Incidencias (INC-01 bandeja, INC-02 detalle/RIO). Fuentes: PANTALLAS-V2-B-SOPORTE.md,
+    diccionario de datos 1.8 (RIO), SDD (Incident pertenece a Incidents, ligado a Rental/Return; ciclo Abierta -> Cerrada / Vía legal),
+    cláusula 26 del contrato (aviso de siniestro en 15 min, evidencia en 30 min), DEV-09 (no liberar garantía con incidencia abierta).
+    Historial de acciones append-only: nunca se edita ni borra una entrada. "Resolver" directo solo para severidad LEVE y exige resumen.
+    Concurrencia optimista con If-Match/version; Idempotency-Key opcional en comandos.
+
+paths:
+  /incidents:
+    post:
+      operationId: createIncident
+      summary: Registrar incidencia (INC-01, acción primaria "Registrar incidencia")
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateIncidentRequest' }
+      responses:
+        '201':
+          description: Incidencia creada en estado ABIERTA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso INCIDENT.CREATE o contexto no autorizado }
+        '404': { description: Alquiler o devolución no encontrado en la empresa/sede (RENTAL_NOT_FOUND / RETURN_NOT_FOUND; también si la devolución no pertenece al alquiler) }
+        '409': { description: Idempotency-Key reutilizada con otro cuerpo (IDEMPOTENCY_KEY_REUSED) o aún en curso (IDEMPOTENCY_KEY_IN_PROGRESS) }
+        '500': { description: Error interno }
+    get:
+      operationId: listIncidents
+      summary: Bandeja de incidencias con filtros y paginación keyset (INC-01)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: type, in: query, required: false, schema: { $ref: '#/components/schemas/IncidentType' } }
+        - { name: severity, in: query, required: false, schema: { $ref: '#/components/schemas/IncidentSeverity' } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/IncidentStatus' } }
+        - { name: rentalId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: returnId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: cursorCreatedAt, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: cursorId, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de incidencias, más recientes primero
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/IncidentResponse' }
+        '400': { description: Parámetros inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso INCIDENT.VIEW o contexto no autorizado }
+        '500': { description: Error interno }
+
+  /incidents/{id}:
+    get:
+      operationId: getIncident
+      summary: Detalle de incidencia con historial de acciones (INC-02)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Incidencia con su timeline de acciones
+          headers:
+            ETag: { schema: { type: string }, description: Versión de la incidencia, usar en If-Match }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentDetailResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin permiso o contexto no autorizado }
+        '404': { description: Incidencia no encontrada }
+        '500': { description: Error interno }
+
+  /incidents/{id}/commands/add-action:
+    post:
+      operationId: addIncidentAction
+      summary: Agregar una acción al historial (INC-02 "Agregar nueva acción"), append-only
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddIncidentActionRequest' }
+      responses:
+        '200':
+          description: Acción agregada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentDetailResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso INCIDENT.ADD_ACTION }
+        '404': { description: Incidencia no encontrada }
+        '409': { description: Versión desactualizada (VERSION_CONFLICT) o incidencia ya no está ABIERTA (INCIDENT_NOT_OPEN) }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
+  /incidents/{id}/commands/resolve:
+    post:
+      operationId: resolveIncident
+      summary: Resolver directo desde la fila (INC-01), solo severidad LEVE, exige resumen
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloseIncidentRequest' }
+      responses:
+        '200':
+          description: Incidencia cerrada (CERRADA) por resolución directa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentDetailResponse' }
+        '400': { description: Resumen vacío o inválido }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso INCIDENT.RESOLVE }
+        '404': { description: Incidencia no encontrada }
+        '409': { description: VERSION_CONFLICT o INCIDENT_NOT_OPEN }
+        '422': { description: Severidad no LEVE, no admite resolución directa (INCIDENT_DIRECT_RESOLVE_NOT_ALLOWED) }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
+  /incidents/{id}/commands/close:
+    post:
+      operationId: closeIncident
+      summary: Cerrar incidencia desde el detalle (INC-02), exige resumen de resolución
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloseIncidentRequest' }
+      responses:
+        '200':
+          description: Incidencia cerrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentDetailResponse' }
+        '400': { description: Resumen vacío o inválido }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso INCIDENT.CLOSE }
+        '404': { description: Incidencia no encontrada }
+        '409': { description: VERSION_CONFLICT o INCIDENT_NOT_OPEN }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
+  /incidents/{id}/commands/refer-legal:
+    post:
+      operationId: referIncidentToLegal
+      summary: Derivar la incidencia a vía legal (estado VIA_LEGAL), exige motivo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReferLegalRequest' }
+      responses:
+        '200':
+          description: Incidencia derivada a vía legal
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncidentDetailResponse' }
+        '400': { description: Motivo vacío o inválido }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso INCIDENT.REFER_LEGAL }
+        '404': { description: Incidencia no encontrada }
+        '409': { description: VERSION_CONFLICT o INCIDENT_NOT_OPEN }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    IncidentType:
+      type: string
+      description: Catálogo mínimo; ampliable sin cambiar el modelo.
+      enum: [KEY_LOSS, CRASH_OR_DAMAGE, TRAFFIC_FINE_OR_INTERVENTION, TOWING, OTHER]
+    IncidentSeverity:
+      type: string
+      enum: [LEVE, MODERADA, GRAVE]
+    IncidentStatus:
+      type: string
+      description: ABIERTA bloquea la liberación de garantía (DEV-09). CERRADA y VIA_LEGAL son terminales.
+      enum: [ABIERTA, CERRADA, VIA_LEGAL]
+    CreateIncidentRequest:
+      type: object
+      required: [companyId, branchId, rentalId, type, severity, description]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        returnId: { type: string, format: uuid, description: Opcional; vincula a la devolución }
+        type: { $ref: '#/components/schemas/IncidentType' }
+        severity: { $ref: '#/components/schemas/IncidentSeverity' }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        suggestion: { type: string, maxLength: 2000, description: RIO "sugerencia" (opcional) }
+        reportedAt: { type: string, format: date-time, description: Fecha de reporte; por defecto, ahora }
+        responsibleUserId: { type: string, minLength: 1, maxLength: 128, description: 'Responsable (firebaseUid, mismo identificador de usuario que usan los demás módulos); por defecto, quien registra' }
+    AddIncidentActionRequest:
+      type: object
+      required: [companyId, branchId, description]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+    CloseIncidentRequest:
+      type: object
+      required: [companyId, branchId, resolutionSummary]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        resolutionSummary: { type: string, minLength: 1, maxLength: 2000 }
+    ReferLegalRequest:
+      type: object
+      required: [companyId, branchId, reason]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+    IncidentActionEntry:
+      type: object
+      required: [id, kind, description, authorUserId, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [REPORTED, ACTION, RESOLVED, CLOSED, REFERRED_LEGAL] }
+        description: { type: string }
+        authorUserId: { type: string, description: firebaseUid del autor }
+        createdAt: { type: string, format: date-time }
+    IncidentResponse:
+      type: object
+      required: [id, companyId, branchId, rentalId, type, severity, status, description, reportedAt, responsibleUserId, version, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        rentalCode: { type: string, nullable: true, description: Código de expediente legible (ej. ALQ-1187) si está disponible }
+        returnId: { type: string, format: uuid, nullable: true }
+        type: { $ref: '#/components/schemas/IncidentType' }
+        severity: { $ref: '#/components/schemas/IncidentSeverity' }
+        status: { $ref: '#/components/schemas/IncidentStatus' }
+        description: { type: string }
+        suggestion: { type: string, nullable: true }
+        reportedAt: { type: string, format: date-time }
+        responsibleUserId: { type: string, description: firebaseUid del responsable }
+        resolutionSummary: { type: string, nullable: true }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+        version: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    IncidentDetailResponse:
+      allOf:
+        - { $ref: '#/components/schemas/IncidentResponse' }
+        - type: object
+          required: [actions]
+          properties:
+            actions:
+              type: array
+              description: Timeline append-only, orden cronológico ascendente
+              items: { $ref: '#/components/schemas/IncidentActionEntry' }
