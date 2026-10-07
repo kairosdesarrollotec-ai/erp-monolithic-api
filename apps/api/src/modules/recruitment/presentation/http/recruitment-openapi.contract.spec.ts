@@ -91,6 +91,18 @@ describe('recruitment.yaml contract specification', () => {
     expect(Object.keys(schemas.InterviewerResponse.properties).sort()).toEqual(['fullName', 'id']);
   });
 
+  it('GET /vacancies/{id}/candidates (listCandidates) devuelve un array de CandidateResponse con stage opcional', () => {
+    const op = spec.paths['/vacancies/{id}/candidates'].get;
+    expect(op.operationId).toBe('listCandidates');
+    const param = (name: string) => op.parameters.find((p: any) => p.name === name && p.in === 'query');
+    expect(param('companyId').required).toBe(true);
+    expect(param('branchId').required).toBe(true);
+    expect(param('stage').required).toBe(false);
+    const schema = op.responses['200'].content['application/json'].schema;
+    expect(schema.type).toBe('array');
+    expect(schema.items.$ref).toBe('#/components/schemas/CandidateResponse');
+  });
+
   it('los comandos mutantes con concurrencia optimista exigen cabecera If-Match', () => {
     const mutatingWithIfMatch = [
       spec.paths['/vacancies/{id}/commands/publish'].post,

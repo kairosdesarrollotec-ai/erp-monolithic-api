@@ -23,6 +23,7 @@ import { CompleteOnboardingHandler } from './application/commands/complete-onboa
 import { EvaluateProbationHandler } from './application/commands/evaluate-probation.handler';
 import { ListVacanciesHandler } from './application/queries/list-vacancies.handler';
 import { GetVacancyDetailHandler } from './application/queries/get-vacancy-detail.handler';
+import { ListCandidatesHandler } from './application/queries/list-candidates.handler';
 import { GetCandidateDetailHandler } from './application/queries/get-candidate-detail.handler';
 import { InterviewerDirectoryPort } from './application/ports/interviewer-directory.port';
 import { PrismaInterviewerDirectoryRepository } from './infrastructure/persistence/prisma-interviewer-directory.repository';
@@ -62,6 +63,7 @@ import { InterviewsController } from './presentation/http/interviews.controller'
     GetVacancyDetailHandler,
     GetCandidateDetailHandler,
     ListInterviewersHandler,
+    ListCandidatesHandler,
   ],
   exports: [RecruitmentAccessService, VacancyRepositoryPort, CandidateRepositoryPort],
 })

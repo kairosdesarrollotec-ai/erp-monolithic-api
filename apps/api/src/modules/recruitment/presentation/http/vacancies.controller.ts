@@ -26,12 +26,15 @@ import { RegisterCandidateHandler } from '../../application/commands/register-ca
 import { RegisterCandidateCommand } from '../../application/commands/register-candidate.command';
 import { ListVacanciesHandler } from '../../application/queries/list-vacancies.handler';
 import { ListVacanciesQuery } from '../../application/queries/list-vacancies.query';
+import { ListCandidatesHandler } from '../../application/queries/list-candidates.handler';
+import { ListCandidatesQuery } from '../../application/queries/list-candidates.query';
 import { GetVacancyDetailHandler } from '../../application/queries/get-vacancy-detail.handler';
 import { GetVacancyDetailQuery } from '../../application/queries/get-vacancy-detail.query';
 import { RegisterVacancyDto } from './dto/register-vacancy.dto';
 import { PublishVacancyDto } from './dto/publish-vacancy.dto';
 import { ListVacanciesQueryDto } from './dto/list-vacancies-query.dto';
 import { VacancyScopeQueryDto } from './dto/vacancy-scope-query.dto';
+import { ListCandidatesQueryDto } from './dto/list-candidates-query.dto';
 import { RegisterCandidateDto } from './dto/register-candidate.dto';
 import {
   CandidateResponse,
@@ -53,6 +56,7 @@ export class VacanciesController {
     private readonly listVacancies: ListVacanciesHandler,
     private readonly getVacancyDetail: GetVacancyDetailHandler,
     private readonly registerCandidate: RegisterCandidateHandler,
+    private readonly listCandidates: ListCandidatesHandler,
   ) {}
 
   @Post()
@@ -107,6 +111,18 @@ export class VacanciesController {
     );
     res.setHeader('ETag', `"${detail.version}"`);
     return toVacancyDetailResponse(detail);
+  }
+
+  @Get(':id/candidates')
+  async listVacancyCandidates(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ListCandidatesQueryDto,
+  ): Promise<CandidateResponse[]> {
+    const items = await this.listCandidates.execute(
+      new ListCandidatesQuery(req.firebaseUid!, id, query.companyId, query.branchId, query.stage),
+    );
+    return items.map((c) => toCandidateResponse(c));
   }
 
   @Post(':id/commands/publish')
