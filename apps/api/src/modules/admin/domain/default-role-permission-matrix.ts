@@ -3,6 +3,7 @@ import { assertReservationRoleAllowed, ReservationAction } from '../../reservati
 import { assertInquiryRoleAllowed, InquiryAction } from '../../inquiries/application/policies/inquiry-role-policy';
 import { assertRentalRoleAllowed, RentalAction } from '../../rentals/application/policies/rental-role-policy';
 import { assertIncidentRoleAllowed, IncidentAction } from '../../incidents/application/policies/incident-role-policy';
+import { assertRecruitmentRoleAllowed, RecruitmentAction } from '../../recruitment/application/policies/recruitment-role-policy';
 import { assertAdminRoleAllowed, AdminAction } from '../application/policies/admin-role-policy';
 import { PERMISSION_ACTION_CATALOG, type PermissionModule } from './permission-action-catalog';
 import { PLATFORM_ADMIN_KEY } from './system-roles';
@@ -52,6 +53,8 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       assertRentalRoleAllowed(role, action as RentalAction);
     } else if (module === 'INCIDENT') {
       assertIncidentRoleAllowed(role, action as IncidentAction);
+    } else if (module === 'RECRUITMENT') {
+      assertRecruitmentRoleAllowed(role, action as RecruitmentAction);
     } else {
       assertAdminRoleAllowed(role, action as AdminAction);
     }

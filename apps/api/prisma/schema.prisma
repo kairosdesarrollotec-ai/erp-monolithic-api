@@ -320,6 +320,7 @@ model Company {
   returns      RentalReturn[]
   incidents    Incident[]
   matrixVersions RolePermissionMatrixVersion[]
+  vacancies    Vacancy[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -350,6 +351,7 @@ model Branch {
   returns      RentalReturn[]
   incidents    Incident[]
   matrixVersions RolePermissionMatrixVersion[]
+  vacancies    Vacancy[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -1373,3 +1375,150 @@ model IncidentAction {
   @@index([incidentId, createdAt], map: "incident_actions_incident_id_created_at_idx")
   @@map("incident_actions")
 }
+
+/// BDD-05 / SDD-05 / TDD-05 - Fuente de necesidad de la vacante (BR-REC-008).
+enum VacancySource {
+  RENUNCIA
+  CRECIMIENTO
+  NUEVA_AREA
+}
+
+/// BDD-05 / SDD-05 / TDD-05 - Ciclo de vida de la vacante.
+enum VacancyStatus {
+  NECESIDAD_REGISTRADA
+  PUBLICADA
+  EN_NEGOCIACION
+  DECIDIDA
+  CANCELADA
+}
+
+/// BDD-05 / PROTO-REC-03 - Etapas de postulantes en el tablero Kanban.
+enum CandidateStage {
+  NUEVO
+  CONTACTADO
+  ENTREVISTA
+  DECISION
+}
+
+/// BDD-05 / PROTO-REC-06 - Dictamen de contratación (exclusivo Gerencia/RRHH, BR-REC-003).
+enum CandidateDecision {
+  CONTRATADO
+  RECHAZADO
+}
+
+/// BDD-05 / PROTO-REC-05 - Resultado de entrevista cualitativa (BR-REC-006).
+enum InterviewResult {
+  PENDIENTE
+  AVANZA
+  NO_AVANZA
+}
+
+/// BDD-REC-001 / SDD-REC-001 / PROTO-REC-01/02 - Agregado principal de Vacante.
+/// Segregación multiempresa estricta: FKs compuestas hacia Company y Branch.
+model Vacancy {
+  id                  String         @id @default(uuid())
+  organizationId      String         @map("organization_id")
+  operatingCompanyId  String         @map("operating_company_id")
+  branchId            String         @map("branch_id")
+  code                String         @map("code")
+  title               String         @db.VarChar(150)
+  department          String         @db.VarChar(100)
+  source              VacancySource
+  status              VacancyStatus  @default(NECESIDAD_REGISTRADA)
+  isMechanic          Boolean        @default(false) @map("is_mechanic")
+  profileDescription String?        @map("profile_description") @db.Text
+  baseSalary          Decimal?       @map("base_salary") @db.Decimal(10, 2)
+  scheduleDetails     String?        @map("schedule_details") @db.VarChar(255)
+  publishedChannels   String[]       @default([]) @map("published_channels")
+  version             Int            @default(1)
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  createdBy           String         @map("created_by")
+
+  operatingCompany Company     @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  branch           Branch      @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
+  candidates       Candidate[]
+
+  @@unique([operatingCompanyId, code], map: "vacancies_operating_company_id_code_key")
+  @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)], map: "vacancies_scope_status_created_idx")
+  @@index([operatingCompanyId, createdAt(sort: Desc)], map: "vacancies_company_created_idx")
+  @@map("vacancies")
+}
+
+/// BDD-REC-001 / SDD-REC-001 / PROTO-REC-03/04/06 - Agregado Postulante / Candidato.
+/// Soporta modelo AS-IS flexible y deja campo `score` opcional para evolución formal TO-BE (DR-REC-001).
+model Candidate {
+  id                 String             @id @default(uuid())
+  organizationId     String             @map("organization_id")
+  operatingCompanyId String             @map("operating_company_id")
+  vacancyId          String             @map("vacancy_id")
+  fullName           String             @map("full_name") @db.VarChar(200)
+  documentType       String             @default("DNI") @map("document_type") @db.VarChar(20)
+  documentNumber     String             @map("document_number") @db.VarChar(30)
+  email              String?            @db.VarChar(150)
+  phone              String?            @db.VarChar(50)
+  cvDocumentId       String             @map("cv_document_id")
+  salaryExpectation  Decimal?           @map("salary_expectation") @db.Decimal(10, 2)
+  stage              CandidateStage     @default(NUEVO)
+  score              Decimal?           @db.Decimal(5, 2)
+  decision           CandidateDecision?
+  decisionNotes      String?            @map("decision_notes") @db.Text
+  decidedBy          String?            @map("decided_by")
+  decidedAt          DateTime?          @map("decided_at")
+  version            Int                @default(1)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  vacancy    Vacancy              @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  interviews CandidateInterview[]
+  onboarding EmployeeOnboarding?
+
+  @@unique([vacancyId, documentNumber], map: "candidates_vacancy_id_document_number_key")
+  @@index([vacancyId, stage], map: "candidates_vacancy_id_stage_idx")
+  @@map("candidates")
+}
+
+/// BDD-REC-001 REC-P08 / PROTO-REC-05 - Entrevista cualitativa a candidato.
+model CandidateInterview {
+  id               String          @id @default(uuid())
+  candidateId      String          @map("candidate_id")
+  scheduledAt      DateTime        @map("scheduled_at")
+  isVirtual        Boolean         @default(true) @map("is_virtual")
+  meetUrl          String?         @map("meet_url") @db.VarChar(255)
+  location         String?         @db.VarChar(255)
+  interviewerId    String          @map("interviewer_id")
+  qualitativeNotes String?         @map("qualitative_notes") @db.Text
+  result           InterviewResult @default(PENDIENTE)
+  evaluatedAt      DateTime?       @map("evaluated_at")
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId, scheduledAt], map: "candidate_interviews_candidate_id_scheduled_at_idx")
+  @@map("candidate_interviews")
+}
+
+/// BDD-REC-001 REC-P11..P15 / PROTO-REC-07/08 - Incorporación y periodo de prueba.
+/// Exige contrato notariado mandatorio si la vacante fue para mecánico (BR-REC-009).
+model EmployeeOnboarding {
+  id                       String    @id @default(uuid())
+  candidateId              String    @unique @map("candidate_id")
+  startDate                DateTime  @map("start_date") @db.Date
+  inductionScheduled       Boolean   @default(false) @map("induction_scheduled")
+  equipmentAssigned        Boolean   @default(false) @map("equipment_assigned")
+  responsibilityCardSigned Boolean   @default(false) @map("responsibility_card_signed")
+  notarizedContractSigned  Boolean   @default(false) @map("notarized_contract_signed")
+  isCompleted              Boolean   @default(false) @map("is_completed")
+  completedAt              DateTime? @map("completed_at")
+  completedBy              String?   @map("completed_by")
+  probationEvaluation      String?   @map("probation_evaluation") @db.Text
+  probationPassed          Boolean?  @map("probation_passed")
+  probationEvaluatedAt     DateTime? @map("probation_evaluated_at")
+  probationEvaluatedBy     String?   @map("probation_evaluated_by")
+  createdAt                DateTime  @default(now()) @map("created_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("employee_onboardings")
+}
+

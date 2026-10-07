@@ -1,0 +1,552 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Recruitment & Selection API
+  version: 0.1.0
+  description: >
+    Contrato del módulo de Reclutamiento y Selección (REC-01 a REC-08).
+    Fuentes canónicas: BDD-05 (BDD-REC-001 v1.7), SDD-05 (SDD-REC-001 v2.0), TDD-05 (TDD-REC-001 v2.0)
+    y prototipos Stitch aprobados (PROTO-REC-01 a PROTO-REC-08).
+    Diseñado para soportar la operación AS-IS (decisiones cualitativas abiertas sin rúbrica numérica obligatoria,
+    DR-REC-001 / BR-REC-006) dejando campos opcionales listos para la evolución TO-BE (Plan de Talento Humano formal).
+    Cumple con segregación multiempresa estricta (BR-REC-001), trazabilidad documental (BR-REC-003),
+    enmascaramiento dinámico de datos sensibles (BR-REC-005, PROTO-REC-04) y matriz dinámica ADM-02.
+    Concurrencia optimista mediante If-Match / ETag e Idempotency-Key en comandos de creación.
+
+paths:
+  /vacancies:
+    post:
+      operationId: registerVacancy
+      summary: Registrar necesidad de personal (REC-01, PROTO-REC-01)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterVacancyRequest' }
+      responses:
+        '201':
+          description: Vacante registrada exitosamente en estado NECESIDAD_REGISTRADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacancyResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.CREATE_VACANCY o contexto no autorizado }
+        '409': { description: Idempotency-Key en conflicto }
+        '500': { description: Error interno }
+    get:
+      operationId: listVacancies
+      summary: Bandeja de vacantes con filtros y paginación keyset (REC-01, PROTO-REC-01)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/VacancyStatus' } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: cursorCreatedAt, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: cursorId, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de vacantes ordenadas por fecha de creación descendente
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/VacancyResponse' }
+        '400': { description: Parámetros inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.VIEW_VACANCY o contexto no autorizado }
+        '500': { description: Error interno }
+
+  /vacancies/{id}:
+    get:
+      operationId: getVacancy
+      summary: Detalle de vacante y métricas de postulantes (REC-02, PROTO-REC-02)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Detalle completo de la vacante
+          headers:
+            ETag: { schema: { type: string }, description: Versión actual para concurrencia optimista }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacancyDetailResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.VIEW_VACANCY o contexto no autorizado }
+        '404': { description: Vacante no encontrada }
+        '500': { description: Error interno }
+
+  /vacancies/{id}/commands/publish:
+    post:
+      operationId: publishVacancy
+      summary: Definir perfil y publicar vacante en canales de difusión (REC-02, PROTO-REC-02)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishVacancyRequest' }
+      responses:
+        '200':
+          description: Vacante transicionada a PUBLICADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacancyDetailResponse' }
+        '400': { description: Datos inválidos o canales técnicos faltantes para mecánico (BR-REC-004) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.PUBLISH_VACANCY o contexto no autorizado }
+        '404': { description: Vacante no encontrada }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) o estado no transicionable }
+        '500': { description: Error interno }
+
+  /vacancies/{id}/candidates:
+    post:
+      operationId: registerCandidate
+      summary: Registrar postulante a una vacante (REC-03, PROTO-REC-03)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterCandidateRequest' }
+      responses:
+        '201':
+          description: Postulante registrado en etapa NUEVO
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.REGISTER_CANDIDATE o contexto no autorizado }
+        '404': { description: Vacante no encontrada }
+        '409': { description: Candidato ya postulado con ese documento a esta vacante }
+        '500': { description: Error interno }
+    get:
+      operationId: listCandidates
+      summary: Listar candidatos de una vacante para tablero Kanban (REC-03, PROTO-REC-03)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: stage, in: query, required: false, schema: { $ref: '#/components/schemas/CandidateStage' } }
+      responses:
+        '200':
+          description: Lista de candidatos en la vacante
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CandidateResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.VIEW_CANDIDATE o contexto no autorizado }
+        '404': { description: Vacante no encontrada }
+        '500': { description: Error interno }
+
+  /candidates/{id}:
+    get:
+      operationId: getCandidate
+      summary: Ficha 360 del candidato con enmascaramiento dinámico (REC-04, PROTO-REC-04)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Ficha del candidato (datos sensibles enmascarados si no tiene permiso RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA)
+          headers:
+            ETag: { schema: { type: string }, description: Versión actual para concurrencia optimista }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateDetailResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.VIEW_CANDIDATE o contexto no autorizado }
+        '404': { description: Candidato no encontrado }
+        '500': { description: Error interno }
+
+  /candidates/{id}/commands/change-stage:
+    post:
+      operationId: changeCandidateStage
+      summary: Transicionar etapa de candidato en Kanban (REC-03, PROTO-REC-03)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangeCandidateStageRequest' }
+      responses:
+        '200':
+          description: Etapa actualizada exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateDetailResponse' }
+        '400': { description: Transición de etapa no permitida }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.REGISTER_CANDIDATE o contexto no autorizado }
+        '404': { description: Candidato no encontrado }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) }
+        '500': { description: Error interno }
+
+  /candidates/{id}/interviews:
+    post:
+      operationId: scheduleInterview
+      summary: Programar entrevista (REC-05, PROTO-REC-05)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleInterviewRequest' }
+      responses:
+        '201':
+          description: Entrevista programada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateInterviewResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.MANAGE_INTERVIEW o contexto no autorizado }
+        '404': { description: Candidato no encontrado }
+        '500': { description: Error interno }
+
+  /interviews/{id}/commands/record-result:
+    post:
+      operationId: recordInterviewResult
+      summary: Registrar resultado cualitativo de entrevista (REC-05, PROTO-REC-05)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordInterviewResultRequest' }
+      responses:
+        '200':
+          description: Resultado de entrevista registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateInterviewResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.MANAGE_INTERVIEW o contexto no autorizado }
+        '404': { description: Entrevista no encontrada }
+        '500': { description: Error interno }
+
+  /candidates/{id}/commands/decide:
+    post:
+      operationId: decideCandidate
+      summary: Decisión de contratación (REC-06, PROTO-REC-06)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DecideCandidateRequest' }
+      responses:
+        '200':
+          description: Decisión procesada (emite evento CandidatoSeleccionado.v1 en outbox si es CONTRATADO)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateDetailResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.DECIDE_CANDIDATE o contexto no autorizado }
+        '404': { description: Candidato no encontrado }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) o candidato ya decidido (CANDIDATE_ALREADY_DECIDED) }
+        '500': { description: Error interno }
+
+  /candidates/{id}/commands/complete-onboarding:
+    post:
+      operationId: completeOnboarding
+      summary: Completar checklist de incorporación (REC-07, PROTO-REC-07)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteOnboardingRequest' }
+      responses:
+        '200':
+          description: Incorporación completada (emite PersonalIncorporado.v1 hacia ADP)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OnboardingResponse' }
+        '400': { description: Checklist incompleto o falta contrato notariado para mecánico (BR-REC-009) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.MANAGE_ONBOARDING o contexto no autorizado }
+        '404': { description: Candidato no encontrado o no contratado }
+        '409': { description: Onboarding ya completado previamente }
+        '500': { description: Error interno }
+
+  /candidates/{id}/commands/evaluate-probation:
+    post:
+      operationId: evaluateProbation
+      summary: Evaluar periodo de prueba a 3 meses (REC-08, PROTO-REC-08)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvaluateProbationRequest' }
+      responses:
+        '200':
+          description: Evaluación registrada (si es aprobada, emite PasoAPlanilla.v1)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OnboardingResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.EVALUATE_PROBATION o contexto no autorizado }
+        '404': { description: Candidato u onboarding no encontrado }
+        '409': { description: Periodo de prueba ya evaluado }
+        '500': { description: Error interno }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    VacancySource:
+      type: string
+      enum: [RENUNCIA, CRECIMIENTO, NUEVA_AREA]
+
+    VacancyStatus:
+      type: string
+      enum: [NECESIDAD_REGISTRADA, PUBLICADA, EN_NEGOCIACION, DECIDIDA, CANCELADA]
+
+    CandidateStage:
+      type: string
+      enum: [NUEVO, CONTACTADO, ENTREVISTA, DECISION]
+
+    CandidateDecision:
+      type: string
+      enum: [CONTRATADO, RECHAZADO]
+
+    InterviewResult:
+      type: string
+      enum: [PENDIENTE, AVANZA, NO_AVANZA]
+
+    RegisterVacancyRequest:
+      type: object
+      required: [companyId, branchId, title, department, source]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        title: { type: string, minLength: 3, maxLength: 150 }
+        department: { type: string, minLength: 2, maxLength: 100 }
+        source: { $ref: '#/components/schemas/VacancySource' }
+        isMechanic: { type: boolean, default: false }
+
+    PublishVacancyRequest:
+      type: object
+      required: [companyId, branchId, profileDescription, baseSalary, scheduleDetails, channels]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        profileDescription: { type: string, minLength: 10 }
+        baseSalary: { type: number, minimum: 0 }
+        scheduleDetails: { type: string, minLength: 3, maxLength: 255 }
+        channels:
+          type: array
+          minItems: 1
+          items: { type: string }
+
+    RegisterCandidateRequest:
+      type: object
+      required: [companyId, branchId, fullName, documentNumber, cvDocumentId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        fullName: { type: string, minLength: 3, maxLength: 200 }
+        documentType: { type: string, default: DNI }
+        documentNumber: { type: string, minLength: 4, maxLength: 30 }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, maxLength: 50, nullable: true }
+        cvDocumentId: { type: string, format: uuid }
+        salaryExpectation: { type: number, minimum: 0, nullable: true }
+
+    ChangeCandidateStageRequest:
+      type: object
+      required: [companyId, branchId, stage]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        stage: { $ref: '#/components/schemas/CandidateStage' }
+
+    ScheduleInterviewRequest:
+      type: object
+      required: [companyId, branchId, scheduledAt, isVirtual, interviewerId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        scheduledAt: { type: string, format: date-time }
+        isVirtual: { type: boolean }
+        meetUrl: { type: string, format: uri, nullable: true }
+        location: { type: string, nullable: true }
+        interviewerId: { type: string, minLength: 1 }
+
+    RecordInterviewResultRequest:
+      type: object
+      required: [companyId, branchId, result, qualitativeNotes]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        result: { $ref: '#/components/schemas/InterviewResult' }
+        qualitativeNotes: { type: string, minLength: 5 }
+
+    DecideCandidateRequest:
+      type: object
+      required: [companyId, branchId, decision]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        decision: { $ref: '#/components/schemas/CandidateDecision' }
+        decisionNotes: { type: string, nullable: true }
+
+    CompleteOnboardingRequest:
+      type: object
+      required: [companyId, branchId, startDate, inductionScheduled, equipmentAssigned, responsibilityCardSigned]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        inductionScheduled: { type: boolean }
+        equipmentAssigned: { type: boolean }
+        responsibilityCardSigned: { type: boolean }
+        notarizedContractSigned: { type: boolean, default: false }
+
+    EvaluateProbationRequest:
+      type: object
+      required: [companyId, branchId, passed, qualitativeEvaluation]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        passed: { type: boolean }
+        qualitativeEvaluation: { type: string, minLength: 5 }
+
+    VacancyResponse:
+      type: object
+      required: [id, code, title, department, source, status, isMechanic, version, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        title: { type: string }
+        department: { type: string }
+        source: { $ref: '#/components/schemas/VacancySource' }
+        status: { $ref: '#/components/schemas/VacancyStatus' }
+        isMechanic: { type: boolean }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+
+    VacancyDetailResponse:
+      allOf:
+        - { $ref: '#/components/schemas/VacancyResponse' }
+        - type: object
+          properties:
+            profileDescription: { type: string, nullable: true }
+            baseSalary: { type: number, nullable: true }
+            scheduleDetails: { type: string, nullable: true }
+            publishedChannels: { type: array, items: { type: string } }
+            candidatesCount: { type: integer, default: 0 }
+            candidatesByStage:
+              type: object
+              properties:
+                NUEVO: { type: integer }
+                CONTACTADO: { type: integer }
+                ENTREVISTA: { type: integer }
+                DECISION: { type: integer }
+
+    CandidateResponse:
+      type: object
+      required: [id, vacancyId, fullName, documentType, documentNumber, stage, version, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        vacancyId: { type: string, format: uuid }
+        fullName: { type: string }
+        documentType: { type: string }
+        documentNumber: { type: string }
+        stage: { $ref: '#/components/schemas/CandidateStage' }
+        score: { type: number, nullable: true }
+        decision: { $ref: '#/components/schemas/CandidateDecision', nullable: true }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+
+    CandidateDetailResponse:
+      allOf:
+        - { $ref: '#/components/schemas/CandidateResponse' }
+        - type: object
+          required: [isRestrictedView]
+          properties:
+            email: { type: string, nullable: true }
+            phone: { type: string, nullable: true }
+            cvDocumentId: { type: string, format: uuid, nullable: true }
+            salaryExpectation: { type: number, nullable: true }
+            decisionNotes: { type: string, nullable: true }
+            decidedAt: { type: string, format: date-time, nullable: true }
+            isRestrictedView: { type: boolean }
+            interviews:
+              type: array
+              items: { $ref: '#/components/schemas/CandidateInterviewResponse' }
+
+    CandidateInterviewResponse:
+      type: object
+      required: [id, candidateId, scheduledAt, isVirtual, result, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        candidateId: { type: string, format: uuid }
+        scheduledAt: { type: string, format: date-time }
+        isVirtual: { type: boolean }
+        meetUrl: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        interviewerId: { type: string }
+        qualitativeNotes: { type: string, nullable: true }
+        result: { $ref: '#/components/schemas/InterviewResult' }
+        evaluatedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    OnboardingResponse:
+      type: object
+      required: [id, candidateId, startDate, inductionScheduled, equipmentAssigned, responsibilityCardSigned, notarizedContractSigned, isCompleted, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        candidateId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        inductionScheduled: { type: boolean }
+        equipmentAssigned: { type: boolean }
+        responsibilityCardSigned: { type: boolean }
+        notarizedContractSigned: { type: boolean }
+        isCompleted: { type: boolean }
+        completedAt: { type: string, format: date-time, nullable: true }
+        probationPassed: { type: boolean, nullable: true }
+        probationEvaluation: { type: string, nullable: true }
+        probationEvaluatedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
