@@ -24,6 +24,11 @@ import { EvaluateProbationHandler } from './application/commands/evaluate-probat
 import { ListVacanciesHandler } from './application/queries/list-vacancies.handler';
 import { GetVacancyDetailHandler } from './application/queries/get-vacancy-detail.handler';
 import { GetCandidateDetailHandler } from './application/queries/get-candidate-detail.handler';
+import { InterviewerDirectoryPort } from './application/ports/interviewer-directory.port';
+import { PrismaInterviewerDirectoryRepository } from './infrastructure/persistence/prisma-interviewer-directory.repository';
+import { FirebaseDisplayNameLookup } from './infrastructure/identity/firebase-display-name.lookup';
+import { ListInterviewersHandler } from './application/queries/list-interviewers.handler';
+import { InterviewersController } from './presentation/http/interviewers.controller';
 import { VacanciesController } from './presentation/http/vacancies.controller';
 import { CandidatesController } from './presentation/http/candidates.controller';
 import { InterviewsController } from './presentation/http/interviews.controller';
@@ -35,13 +40,15 @@ import { InterviewsController } from './presentation/http/interviews.controller'
  */
 @Module({
   imports: [UsersModule, AuditModule, OutboxModule, AuthorizationModule],
-  controllers: [VacanciesController, CandidatesController, InterviewsController],
+  controllers: [VacanciesController, CandidatesController, InterviewsController, InterviewersController],
   providers: [
     RecruitmentAccessService,
     { provide: VacancyRepositoryPort, useClass: PrismaVacancyRepository },
     { provide: CandidateRepositoryPort, useClass: PrismaCandidateRepository },
     { provide: InterviewRepositoryPort, useClass: PrismaInterviewRepository },
     { provide: OnboardingRepositoryPort, useClass: PrismaOnboardingRepository },
+    FirebaseDisplayNameLookup,
+    { provide: InterviewerDirectoryPort, useClass: PrismaInterviewerDirectoryRepository },
     RegisterVacancyHandler,
     PublishVacancyHandler,
     RegisterCandidateHandler,
@@ -54,6 +61,7 @@ import { InterviewsController } from './presentation/http/interviews.controller'
     ListVacanciesHandler,
     GetVacancyDetailHandler,
     GetCandidateDetailHandler,
+    ListInterviewersHandler,
   ],
   exports: [RecruitmentAccessService, VacancyRepositoryPort, CandidateRepositoryPort],
 })

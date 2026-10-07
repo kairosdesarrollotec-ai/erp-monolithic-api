@@ -6,6 +6,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { $Enums } from '@prisma/client';
 import * as yaml from 'js-yaml';
 import { RECRUITMENT_ACTIONS } from '../../application/policies/recruitment-role-policy';
+import {
+  INTERVIEWERS_DEFAULT_LIMIT,
+  INTERVIEWERS_MAX_LIMIT,
+} from '../../application/queries/list-interviewers.query';
 import { PERMISSION_ACTION_CATALOG } from '../../../admin/domain/permission-action-catalog';
 
 const SPEC_PATH = path.resolve(__dirname, '../../../../../../../packages/contracts/openapi/recruitment.yaml');
@@ -49,6 +53,7 @@ describe('recruitment.yaml contract specification', () => {
       '/candidates/{id}/commands/decide',
       '/candidates/{id}/commands/evaluate-probation',
       '/candidates/{id}/interviews',
+      '/interviewers',
       '/interviews/{id}/commands/record-result',
       '/vacancies',
       '/vacancies/{id}',
@@ -67,6 +72,23 @@ describe('recruitment.yaml contract specification', () => {
     const schemas = spec.components.schemas;
     expect(schemas.CandidateResponse.properties.score).toBeUndefined();
     expect(JSON.stringify(schemas.CandidateDetailResponse)).not.toContain('score');
+  });
+
+  it('GET /interviewers exige companyId y branchId, pagina con tope y responde solo id y fullName', () => {
+    const op = spec.paths['/interviewers'].get;
+    const param = (name: string) => op.parameters.find((p: any) => p.name === name && p.in === 'query');
+    expect(param('companyId').required).toBe(true);
+    expect(param('branchId').required).toBe(true);
+    expect(param('q').required).toBe(false);
+    expect(param('limit').schema.maximum).toBe(INTERVIEWERS_MAX_LIMIT);
+    expect(param('limit').schema.default).toBe(INTERVIEWERS_DEFAULT_LIMIT);
+
+    const schemas = spec.components.schemas;
+    expect(op.responses['200'].content['application/json'].schema.$ref).toBe(
+      '#/components/schemas/InterviewerListResponse',
+    );
+    expect(schemas.InterviewerListResponse.required).toEqual(['items']);
+    expect(Object.keys(schemas.InterviewerResponse.properties).sort()).toEqual(['fullName', 'id']);
   });
 
   it('los comandos mutantes con concurrencia optimista exigen cabecera If-Match', () => {

@@ -61,6 +61,15 @@ export interface CandidateDetailResponse extends CandidateResponse {
   onboarding: OnboardingResponse | null;
 }
 
+export interface InterviewerResponse {
+  id: string;
+  fullName: string;
+}
+
+export interface InterviewerListResponse {
+  items: InterviewerResponse[];
+}
+
 export interface OnboardingResponse {
   id: string;
   candidateId: string;

@@ -1,11 +1,13 @@
 import { VacancyDetailRecord, VacancyRecord } from '../../application/ports/vacancy-repository.port';
 import { CandidateDetailRecord, CandidateRecord } from '../../application/ports/candidate-repository.port';
 import { CandidateInterviewRecord } from '../../application/ports/interview-repository.port';
+import { InterviewerRecord } from '../../application/queries/list-interviewers.handler';
 import { OnboardingRecord } from '../../application/ports/onboarding-repository.port';
 import {
   CandidateDetailResponse,
   CandidateInterviewResponse,
   CandidateResponse,
+  InterviewerListResponse,
   OnboardingResponse,
   VacancyDetailResponse,
   VacancyResponse,
@@ -99,4 +101,8 @@ export function toOnboardingResponse(record: OnboardingRecord): OnboardingRespon
     probationEvaluatedAt: record.probationEvaluatedAt ? record.probationEvaluatedAt.toISOString() : null,
     createdAt: record.createdAt.toISOString(),
   };
+}
+
+export function toInterviewerListResponse(records: InterviewerRecord[]): InterviewerListResponse {
+  return { items: records.map((r) => ({ id: r.id, fullName: r.fullName })) };
 }
