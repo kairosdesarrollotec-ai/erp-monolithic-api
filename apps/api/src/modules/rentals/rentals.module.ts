@@ -36,6 +36,9 @@ import { RentalDocumentRepositoryPort } from './application/ports/rental-documen
 import { RentalDocumentStoragePort } from './application/ports/rental-document-storage.port';
 import { PrismaRentalDocumentRepository } from './infrastructure/persistence/prisma-rental-document.repository';
 import { GcsRentalDocumentService } from './infrastructure/storage/gcs-rental-document.service';
+import { selectStorageDriver } from '../../common/storage/select-storage-driver';
+import { LocalRentalEvidenceService } from './infrastructure/storage/local-rental-evidence.service';
+import { LocalRentalDocumentService } from './infrastructure/storage/local-rental-document.service';
 import { UsersModule } from '../users/users.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { AuditModule } from '../audit/audit.module';
@@ -76,9 +79,15 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     RentalCreationGuard,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
-    { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },
+    {
+      provide: RentalEvidenceStoragePort,
+      useFactory: () => selectStorageDriver(() => new GcsRentalEvidenceService(), () => new LocalRentalEvidenceService()),
+    },
     { provide: RentalDocumentRepositoryPort, useClass: PrismaRentalDocumentRepository },
-    { provide: RentalDocumentStoragePort, useClass: GcsRentalDocumentService },
+    {
+      provide: RentalDocumentStoragePort,
+      useFactory: () => selectStorageDriver(() => new GcsRentalDocumentService(), () => new LocalRentalDocumentService()),
+    },
   ],
   exports: [RentalRepositoryPort, RentalCreationGuard],
 })

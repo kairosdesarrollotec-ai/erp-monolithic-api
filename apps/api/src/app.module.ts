@@ -14,6 +14,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
 import { PrismaModule } from './common/persistence/prisma.module';
+import { DevStorageModule } from './common/storage/dev-storage.module';
 import { IdempotencyModule } from './common/http/idempotency.module';
 
 @Module({
@@ -34,6 +35,8 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     IncidentsModule,
     AdminModule,
     NotificationsModule,
+    // Solo expone rutas con STORAGE_DRIVER=local (desarrollo).
+    DevStorageModule.register(),
   ],
 })
 export class AppModule {}

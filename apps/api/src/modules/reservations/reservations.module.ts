@@ -13,6 +13,8 @@ import { ReservationDocumentStoragePort } from './application/ports/reservation-
 import { PrismaReservationRepository } from './infrastructure/persistence/prisma-reservation.repository';
 import { PrismaReservationDocumentRepository } from './infrastructure/persistence/prisma-reservation-document.repository';
 import { GcsReservationDocumentService } from './infrastructure/storage/gcs-reservation-document.service';
+import { selectStorageDriver } from '../../common/storage/select-storage-driver';
+import { LocalReservationDocumentService } from './infrastructure/storage/local-reservation-document.service';
 import { RequestReservationDocumentUploadSessionHandler } from './application/commands/request-reservation-document-upload-session.handler';
 import { RecordReservationDocumentHandler } from './application/commands/record-reservation-document.handler';
 import { ListReservationDocumentsHandler } from './application/queries/list-reservation-documents.handler';
@@ -42,7 +44,10 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     ListReservationDocumentsHandler,
     { provide: ReservationRepositoryPort, useClass: PrismaReservationRepository },
     { provide: ReservationDocumentRepositoryPort, useClass: PrismaReservationDocumentRepository },
-    { provide: ReservationDocumentStoragePort, useClass: GcsReservationDocumentService },
+    {
+      provide: ReservationDocumentStoragePort,
+      useFactory: () => selectStorageDriver(() => new GcsReservationDocumentService(), () => new LocalReservationDocumentService()),
+    },
   ],
   exports: [ReservationRepositoryPort],
 })

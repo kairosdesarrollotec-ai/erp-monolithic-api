@@ -10,6 +10,8 @@ import { FleetVehicleRepositoryPort } from './application/ports/fleet-vehicle-re
 import { VehiclePhotoStoragePort } from './application/ports/vehicle-photo-storage.port';
 import { PrismaFleetVehicleRepository } from './infrastructure/persistence/prisma-fleet-vehicle.repository';
 import { GcsVehiclePhotoService } from './infrastructure/storage/gcs-vehicle-photo.service';
+import { selectStorageDriver } from '../../common/storage/select-storage-driver';
+import { LocalVehiclePhotoService } from './infrastructure/storage/local-vehicle-photo.service';
 import { UsersModule } from '../users/users.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 
@@ -24,7 +26,10 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     GetVehicleHandler,
     RequestPhotoUploadSessionHandler,
     { provide: FleetVehicleRepositoryPort, useClass: PrismaFleetVehicleRepository },
-    { provide: VehiclePhotoStoragePort, useClass: GcsVehiclePhotoService },
+    {
+      provide: VehiclePhotoStoragePort,
+      useFactory: () => selectStorageDriver(() => new GcsVehiclePhotoService(), () => new LocalVehiclePhotoService()),
+    },
   ],
   exports: [FleetVehicleRepositoryPort],
 })

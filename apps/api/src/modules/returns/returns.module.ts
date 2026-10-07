@@ -35,6 +35,8 @@ import { PrismaReturnCustomerRiskPersistence } from './infrastructure/persistenc
 import { PrismaReturnDepositSettlementPersistence } from './infrastructure/persistence/prisma-return-deposit-settlement.persistence';
 import { PrismaReturnOpenIncidentsPersistence } from './infrastructure/persistence/prisma-return-open-incidents.persistence';
 import { GcsReturnEvidenceService } from './infrastructure/storage/gcs-return-evidence.service';
+import { selectStorageDriver } from '../../common/storage/select-storage-driver';
+import { LocalReturnEvidenceService } from './infrastructure/storage/local-return-evidence.service';
 import { DocumentTemplatesModule } from '../document-templates/document-templates.module';
 import { GetResponsibilityTemplateHandler } from './application/queries/get-responsibility-template.handler';
 
@@ -69,7 +71,10 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     PrismaImmobilizationChargePersistence,
     PrismaReturnEvidencePersistence,
     { provide: ReturnRepositoryPort, useClass: PrismaReturnRepository },
-    { provide: ReturnEvidenceStoragePort, useClass: GcsReturnEvidenceService },
+    {
+      provide: ReturnEvidenceStoragePort,
+      useFactory: () => selectStorageDriver(() => new GcsReturnEvidenceService(), () => new LocalReturnEvidenceService()),
+    },
     { provide: ReturnCustomerRiskPort, useClass: PrismaReturnCustomerRiskPersistence },
     { provide: ReturnDepositSettlementPort, useClass: PrismaReturnDepositSettlementPersistence },
     // DEV-09: incidencias ABIERTAS reales (tabla `incidents`, modulo Incidencias) bloquean close-financial y close.
