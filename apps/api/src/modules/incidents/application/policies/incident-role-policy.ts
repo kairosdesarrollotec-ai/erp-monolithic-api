@@ -6,8 +6,8 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
  * `inquiry-role-policy.ts` (INQUIRY.CONVERT_TO_RENTAL). "Campo" NO es un rol de este modulo: no se crea ningun rol
  * nuevo; el enforcement real es por accion de permiso (INCIDENT.*) sobre la matriz versionada.
  *
- * Fuentes: PANTALLAS-V2-B-SOPORTE.md INC-01 (bandeja: Front-office, Gerencia, Finanzas, Auditoria) e INC-02
- * (detalle/resolucion: Front-office, Gerencia). Registrar, agregar accion, resolver, cerrar y derivar a via legal:
+ * Fuentes: UX/UI v3.1 §5.8 INC-01/INC-02 + incidents.yaml v0.1.0. INC-01 (bandeja: Front-office, Gerencia, Finanzas, Auditoria);
+ * INC-02 (detalle/resolucion: Front-office, Gerencia). Registrar, agregar accion, resolver, cerrar y derivar a via legal:
  * Front-office y Gerencia. Ver: Front-office, Gerencia, Finanzas y Auditoria.
  */
 export type IncidentAction = 'VIEW' | 'CREATE' | 'ADD_ACTION' | 'RESOLVE' | 'CLOSE' | 'REFER_LEGAL';

@@ -1,3 +1,38 @@
+-- ============================================================
+-- ROLLBACK (documentacion — no ejecutar automaticamente)
+-- ============================================================
+-- Para revertir esta migracion, ejecutar en orden:
+--
+--   -- 1. Eliminar foreign keys de incident_actions
+--   ALTER TABLE "incident_actions" DROP CONSTRAINT IF EXISTS "incident_actions_incident_id_fkey";
+--
+--   -- 2. Eliminar foreign keys de incidents
+--   ALTER TABLE "incidents" DROP CONSTRAINT IF EXISTS "incidents_return_id_operating_company_id_fkey";
+--   ALTER TABLE "incidents" DROP CONSTRAINT IF EXISTS "incidents_rental_id_operating_company_id_fkey";
+--   ALTER TABLE "incidents" DROP CONSTRAINT IF EXISTS "incidents_branch_id_operating_company_id_fkey";
+--   ALTER TABLE "incidents" DROP CONSTRAINT IF EXISTS "incidents_operating_company_id_organization_id_fkey";
+--
+--   -- 3. Eliminar indices
+--   DROP INDEX IF EXISTS "incident_actions_incident_id_created_at_idx";
+--   DROP INDEX IF EXISTS "incidents_return_id_idx";
+--   DROP INDEX IF EXISTS "incidents_rental_id_status_idx";
+--   DROP INDEX IF EXISTS "incidents_scope_status_created_idx";
+--
+--   -- 4. Eliminar tablas
+--   DROP TABLE IF EXISTS "incident_actions";
+--   DROP TABLE IF EXISTS "incidents";
+--
+--   -- 5. Eliminar enums
+--   DROP TYPE IF EXISTS "IncidentActionKind";
+--   DROP TYPE IF EXISTS "IncidentStatus";
+--   DROP TYPE IF EXISTS "IncidentSeverity";
+--   DROP TYPE IF EXISTS "IncidentType";
+--
+-- ADVERTENCIA: Esta operacion elimina datos irreversiblemente.
+-- Requiere autorizacion explicita antes de ejecutar en cualquier entorno
+-- con datos (staging o produccion). Ver CLAUDE.md §7 y §15.
+-- ============================================================
+
 -- CreateEnum
 CREATE TYPE "IncidentType" AS ENUM ('KEY_LOSS', 'CRASH_OR_DAMAGE', 'TRAFFIC_FINE_OR_INTERVENTION', 'TOWING', 'OTHER');
 
