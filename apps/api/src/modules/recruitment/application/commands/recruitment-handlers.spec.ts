@@ -47,7 +47,6 @@ function candidate(over: Partial<CandidateRecord> = {}): CandidateRecord {
     cvDocumentId: null,
     salaryExpectation: null,
     stage: CandidateStage.ENTREVISTA,
-    score: null,
     decision: null,
     decisionNotes: null,
     decidedBy: null,

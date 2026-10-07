@@ -13,7 +13,6 @@ export interface CandidateRecord {
   cvDocumentId: string | null;
   salaryExpectation: number | null;
   stage: CandidateStage;
-  score: number | null;
   decision: CandidateDecision | null;
   decisionNotes: string | null;
   decidedBy: string | null;

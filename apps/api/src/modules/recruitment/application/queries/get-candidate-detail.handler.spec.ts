@@ -39,7 +39,7 @@ function detail(over: Partial<CandidateDetailRecord> = {}): CandidateDetailRecor
     interviews: [],
     onboarding: null,
     ...over,
-  } as CandidateDetailRecord;
+  };
 }
 
 function setup(role: 'RRHH' | 'AUDITORIA' | 'FRONT_OFFICE' = 'RRHH') {

@@ -63,6 +63,12 @@ describe('recruitment.yaml contract specification', () => {
     expect(detail.properties.isMechanic.type).toBe('boolean');
   });
 
+  it('el contrato no expone puntajes automaticos (score) en candidatos (DR-REC-001 / BR-REC-006)', () => {
+    const schemas = spec.components.schemas;
+    expect(schemas.CandidateResponse.properties.score).toBeUndefined();
+    expect(JSON.stringify(schemas.CandidateDetailResponse)).not.toContain('score');
+  });
+
   it('los comandos mutantes con concurrencia optimista exigen cabecera If-Match', () => {
     const mutatingWithIfMatch = [
       spec.paths['/vacancies/{id}/commands/publish'].post,

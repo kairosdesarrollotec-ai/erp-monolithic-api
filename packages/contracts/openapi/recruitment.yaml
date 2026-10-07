@@ -495,7 +495,6 @@ components:
         documentType: { type: string }
         documentNumber: { type: string }
         stage: { $ref: '#/components/schemas/CandidateStage' }
-        score: { type: number, nullable: true }
         decision: { $ref: '#/components/schemas/CandidateDecision', nullable: true }
         version: { type: integer }
         createdAt: { type: string, format: date-time }

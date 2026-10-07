@@ -26,7 +26,6 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
       cvDocumentId: entity.cvDocumentId,
       salaryExpectation: entity.salaryExpectation ? Number(entity.salaryExpectation) : null,
       stage: entity.stage,
-      score: entity.score ? Number(entity.score) : null,
       decision: entity.decision,
       decisionNotes: entity.decisionNotes,
       decidedBy: entity.decidedBy,

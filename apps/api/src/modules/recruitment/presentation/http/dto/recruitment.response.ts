@@ -28,7 +28,6 @@ export interface CandidateResponse {
   documentType: string;
   documentNumber: string;
   stage: CandidateStage;
-  score: number | null;
   decision: CandidateDecision | null;
   version: number;
   createdAt: string;

@@ -45,7 +45,6 @@ export function toCandidateResponse(record: CandidateRecord): CandidateResponse 
     documentType: record.documentType,
     documentNumber: record.documentNumber,
     stage: record.stage,
-    score: record.score,
     decision: record.decision,
     version: record.version,
     createdAt: record.createdAt.toISOString(),
