@@ -57,6 +57,7 @@ export interface CandidateDetailResponse extends CandidateResponse {
   decidedAt: string | null;
   isRestrictedView: boolean;
   interviews: CandidateInterviewResponse[];
+  onboarding: OnboardingResponse | null;
 }
 
 export interface OnboardingResponse {

@@ -516,6 +516,11 @@ components:
             interviews:
               type: array
               items: { $ref: '#/components/schemas/CandidateInterviewResponse' }
+            onboarding:
+              nullable: true
+              description: Incorporación y periodo de prueba (REC-07/REC-08); null mientras no se haya incorporado.
+              allOf:
+                - { $ref: '#/components/schemas/OnboardingResponse' }
 
     CandidateInterviewResponse:
       type: object

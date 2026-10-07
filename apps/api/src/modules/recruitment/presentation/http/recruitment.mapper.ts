@@ -79,6 +79,7 @@ export function toCandidateDetailResponse(record: CandidateDetailRecord): Candid
     decidedAt: record.decidedAt ? record.decidedAt.toISOString() : null,
     isRestrictedView: record.isRestrictedView ?? false,
     interviews: (record.interviews || []).map((i) => toCandidateInterviewResponse(i)),
+    onboarding: record.onboarding ? toOnboardingResponse(record.onboarding) : null,
   };
 }
 
