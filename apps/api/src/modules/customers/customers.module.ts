@@ -6,6 +6,7 @@ import { ListCustomersHandler } from './application/queries/list-customers.handl
 import { GetCustomerHandler } from './application/queries/get-customer.handler';
 import { CustomerRepositoryPort } from './application/ports/customer-repository.port';
 import { PrismaCustomerRepository } from './infrastructure/persistence/prisma-customer.repository';
+import { CustomerAccessService } from './application/services/customer-access.service';
 import { UsersModule } from '../users/users.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 
@@ -13,6 +14,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
   imports: [UsersModule, AuthorizationModule],
   controllers: [CustomersController],
   providers: [
+    CustomerAccessService,
     CreateCustomerHandler,
     UpdateCustomerHandler,
     ListCustomersHandler,

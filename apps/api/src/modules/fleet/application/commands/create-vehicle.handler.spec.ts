@@ -8,14 +8,14 @@ import {
   ORG,
   buildFleetVehicle,
   buildFleetVehicleRepository,
-  buildWorkContext,
+  buildFleetAccessService,
 } from '../../testing/fleet-test-fixtures';
 
 describe('CreateVehicleHandler', () => {
   it('registra un nuevo vehículo con placa sanitizada y datos completos', async () => {
     const repository = buildFleetVehicleRepository();
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new CreateVehicleHandler(repository, workContext);
+    const { access, workContext } = buildFleetAccessService('CAMPO');
+    const handler = new CreateVehicleHandler(repository, access);
 
     const command = new CreateVehicleCommand(
       'uid-1',
@@ -63,8 +63,8 @@ describe('CreateVehicleHandler', () => {
     const repository = buildFleetVehicleRepository();
     repository.findByPlate.mockResolvedValue(existing);
 
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new CreateVehicleHandler(repository, workContext);
+    const { access } = buildFleetAccessService('CAMPO');
+    const handler = new CreateVehicleHandler(repository, access);
 
     const command = new CreateVehicleCommand(
       'uid-1',
@@ -81,8 +81,8 @@ describe('CreateVehicleHandler', () => {
 
   it('rechaza con ForbiddenException si el rol no puede escribir flota', async () => {
     const repository = buildFleetVehicleRepository(null);
-    const workContext = buildWorkContext('FRONT_OFFICE');
-    const handler = new CreateVehicleHandler(repository, workContext);
+    const { access } = buildFleetAccessService('FRONT_OFFICE');
+    const handler = new CreateVehicleHandler(repository, access);
 
     const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'AAA-000', 'Kia', 'Sportage');
 
@@ -93,8 +93,8 @@ describe('CreateVehicleHandler', () => {
   it('rechaza con ForbiddenException si assignedBranchId es de otra sede y el rol no es privilegiado', async () => {
     const repository = buildFleetVehicleRepository(null);
     repository.findByPlate.mockResolvedValue(null);
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new CreateVehicleHandler(repository, workContext);
+    const { access } = buildFleetAccessService('CAMPO');
+    const handler = new CreateVehicleHandler(repository, access);
 
     const command = new CreateVehicleCommand(
       'uid-1', COMPANY, BRANCH, 'BBB-111', 'Nissan', 'Frontier',

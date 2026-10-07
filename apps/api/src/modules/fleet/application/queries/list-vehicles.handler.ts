@@ -1,26 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ListVehiclesQuery } from './list-vehicles.query';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
-import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertFleetRead, assertCrossBranchAllowed } from '../policies/fleet-role.policy';
+import { FleetAccessService } from '../services/fleet-access.service';
 import { FleetVehicle } from '../../domain/vehicle';
 
 @Injectable()
 export class ListVehiclesHandler {
   constructor(
     private readonly vehicles: FleetVehicleRepositoryPort,
-    private readonly workContext: WorkContextAuthorizationService,
+    private readonly access: FleetAccessService,
   ) {}
 
   async execute(query: ListVehiclesQuery): Promise<{ items: FleetVehicle[]; total: number }> {
-    const context = await this.workContext.authorize({
-      firebaseUid: query.firebaseUid,
-      companyId: query.companyId,
-      branchId: query.branchId,
-    });
-
-    assertFleetRead(context.roleKey);
-    assertCrossBranchAllowed(context.roleKey, context.branchId, query.filterBranchId);
+    const { context } = await this.access.authorize(
+      { firebaseUid: query.firebaseUid, companyId: query.companyId, branchId: query.branchId },
+      'READ',
+      { targetBranchId: query.filterBranchId },
+    );
 
     return this.vehicles.list({
       organizationId: context.organizationId,

@@ -8,14 +8,14 @@ import {
   ORG,
   buildCustomer,
   buildCustomerRepository,
-  buildWorkContext,
+  buildCustomerAccessService,
 } from '../../testing/customer-test-fixtures';
 
 describe('CreateCustomerHandler', () => {
   it('crea un cliente con datos completos y formato sanitizado', async () => {
     const repository = buildCustomerRepository();
-    const workContext = buildWorkContext();
-    const handler = new CreateCustomerHandler(repository, workContext);
+    const { access, workContext } = buildCustomerAccessService();
+    const handler = new CreateCustomerHandler(repository, access);
 
     const command = new CreateCustomerCommand(
       'uid-1',
@@ -60,8 +60,8 @@ describe('CreateCustomerHandler', () => {
 
   it('rechaza countryEntryDate si el cliente no es extranjero', async () => {
     const repository = buildCustomerRepository();
-    const workContext = buildWorkContext();
-    const handler = new CreateCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new CreateCustomerHandler(repository, access);
 
     const command = new CreateCustomerCommand(
       'uid-1',
@@ -80,8 +80,8 @@ describe('CreateCustomerHandler', () => {
 
   it('permite countryEntryDate si la nacionalidad es EXTRANJERO', async () => {
     const repository = buildCustomerRepository();
-    const workContext = buildWorkContext();
-    const handler = new CreateCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new CreateCustomerHandler(repository, access);
     const entryDate = new Date('2026-09-01T00:00:00Z');
 
     const command = new CreateCustomerCommand(
@@ -110,8 +110,8 @@ describe('CreateCustomerHandler', () => {
     const repository = buildCustomerRepository();
     repository.findByDocument.mockResolvedValue(existing);
 
-    const workContext = buildWorkContext();
-    const handler = new CreateCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new CreateCustomerHandler(repository, access);
 
     const command = new CreateCustomerCommand(
       'uid-1',

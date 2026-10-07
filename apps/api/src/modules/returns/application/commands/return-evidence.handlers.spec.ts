@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import { RequestReturnEvidenceUploadSessionHandler } from './request-return-evidence-upload-session.handler';
 import { RequestReturnEvidenceUploadSessionCommand } from './request-return-evidence-upload-session.command';
 import { RecordReturnEvidenceHandler } from './record-return-evidence.handler';
@@ -6,7 +7,6 @@ import { ReturnEvidenceStoragePort } from '../ports/return-evidence-storage.port
 import {
   InvalidReturnEvidenceError,
   ReturnNotFoundError,
-  ReturnRoleNotAllowedError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
 import { buildDeps, buildReturnRecord } from '../../testing/return-test-fixtures';
@@ -66,7 +66,7 @@ describe('Evidencia de devolución (TR-08 / BR-DEV-009)', () => {
       await expect(missing.handler.execute(upload('PHOTO', 'image/jpeg', 1000))).rejects.toThrow(ReturnNotFoundError);
 
       const forbidden = buildUpload('FINANZAS');
-      await expect(forbidden.handler.execute(upload('PHOTO', 'image/jpeg', 1000))).rejects.toThrow(ReturnRoleNotAllowedError);
+      await expect(forbidden.handler.execute(upload('PHOTO', 'image/jpeg', 1000))).rejects.toThrow(ForbiddenException);
     });
   });
 

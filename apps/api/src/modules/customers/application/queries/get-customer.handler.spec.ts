@@ -7,15 +7,15 @@ import {
   ORG,
   buildCustomer,
   buildCustomerRepository,
-  buildWorkContext,
+  buildCustomerAccessService,
 } from '../../testing/customer-test-fixtures';
 
 describe('GetCustomerHandler', () => {
   it('obtiene un cliente existente para el contexto autorizado', async () => {
     const customer = buildCustomer();
     const repository = buildCustomerRepository(customer);
-    const workContext = buildWorkContext();
-    const handler = new GetCustomerHandler(repository, workContext);
+    const { access, workContext } = buildCustomerAccessService();
+    const handler = new GetCustomerHandler(repository, access);
 
     const query = new GetCustomerQuery('uid-1', 'cust-1', COMPANY, BRANCH);
     const result = await handler.execute(query);
@@ -34,8 +34,8 @@ describe('GetCustomerHandler', () => {
 
   it('lanza NotFoundException si el cliente no existe en la empresa autorizada', async () => {
     const repository = buildCustomerRepository(null);
-    const workContext = buildWorkContext();
-    const handler = new GetCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new GetCustomerHandler(repository, access);
 
     const query = new GetCustomerQuery('uid-1', 'inexistente', COMPANY, BRANCH);
 

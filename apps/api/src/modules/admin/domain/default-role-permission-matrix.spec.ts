@@ -28,6 +28,18 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
     expect(allowed('FINANZAS', 'INCIDENT', 'CLOSE')).toBe(false);
   });
 
+  it('RETURN, FLEET, CUSTOMER tienen filas sembradas correctamente', () => {
+    expect(allowed('GERENCIA', 'RETURN', 'CREATE')).toBe(true);
+    expect(allowed('FINANZAS', 'RETURN', 'CREATE')).toBe(false);
+    expect(allowed('FINANZAS', 'RETURN', 'CLOSE_FINANCIAL')).toBe(true);
+    expect(allowed('CAMPO', 'FLEET', 'WRITE')).toBe(true);
+    expect(allowed('AUDITORIA', 'FLEET', 'WRITE')).toBe(false);
+    expect(allowed('CAMPO', 'FLEET', 'CROSS_BRANCH')).toBe(false);
+    expect(allowed('GERENCIA', 'FLEET', 'CROSS_BRANCH')).toBe(true);
+    expect(allowed('FRONT_OFFICE', 'CUSTOMER', 'WRITE')).toBe(true);
+    expect(allowed('CAMPO', 'CUSTOMER', 'WRITE')).toBe(false);
+  });
+
   it('un rol de sistema sin fila sembrada en la organizacion se omite (no inventa role_id)', () => {
     const partial = buildDefaultRolePermissionMatrix(new Map([['GERENCIA', 'role-GERENCIA']]));
     expect(new Set(partial.map((e) => e.roleId))).toEqual(new Set(['role-GERENCIA']));

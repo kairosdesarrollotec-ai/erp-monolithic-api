@@ -1,8 +1,8 @@
+import { ForbiddenException } from '@nestjs/common';
 import { RegisterReturnAlcoholTestHandler } from './register-alcohol-test.handler';
 import { RegisterReturnAlcoholTestCommand } from './register-alcohol-test.command';
 import {
   ReturnNotFoundError,
-  ReturnRoleNotAllowedError,
   ReturnStateConflictError,
   ReturnVersionConflictError,
 } from '../../domain/return-errors';
@@ -117,6 +117,6 @@ describe('RegisterReturnAlcoholTestHandler (DEV-04 / BR-DEV-005 / DR-DEV-003)', 
     );
     await expect(
       handler.execute(new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE')),
-    ).rejects.toThrow(ReturnRoleNotAllowedError);
+    ).rejects.toThrow(ForbiddenException);
   });
 });

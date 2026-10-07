@@ -56,8 +56,8 @@ export class ConvertToRentalHandler {
       companyId: command.companyId,
       branchId: command.branchId,
     });
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'INQUIRY', 'CONVERT_TO_RENTAL');
-    await this.matrixAuth.assertAllowed(context.organizationId, context.role, 'RENTAL', 'CREATE');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'INQUIRY', 'CONVERT_TO_RENTAL');
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'CREATE');
     this.quotingGuard.assertReady();
 
     const scope = {

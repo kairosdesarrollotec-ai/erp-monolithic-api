@@ -7,15 +7,15 @@ import {
   ORG,
   buildFleetVehicle,
   buildFleetVehicleRepository,
-  buildWorkContext,
+  buildFleetAccessService,
 } from '../../testing/fleet-test-fixtures';
 
 describe('GetVehicleHandler', () => {
   it('obtiene el vehículo solicitado si pertenece a la empresa autorizada', async () => {
     const vehicle = buildFleetVehicle();
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext();
-    const handler = new GetVehicleHandler(repository, workContext);
+    const { access, workContext } = buildFleetAccessService();
+    const handler = new GetVehicleHandler(repository, access);
 
     const query = new GetVehicleQuery('uid-1', 'veh-1', COMPANY, BRANCH);
     const result = await handler.execute(query);
@@ -34,8 +34,8 @@ describe('GetVehicleHandler', () => {
 
   it('lanza NotFoundException si el vehículo no existe', async () => {
     const repository = buildFleetVehicleRepository(null);
-    const workContext = buildWorkContext();
-    const handler = new GetVehicleHandler(repository, workContext);
+    const { access } = buildFleetAccessService();
+    const handler = new GetVehicleHandler(repository, access);
 
     const query = new GetVehicleQuery('uid-1', 'inexistente', COMPANY, BRANCH);
 

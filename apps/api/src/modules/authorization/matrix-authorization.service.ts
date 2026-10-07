@@ -72,6 +72,9 @@ export class MatrixAuthorizationService {
       else if (module === 'INQUIRY') entityName = 'una Consulta';
       else if (module === 'RENTAL') entityName = 'un Alquiler';
       else if (module === 'INCIDENT') entityName = 'una Incidencia';
+      else if (module === 'RETURN') entityName = 'una Devolución';
+      else if (module === 'FLEET') entityName = 'un Vehículo';
+      else if (module === 'CUSTOMER') entityName = 'un Cliente';
       throw new ForbiddenException({
         code: 'ROLE_NOT_ALLOWED',
         detail: `Tu rol no tiene permiso para realizar la accion ${action} sobre ${entityName} segun la matriz de permisos vigente (version ${version}).`,
