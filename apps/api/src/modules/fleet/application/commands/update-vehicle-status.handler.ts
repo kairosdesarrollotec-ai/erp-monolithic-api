@@ -1,25 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateVehicleStatusCommand } from './update-vehicle-status.command';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
-import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertFleetWrite } from '../policies/fleet-role.policy';
+import { FleetAccessService } from '../services/fleet-access.service';
 import { FleetVehicle } from '../../domain/vehicle';
 
 @Injectable()
 export class UpdateVehicleStatusHandler {
   constructor(
     private readonly vehicles: FleetVehicleRepositoryPort,
-    private readonly workContext: WorkContextAuthorizationService,
+    private readonly access: FleetAccessService,
   ) {}
 
   async execute(command: UpdateVehicleStatusCommand): Promise<FleetVehicle> {
-    const context = await this.workContext.authorize({
-      firebaseUid: command.firebaseUid,
-      companyId: command.companyId,
-      branchId: command.branchId,
-    });
-
-    assertFleetWrite(context.roleKey);
+    const { context } = await this.access.authorize(
+      { firebaseUid: command.firebaseUid, companyId: command.companyId, branchId: command.branchId },
+      'WRITE',
+    );
 
     const vehicle = await this.vehicles.findById(command.vehicleId, {
       organizationId: context.organizationId,

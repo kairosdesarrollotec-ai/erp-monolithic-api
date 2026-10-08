@@ -1,10 +1,10 @@
+import { ForbiddenException } from '@nestjs/common';
 import { CreateReturnHandler } from './create-return.handler';
 import { CreateReturnCommand } from './create-return.command';
 import {
   RentalAlreadyHasActiveReturnError,
   RentalNotReturnableError,
   ReturnRentalNotFoundError,
-  ReturnRoleNotAllowedError,
 } from '../../domain/return-errors';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 import { buildDeps, buildRentalRecord, buildReturnRecord, fakeTx, TEST_SCOPE } from '../../testing/return-test-fixtures';
@@ -83,7 +83,7 @@ describe('CreateReturnHandler (DEV-01)', () => {
 
   it('rol CAMPO no puede programar devoluciones (deny-by-default)', async () => {
     const { deps, handler } = build('CAMPO');
-    await expect(handler.execute(command)).rejects.toThrow(ReturnRoleNotAllowedError);
+    await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);
     expect(deps.rentals.findById).not.toHaveBeenCalled();
   });
 });

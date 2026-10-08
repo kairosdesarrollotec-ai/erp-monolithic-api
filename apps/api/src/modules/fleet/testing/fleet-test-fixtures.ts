@@ -2,8 +2,11 @@ import { ForbiddenException } from '@nestjs/common';
 import { FleetVehicle, VehicleStatus } from '../domain/vehicle';
 import { FleetVehicleRepositoryPort } from '../application/ports/fleet-vehicle-repository.port';
 import { WorkContextAuthorizationService } from '../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../authorization/matrix-authorization.service';
+import { FleetAccessService } from '../application/services/fleet-access.service';
 import type { WorkerRole } from '../../users/domain/worker-role';
-import { testRole } from '../../users/testing/role-fixtures';
+import { testRole, roleKeyOfTestRoleId } from '../../users/testing/role-fixtures';
+import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../application/policies/fleet-role.policy';
 
 export const ORG = 'org-1';
 export const COMPANY = 'company-1';
@@ -66,13 +69,34 @@ export function buildFleetVehicleRepository(
   };
 }
 
-export function buildWorkContext(
-  role: WorkerRole | 'forbidden' = 'FRONT_OFFICE',
-): jest.Mocked<WorkContextAuthorizationService> {
-  return {
+/** La matriz simulada aplica la misma politica rol-accion que la version 0 real (fleet-role.policy.ts). */
+export function buildFleetAccessService(
+  role: WorkerRole | 'forbidden' = 'CAMPO',
+): { access: FleetAccessService; workContext: jest.Mocked<WorkContextAuthorizationService> } {
+  const workContext = {
     authorize:
       role === 'forbidden'
         ? jest.fn().mockRejectedValue(new ForbiddenException())
         : jest.fn().mockResolvedValue({ organizationId: ORG, companyId: COMPANY, branchId: BRANCH, ...testRole(role) }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
+
+  const matrixAuth = {
+    assertAllowed: jest.fn(async (_org: string, roleId: string, module: string, action: string) => {
+      const r = roleKeyOfTestRoleId(roleId);
+      try {
+        if (module === 'FLEET') {
+          if (action === 'WRITE') assertFleetWrite(r);
+          else if (action === 'READ') assertFleetRead(r);
+          else assertFleetCrossBranchPermission(r);
+        }
+      } catch {
+        throw new ForbiddenException({ code: 'ROLE_NOT_ALLOWED', detail: `El rol ${r} no tiene permiso para ${module}.${action}` });
+      }
+    }),
+  } as unknown as jest.Mocked<MatrixAuthorizationService>;
+
+  return {
+    workContext,
+    access: new FleetAccessService(workContext, matrixAuth),
+  };
 }

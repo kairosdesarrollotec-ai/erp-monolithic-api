@@ -4,7 +4,8 @@ import { ListReturnsHandler } from './list-returns.handler';
 import { ListReturnsQuery } from './list-returns.query';
 import { ListReturnEvidenceHandler } from './list-return-evidence.handler';
 import { ListReturnEvidenceQuery } from './list-return-evidence.query';
-import { ReturnNotFoundError, ReturnRoleNotAllowedError } from '../../domain/return-errors';
+import { ForbiddenException } from '@nestjs/common';
+import { ReturnNotFoundError } from '../../domain/return-errors';
 import { buildDeps, buildReturnRecord, TEST_SCOPE } from '../../testing/return-test-fixtures';
 
 describe('Consultas de Devolución', () => {
@@ -28,7 +29,7 @@ describe('Consultas de Devolución', () => {
     const forbidden = buildDeps({ role: 'RRHH' });
     await expect(
       new GetReturnHandler(forbidden.access, forbidden.returns).execute(new GetReturnQuery('x', 'uid-1', 'comp-1', 'branch-1')),
-    ).rejects.toThrow(ReturnRoleNotAllowedError);
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('list: aplica scope, filtro de estado, límite y cursor keyset', async () => {

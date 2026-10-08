@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CustomerRepositoryPort } from '../ports/customer-repository.port';
-import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertCustomerRead } from '../policies/customer-role.policy';
+import { CustomerAccessService } from '../services/customer-access.service';
 import { GetCustomerQuery } from './get-customer.query';
 import { Customer } from '../../domain/customer';
 
@@ -9,17 +8,14 @@ import { Customer } from '../../domain/customer';
 export class GetCustomerHandler {
   constructor(
     private readonly customers: CustomerRepositoryPort,
-    private readonly workContext: WorkContextAuthorizationService,
+    private readonly access: CustomerAccessService,
   ) {}
 
   async execute(query: GetCustomerQuery): Promise<Customer> {
-    const context = await this.workContext.authorize({
-      firebaseUid: query.firebaseUid,
-      companyId: query.companyId,
-      branchId: query.branchId,
-    });
-
-    assertCustomerRead(context.roleKey);
+    const { context } = await this.access.authorize(
+      { firebaseUid: query.firebaseUid, companyId: query.companyId, branchId: query.branchId },
+      'READ',
+    );
 
     const customer = await this.customers.findById(query.id, {
       organizationId: context.organizationId,

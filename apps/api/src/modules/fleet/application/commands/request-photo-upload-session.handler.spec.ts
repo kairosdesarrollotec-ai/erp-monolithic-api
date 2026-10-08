@@ -1,6 +1,6 @@
 import { PayloadTooLargeException } from '@nestjs/common';
 import { RequestPhotoUploadSessionHandler } from './request-photo-upload-session.handler';
-import { BRANCH, COMPANY, buildWorkContext } from '../../testing/fleet-test-fixtures';
+import { BRANCH, COMPANY, buildFleetAccessService } from '../../testing/fleet-test-fixtures';
 
 const MAX_PHOTO_BYTES = 12 * 1024 * 1024;
 
@@ -16,8 +16,8 @@ function buildStoragePort() {
 describe('RequestPhotoUploadSessionHandler', () => {
   it('genera una sesión de carga y retorna uploadUrl y objectUrl', async () => {
     const storage = buildStoragePort();
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new RequestPhotoUploadSessionHandler(storage as any, workContext);
+    const { access, workContext } = buildFleetAccessService('CAMPO');
+    const handler = new RequestPhotoUploadSessionHandler(storage as any, access);
 
     const result = await handler.execute({
       firebaseUid: 'uid-1',
@@ -42,8 +42,8 @@ describe('RequestPhotoUploadSessionHandler', () => {
 
   it('lanza PayloadTooLargeException cuando contentLength supera 12 MB', async () => {
     const storage = buildStoragePort();
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new RequestPhotoUploadSessionHandler(storage as any, workContext);
+    const { access } = buildFleetAccessService('CAMPO');
+    const handler = new RequestPhotoUploadSessionHandler(storage as any, access);
 
     await expect(
       handler.execute({
@@ -60,9 +60,9 @@ describe('RequestPhotoUploadSessionHandler', () => {
 
   it('no llama a storage si la autorización falla', async () => {
     const storage = buildStoragePort();
-    const workContext = buildWorkContext('CAMPO');
+    const { access, workContext } = buildFleetAccessService('CAMPO');
     (workContext.authorize as jest.Mock).mockRejectedValueOnce(new Error('Unauthorized'));
-    const handler = new RequestPhotoUploadSessionHandler(storage as any, workContext);
+    const handler = new RequestPhotoUploadSessionHandler(storage as any, access);
 
     await expect(
       handler.execute({

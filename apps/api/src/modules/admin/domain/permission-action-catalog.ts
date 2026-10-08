@@ -5,7 +5,7 @@
  * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
-export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT'] as const;
+export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER'] as const;
 
 /** Modulos cuyas acciones administra la matriz ADM-02 (unica definicion; antes estaba repetida en ~6 sitios). */
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
@@ -56,6 +56,25 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'ADMIN', action: 'MANAGE_PARAMETERS', label: 'Administración: gestionar parámetros' },
   { module: 'ADMIN', action: 'MANAGE_PERMISSIONS', label: 'Administración: gestionar permisos' },
   { module: 'ADMIN', action: 'MANAGE_NOTIFICATIONS', label: 'Administración: gestionar notificaciones' },
+  // RETURN (11 acciones — return-role-policy.ts)
+  { module: 'RETURN', action: 'CREATE', label: 'Devolución: crear' },
+  { module: 'RETURN', action: 'READ', label: 'Devolución: leer' },
+  { module: 'RETURN', action: 'RECEIVE_PROVISIONAL', label: 'Devolución: recepción provisional' },
+  { module: 'RETURN', action: 'REGISTER_ALCOHOL_TEST', label: 'Devolución: registrar alcolímetro' },
+  { module: 'RETURN', action: 'RESOLVE_ALCOHOL_ESCALATION', label: 'Devolución: resolver escalación alcolímetro' },
+  { module: 'RETURN', action: 'COMPLETE_INSPECTION', label: 'Devolución: completar inspección' },
+  { module: 'RETURN', action: 'ASSESS_DAMAGE', label: 'Devolución: valorar daño' },
+  { module: 'RETURN', action: 'CHARGE_IMMOBILIZATION', label: 'Devolución: cobrar inmovilización' },
+  { module: 'RETURN', action: 'CLOSE_FINANCIAL', label: 'Devolución: cierre financiero' },
+  { module: 'RETURN', action: 'CLOSE', label: 'Devolución: cerrar devolución' },
+  { module: 'RETURN', action: 'UPLOAD_EVIDENCE', label: 'Devolución: subir evidencia' },
+  // FLEET (3 acciones — fleet-role.policy.ts)
+  { module: 'FLEET', action: 'READ', label: 'Flota: consultar vehículos' },
+  { module: 'FLEET', action: 'WRITE', label: 'Flota: crear/editar vehículos' },
+  { module: 'FLEET', action: 'CROSS_BRANCH', label: 'Flota: operar en sedes distintas' },
+  // CUSTOMER (2 acciones — customer-role.policy.ts)
+  { module: 'CUSTOMER', action: 'READ', label: 'Clientes: consultar' },
+  { module: 'CUSTOMER', action: 'WRITE', label: 'Clientes: crear/editar' },
 ];
 
 /**

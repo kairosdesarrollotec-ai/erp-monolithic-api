@@ -8,15 +8,15 @@ import {
   ORG,
   buildCustomer,
   buildCustomerRepository,
-  buildWorkContext,
+  buildCustomerAccessService,
 } from '../../testing/customer-test-fixtures';
 
 describe('UpdateCustomerHandler', () => {
   it('actualiza un cliente existente con datos sanitizados', async () => {
     const existing = buildCustomer({ id: 'cust-1', documentNumber: '70889900' });
     const repository = buildCustomerRepository(existing);
-    const workContext = buildWorkContext();
-    const handler = new UpdateCustomerHandler(repository, workContext);
+    const { access, workContext } = buildCustomerAccessService();
+    const handler = new UpdateCustomerHandler(repository, access);
 
     const command = new UpdateCustomerCommand(
       'uid-1',
@@ -64,8 +64,8 @@ describe('UpdateCustomerHandler', () => {
   it('rechaza countryEntryDate si el cliente no es extranjero', async () => {
     const existing = buildCustomer({ id: 'cust-1' });
     const repository = buildCustomerRepository(existing);
-    const workContext = buildWorkContext();
-    const handler = new UpdateCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new UpdateCustomerHandler(repository, access);
 
     const command = new UpdateCustomerCommand(
       'uid-1',
@@ -85,8 +85,8 @@ describe('UpdateCustomerHandler', () => {
 
   it('falla con NotFoundException si el cliente no existe en la empresa', async () => {
     const repository = buildCustomerRepository(null);
-    const workContext = buildWorkContext();
-    const handler = new UpdateCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new UpdateCustomerHandler(repository, access);
 
     const command = new UpdateCustomerCommand(
       'uid-1',
@@ -108,8 +108,8 @@ describe('UpdateCustomerHandler', () => {
     const repository = buildCustomerRepository(existing);
     repository.findByDocument.mockResolvedValue(other);
 
-    const workContext = buildWorkContext();
-    const handler = new UpdateCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new UpdateCustomerHandler(repository, access);
 
     const command = new UpdateCustomerCommand(
       'uid-1',
@@ -130,8 +130,8 @@ describe('UpdateCustomerHandler', () => {
     const repository = buildCustomerRepository(existing);
     repository.findByDocument.mockResolvedValue(existing);
 
-    const workContext = buildWorkContext();
-    const handler = new UpdateCustomerHandler(repository, workContext);
+    const { access } = buildCustomerAccessService();
+    const handler = new UpdateCustomerHandler(repository, access);
 
     const command = new UpdateCustomerCommand(
       'uid-1',

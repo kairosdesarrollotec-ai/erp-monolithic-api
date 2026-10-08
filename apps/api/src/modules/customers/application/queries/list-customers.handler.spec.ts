@@ -6,15 +6,15 @@ import {
   ORG,
   buildCustomer,
   buildCustomerRepository,
-  buildWorkContext,
+  buildCustomerAccessService,
 } from '../../testing/customer-test-fixtures';
 
 describe('ListCustomersHandler', () => {
   it('autoriza contexto y delega búsqueda al repositorio con paginación', async () => {
     const customer = buildCustomer();
     const repository = buildCustomerRepository(customer);
-    const workContext = buildWorkContext();
-    const handler = new ListCustomersHandler(repository, workContext);
+    const { access, workContext } = buildCustomerAccessService();
+    const handler = new ListCustomersHandler(repository, access);
 
     const query = new ListCustomersQuery('uid-1', COMPANY, BRANCH, 'Perez', 20, 0);
     const result = await handler.execute(query);

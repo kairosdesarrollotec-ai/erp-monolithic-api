@@ -6,15 +6,15 @@ import {
   ORG,
   buildFleetVehicle,
   buildFleetVehicleRepository,
-  buildWorkContext,
+  buildFleetAccessService,
 } from '../../testing/fleet-test-fixtures';
 
 describe('ListVehiclesHandler', () => {
   it('consulta la lista de vehículos con filtros y paginación para el contexto autorizado', async () => {
     const vehicle = buildFleetVehicle();
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext();
-    const handler = new ListVehiclesHandler(repository, workContext);
+    const { access, workContext } = buildFleetAccessService();
+    const handler = new ListVehiclesHandler(repository, access);
 
     const query = new ListVehiclesQuery(
       'uid-1',

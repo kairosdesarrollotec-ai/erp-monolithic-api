@@ -1,8 +1,8 @@
+import { ForbiddenException } from '@nestjs/common';
 import { ResolveAlcoholEscalationHandler } from './resolve-alcohol-escalation.handler';
 import { ResolveAlcoholEscalationCommand } from './resolve-alcohol-escalation.command';
 import {
   ReturnNotFoundError,
-  ReturnRoleNotAllowedError,
   ReturnStateConflictError,
   ReturnVersionConflictError,
 } from '../../domain/return-errors';
@@ -43,7 +43,7 @@ describe('ResolveAlcoholEscalationHandler (DEV-04 / BR-DEV-005 / PROP-014 provis
   it('solo GERENCIA (y PLATFORM_ADMIN): el resto de roles recibe ROLE_NOT_ALLOWED sin tocar nada', async () => {
     for (const role of ['CAMPO', 'FRONT_OFFICE', 'ADMINISTRACION', 'FINANZAS', 'AUDITORIA', 'RRHH'] as WorkerRole[]) {
       const { deps, handler } = build({ role });
-      await expect(handler.execute(cmd('CONTINUE_TO_INSPECTION'))).rejects.toThrow(ReturnRoleNotAllowedError);
+      await expect(handler.execute(cmd('CONTINUE_TO_INSPECTION'))).rejects.toThrow(ForbiddenException);
       expect(deps.returns.update).not.toHaveBeenCalled();
       expect(deps.customerRisk.escalate).not.toHaveBeenCalled();
     }
