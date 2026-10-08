@@ -36,6 +36,7 @@ function buildDeps(role: WorkerRole = 'ADMINISTRACION') {
     recordAdminEvent: jest.fn(),
     recordRentalEvent: jest.fn(),
     recordIncidentEvent: jest.fn(),
+    recordRecruitmentEvent: jest.fn(),
   };
 
   const transactionManager: jest.Mocked<TransactionManagerPort> = {

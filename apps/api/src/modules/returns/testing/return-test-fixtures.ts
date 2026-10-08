@@ -275,6 +275,7 @@ export function buildDeps(
     recordAdminEvent: jest.fn(),
     recordRentalEvent: jest.fn().mockResolvedValue(undefined),
     recordIncidentEvent: jest.fn().mockResolvedValue(undefined),
+    recordRecruitmentEvent: jest.fn().mockResolvedValue(undefined),
   };
 
   const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {

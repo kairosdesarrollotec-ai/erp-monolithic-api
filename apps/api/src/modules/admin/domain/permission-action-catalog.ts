@@ -5,7 +5,7 @@
  * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
-export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER'] as const;
+export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT'] as const;
 
 /** Modulos cuyas acciones administra la matriz ADM-02 (unica definicion; antes estaba repetida en ~6 sitios). */
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
@@ -75,6 +75,17 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   // CUSTOMER (2 acciones — customer-role.policy.ts)
   { module: 'CUSTOMER', action: 'READ', label: 'Clientes: consultar' },
   { module: 'CUSTOMER', action: 'WRITE', label: 'Clientes: crear/editar' },
+  // RECRUITMENT (10 acciones — recruitment-role-policy.ts)
+  { module: 'RECRUITMENT', action: 'VIEW_VACANCY', label: 'Reclutamiento: ver vacante' },
+  { module: 'RECRUITMENT', action: 'CREATE_VACANCY', label: 'Reclutamiento: registrar necesidad de vacante' },
+  { module: 'RECRUITMENT', action: 'PUBLISH_VACANCY', label: 'Reclutamiento: publicar vacante' },
+  { module: 'RECRUITMENT', action: 'REGISTER_CANDIDATE', label: 'Reclutamiento: registrar postulante' },
+  { module: 'RECRUITMENT', action: 'VIEW_CANDIDATE', label: 'Reclutamiento: ver postulante' },
+  { module: 'RECRUITMENT', action: 'VIEW_CANDIDATE_SENSITIVE_DATA', label: 'Reclutamiento: ver datos sensibles de postulante' },
+  { module: 'RECRUITMENT', action: 'MANAGE_INTERVIEW', label: 'Reclutamiento: gestionar entrevista' },
+  { module: 'RECRUITMENT', action: 'DECIDE_CANDIDATE', label: 'Reclutamiento: decidir contratación' },
+  { module: 'RECRUITMENT', action: 'MANAGE_ONBOARDING', label: 'Reclutamiento: gestionar incorporación' },
+  { module: 'RECRUITMENT', action: 'EVALUATE_PROBATION', label: 'Reclutamiento: evaluar periodo de prueba' },
 ];
 
 /**

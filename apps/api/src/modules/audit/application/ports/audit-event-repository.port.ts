@@ -63,6 +63,15 @@ export interface RecordIncidentEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordRecruitmentEventInput {
+  organizationId: string;
+  actorUserId: string;
+  entityType: 'vacancy' | 'candidate' | 'interview' | 'onboarding';
+  entityId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -134,6 +143,15 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordIncidentEvent(
     input: RecordIncidentEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * REC-01..08 (Reclutamiento y Seleccion) - registro de vacantes, cambios de etapa, entrevistas, decision, etc.
+   * `tx` opcional para atomicidad con la mutacion.
+   */
+  abstract recordRecruitmentEvent(
+    input: RecordRecruitmentEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

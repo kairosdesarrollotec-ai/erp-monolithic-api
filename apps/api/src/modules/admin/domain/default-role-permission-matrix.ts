@@ -3,6 +3,7 @@ import { assertReservationRoleAllowed, ReservationAction } from '../../reservati
 import { assertInquiryRoleAllowed, InquiryAction } from '../../inquiries/application/policies/inquiry-role-policy';
 import { assertRentalRoleAllowed, RentalAction } from '../../rentals/application/policies/rental-role-policy';
 import { assertIncidentRoleAllowed, IncidentAction } from '../../incidents/application/policies/incident-role-policy';
+import { assertRecruitmentRoleAllowed, RecruitmentAction } from '../../recruitment/application/policies/recruitment-role-policy';
 import { assertAdminRoleAllowed, AdminAction } from '../application/policies/admin-role-policy';
 import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application/policies/return-role-policy';
 import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../../fleet/application/policies/fleet-role.policy';
@@ -64,6 +65,8 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
     } else if (module === 'CUSTOMER') {
       if (action === 'WRITE') assertCustomerWrite(role);
       else assertCustomerRead(role);
+    } else if (module === 'RECRUITMENT') {
+      assertRecruitmentRoleAllowed(role, action as RecruitmentAction);
     } else {
       assertAdminRoleAllowed(role, action as AdminAction);
     }

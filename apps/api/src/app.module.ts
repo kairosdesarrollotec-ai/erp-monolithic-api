@@ -10,6 +10,7 @@ import { FleetModule } from './modules/fleet/fleet.module';
 import { RentalsModule } from './modules/rentals/rentals.module';
 import { ReturnsModule } from './modules/returns/returns.module';
 import { IncidentsModule } from './modules/incidents/incidents.module';
+import { RecruitmentModule } from './modules/recruitment/recruitment.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
@@ -32,6 +33,7 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     RentalsModule,
     ReturnsModule,
     IncidentsModule,
+    RecruitmentModule,
     AdminModule,
     NotificationsModule,
   ],

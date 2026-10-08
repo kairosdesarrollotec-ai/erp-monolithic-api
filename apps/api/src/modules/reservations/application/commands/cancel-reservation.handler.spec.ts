@@ -67,6 +67,7 @@ function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
     recordAdminEvent: jest.fn(),
     recordRentalEvent: jest.fn(),
     recordIncidentEvent: jest.fn(),
+    recordRecruitmentEvent: jest.fn(),
   };
   const outbox: jest.Mocked<OutboxEventRepositoryPort> = {
     publish: jest.fn(),

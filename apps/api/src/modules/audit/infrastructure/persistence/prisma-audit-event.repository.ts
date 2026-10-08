@@ -10,6 +10,7 @@ import {
   RecordAdminEventInput,
   RecordRentalEventInput,
   RecordIncidentEventInput,
+  RecordRecruitmentEventInput,
 } from '../../application/ports/audit-event-repository.port';
 import {
   AuditEventQueryPort,
@@ -117,6 +118,20 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         actorUserId: input.actorUserId,
         entityType: 'incident',
         entityId: input.incidentId,
+        action: input.action,
+        changes: input.changes as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  async recordRecruitmentEvent(input: RecordRecruitmentEventInput, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.auditEvent.create({
+      data: {
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        entityType: input.entityType,
+        entityId: input.entityId,
         action: input.action,
         changes: input.changes as unknown as Prisma.InputJsonValue,
       },
