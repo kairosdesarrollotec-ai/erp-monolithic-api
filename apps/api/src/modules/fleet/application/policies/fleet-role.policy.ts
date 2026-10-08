@@ -67,6 +67,20 @@ export function assertFleetRead(role: WorkerRole | null): void {
 }
 
 /**
+ * Solo para buildDefaultRolePermissionMatrix: verifica si el rol tiene acceso cross-branch
+ * sin comparar branches concretos. El check real de aislamiento en tiempo de ejecucion
+ * se delega a assertCrossBranchAllowed (que recibe el branchId real).
+ */
+export function assertFleetCrossBranchPermission(role: WorkerRole | null): void {
+  if (role === null || !CROSS_BRANCH_ROLES.has(role)) {
+    throw new ForbiddenException({
+      code: 'CROSS_BRANCH_NOT_ALLOWED',
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no puede operar en sedes distintas.`,
+    });
+  }
+}
+
+/**
  * Valida que el usuario tenga permiso para operar sobre una sede distinta a
  * la de su contexto de trabajo (IDOR por sede - Finding #2, PR#34).
  *

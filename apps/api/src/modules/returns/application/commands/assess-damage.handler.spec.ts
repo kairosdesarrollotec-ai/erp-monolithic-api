@@ -1,7 +1,7 @@
+import { ForbiddenException } from '@nestjs/common';
 import { AssessDamageHandler } from './assess-damage.handler';
 import { AssessDamageCommand } from './assess-damage.command';
 import {
-  ReturnRoleNotAllowedError,
   ReturnStateConflictError,
   TechnicalDamageRequiresExternalReportError,
   UnknownCosmeticZoneError,
@@ -171,6 +171,6 @@ describe('AssessDamageHandler (DEV-06 / DEV-07 / BR-DEV-006)', () => {
 
   it('rol CAMPO no puede evaluar daños', async () => {
     const { handler } = build('CAMPO');
-    await expect(handler.execute(aesthetic())).rejects.toThrow(ReturnRoleNotAllowedError);
+    await expect(handler.execute(aesthetic())).rejects.toThrow(ForbiddenException);
   });
 });

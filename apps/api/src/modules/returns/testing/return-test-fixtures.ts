@@ -7,9 +7,12 @@ import { OutboxEventRepositoryPort } from '../../outbox/application/ports/outbox
 import { FleetVehicleRepositoryPort } from '../../fleet/application/ports/fleet-vehicle-repository.port';
 import { RentalRecord, RentalRepositoryPort } from '../../rentals/application/ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../authorization/matrix-authorization.service';
 import type { WorkerRole } from '../../users/domain/worker-role';
 import { CustomerRiskStatus, escalateCustomerRiskStatus } from '../domain/customer-risk-status';
 import { ReturnAccessService } from '../application/services/return-access.service';
+import { assertReturnRoleAllowed, ReturnAction } from '../application/policies/return-role-policy';
+import { roleKeyOfTestRoleId } from '../../users/testing/role-fixtures';
 import { ReturnDepositSettlementPort } from '../application/ports/return-deposit-settlement.port';
 import { ReturnCustomerRiskPort } from '../application/ports/return-customer-risk.port';
 import { ReturnOpenIncidentsPort } from '../application/ports/return-open-incidents.port';
@@ -203,6 +206,20 @@ export function buildDeps(
     }),
   } as unknown as jest.Mocked<WorkContextAuthorizationService>;
 
+  const matrixAuth = {
+    assertAllowed: jest.fn(async (_org: string, roleId: string, module: string, action: string) => {
+      const r = roleKeyOfTestRoleId(roleId);
+      try {
+        if (module === 'RETURN') {
+          assertReturnRoleAllowed(r, action as ReturnAction);
+        }
+      } catch {
+        const { ForbiddenException } = await import('@nestjs/common');
+        throw new ForbiddenException({ code: 'ROLE_NOT_ALLOWED', detail: `El rol ${r} no tiene permiso para ${module}.${action}` });
+      }
+    }),
+  } as unknown as jest.Mocked<MatrixAuthorizationService>;
+
   const returns: jest.Mocked<ReturnRepositoryPort> = {
     create: jest.fn(),
     findById: jest.fn(),
@@ -266,7 +283,7 @@ export function buildDeps(
   };
 
   return {
-    access: new ReturnAccessService(workContext),
+    access: new ReturnAccessService(workContext, matrixAuth),
     workContext,
     returns,
     rentals,

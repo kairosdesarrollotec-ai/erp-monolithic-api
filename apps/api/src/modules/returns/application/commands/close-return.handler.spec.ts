@@ -1,9 +1,9 @@
+import { ForbiddenException } from '@nestjs/common';
 import { CloseReturnHandler } from './close-return.handler';
 import { CloseReturnCommand } from './close-return.command';
 import {
   ActiveIncidentsBlockCloseError,
   RentalNotReturnableError,
-  ReturnRoleNotAllowedError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
 import {
@@ -156,6 +156,6 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
 
   it('rol CAMPO no puede cerrar', async () => {
     const { handler } = build({}, {}, 'CAMPO');
-    await expect(handler.execute(cmd())).rejects.toThrow(ReturnRoleNotAllowedError);
+    await expect(handler.execute(cmd())).rejects.toThrow(ForbiddenException);
   });
 });

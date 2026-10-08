@@ -7,15 +7,15 @@ import {
   ORG,
   buildFleetVehicle,
   buildFleetVehicleRepository,
-  buildWorkContext,
+  buildFleetAccessService,
 } from '../../testing/fleet-test-fixtures';
 
 describe('UpdateVehicleStatusHandler', () => {
   it('actualiza el estado de un vehículo existente', async () => {
     const vehicle = buildFleetVehicle({ status: 'AVAILABLE' });
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new UpdateVehicleStatusHandler(repository, workContext);
+    const { access, workContext } = buildFleetAccessService('CAMPO');
+    const handler = new UpdateVehicleStatusHandler(repository, access);
 
     const command = new UpdateVehicleStatusCommand(
       'uid-1',
@@ -46,8 +46,8 @@ describe('UpdateVehicleStatusHandler', () => {
 
   it('lanza NotFoundException si el vehículo no existe en la empresa', async () => {
     const repository = buildFleetVehicleRepository(null);
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new UpdateVehicleStatusHandler(repository, workContext);
+    const { access } = buildFleetAccessService('CAMPO');
+    const handler = new UpdateVehicleStatusHandler(repository, access);
 
     const command = new UpdateVehicleStatusCommand(
       'uid-1',

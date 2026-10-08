@@ -10,6 +10,7 @@ import { FleetVehicleRepositoryPort } from './application/ports/fleet-vehicle-re
 import { VehiclePhotoStoragePort } from './application/ports/vehicle-photo-storage.port';
 import { PrismaFleetVehicleRepository } from './infrastructure/persistence/prisma-fleet-vehicle.repository';
 import { GcsVehiclePhotoService } from './infrastructure/storage/gcs-vehicle-photo.service';
+import { FleetAccessService } from './application/services/fleet-access.service';
 import { UsersModule } from '../users/users.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 
@@ -17,6 +18,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
   imports: [UsersModule, AuthorizationModule],
   controllers: [FleetController],
   providers: [
+    FleetAccessService,
     CreateVehicleHandler,
     UpdateVehicleStatusHandler,
     UpdateVehicleHandler,

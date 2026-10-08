@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UsersModule } from '../users/users.module';
+import { AuthorizationModule } from '../authorization/authorization.module';
 import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { RentalsModule } from '../rentals/rentals.module';
@@ -45,7 +46,7 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
  * DocumentTemplatesModule provee la plantilla del documento de responsabilidad (PROP-015b).
  */
 @Module({
-  imports: [UsersModule, AuditModule, OutboxModule, RentalsModule, FleetModule, DocumentTemplatesModule],
+  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, RentalsModule, FleetModule, DocumentTemplatesModule],
   controllers: [ReturnsController, ReturnEvidenceController],
   providers: [
     ReturnAccessService,

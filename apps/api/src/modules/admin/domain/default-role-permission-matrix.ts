@@ -5,6 +5,9 @@ import { assertRentalRoleAllowed, RentalAction } from '../../rentals/application
 import { assertIncidentRoleAllowed, IncidentAction } from '../../incidents/application/policies/incident-role-policy';
 import { assertRecruitmentRoleAllowed, RecruitmentAction } from '../../recruitment/application/policies/recruitment-role-policy';
 import { assertAdminRoleAllowed, AdminAction } from '../application/policies/admin-role-policy';
+import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application/policies/return-role-policy';
+import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../../fleet/application/policies/fleet-role.policy';
+import { assertCustomerWrite, assertCustomerRead } from '../../customers/application/policies/customer-role.policy';
 import { PERMISSION_ACTION_CATALOG, type PermissionModule } from './permission-action-catalog';
 import { PLATFORM_ADMIN_KEY } from './system-roles';
 import type { RolePermissionEntry } from '../application/ports/role-permission-matrix.port';
@@ -53,6 +56,15 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       assertRentalRoleAllowed(role, action as RentalAction);
     } else if (module === 'INCIDENT') {
       assertIncidentRoleAllowed(role, action as IncidentAction);
+    } else if (module === 'RETURN') {
+      assertReturnRoleAllowed(role, action as ReturnAction);
+    } else if (module === 'FLEET') {
+      if (action === 'WRITE') assertFleetWrite(role);
+      else if (action === 'READ') assertFleetRead(role);
+      else assertFleetCrossBranchPermission(role);
+    } else if (module === 'CUSTOMER') {
+      if (action === 'WRITE') assertCustomerWrite(role);
+      else assertCustomerRead(role);
     } else if (module === 'RECRUITMENT') {
       assertRecruitmentRoleAllowed(role, action as RecruitmentAction);
     } else {

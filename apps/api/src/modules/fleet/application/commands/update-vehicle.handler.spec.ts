@@ -7,15 +7,15 @@ import {
   ORG,
   buildFleetVehicle,
   buildFleetVehicleRepository,
-  buildWorkContext,
+  buildFleetAccessService,
 } from '../../testing/fleet-test-fixtures';
 
 describe('UpdateVehicleHandler', () => {
   it('actualiza los datos editables de un vehículo existente', async () => {
     const vehicle = buildFleetVehicle();
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, workContext);
+    const { access, workContext } = buildFleetAccessService('CAMPO');
+    const handler = new UpdateVehicleHandler(repository, access);
 
     const command = new UpdateVehicleCommand(
       'uid-1',
@@ -62,8 +62,8 @@ describe('UpdateVehicleHandler', () => {
 
   it('lanza NotFoundException si el vehículo no existe en la empresa', async () => {
     const repository = buildFleetVehicleRepository(null);
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, workContext);
+    const { access } = buildFleetAccessService('CAMPO');
+    const handler = new UpdateVehicleHandler(repository, access);
 
     const command = new UpdateVehicleCommand(
       'uid-1',
@@ -81,8 +81,8 @@ describe('UpdateVehicleHandler', () => {
   it('conserva brand y model existentes cuando no se proporcionan en el comando', async () => {
     const vehicle = buildFleetVehicle({ brand: 'Toyota', model: 'Hilux' });
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, workContext);
+    const { access } = buildFleetAccessService('CAMPO');
+    const handler = new UpdateVehicleHandler(repository, access);
 
     const command = new UpdateVehicleCommand(
       'uid-1',
@@ -106,8 +106,8 @@ describe('UpdateVehicleHandler', () => {
   it('no permite editar la placa: el comando no acepta ese campo', async () => {
     const vehicle = buildFleetVehicle({ plate: 'ABC-123' });
     const repository = buildFleetVehicleRepository(vehicle);
-    const workContext = buildWorkContext('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, workContext);
+    const { access } = buildFleetAccessService('CAMPO');
+    const handler = new UpdateVehicleHandler(repository, access);
 
     const command = new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, 'Toyota', 'Hilux');
 

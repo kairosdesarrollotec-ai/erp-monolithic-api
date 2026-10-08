@@ -2,8 +2,11 @@ import { ForbiddenException } from '@nestjs/common';
 import { Customer } from '../domain/customer';
 import { CustomerRepositoryPort } from '../application/ports/customer-repository.port';
 import { WorkContextAuthorizationService } from '../../users/application/services/work-context-authorization.service';
+import { MatrixAuthorizationService } from '../../authorization/matrix-authorization.service';
+import { CustomerAccessService } from '../application/services/customer-access.service';
 import type { WorkerRole } from '../../users/domain/worker-role';
-import { testRole } from '../../users/testing/role-fixtures';
+import { testRole, roleKeyOfTestRoleId } from '../../users/testing/role-fixtures';
+import { assertCustomerWrite, assertCustomerRead } from '../application/policies/customer-role.policy';
 
 export const ORG = 'org-1';
 export const COMPANY = 'company-1';
@@ -67,6 +70,38 @@ export function buildCustomerRepository(existing: Customer | null = buildCustome
   };
 }
 
+/** La matriz simulada aplica la misma politica rol-accion que la version 0 real (customer-role.policy.ts). */
+export function buildCustomerAccessService(
+  role: WorkerRole | 'forbidden' = 'FRONT_OFFICE',
+): { access: CustomerAccessService; workContext: jest.Mocked<WorkContextAuthorizationService> } {
+  const workContext = {
+    authorize:
+      role === 'forbidden'
+        ? jest.fn().mockRejectedValue(new ForbiddenException())
+        : jest.fn().mockResolvedValue({ organizationId: ORG, companyId: COMPANY, branchId: BRANCH, ...testRole(role) }),
+  } as unknown as jest.Mocked<WorkContextAuthorizationService>;
+
+  const matrixAuth = {
+    assertAllowed: jest.fn(async (_org: string, roleId: string, module: string, action: string) => {
+      const r = roleKeyOfTestRoleId(roleId);
+      try {
+        if (module === 'CUSTOMER') {
+          if (action === 'WRITE') assertCustomerWrite(r);
+          else assertCustomerRead(r);
+        }
+      } catch {
+        throw new ForbiddenException({ code: 'ROLE_NOT_ALLOWED', detail: `El rol ${r} no tiene permiso para ${module}.${action}` });
+      }
+    }),
+  } as unknown as jest.Mocked<MatrixAuthorizationService>;
+
+  return {
+    workContext,
+    access: new CustomerAccessService(workContext, matrixAuth),
+  };
+}
+
+/** @deprecated Usar buildCustomerAccessService en su lugar. Mantenido para compatibilidad temporal. */
 export function buildWorkContext(role: WorkerRole | 'forbidden' = 'FRONT_OFFICE'): jest.Mocked<WorkContextAuthorizationService> {
   return {
     authorize:

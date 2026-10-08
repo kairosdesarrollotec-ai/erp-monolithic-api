@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { CustomerRepositoryPort } from '../ports/customer-repository.port';
-import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
-import { assertCustomerWrite } from '../policies/customer-role.policy';
+import { CustomerAccessService } from '../services/customer-access.service';
 import { CustomerDocumentAlreadyExistsError } from '../../domain/customer-errors';
 import { CreateCustomerCommand } from './create-customer.command';
 import { Customer } from '../../domain/customer';
@@ -11,7 +10,7 @@ import { Customer } from '../../domain/customer';
 export class CreateCustomerHandler {
   constructor(
     private readonly customers: CustomerRepositoryPort,
-    private readonly workContext: WorkContextAuthorizationService,
+    private readonly access: CustomerAccessService,
   ) {}
 
   async execute(command: CreateCustomerCommand): Promise<Customer> {
@@ -22,13 +21,10 @@ export class CreateCustomerHandler {
       });
     }
 
-    const context = await this.workContext.authorize({
-      firebaseUid: command.firebaseUid,
-      companyId: command.companyId,
-      branchId: command.branchId,
-    });
-
-    assertCustomerWrite(context.roleKey);
+    const { context } = await this.access.authorize(
+      { firebaseUid: command.firebaseUid, companyId: command.companyId, branchId: command.branchId },
+      'WRITE',
+    );
 
     const existing = await this.customers.findByDocument(
       command.documentType.trim().toUpperCase(),
