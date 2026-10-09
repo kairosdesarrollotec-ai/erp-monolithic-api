@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { HealthModule } from './modules/health/health.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { UsersModule } from './modules/users/users.module';
@@ -20,6 +22,11 @@ import { IdempotencyModule } from './common/http/idempotency.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    // F8 — rate limiting global (OWASP A04/A05, TDD-00 §8.1):
+    // - ttl: ventana de 60 segundos.
+    // - limit: 120 peticiones por IP por ventana (endpoints autenticados).
+    // El endpoint público POST /audit/login-attempts sobreescribe con @Throttle({ default: { limit: 10, ttl: 60000 } }).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
     IdempotencyModule,
     HealthModule,
@@ -36,6 +43,11 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     RecruitmentModule,
     AdminModule,
     NotificationsModule,
+  ],
+  providers: [
+    // Guard global de throttling: aplica a todos los endpoints sin necesidad de decoradores.
+    // Los endpoints que requieren un límite distinto usan @Throttle({ default: { limit, ttl } }).
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}

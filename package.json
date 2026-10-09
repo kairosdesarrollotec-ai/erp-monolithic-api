@@ -23,6 +23,7 @@
     "audit:all": "node scripts/audit-check.mjs --include-dev"
   },
   "dependencies": {
+    "@nestjs/throttler": "^6.7.1",
     "resend": "^6.30.0"
   }
 }

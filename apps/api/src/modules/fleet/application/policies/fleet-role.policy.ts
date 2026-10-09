@@ -44,14 +44,6 @@ const CROSS_BRANCH_ROLES: ReadonlySet<WorkerRole> = new Set([
   'PLATFORM_ADMIN',
 ]);
 
-/**
- * TODO(roles-dinamicos, fase 4): este modulo AUN decide con un set de roles
- * hard-coded, ahora contra `roleKey` (clave estable de los 8 roles de sistema,
- * AuthorizedWorkContext.roleKey). Un rol creado a mano (key = null) queda
- * DENEGADO aqui (deny-by-default) hasta que el modulo migre a la matriz ADM-02
- * (MatrixAuthorizationService.assertAllowed por roleId) en su propio PR de la
- * fase 4. No migrar en el PR de la fase 2.
- */
 export function assertFleetWrite(role: WorkerRole | null): void {
   if (role === null || !FLEET_WRITE_ROLES.has(role)) {
     throw new ForbiddenException({
