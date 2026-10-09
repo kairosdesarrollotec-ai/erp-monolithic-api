@@ -49,6 +49,7 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
       ? {
           id: record.contract.id,
           templateVersionId: record.contract.templateVersionId,
+          templateId: record.contract.templateId,
           documentRef: record.contract.documentRef,
           status: record.contract.status,
           signedAt: record.contract.signedAt ? record.contract.signedAt.toISOString() : null,

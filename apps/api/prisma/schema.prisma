@@ -985,18 +985,21 @@ model NotaryEvaluation {
 }
 
 /// TDD-03-alquiler seccion 9.3 / BR-DOC-002/003 - contrato inmutable formalizado.
+/// TPL-TODO-001: templateVersionId es ahora nullable; los nuevos contratos usan templateId → templates.id.
 model RentalContract {
-  id                String            @id @default(uuid())
-  rentalId          String            @unique @map("rental_id")
-  templateVersionId String            @map("template_version_id")
-  documentRef       String            @map("document_ref")
-  status            String            @default("PENDING") // PENDING | SIGNED | VOID
-  signedAt          DateTime?         @map("signed_at")
-  signatureData     String?           @map("signature_data") @db.Text
-  createdAt         DateTime          @default(now()) @map("created_at")
+  id                String    @id @default(uuid())
+  rentalId          String    @unique @map("rental_id")
+  templateVersionId String?   @map("template_version_id")
+  templateId        String?   @map("template_id")
+  documentRef       String    @map("document_ref")
+  status            String    @default("PENDING") // PENDING | SIGNED | VOID
+  signedAt          DateTime? @map("signed_at")
+  signatureData     String?   @map("signature_data") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
 
-  rental   Rental           @relation(fields: [rentalId], references: [id], onDelete: Cascade)
-  template ContractTemplate @relation(fields: [templateVersionId], references: [id])
+  rental      Rental            @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  template    ContractTemplate? @relation(fields: [templateVersionId], references: [id])
+  templateNew Template?         @relation(fields: [templateId], references: [id])
 
   @@map("rental_contracts")
 }
@@ -1079,7 +1082,8 @@ model Template {
   updatedAt      DateTime  @updatedAt @map("updated_at")
   updatedBy      String    @map("updated_by")
 
-  company Company @relation(fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Cascade)
+  company         Company          @relation(fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Cascade)
+  rentalContracts RentalContract[]
 
   @@index([companyId, type])
   @@index([organizationId])

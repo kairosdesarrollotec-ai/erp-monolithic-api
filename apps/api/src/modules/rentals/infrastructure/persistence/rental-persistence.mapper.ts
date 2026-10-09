@@ -65,7 +65,8 @@ export function toNotaryEvaluationRecord(row: {
 export function toRentalContractRecord(row: {
   id: string;
   rentalId: string;
-  templateVersionId: string;
+  templateVersionId: string | null;
+  templateId: string | null;
   documentRef: string;
   status: string;
   signedAt: Date | null;
@@ -76,6 +77,7 @@ export function toRentalContractRecord(row: {
     id: row.id,
     rentalId: row.rentalId,
     templateVersionId: row.templateVersionId,
+    templateId: row.templateId,
     documentRef: row.documentRef,
     status: row.status,
     signedAt: row.signedAt,

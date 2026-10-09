@@ -46,13 +46,6 @@ export abstract class TemplateRepositoryPort {
 
   abstract findActive(companyId: string, type: string, organizationId: string): Promise<TemplateRecord | null>;
 
-  abstract updateStatus(
-    id: string,
-    status: string,
-    scope: TemplateScope,
-    updatedBy: string,
-  ): Promise<TemplateRecord>;
-
   /**
    * Transacción atómica (TDD-TPL-ADR-003):
    * 1. Calcula version = max(version existente para companyId+type) + 1, o 1.

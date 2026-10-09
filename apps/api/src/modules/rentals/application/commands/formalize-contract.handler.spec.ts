@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FormalizeContractHandler } from './formalize-contract.handler';
 import { FormalizeContractCommand } from './formalize-contract.command';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
+import { TemplateRepositoryPort, TemplateRecord } from '../../../templates/application/ports/template-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
@@ -40,13 +41,32 @@ describe('FormalizeContractHandler', () => {
 
   const fakeTx = {} as any;
 
-  function buildDeps(templateOwned = true, activeTemplate: { id: string; version: number } | null = { id: 'tpl-active', version: 1 }) {
+  const fakeTemplateRecord: TemplateRecord = {
+    id: 'tpl-active',
+    organizationId: 'org-1',
+    companyId: 'comp-1',
+    type: 'RENTAL_CONTRACT',
+    name: 'Contrato VeloxRent v1',
+    version: 1,
+    status: 'ACTIVE',
+    documentUrl: 'https://storage.example.com/tpl-active.pdf',
+    documentFormat: 'PDF',
+    effectiveFrom: new Date(),
+    createdAt: new Date(),
+    createdBy: 'uid-admin',
+    updatedAt: new Date(),
+    updatedBy: 'uid-admin',
+  };
+
+  function buildDeps(activeTemplate: TemplateRecord | null = fakeTemplateRecord) {
     const rentals = {
       findById: jest.fn().mockResolvedValue(fakeRental),
-      contractTemplateBelongsToCompany: jest.fn().mockResolvedValue(templateOwned),
-      findActiveContractTemplate: jest.fn().mockResolvedValue(activeTemplate),
       formalizeContract: jest.fn().mockResolvedValue({ ...fakeRental, status: 'PENDING_DELIVERY', version: 5 }),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
+
+    const templateRepository = {
+      findActive: jest.fn().mockResolvedValue(activeTemplate),
+    } as unknown as jest.Mocked<TemplateRepositoryPort>;
 
     const workContext = {
       authorize: jest.fn().mockResolvedValue({
@@ -80,13 +100,14 @@ describe('FormalizeContractHandler', () => {
       publish: jest.fn().mockResolvedValue(undefined),
     };
 
-    return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository };
+    return { rentals, templateRepository, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository };
   }
 
-  it('template pertenece a la empresa → transiciona a PENDING_DELIVERY y publica ContratoFirmado.v1 y PagoRegistrado.v1', async () => {
-    const deps = buildDeps(true);
+  it('TPL-TODO-001: resuelve la plantilla activa desde templates y transiciona a PENDING_DELIVERY', async () => {
+    const deps = buildDeps();
     const handler = new FormalizeContractHandler(
       deps.rentals,
+      deps.templateRepository,
       deps.workContext,
       deps.matrixAuth,
       deps.transactionManager,
@@ -101,7 +122,7 @@ describe('FormalizeContractHandler', () => {
         'comp-1',
         'branch-1',
         4,
-        'tpl-v1',
+        undefined,
         'doc-ref-001',
         '500.00',
         'PEN',
@@ -109,12 +130,13 @@ describe('FormalizeContractHandler', () => {
     );
 
     expect(result.status).toBe('PENDING_DELIVERY');
+    expect(deps.templateRepository.findActive).toHaveBeenCalledWith('comp-1', 'RENTAL_CONTRACT', 'org-1');
     expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
-      expect.objectContaining({ rentalId: 'rent-500', templateVersionId: 'tpl-v1', depositAmount: '500.00' }),
+      expect.objectContaining({ rentalId: 'rent-500', templateId: 'tpl-active', depositAmount: '500.00' }),
       fakeTx,
     );
     expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'CONTRACT_FORMALIZED' }),
+      expect.objectContaining({ action: 'CONTRACT_FORMALIZED', changes: expect.objectContaining({ templateId: 'tpl-active' }) }),
       fakeTx,
     );
     const publishCalls = deps.outboxRepository.publish.mock.calls.map((c) => c[0].eventType);
@@ -122,54 +144,11 @@ describe('FormalizeContractHandler', () => {
     expect(publishCalls).toContain('PagoRegistrado.v1');
   });
 
-  it('template NO pertenece a la empresa → BadRequestException con code INVALID_CONTRACT_TEMPLATE', async () => {
-    const deps = buildDeps(false);
-    const handler = new FormalizeContractHandler(
-      deps.rentals,
-      deps.workContext,
-      deps.matrixAuth,
-      deps.transactionManager,
-      deps.auditRepository,
-      deps.outboxRepository,
-    );
-
-    await expect(
-      handler.execute(
-        new FormalizeContractCommand(
-          'rent-500',
-          'uid-1',
-          'comp-1',
-          'branch-1',
-          4,
-          'tpl-ajena',
-          'doc-ref-001',
-          '500.00',
-          'PEN',
-        ),
-      ),
-    ).rejects.toThrow(BadRequestException);
-
-    await expect(
-      handler.execute(
-        new FormalizeContractCommand(
-          'rent-500',
-          'uid-1',
-          'comp-1',
-          'branch-1',
-          4,
-          'tpl-ajena',
-          'doc-ref-001',
-          '500.00',
-          'PEN',
-        ),
-      ),
-    ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_CONTRACT_TEMPLATE' }) });
-  });
-
   it('monto deposito <= 0 → BadRequestException con code INVALID_DEPOSIT_AMOUNT', async () => {
-    const deps = buildDeps(true);
+    const deps = buildDeps();
     const handler = new FormalizeContractHandler(
       deps.rentals,
+      deps.templateRepository,
       deps.workContext,
       deps.matrixAuth,
       deps.transactionManager,
@@ -179,43 +158,24 @@ describe('FormalizeContractHandler', () => {
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand(
-          'rent-500',
-          'uid-1',
-          'comp-1',
-          'branch-1',
-          4,
-          'tpl-v1',
-          'doc-ref-001',
-          '0',
-          'PEN',
-        ),
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '0', 'PEN'),
       ),
     ).rejects.toThrow(BadRequestException);
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand(
-          'rent-500',
-          'uid-1',
-          'comp-1',
-          'branch-1',
-          4,
-          'tpl-v1',
-          'doc-ref-001',
-          '-50',
-          'PEN',
-        ),
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '-50', 'PEN'),
       ),
     ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_DEPOSIT_AMOUNT' }) });
   });
 
   it('estado distinto de CONTRACTING → RentalStateConflictError', async () => {
-    const deps = buildDeps(true);
+    const deps = buildDeps();
     deps.rentals.findById.mockResolvedValue({ ...fakeRental, status: 'DRAFT' });
 
     const handler = new FormalizeContractHandler(
       deps.rentals,
+      deps.templateRepository,
       deps.workContext,
       deps.matrixAuth,
       deps.transactionManager,
@@ -225,48 +185,16 @@ describe('FormalizeContractHandler', () => {
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand(
-          'rent-500',
-          'uid-1',
-          'comp-1',
-          'branch-1',
-          4,
-          'tpl-v1',
-          'doc-ref-001',
-          '500.00',
-          'PEN',
-        ),
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
       ),
     ).rejects.toThrow(RentalStateConflictError);
   });
 
-  it('templateVersionId omitido → resuelve automaticamente la plantilla ACTIVE vigente', async () => {
-    const deps = buildDeps(true, { id: 'tpl-auto', version: 3 });
+  it('sin plantilla ACTIVE en tabla templates → BadRequestException con code NO_ACTIVE_CONTRACT_TEMPLATE', async () => {
+    const deps = buildDeps(null);
     const handler = new FormalizeContractHandler(
       deps.rentals,
-      deps.workContext,
-      deps.matrixAuth,
-      deps.transactionManager,
-      deps.auditRepository,
-      deps.outboxRepository,
-    );
-
-    await handler.execute(
-      new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
-    );
-
-    expect(deps.rentals.findActiveContractTemplate).toHaveBeenCalledWith('comp-1', 'RENTAL_CONTRACT');
-    expect(deps.rentals.contractTemplateBelongsToCompany).not.toHaveBeenCalled();
-    expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
-      expect.objectContaining({ templateVersionId: 'tpl-auto' }),
-      fakeTx,
-    );
-  });
-
-  it('templateVersionId omitido y sin plantilla ACTIVE → BadRequestException con code NO_ACTIVE_CONTRACT_TEMPLATE', async () => {
-    const deps = buildDeps(true, null);
-    const handler = new FormalizeContractHandler(
-      deps.rentals,
+      deps.templateRepository,
       deps.workContext,
       deps.matrixAuth,
       deps.transactionManager,
@@ -282,11 +210,12 @@ describe('FormalizeContractHandler', () => {
   });
 
   it('alquiler no encontrado → NotFoundException', async () => {
-    const deps = buildDeps(true);
+    const deps = buildDeps();
     deps.rentals.findById.mockResolvedValue(null);
 
     const handler = new FormalizeContractHandler(
       deps.rentals,
+      deps.templateRepository,
       deps.workContext,
       deps.matrixAuth,
       deps.transactionManager,
@@ -296,17 +225,7 @@ describe('FormalizeContractHandler', () => {
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand(
-          'rent-inexistente',
-          'uid-1',
-          'comp-1',
-          'branch-1',
-          4,
-          'tpl-v1',
-          'doc-ref-001',
-          '500.00',
-          'PEN',
-        ),
+        new FormalizeContractCommand('rent-inexistente', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
       ),
     ).rejects.toThrow(NotFoundException);
   });

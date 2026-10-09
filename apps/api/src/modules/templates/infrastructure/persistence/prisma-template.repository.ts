@@ -89,32 +89,6 @@ export class PrismaTemplateRepository implements TemplateRepositoryPort {
     return row ? toRecord(row) : null;
   }
 
-  async updateStatus(
-    id: string,
-    status: string,
-    scope: TemplateScope,
-    updatedBy: string,
-  ): Promise<TemplateRecord> {
-    const row = await this.prisma.template.updateMany({
-      where: {
-        id,
-        organizationId: scope.organizationId,
-        companyId: scope.companyId,
-      },
-      data: { status, updatedBy },
-    });
-    if (row.count === 0) {
-      const updated = await this.prisma.template.findFirstOrThrow({
-        where: { id },
-      });
-      return toRecord(updated);
-    }
-    const updated = await this.prisma.template.findFirstOrThrow({
-      where: { id },
-    });
-    return toRecord(updated);
-  }
-
   /**
    * TDD-TPL-ADR-003 — Transacción atómica:
    * 1. Calcula version = max existente para (companyId, type) + 1.

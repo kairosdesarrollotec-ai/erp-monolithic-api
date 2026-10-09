@@ -43,11 +43,12 @@ import { AuthorizationModule } from '../authorization/authorization.module';
 import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { FleetModule } from '../fleet/fleet.module';
+import { TemplatesModule } from '../templates/templates.module';
 import { RentalCreationGuard } from './application/services/rental-creation.guard';
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
 
 @Module({
-  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule],
+  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule, TemplatesModule],
   controllers: [ContractTemplatesController, RentalsController, RentalsEvidenceController, RentalsExtensionsController, RentalDocumentsController],
   providers: [
     CreateRentalHandler,

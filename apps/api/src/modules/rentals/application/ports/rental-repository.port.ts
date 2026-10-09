@@ -33,7 +33,10 @@ export interface NotaryEvaluationRecord {
 export interface RentalContractRecord {
   id: string;
   rentalId: string;
-  templateVersionId: string;
+  /** @deprecated Legado — los contratos nuevos usan templateId (TPL-TODO-001). */
+  templateVersionId: string | null;
+  /** TPL-TODO-001: FK hacia templates.id para contratos nuevos. */
+  templateId: string | null;
   documentRef: string;
   status: string;
   signedAt: Date | null;
@@ -149,7 +152,10 @@ export interface FormalizeContractInput {
   rentalId: string;
   scope: RentalScope;
   expectedVersion: number;
-  templateVersionId: string;
+  /** @deprecated Legado — usar templateId para contratos nuevos (TPL-TODO-001). */
+  templateVersionId?: string;
+  /** TPL-TODO-001: FK hacia templates.id; campo preferido para contratos nuevos. */
+  templateId?: string;
   documentRef: string;
   depositAmount: string;
   currency: string;
