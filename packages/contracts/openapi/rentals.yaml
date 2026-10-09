@@ -938,10 +938,11 @@ components:
 
     RentalContractResponse:
       type: object
-      required: [id, templateVersionId, documentRef, status, createdAt]
+      required: [id, documentRef, status, createdAt]
       properties:
         id: { type: string, format: uuid }
-        templateVersionId: { type: string, format: uuid }
+        templateId: { type: string, format: uuid, nullable: true }
+        templateVersionId: { type: string, format: uuid, nullable: true }
         documentRef: { type: string }
         status: { type: string }
         signedAt: { type: string, format: date-time, nullable: true }
