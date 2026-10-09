@@ -71,6 +71,7 @@ describe('ValidateDocumentsHandler', () => {
       recordRentalEvent: jest.fn().mockResolvedValue(undefined),
       recordIncidentEvent: jest.fn(),
       recordRecruitmentEvent: jest.fn(),
+      recordHrAdministrationEvent: jest.fn(),
     };
 
     return { rentals, workContext, matrixAuth, transactionManager, auditRepository };

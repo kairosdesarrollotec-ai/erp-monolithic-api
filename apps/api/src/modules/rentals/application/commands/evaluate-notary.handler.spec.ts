@@ -98,6 +98,7 @@ describe('EvaluateNotaryHandler', () => {
       recordRentalEvent: jest.fn().mockResolvedValue(undefined),
       recordIncidentEvent: jest.fn(),
       recordRecruitmentEvent: jest.fn(),
+      recordHrAdministrationEvent: jest.fn(),
     };
 
     const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {

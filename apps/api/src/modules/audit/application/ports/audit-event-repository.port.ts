@@ -72,6 +72,15 @@ export interface RecordRecruitmentEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordHrAdministrationEventInput {
+  organizationId: string;
+  actorUserId: string;
+  entityType: 'employee' | 'attendance' | 'leave' | 'vacation' | 'field_trip' | 'termination';
+  entityId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -152,6 +161,15 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordRecruitmentEvent(
     input: RecordRecruitmentEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * ADP-P01..17 (Administracion de Personal) - asistencia, permisos, vacaciones, salidas a campo y desvinculaciones.
+   * `tx` opcional para atomicidad con la mutacion.
+   */
+  abstract recordHrAdministrationEvent(
+    input: RecordHrAdministrationEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }
