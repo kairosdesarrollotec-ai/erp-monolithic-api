@@ -16,8 +16,6 @@ import {
   RequestExtensionInput,
   AuthorizeExtensionInput,
   RejectExtensionInput,
-  ContractTemplateRecord,
-  CreateContractTemplateInput,
   ReportExtensionBreachInput,
   RentalInquiryRecord,
 } from '../../application/ports/rental-repository.port';
@@ -27,7 +25,6 @@ import {
   toRentalRecord,
   RentalWithRelations,
 } from './rental-persistence.mapper';
-import { PrismaContractTemplatePersistence } from './prisma-contract-template.persistence';
 import { PrismaRentalExtensionPersistence } from './prisma-rental-extension.persistence';
 import { PrismaRentalNotaryContractPersistence } from './prisma-rental-notary-contract.persistence';
 
@@ -53,7 +50,6 @@ const RENTAL_RELATIONS_INCLUDE = {
 export class PrismaRentalRepository implements RentalRepositoryPort {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly contractTemplatePersistence: PrismaContractTemplatePersistence,
     private readonly rentalExtensionPersistence: PrismaRentalExtensionPersistence,
     private readonly rentalNotaryContractPersistence: PrismaRentalNotaryContractPersistence,
   ) {}
@@ -232,25 +228,6 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
         status: 'CLOSED',
       },
     });
-  }
-
-  async findActiveContractTemplate(companyId: string, type: string): Promise<{ id: string; version: number } | null> {
-    return this.contractTemplatePersistence.findActive(companyId, type);
-  }
-
-  async contractTemplateBelongsToCompany(templateVersionId: string, companyId: string): Promise<boolean> {
-    return this.contractTemplatePersistence.belongsToCompany(templateVersionId, companyId);
-  }
-
-  async createContractTemplate(
-    input: CreateContractTemplateInput,
-    tx?: Prisma.TransactionClient,
-  ): Promise<ContractTemplateRecord> {
-    return this.contractTemplatePersistence.create(input, tx);
-  }
-
-  async listContractTemplates(companyId: string): Promise<ContractTemplateRecord[]> {
-    return this.contractTemplatePersistence.list(companyId);
   }
 
   async list(filter: ListRentalsFilter): Promise<RentalRecord[]> {

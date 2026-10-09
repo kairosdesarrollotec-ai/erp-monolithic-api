@@ -43,23 +43,6 @@ export interface RentalContractRecord {
   createdAt: Date;
 }
 
-/// TDD-03-alquiler seccion 9.3 / BR-DOC-002 - plantilla de contrato versionada.
-export interface ContractTemplateRecord {
-  id: string;
-  companyId: string;
-  type: string;
-  version: number;
-  effectiveFrom: Date;
-  effectiveTo: Date | null;
-  status: string;
-  createdAt: Date;
-}
-
-export interface CreateContractTemplateInput {
-  companyId: string;
-  type: string;
-  effectiveFrom: Date;
-}
 
 export interface RentalDepositRecord {
   id: string;
@@ -299,13 +282,6 @@ export abstract class RentalRepositoryPort {
     endAt: Date;
   } | null>;
   abstract countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number>;
-  abstract findActiveContractTemplate(companyId: string, type: string): Promise<{ id: string; version: number } | null>;
-  abstract contractTemplateBelongsToCompany(templateVersionId: string, companyId: string): Promise<boolean>;
-  abstract createContractTemplate(
-    input: CreateContractTemplateInput,
-    tx?: Prisma.TransactionClient,
-  ): Promise<ContractTemplateRecord>;
-  abstract listContractTemplates(companyId: string): Promise<ContractTemplateRecord[]>;
   abstract list(filter: ListRentalsFilter): Promise<RentalRecord[]>;
   abstract transitionStatus(
     id: string,
