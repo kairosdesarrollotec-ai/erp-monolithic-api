@@ -541,6 +541,19 @@ sources:
   sha256: null
   authority: contract
   supersedes: null
+- id: TDD-KAIROS-MVP-002-TPL
+  path: docs/sources/tdd/tdd-templates.md
+  type: TDD
+  module: Templates
+  version: '1.0'
+  date: '2026-10-09'
+  status: approved
+  estado_original: >
+    Aprobado v1.0 — módulo standalone `templates` con subida docx/pdf vía GCS.
+    Consolida RENTAL_CONTRACT (antes rentals/contract-templates), RETURN_RESPONSIBILITY
+    (antes document-templates) y añade RESERVATION_CONTRACT. Decisión PROP-017.
+  sha256: unknown
+
 - id: UX-UI-V3.1-KAIROS
   path: docs/sources/ux-ui/especificacion-ux-ui-v3.1-para-prototipado-del-erp-kairos.md
   type: UX
