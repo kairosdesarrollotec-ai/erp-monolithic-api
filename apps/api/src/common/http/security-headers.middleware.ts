@@ -14,5 +14,12 @@ export function securityHeadersMiddleware(req: Request, res: Response, next: Nex
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('X-XSS-Protection', '0');
+  // F7 — CSP restrictiva para una API JSON pura (TDD-00 §8.1): sin HTML, sin scripts,
+  // sin recursos embebidos. Previene OWASP A05 en clientes que procesen la respuesta
+  // directamente (ej. herramientas de debug, proxies).
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'none'; frame-ancestors 'none'",
+  );
   next();
 }
