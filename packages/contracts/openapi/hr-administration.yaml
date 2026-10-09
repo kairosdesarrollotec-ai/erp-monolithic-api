@@ -1,0 +1,840 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Human Resources Administration API
+  version: 0.1.0
+  description: >
+    Contrato del módulo de Administración de Personal (ADP-01 a ADP-10).
+    Fuentes canónicas: BDD-06 (BDD-ADP-001 v1.9), SDD-06 (SDD-KAIROS-MVP-002 / ADP v2.1) y TDD-06 (TDD-KAIROS-MVP-002 / ADP v2.1).
+    Cubre los 5 subflujos de personal:
+      1. Asistencia y control de faltas/tardanzas con deducciones salariales a fin de mes (ADP-P01..04, BR-ADP-001).
+      2. Solicitud y autorización de permisos/salidas antes de hora exclusiva de Jefatura (ADP-P05..06, BR-ADP-003).
+      3. Programación de vacaciones con validación de capacidad de área (máximo 1 persona a la vez, BR-ADP-002, DR-ADP-001).
+      4. Cascada de autorización de salidas a campo en 3 niveles con temporizador de 5 min por nivel, SIN 4to nivel automático (ADP-P12..14, BR-ADP-004, DR-ADP-002) y control de retrasos con advertencias/observación (BR-ADP-005).
+      5. Desvinculación laboral (renuncia/despido) y emisión de evento RelacionLaboralTerminada hacia Reclutamiento (ADP-P15..17, BR-ADP-006, ADR-KAI-006).
+
+    Todas las rutas requieren `Authorization: Bearer <Firebase ID token>` y autorización deny-by-default por la matriz
+    dinámica de permisos (módulo HR_ADMINISTRATION, ADM-02): nunca se decide por nombre de persona ni de rol.
+    Contexto de trabajo: las rutas que operan sobre un recurso concreto (`/employees/{id}/...`, `/leaves/{id}/...`,
+    `/field-trips/{id}/...`) validan contra la empresa y sede del propio colaborador; las rutas de listado, resumen,
+    calendario y descuentos reciben `companyId` y `branchId` (contexto vigente del usuario, 403 si no es una
+    asignación activa).
+
+    Errores: cuerpo `{ statusCode, code, detail }` (ver schema ProblemDetail). Códigos de negocio: EMPLOYEE_NOT_FOUND,
+    DUPLICATE_EMPLOYEE_DOCUMENT, CANDIDATE_ALREADY_EMPLOYEE, EMPLOYEE_TERMINATED, EMPLOYEE_STATUS_TRANSITION_NOT_ALLOWED,
+    ATTENDANCE_ALREADY_LOGGED, INVALID_ATTENDANCE_RECORD, INVALID_PAYROLL_MONTH, DEDUCTIONS_BEFORE_MONTH_END,
+    LEAVE_NOT_FOUND, LEAVE_ALREADY_RESOLVED, INVALID_LEAVE_STATUS, INVALID_DATE_RANGE, VACATION_OVERLAP,
+    FIELD_TRIP_NOT_FOUND, FIELD_TRIP_NOT_PENDING, FIELD_TRIP_NOT_AUTHORIZED, FIELD_TRIP_TIMEOUT_NOT_ELAPSED,
+    INVALID_FIELD_TRIP_DATES, INVALID_AUTHORIZATION_LEVEL, AUTHORIZATION_LEVEL_NOT_REACHED, NO_AUTHORIZATION_AVAILABLE,
+    EMPLOYMENT_ALREADY_TERMINATED, INVALID_TERMINATION_NOTICE, TERMINATION_NOTES_REQUIRED, FINAL_SETTLEMENT_REQUIRED.
+
+paths:
+  /employees:
+    post:
+      operationId: createEmployee
+      summary: Registrar nuevo colaborador en administración de personal
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEmployeeRequest' }
+      responses:
+        '201':
+          description: Colaborador registrado exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmployeeResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES o contexto no autorizado }
+        '409': { description: Documento ya registrado para la empresa o Idempotency-Key en conflicto }
+    get:
+      operationId: listEmployees
+      summary: Listar colaboradores con filtros de empresa, sede, estado y área
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo; el listado se limita a esa sede }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/EmployeeStatus' } }
+        - { name: areaId, in: query, required: false, schema: { type: string } }
+        - { name: search, in: query, required: false, schema: { type: string } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: offset, in: query, required: false, schema: { type: integer, minimum: 0, default: 0 } }
+      responses:
+        '200':
+          description: Lista de colaboradores
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, total]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/EmployeeResponse' }
+                  total: { type: integer }
+        '400': { description: Parámetros inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES o contexto empresa/sede no vigente }
+
+  /employees/{id}:
+    get:
+      operationId: getEmployee
+      summary: Obtener expediente y detalle del colaborador
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Detalle completo del colaborador
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmployeeDetailResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+    patch:
+      operationId: updateEmployee
+      summary: Actualizar datos laborales del colaborador (área, puesto, salario, sede)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateEmployeeRequest' }
+      responses:
+        '200':
+          description: Colaborador actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmployeeResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+        '409': { description: El colaborador ya está terminado (EMPLOYEE_TERMINATED) }
+        '422': { description: Cambio de estado no permitido por edición - TERMINADO solo se registra con /terminate (EMPLOYEE_STATUS_TRANSITION_NOT_ALLOWED) }
+
+  /employees/{id}/attendance:
+    post:
+      operationId: logAttendance
+      summary: Registrar marcación o reporte de asistencia/falta (ADP-P01..04, BR-ADP-001)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LogAttendanceRequest' }
+      responses:
+        '201':
+          description: Asistencia registrada exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceRecordResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.LOG_ATTENDANCE }
+        '404': { description: Colaborador no encontrado }
+        '409': { description: Ya existe marcación para la fecha indicada (ATTENDANCE_ALREADY_LOGGED) o el colaborador está terminado (EMPLOYEE_TERMINATED) }
+        '422': { description: Registro inválido, p. ej. una tardanza sin minutos (INVALID_ATTENDANCE_RECORD) }
+    get:
+      operationId: getEmployeeAttendance
+      summary: Listar historial de asistencia del colaborador
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: month, in: query, required: false, schema: { type: string, example: '2026-10' } }
+        - { name: startDate, in: query, required: false, schema: { type: string, format: date } }
+        - { name: endDate, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Registros de asistencia
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AttendanceRecordResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+
+  /attendance/summary:
+    get:
+      operationId: getAttendanceSummary
+      summary: Resumen de asistencias, faltas y cálculo de descuentos a fin de mes (BR-ADP-001)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo (el resumen es de toda la empresa) }
+        - { name: month, in: query, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$', example: '2026-10' } }
+      responses:
+        '200':
+          description: Resumen mensual y cálculo de deducciones de nómina (solo colaboradores con tardanzas o faltas injustificadas)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyAttendanceSummaryResponse' }
+        '400': { description: Parámetros inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES o LOG_ATTENDANCE }
+
+  /attendance/apply-deductions:
+    post:
+      operationId: applyMonthDeductions
+      summary: Aplicar descuentos por faltas y tardanzas en la liquidación de fin de mes (BR-ADP-001)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApplyDeductionsRequest' }
+      responses:
+        '200':
+          description: Descuentos liquidados exitosamente para el mes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplyDeductionsResponse' }
+        '400': { description: Datos inválidos (INVALID_PAYROLL_MONTH) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES }
+        '422': { description: El mes todavía no cierra - los descuentos se aplican a fin de mes, nunca en la quincena (DEDUCTIONS_BEFORE_MONTH_END, BR-ADP-001) }
+
+  /employees/{id}/leaves:
+    post:
+      operationId: requestLeave
+      summary: Solicitar permiso o salida antes de hora (ADP-P05..06, BR-ADP-003)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestLeaveRequest' }
+      responses:
+        '201':
+          description: Solicitud de permiso registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveRequestResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin ninguno de los permisos HR_ADMINISTRATION.MANAGE_EMPLOYEES, AUTHORIZE_LEAVE o REQUEST_FIELD_TRIP }
+        '404': { description: Colaborador no encontrado }
+        '409': { description: El colaborador está terminado (EMPLOYEE_TERMINATED) }
+    get:
+      operationId: getEmployeeLeaves
+      summary: Listar permisos del colaborador
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Historial de permisos del colaborador
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/LeaveRequestResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+
+  /leaves/{id}/resolve:
+    patch:
+      operationId: resolveLeave
+      summary: Autorizar o denegar solicitud de permiso (exclusivo Jefatura, BR-ADP-003)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveLeaveRequest' }
+      responses:
+        '200':
+          description: Solicitud de permiso resuelta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveRequestResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.AUTHORIZE_LEAVE }
+        '404': { description: Solicitud no encontrada }
+        '409': { description: La solicitud ya fue resuelta previamente (LEAVE_ALREADY_RESOLVED) }
+
+  /employees/{id}/vacations:
+    post:
+      operationId: scheduleVacation
+      summary: Programar vacaciones con verificación de capacidad de área (máximo 1 persona a la vez, BR-ADP-002, DR-ADP-001)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleVacationRequest' }
+      responses:
+        '201':
+          description: Vacaciones programadas exitosamente (estado PROGRAMADA, sin superposición en el área)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '400': { description: Rango de fechas inválido }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.SCHEDULE_VACATION }
+        '404': { description: Colaborador no encontrado }
+        '409':
+          description: Conflicto de superposición de vacaciones en el área - máximo 1 persona a la vez, prioridad a quien solicitó primero (VACATION_OVERLAP) o colaborador terminado (EMPLOYEE_TERMINATED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
+    get:
+      operationId: getEmployeeVacations
+      summary: Listar vacaciones del colaborador
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Historial de vacaciones del colaborador
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+
+  /vacations/calendar:
+    get:
+      operationId: getVacationsCalendar
+      summary: Calendario de vacaciones de todas las áreas para verificar disponibilidad (BR-ADP-002)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo (el calendario es de toda la empresa) }
+        - { name: areaId, in: query, required: false, schema: { type: string } }
+        - { name: year, in: query, required: true, schema: { type: integer, example: 2026 } }
+        - { name: month, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 12 } }
+      responses:
+        '200':
+          description: Calendario de programación de vacaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES o SCHEDULE_VACATION }
+
+  /field-trips:
+    get:
+      operationId: listFieldTrips
+      summary: Listar solicitudes de salida a campo y estado de cascada
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo; el listado se limita a esa sede }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/FieldTripStatus' } }
+        - { name: employeeId, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de salidas a campo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/FieldTripResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.REQUEST_FIELD_TRIP ni AUTHORIZE_FIELD_TRIP }
+
+  /employees/{id}/field-trips:
+    post:
+      operationId: requestFieldTrip
+      summary: Solicitar salida a campo e iniciar cascada de 3 niveles con temporizador de 5 min (ADP-P12..14, BR-ADP-004)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestFieldTripRequest' }
+      responses:
+        '201':
+          description: Salida a campo solicitada en estado PENDIENTE_NIVEL_1
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FieldTripResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.REQUEST_FIELD_TRIP }
+        '404': { description: Colaborador no encontrado }
+        '409': { description: El colaborador está terminado (EMPLOYEE_TERMINATED) }
+
+  /field-trips/{id}:
+    get:
+      operationId: getFieldTrip
+      summary: Ver estado y trazabilidad de cascada de salida a campo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Detalle de salida a campo y nivel alcanzado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FieldTripResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.REQUEST_FIELD_TRIP ni AUTHORIZE_FIELD_TRIP }
+        '404': { description: Salida a campo no encontrada }
+
+  /field-trips/{id}/authorize:
+    post:
+      operationId: authorizeFieldTrip
+      summary: Autorizar salida a campo en el nivel actual (1=Fiorella, 2=José, 3=Cecilia, BR-ADP-004)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthorizeFieldTripRequest' }
+      responses:
+        '200':
+          description: Salida a campo autorizada con el nivel alcanzado (1, 2 o 3)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FieldTripResponse' }
+        '400': { description: Nivel de autorización inválido - solo 1, 2 o 3, nunca 4 (INVALID_AUTHORIZATION_LEVEL) - o nivel aún no alcanzado por la cascada, no se saltan niveles (AUTHORIZATION_LEVEL_NOT_REACHED) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.AUTHORIZE_FIELD_TRIP }
+        '404': { description: Salida a campo no encontrada }
+        '409': { description: La salida no está pendiente de autorización (FIELD_TRIP_NOT_PENDING) o la cascada se agotó sin autorización y no se aprueba por defecto (NO_AUTHORIZATION_AVAILABLE) }
+
+  /field-trips/{id}/advance-timeout:
+    post:
+      operationId: advanceFieldTripTimeout
+      summary: Avanzar temporizador de cascada cuando vence el nivel actual (N1 -> N2 -> N3 -> NO_AUTORIZADA sin 4to nivel)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Cascada avanzada al siguiente nivel o finalizada en NO_AUTORIZADA (en ese caso `message` explica que nadie autorizó y la persona no sale)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FieldTripResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.AUTHORIZE_FIELD_TRIP }
+        '404': { description: Salida a campo no encontrada }
+        '409': { description: La salida no está en estado pendiente de cascada (FIELD_TRIP_NOT_PENDING) o el temporizador de 5 minutos del nivel actual aún no vence (FIELD_TRIP_TIMEOUT_NOT_ELAPSED) }
+
+  /field-trips/{id}/return:
+    post:
+      operationId: evaluateFieldTripReturn
+      summary: Registrar retorno de campo y evaluar tardanza (1-3 advertencia, 4ta colaborador observado, BR-ADP-005)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvaluateFieldTripReturnRequest' }
+      responses:
+        '200':
+          description: Retorno registrado y clasificado (CERRADA_NORMAL con advertencia en la 1ª a 3ª tardanza, u OBSERVADA desde la 4ª); `message` informa la clasificación
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FieldTripResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.EVALUATE_FIELD_TRIP_RETURN }
+        '404': { description: Salida a campo no encontrada }
+        '409': { description: La salida no está en estado AUTORIZADA (FIELD_TRIP_NOT_AUTHORIZED) }
+
+  /employees/{id}/terminate:
+    post:
+      operationId: terminateEmployment
+      summary: Registrar desvinculación laboral (renuncia/despido) y emitir RelacionLaboralTerminada (BR-ADP-006, ADR-KAI-006)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TerminateEmploymentRequest' }
+      responses:
+        '200':
+          description: Relación laboral terminada y evento RelacionLaboralTerminada.v1 emitido hacia outbox en la misma transacción (Reclutamiento crea la necesidad de personal al consumirlo; `vacancyCreatedId` es siempre null aquí porque la creación es asíncrona)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmploymentTerminationResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.TERMINATE_EMPLOYMENT }
+        '404': { description: Colaborador no encontrado }
+        '409': { description: El colaborador ya fue terminado previamente (EMPLOYMENT_ALREADY_TERMINATED) }
+        '422': { description: Reglas de BR-ADP-006 incumplidas - renuncia sin pago de la quincena pendiente (FINAL_SETTLEMENT_REQUIRED), despido sin motivo documentado (TERMINATION_NOTES_REQUIRED) o aviso inválido (INVALID_TERMINATION_NOTICE) }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    EmployeeStatus:
+      type: string
+      enum: [PERIODO_PRUEBA, PLANILLA, TERMINADO]
+
+    TerminationReason:
+      type: string
+      enum: [RENUNCIA, DESPIDO]
+
+    AttendanceStatus:
+      type: string
+      enum: [PRESENTE, TARDANZA, FALTA_JUSTIFICADA, FALTA_INJUSTIFICADA, PERMISO]
+
+    LeaveType:
+      type: string
+      enum: [PERMISO_HORAS, SALIDA_ANTES_DE_HORA, LICENCIA_MEDICA, PERSONAL]
+
+    LeaveStatus:
+      type: string
+      enum: [SOLICITADO, AUTORIZADO, DENEGADO]
+
+    VacationStatus:
+      type: string
+      enum: [SOLICITADA, PROGRAMADA, REPROGRAMADA, CANCELADA, COMPLETADA]
+
+    FieldTripStatus:
+      type: string
+      enum: [PENDIENTE_NIVEL_1, PENDIENTE_NIVEL_2, PENDIENTE_NIVEL_3, AUTORIZADA, NO_AUTORIZADA, CERRADA_NORMAL, OBSERVADA]
+
+    CreateEmployeeRequest:
+      type: object
+      required: [companyId, branchId, fullName, documentNumber, areaId, areaName, jobTitle, hireDate]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        candidateId: { type: string, format: uuid, nullable: true }
+        documentType: { type: string, default: 'DNI', example: 'DNI' }
+        documentNumber: { type: string, example: '45678912' }
+        fullName: { type: string, example: 'Carlos Alberto Perez' }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, nullable: true }
+        areaId: { type: string, example: 'OPERACIONES' }
+        areaName: { type: string, example: 'Operaciones y Logística' }
+        jobTitle: { type: string, example: 'Conductor / Auxiliar de Campo' }
+        hireDate: { type: string, format: date }
+        baseSalary: { type: number, nullable: true }
+
+    UpdateEmployeeRequest:
+      type: object
+      properties:
+        branchId: { type: string, format: uuid }
+        fullName: { type: string }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, nullable: true }
+        areaId: { type: string }
+        areaName: { type: string }
+        jobTitle: { type: string }
+        baseSalary: { type: number, nullable: true }
+        status: { $ref: '#/components/schemas/EmployeeStatus' }
+        probationPassed: { type: boolean, nullable: true }
+        payrollStartedAt: { type: string, format: date-time, nullable: true }
+
+    EmployeeResponse:
+      type: object
+      required: [id, companyId, branchId, fullName, documentType, documentNumber, areaId, areaName, jobTitle, status, hireDate, fieldTripLateCount, isFieldTripObserved, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        candidateId: { type: string, format: uuid, nullable: true }
+        documentType: { type: string }
+        documentNumber: { type: string }
+        fullName: { type: string }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        areaId: { type: string }
+        areaName: { type: string }
+        jobTitle: { type: string }
+        status: { $ref: '#/components/schemas/EmployeeStatus' }
+        hireDate: { type: string, format: date }
+        probationEvaluatedAt: { type: string, format: date-time, nullable: true }
+        probationPassed: { type: boolean, nullable: true }
+        payrollStartedAt: { type: string, format: date-time, nullable: true }
+        terminatedAt: { type: string, format: date-time, nullable: true }
+        terminationReason: { $ref: '#/components/schemas/TerminationReason', nullable: true }
+        terminationNoticeDays: { type: integer, nullable: true }
+        fieldTripLateCount: { type: integer }
+        isFieldTripObserved: { type: boolean }
+        baseSalary: { type: number, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    EmployeeDetailResponse:
+      allOf:
+        - { $ref: '#/components/schemas/EmployeeResponse' }
+        - type: object
+          properties:
+            attendanceSummary:
+              type: object
+              properties:
+                totalPresent: { type: integer }
+                totalLate: { type: integer }
+                totalJustifiedAbsences: { type: integer }
+                totalUnjustifiedAbsences: { type: integer }
+                pendingDeductionAmount: { type: number }
+            recentLeaves:
+              type: array
+              items: { $ref: '#/components/schemas/LeaveRequestResponse' }
+            recentVacations:
+              type: array
+              items: { $ref: '#/components/schemas/VacationRequestResponse' }
+            recentFieldTrips:
+              type: array
+              items: { $ref: '#/components/schemas/FieldTripResponse' }
+            termination:
+              nullable: true
+              allOf:
+                - { $ref: '#/components/schemas/EmploymentTerminationResponse' }
+
+    LogAttendanceRequest:
+      type: object
+      required: [date, status]
+      properties:
+        date: { type: string, format: date }
+        checkInTime: { type: string, format: date-time, nullable: true }
+        checkOutTime: { type: string, format: date-time, nullable: true }
+        status: { $ref: '#/components/schemas/AttendanceStatus' }
+        minutesLate: { type: integer, minimum: 0, default: 0 }
+        deductionAmount: { type: number, minimum: 0, default: 0 }
+        notes: { type: string, nullable: true }
+
+    AttendanceRecordResponse:
+      type: object
+      required: [id, employeeId, date, status, minutesLate, deductionAmount, isDeductionApplied, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        employeeName: { type: string }
+        date: { type: string, format: date }
+        checkInTime: { type: string, format: date-time, nullable: true }
+        checkOutTime: { type: string, format: date-time, nullable: true }
+        status: { $ref: '#/components/schemas/AttendanceStatus' }
+        minutesLate: { type: integer }
+        deductionAmount: { type: number }
+        isDeductionApplied: { type: boolean }
+        payrollMonth: { type: string, nullable: true }
+        deductionAppliedAt: { type: string, format: date-time, nullable: true }
+        notes: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    MonthlyAttendanceSummaryResponse:
+      type: object
+      required: [companyId, month, totalEmployees, totalDeductionsAmount, items]
+      properties:
+        companyId: { type: string, format: uuid }
+        month: { type: string, example: '2026-10' }
+        totalEmployees: { type: integer }
+        totalDeductionsAmount: { type: number }
+        items:
+          type: array
+          items:
+            type: object
+            required: [employeeId, employeeName, areaName, totalLates, totalUnjustified, calculatedDeduction, isApplied]
+            properties:
+              employeeId: { type: string, format: uuid }
+              employeeName: { type: string }
+              areaName: { type: string }
+              totalLates: { type: integer }
+              totalUnjustified: { type: integer }
+              calculatedDeduction: { type: number }
+              isApplied: { type: boolean }
+
+    ApplyDeductionsRequest:
+      type: object
+      required: [companyId, branchId, month]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid, description: Sede del contexto de trabajo }
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$', example: '2026-10', description: Mes a liquidar; solo se acepta desde el último día del mes (BR-ADP-001) }
+        employeeIds:
+          type: array
+          items: { type: string, format: uuid }
+          description: Opcional; si no se especifica se aplica a todos los colaboradores con deducciones pendientes
+
+    ApplyDeductionsResponse:
+      type: object
+      required: [month, affectedEmployeesCount, totalDeductionsApplied]
+      properties:
+        month: { type: string }
+        affectedEmployeesCount: { type: integer }
+        totalDeductionsApplied: { type: number }
+
+    RequestLeaveRequest:
+      type: object
+      required: [type, date, reason]
+      properties:
+        type: { $ref: '#/components/schemas/LeaveType' }
+        date: { type: string, format: date }
+        startTime: { type: string, format: date-time, nullable: true }
+        endTime: { type: string, format: date-time, nullable: true }
+        reason: { type: string }
+
+    ResolveLeaveRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [AUTORIZADO, DENEGADO] }
+        resolutionNotes: { type: string, nullable: true }
+
+    LeaveRequestResponse:
+      type: object
+      required: [id, employeeId, type, date, reason, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        employeeName: { type: string }
+        type: { $ref: '#/components/schemas/LeaveType' }
+        date: { type: string, format: date }
+        startTime: { type: string, format: date-time, nullable: true }
+        endTime: { type: string, format: date-time, nullable: true }
+        reason: { type: string }
+        status: { $ref: '#/components/schemas/LeaveStatus' }
+        authorizedById: { type: string, nullable: true }
+        authorizedByName: { type: string, nullable: true }
+        resolutionNotes: { type: string, nullable: true }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    ScheduleVacationRequest:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        notes: { type: string, nullable: true }
+
+    VacationRequestResponse:
+      type: object
+      required: [id, employeeId, areaId, startDate, endDate, status, requestedAt, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        employeeName: { type: string }
+        areaId: { type: string }
+        areaName: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { $ref: '#/components/schemas/VacationStatus' }
+        requestedAt: { type: string, format: date-time }
+        approvedById: { type: string, nullable: true }
+        approvedAt: { type: string, format: date-time, nullable: true }
+        notes: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    RequestFieldTripRequest:
+      type: object
+      required: [destination, objective, estimatedDeparture, estimatedReturn]
+      properties:
+        destination: { type: string, example: 'Taller Central Huachipa' }
+        objective: { type: string, example: 'Inspección técnica de unidad en mantenimiento' }
+        estimatedDeparture: { type: string, format: date-time }
+        estimatedReturn: { type: string, format: date-time }
+
+    AuthorizeFieldTripRequest:
+      type: object
+      required: [authorizationLevel]
+      properties:
+        authorizationLevel:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: Nivel de autorización (1=Fiorella, 2=José, 3=Cecilia - NUNCA 4)
+        notes: { type: string, nullable: true }
+
+    EvaluateFieldTripReturnRequest:
+      type: object
+      required: [actualReturn]
+      properties:
+        actualReturn: { type: string, format: date-time }
+        returnNotes: { type: string, nullable: true }
+
+    FieldTripResponse:
+      type: object
+      required: [id, employeeId, destination, objective, estimatedDeparture, estimatedReturn, status, lateMinutes, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        employeeName: { type: string }
+        destination: { type: string }
+        objective: { type: string }
+        estimatedDeparture: { type: string, format: date-time }
+        estimatedReturn: { type: string, format: date-time }
+        actualDeparture: { type: string, format: date-time, nullable: true }
+        actualReturn: { type: string, format: date-time, nullable: true }
+        status: { $ref: '#/components/schemas/FieldTripStatus' }
+        authorizationLevel: { type: integer, nullable: true, minimum: 1, maximum: 3 }
+        authorizedById: { type: string, nullable: true }
+        authorizedByName: { type: string, nullable: true }
+        authorizedAt: { type: string, format: date-time, nullable: true }
+        level1TimeoutAt: { type: string, format: date-time, nullable: true }
+        level2TimeoutAt: { type: string, format: date-time, nullable: true }
+        level3TimeoutAt: { type: string, format: date-time, nullable: true }
+        lateMinutes: { type: integer }
+        returnNotes: { type: string, nullable: true }
+        message: { type: string, nullable: true, description: Mensaje informativo (ej. al terminar en NO_AUTORIZADA) }
+        createdAt: { type: string, format: date-time }
+
+    TerminateEmploymentRequest:
+      type: object
+      required: [reason, finalSettlementPaid]
+      properties:
+        reason: { $ref: '#/components/schemas/TerminationReason' }
+        noticeDays: { type: integer, minimum: 0, maximum: 90, default: 0, description: Días de aviso. Renuncia sin previo aviso = 0. Despido por reincidencia = 15 (solo se acepta 0 o 15) }
+        finalSettlementPaid: { type: boolean, description: Si se pagó la quincena pendiente. Obligatorio en true para RENUNCIA (BR-ADP-006, EX-ADP-003) }
+        settlementAmount: { type: number, default: 0 }
+        notes: { type: string, nullable: true, description: Obligatoria para DESPIDO (se documenta el motivo, mínimo 5 caracteres) }
+
+    EmploymentTerminationResponse:
+      type: object
+      required: [id, employeeId, reason, noticeDays, finalSettlementPaid, settlementAmount, terminatedAt, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        employeeName: { type: string }
+        reason: { $ref: '#/components/schemas/TerminationReason' }
+        noticeDays: { type: integer }
+        finalSettlementPaid: { type: boolean }
+        settlementAmount: { type: number }
+        notes: { type: string, nullable: true }
+        terminatedById: { type: string }
+        terminatedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        vacancyCreatedId: { type: string, format: uuid, nullable: true, description: Vacante creada automáticamente en Reclutamiento }
+
+    ProblemDetail:
+      type: object
+      description: Cuerpo de error de dominio (DomainExceptionFilter). `code` es estable y apto para que el front decida el mensaje.
+      required: [statusCode, code, detail]
+      properties:
+        statusCode: { type: integer }
+        code: { type: string, example: VACATION_OVERLAP }
+        detail: { type: string }

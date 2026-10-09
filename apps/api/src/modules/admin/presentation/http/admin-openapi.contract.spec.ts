@@ -148,6 +148,6 @@ describe('Contrato OpenAPI admin.yaml vs backend', () => {
   it('enum PermissionModule coincide entre admin.yaml y el DTO de permisos', () => {
     const specModules = [...spec.components.schemas.PermissionModule.enum].sort();
     // Los valores del DTO se obtienen del @IsIn() - los mismos que el spec debe declarar.
-    expect(specModules).toEqual(['ADMIN', 'INCIDENT', 'INQUIRY', 'RECRUITMENT', 'RENTAL', 'RESERVATION']);
+    expect(specModules).toEqual(['ADMIN', 'HR_ADMINISTRATION', 'INCIDENT', 'INQUIRY', 'RECRUITMENT', 'RENTAL', 'RESERVATION']);
   });
 });

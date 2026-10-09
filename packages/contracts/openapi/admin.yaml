@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Administracion API
-  version: 0.2.2
+  version: 0.2.3
   description: >
     Contrato del modulo Administracion (ADM-01..05, TR-07,
     PANTALLAS-V2-B-SOPORTE.md). Cierra el hallazgo ALTO de revalidacion
@@ -582,7 +582,7 @@ components:
         currency: { type: string, enum: [PEN, USD] }
     PermissionModule:
       type: string
-      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RECRUITMENT]
+      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RECRUITMENT, HR_ADMINISTRATION]
     RolePermissionEntry:
       type: object
       required: [roleId, module, action, allowed]
