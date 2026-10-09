@@ -13,6 +13,7 @@ import { RentalsModule } from './modules/rentals/rentals.module';
 import { ReturnsModule } from './modules/returns/returns.module';
 import { IncidentsModule } from './modules/incidents/incidents.module';
 import { RecruitmentModule } from './modules/recruitment/recruitment.module';
+import { HrAdministrationModule } from './modules/hr-administration/hr-administration.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
@@ -41,6 +42,7 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     ReturnsModule,
     IncidentsModule,
     RecruitmentModule,
+    HrAdministrationModule,
     AdminModule,
     NotificationsModule,
   ],
