@@ -2,9 +2,13 @@ import { ForbiddenException } from '@nestjs/common';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
 /**
- * PROVISIONAL: guarda de roles minima para el modulo de Flota mientras ADM-02
- * (matriz rol-accion-empresa-sede versionada) no exista. Cuando ADM-02 este
- * construido, reemplazar por su assertAllowed().
+ * Política de roles para seed y tests del módulo Flota (PR #59, fase 4 completada).
+ *
+ * AVISO: esta política ya NO controla la autorización en tiempo de ejecución.
+ * Los handlers usan FleetAccessService → MatrixAuthorizationService (ADM-02).
+ * Este archivo existe únicamente para:
+ *   1. Seed del default-role-permission-matrix (admin/domain/).
+ *   2. Mock de autorización en test-fixtures (testing/fleet-test-fixtures.ts).
  *
  * Fuente autorizada: SDD-KAIROS-TRANSVERSAL.md §15.5 (catalogo de roles).
  *   - CAMPO    = Fleet Operator  — gestiona vehiculos, entrega y devolucion.

@@ -42,12 +42,14 @@ const RETURN_ROLE_POLICY: Readonly<Record<ReturnAction, ReadonlySet<WorkerRole>>
 };
 
 /**
- * TODO(roles-dinamicos, fase 4): este modulo AUN decide con un set de roles
- * hard-coded, ahora contra `roleKey` (clave estable de los 8 roles de sistema,
- * AuthorizedWorkContext.roleKey). Un rol creado a mano (key = null) queda
- * DENEGADO aqui (deny-by-default) hasta que el modulo migre a la matriz ADM-02
- * (MatrixAuthorizationService.assertAllowed por roleId) en su propio PR de la
- * fase 4. No migrar en el PR de la fase 2.
+ * Política de roles para seed y tests del módulo Devoluciones (PR #59, fase 4 completada).
+ *
+ * AVISO: esta política ya NO controla la autorización en tiempo de ejecución.
+ * Los handlers usan ReturnAccessService → MatrixAuthorizationService (ADM-02).
+ * Este archivo existe únicamente para:
+ *   1. Seed del default-role-permission-matrix (admin/domain/) y resolución
+ *      del tipo ReturnAction que admin/domain importa directamente.
+ *   2. Mock de autorización en test-fixtures (testing/return-test-fixtures.ts).
  */
 export function assertReturnRoleAllowed(role: WorkerRole | null, action: ReturnAction): void {
   // Fase 4: este atajo (sobre la clave de sistema, no sobre el rol dinamico) desaparece cuando
