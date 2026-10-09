@@ -8,6 +8,8 @@ import { METHOD_METADATA, PATH_METADATA, HTTP_CODE_METADATA, INTERCEPTORS_METADA
 import { getMetadataStorage } from 'class-validator';
 import { $Enums } from '@prisma/client';
 import { RentalsController } from './rentals.controller';
+import { RentalsEvidenceController } from './rentals-evidence.controller';
+import { RentalsExtensionsController } from './rentals-extensions.controller';
 import { ContractTemplatesController } from './contract-templates.controller';
 import { RentalDocumentsController } from './rental-documents.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
@@ -105,6 +107,8 @@ function routesOf(controller: new (...args: any[]) => unknown, basePath: string)
 function controllerRoutes() {
   return [
     ...routesOf(RentalsController, '/rentals'),
+    ...routesOf(RentalsEvidenceController, '/rentals'),
+    ...routesOf(RentalsExtensionsController, '/rentals'),
     ...routesOf(ContractTemplatesController, '/rentals/contract-templates'),
     ...routesOf(RentalDocumentsController, '/rentals/:id/documents'),
   ];

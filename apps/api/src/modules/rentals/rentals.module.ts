@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RentalsController } from './presentation/http/rentals.controller';
+import { RentalsEvidenceController } from './presentation/http/rentals-evidence.controller';
+import { RentalsExtensionsController } from './presentation/http/rentals-extensions.controller';
 import { CreateRentalHandler } from './application/commands/create-rental.handler';
 import { CreateRentalFromReservationHandler } from './application/commands/create-rental-from-reservation.handler';
 import { ValidateDocumentsHandler } from './application/commands/validate-documents.handler';
@@ -46,7 +48,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
 
 @Module({
   imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule],
-  controllers: [ContractTemplatesController, RentalsController, RentalDocumentsController],
+  controllers: [ContractTemplatesController, RentalsController, RentalsEvidenceController, RentalsExtensionsController, RentalDocumentsController],
   providers: [
     CreateRentalHandler,
     CreateRentalFromReservationHandler,
