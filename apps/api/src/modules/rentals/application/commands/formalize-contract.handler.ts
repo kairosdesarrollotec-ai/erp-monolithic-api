@@ -56,8 +56,6 @@ export class FormalizeContractHandler {
       throw new RentalStateConflictError('formalizar contrato en', existing.status);
     }
 
-    // TPL-TODO-001: resuelve la plantilla activa desde la tabla templates (nueva).
-    // templateVersionId del comando se ignora; la resolución es siempre automática desde templates.
     const activeTemplate = await this.templateRepository.findActive(
       command.companyId,
       'RENTAL_CONTRACT',

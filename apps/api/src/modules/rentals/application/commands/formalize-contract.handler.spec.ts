@@ -122,7 +122,6 @@ describe('FormalizeContractHandler', () => {
         'comp-1',
         'branch-1',
         4,
-        undefined,
         'doc-ref-001',
         '500.00',
         'PEN',
@@ -158,13 +157,13 @@ describe('FormalizeContractHandler', () => {
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '0', 'PEN'),
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, 'doc-ref-001', '0', 'PEN'),
       ),
     ).rejects.toThrow(BadRequestException);
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '-50', 'PEN'),
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, 'doc-ref-001', '-50', 'PEN'),
       ),
     ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_DEPOSIT_AMOUNT' }) });
   });
@@ -185,7 +184,7 @@ describe('FormalizeContractHandler', () => {
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, 'doc-ref-001', '500.00', 'PEN'),
       ),
     ).rejects.toThrow(RentalStateConflictError);
   });
@@ -204,7 +203,7 @@ describe('FormalizeContractHandler', () => {
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, 'doc-ref-001', '500.00', 'PEN'),
       ),
     ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'NO_ACTIVE_CONTRACT_TEMPLATE' }) });
   });
@@ -225,7 +224,7 @@ describe('FormalizeContractHandler', () => {
 
     await expect(
       handler.execute(
-        new FormalizeContractCommand('rent-inexistente', 'uid-1', 'comp-1', 'branch-1', 4, undefined, 'doc-ref-001', '500.00', 'PEN'),
+        new FormalizeContractCommand('rent-inexistente', 'uid-1', 'comp-1', 'branch-1', 4, 'doc-ref-001', '500.00', 'PEN'),
       ),
     ).rejects.toThrow(NotFoundException);
   });

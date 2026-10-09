@@ -22,9 +22,6 @@ export interface NotaryEvaluationResponse {
 
 export interface RentalContractResponse {
   id: string;
-  /** @deprecated Legado. Los contratos nuevos usan templateId (TPL-TODO-001). */
-  templateVersionId: string | null;
-  /** TPL-TODO-001: FK hacia templates.id para contratos nuevos. */
   templateId?: string | null;
   documentRef: string;
   status: string;

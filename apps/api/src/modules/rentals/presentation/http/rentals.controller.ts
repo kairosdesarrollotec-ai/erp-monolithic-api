@@ -271,7 +271,6 @@ export class RentalsController {
         dto.companyId,
         dto.branchId,
         parseVersionIfMatch(ifMatch),
-        dto.templateVersionId,
         dto.documentRef,
         dto.depositAmount,
         dto.depositCurrency,
