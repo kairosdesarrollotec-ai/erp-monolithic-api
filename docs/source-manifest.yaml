@@ -335,10 +335,10 @@ sources:
   path: docs/sources/tdd/tdd-02-reserva.md
   type: TDD
   module: Reserva
-  version: '2.3'
-  date: '2026-10-03'
+  version: '2.4'
+  date: '2026-10-09'
   status: approved
-  estado_original: Aprobado v2.3 — Bug 3: ReservationDocumentStoragePort, ReservationDocumentRepositoryPort, ReservationDocumentsController, tabla reservation_documents (GCS).
+  estado_original: Aprobado v2.4 — DEC-CON-001-FINAL: §11.1 actualizado formalmente; POST /reservations es sólo para reservas directas; inquiryId eliminado del ejemplo; convert-to-reservation es la única vía canónica para Consulta→Reserva.
   sha256: unknown
   authority: technical
   supersedes: TDD-KAIROS-MVP-002-RES-V2.2
