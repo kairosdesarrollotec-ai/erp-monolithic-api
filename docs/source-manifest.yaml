@@ -541,6 +541,20 @@ sources:
   sha256: null
   authority: contract
   supersedes: null
+- id: OPENAPI-HR-ADMINISTRATION-V0.1.0
+  path: packages/contracts/openapi/hr-administration.yaml
+  type: OpenAPI
+  module: HrAdministration
+  version: '0.1.0'
+  date: '2026-10-08'
+  status: current
+  estado_original: >
+    Contrato inicial del módulo Administración de Personal v0.1.0 — cubre empleados,
+    asistencia, permisos, vacaciones, salidas a campo y término laboral (BR-ADP-001..006).
+    Registrado en source-manifest en PR #69 (feature/hr-administration-api).
+  sha256: null
+  authority: contract
+  supersedes: null
 - id: UX-UI-V3.1-KAIROS
   path: docs/sources/ux-ui/especificacion-ux-ui-v3.1-para-prototipado-del-erp-kairos.md
   type: UX
