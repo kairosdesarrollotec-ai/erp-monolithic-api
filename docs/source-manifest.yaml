@@ -192,8 +192,8 @@ sources:
   module: Administración de Personal
   version: '1.9'
   date: unknown
-  status: pending_review
-  estado_original: unknown
+  status: approved
+  estado_original: APROBADO v1.9 — aprobación registrada 2026-10-10. Fuente autorizada para implementación del módulo Administración de Personal (PR #69 / PR #78).
   sha256: 9730670d7d91d722f9e05a726dbe3a383e81eee9386f43b8b10603dc3e36ea9c
   authority: business
   supersedes: null
@@ -293,8 +293,8 @@ sources:
   module: Administración de Personal
   version: '2.1'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  status: approved
+  estado_original: APROBADO v2.1 — aprobación registrada 2026-10-10. Revisión arquitectónica completada. Fuente autorizada para implementación del módulo Administración de Personal (PR #69 / PR #78).
   sha256: 038f4bc2454b99f3826e83accb9e365c24046ba23a6efd5ccb516792d8c2b2b6
   authority: functional
   supersedes: null
