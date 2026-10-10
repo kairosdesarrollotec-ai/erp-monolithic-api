@@ -1694,6 +1694,8 @@ model VacationRequest {
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
+  // BR-ADP-002: EXCLUDE USING gist (area_id WITH =, daterange(start_date, end_date, '[]') WITH &&)
+  // WHERE status IN ('PROGRAMADA','REPROGRAMADA') — gestionado en migration 20261008000001.
   @@index([areaId, status, startDate, endDate], map: "vacation_requests_area_status_dates_idx")
   @@index([employeeId, status], map: "vacation_requests_employee_status_idx")
   @@map("vacation_requests")
