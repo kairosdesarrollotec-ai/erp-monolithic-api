@@ -726,10 +726,6 @@ components:
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
-        templateVersionId:
-          type: string
-          format: uuid
-          description: Opcional - si se omite, el backend resuelve la plantilla ACTIVE vigente de la empresa.
         documentRef: { type: string }
         depositAmount: { type: string }
         depositCurrency: { type: string, enum: [PEN, USD] }
@@ -880,7 +876,6 @@ components:
       properties:
         id: { type: string, format: uuid }
         templateId: { type: string, format: uuid, nullable: true }
-        templateVersionId: { type: string, format: uuid, nullable: true }
         documentRef: { type: string }
         status: { type: string }
         signedAt: { type: string, format: date-time, nullable: true }

@@ -40,6 +40,16 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
     expect(allowed('CAMPO', 'CUSTOMER', 'WRITE')).toBe(false);
   });
 
+  it('HR_ADMINISTRATION tiene filas sembradas reflejando hr-administration-role-policy', () => {
+    expect(allowed('GERENCIA', 'HR_ADMINISTRATION', 'TERMINATE_EMPLOYMENT')).toBe(true);
+    expect(allowed('RRHH', 'HR_ADMINISTRATION', 'AUTHORIZE_LEAVE')).toBe(true);
+    expect(allowed('ADMINISTRACION', 'HR_ADMINISTRATION', 'LOG_ATTENDANCE')).toBe(true);
+    expect(allowed('ADMINISTRACION', 'HR_ADMINISTRATION', 'AUTHORIZE_LEAVE')).toBe(false);
+    expect(allowed('CAMPO', 'HR_ADMINISTRATION', 'REQUEST_FIELD_TRIP')).toBe(true);
+    expect(allowed('CAMPO', 'HR_ADMINISTRATION', 'MANAGE_EMPLOYEES')).toBe(false);
+    expect(allowed('AUDITORIA', 'HR_ADMINISTRATION', 'VIEW_EMPLOYEES')).toBe(true);
+  });
+
   it('un rol de sistema sin fila sembrada en la organizacion se omite (no inventa role_id)', () => {
     const partial = buildDefaultRolePermissionMatrix(new Map([['GERENCIA', 'role-GERENCIA']]));
     expect(new Set(partial.map((e) => e.roleId))).toEqual(new Set(['role-GERENCIA']));

@@ -4,6 +4,7 @@ import { assertInquiryRoleAllowed, InquiryAction } from '../../inquiries/applica
 import { assertRentalRoleAllowed, RentalAction } from '../../rentals/application/policies/rental-role-policy';
 import { assertIncidentRoleAllowed, IncidentAction } from '../../incidents/application/policies/incident-role-policy';
 import { assertRecruitmentRoleAllowed, RecruitmentAction } from '../../recruitment/application/policies/recruitment-role-policy';
+import { assertHrAdministrationRoleAllowed, HrAdministrationAction } from '../../hr-administration/application/policies/hr-administration-role-policy';
 import { assertAdminRoleAllowed, AdminAction } from '../application/policies/admin-role-policy';
 import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application/policies/return-role-policy';
 import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../../fleet/application/policies/fleet-role.policy';
@@ -70,6 +71,8 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       assertRecruitmentRoleAllowed(role, action as RecruitmentAction);
     } else if (module === 'TEMPLATE') {
       assertTemplateRoleAllowed(role, action as TemplateAction);
+    } else if (module === 'HR_ADMINISTRATION') {
+      assertHrAdministrationRoleAllowed(role, action as HrAdministrationAction);
     } else {
       assertAdminRoleAllowed(role, action as AdminAction);
     }

@@ -321,6 +321,7 @@ model Company {
   incidents    Incident[]
   matrixVersions RolePermissionMatrixVersion[]
   vacancies    Vacancy[]
+  employees    Employee[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -352,6 +353,7 @@ model Branch {
   incidents    Incident[]
   matrixVersions RolePermissionMatrixVersion[]
   vacancies    Vacancy[]
+  employees    Employee[]
 
   @@unique([id, companyId])
   @@index([companyId])
@@ -1480,6 +1482,7 @@ model Candidate {
   vacancy    Vacancy              @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
   interviews CandidateInterview[]
   onboarding EmployeeOnboarding?
+  employee   Employee?
 
   @@unique([vacancyId, documentNumber], map: "candidates_vacancy_id_document_number_key")
   @@index([vacancyId, stage], map: "candidates_vacancy_id_stage_idx")
@@ -1528,5 +1531,229 @@ model EmployeeOnboarding {
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
   @@map("employee_onboardings")
+}
+
+// =============================================================================
+// MODULO 06: ADMINISTRACIÓN DE PERSONAL (ADP-01 a ADP-10)
+// Fuentes canónicas: BDD-06 (BDD-ADP-001 v1.9), SDD-06 (v2.1), TDD-06 (v2.1)
+// =============================================================================
+
+enum EmployeeStatus {
+  PERIODO_PRUEBA
+  PLANILLA
+  TERMINADO
+}
+
+enum TerminationReason {
+  RENUNCIA
+  DESPIDO
+}
+
+enum AttendanceStatus {
+  PRESENTE
+  TARDANZA
+  FALTA_JUSTIFICADA
+  FALTA_INJUSTIFICADA
+  PERMISO
+}
+
+enum LeaveType {
+  PERMISO_HORAS
+  SALIDA_ANTES_DE_HORA
+  LICENCIA_MEDICA
+  PERSONAL
+}
+
+enum LeaveStatus {
+  SOLICITADO
+  AUTORIZADO
+  DENEGADO
+}
+
+enum VacationStatus {
+  SOLICITADA
+  PROGRAMADA
+  REPROGRAMADA
+  CANCELADA
+  COMPLETADA
+}
+
+enum FieldTripStatus {
+  PENDIENTE_NIVEL_1
+  PENDIENTE_NIVEL_2
+  PENDIENTE_NIVEL_3
+  AUTORIZADA
+  NO_AUTORIZADA
+  CERRADA_NORMAL
+  OBSERVADA
+}
+
+/// BDD-ADP-001 / SDD-06 / TDD-06 - Agregado principal de Colaborador / Empleado.
+/// Segregación multiempresa estricta: FKs compuestas hacia Company y Branch.
+model Employee {
+  id                    String             @id @default(uuid())
+  organizationId        String             @map("organization_id")
+  operatingCompanyId    String             @map("operating_company_id")
+  branchId              String             @map("branch_id")
+  candidateId           String?            @unique @map("candidate_id")
+  documentType          String             @default("DNI") @map("document_type") @db.VarChar(20)
+  documentNumber        String             @map("document_number") @db.VarChar(30)
+  fullName              String             @map("full_name") @db.VarChar(200)
+  email                 String?            @db.VarChar(150)
+  phone                 String?            @db.VarChar(50)
+  areaId                String             @map("area_id") @db.VarChar(100)
+  areaName              String             @map("area_name") @db.VarChar(100)
+  jobTitle              String             @map("job_title") @db.VarChar(150)
+  status                EmployeeStatus     @default(PERIODO_PRUEBA)
+  hireDate              DateTime           @map("hire_date") @db.Date
+  probationEvaluatedAt  DateTime?          @map("probation_evaluated_at")
+  probationPassed       Boolean?           @map("probation_passed")
+  payrollStartedAt      DateTime?          @map("payroll_started_at")
+  terminatedAt          DateTime?          @map("terminated_at")
+  terminationReason     TerminationReason? @map("termination_reason")
+  terminationNoticeDays Int?               @map("termination_notice_days")
+  terminationNotes      String?            @map("termination_notes") @db.Text
+  fieldTripLateCount    Int                @default(0) @map("field_trip_late_count")
+  isFieldTripObserved   Boolean            @default(false) @map("is_field_trip_observed")
+  baseSalary            Decimal?           @map("base_salary") @db.Decimal(10, 2)
+  version               Int                @default(1)
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+
+  operatingCompany Company                 @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  branch           Branch                  @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
+  candidate        Candidate?              @relation(fields: [candidateId], references: [id])
+  attendance       AttendanceRecord[]
+  leaves           LeaveRequest[]
+  vacations        VacationRequest[]
+  fieldTrips       FieldTripRequest[]
+  termination      EmploymentTermination?
+
+  @@unique([operatingCompanyId, documentNumber], map: "employees_company_document_key")
+  @@index([organizationId, operatingCompanyId, branchId, status], map: "employees_scope_status_idx")
+  @@index([areaId, status], map: "employees_area_status_idx")
+  @@map("employees")
+}
+
+/// BDD-ADP-001 ADP-P01..04 / BR-ADP-001 - Registro diario de asistencia y faltas.
+model AttendanceRecord {
+  id                 String           @id @default(uuid())
+  employeeId         String           @map("employee_id")
+  date               DateTime         @map("date") @db.Date
+  checkInTime        DateTime?        @map("check_in_time")
+  checkOutTime       DateTime?        @map("check_out_time")
+  status             AttendanceStatus @default(PRESENTE)
+  minutesLate        Int              @default(0) @map("minutes_late")
+  deductionAmount    Decimal          @default(0) @map("deduction_amount") @db.Decimal(10, 2)
+  isDeductionApplied Boolean          @default(false) @map("is_deduction_applied")
+  payrollMonth       String?          @map("payroll_month") @db.VarChar(7)
+  deductionAppliedAt DateTime?        @map("deduction_applied_at")
+  notes              String?          @db.Text
+  createdById        String           @map("created_by_id")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date], map: "attendance_records_employee_date_key")
+  @@index([employeeId, payrollMonth], map: "attendance_records_employee_payroll_month_idx")
+  @@index([date, status], map: "attendance_records_date_status_idx")
+  @@map("attendance_records")
+}
+
+/// BDD-ADP-001 ADP-P05..06 / BR-ADP-003 - Solicitud y autorización de permisos.
+model LeaveRequest {
+  id              String      @id @default(uuid())
+  employeeId      String      @map("employee_id")
+  type            LeaveType
+  date            DateTime    @map("date") @db.Date
+  startTime       DateTime?   @map("start_time")
+  endTime         DateTime?   @map("end_time")
+  reason          String      @db.Text
+  status          LeaveStatus @default(SOLICITADO)
+  authorizedById  String?     @map("authorized_by_id")
+  authorizedByName String?    @map("authorized_by_name") @db.VarChar(200)
+  resolutionNotes String?     @map("resolution_notes") @db.Text
+  resolvedAt      DateTime?   @map("resolved_at")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, date], map: "leave_requests_employee_date_idx")
+  @@index([status, date], map: "leave_requests_status_date_idx")
+  @@map("leave_requests")
+}
+
+/// BDD-ADP-001 ADP-P09..10 / BR-ADP-002 / DR-ADP-001 - Programación de vacaciones con capacidad de área.
+model VacationRequest {
+  id          String         @id @default(uuid())
+  employeeId  String         @map("employee_id")
+  areaId      String         @map("area_id") @db.VarChar(100)
+  startDate   DateTime       @map("start_date") @db.Date
+  endDate     DateTime       @map("end_date") @db.Date
+  status      VacationStatus @default(SOLICITADA)
+  requestedAt DateTime       @default(now()) @map("requested_at")
+  approvedById String?       @map("approved_by_id")
+  approvedAt  DateTime?      @map("approved_at")
+  notes       String?        @db.Text
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  // BR-ADP-002: EXCLUDE USING gist (area_id WITH =, daterange(start_date, end_date, '[]') WITH &&)
+  // WHERE status IN ('PROGRAMADA','REPROGRAMADA') — gestionado en migration 20261008000001.
+  @@index([areaId, status, startDate, endDate], map: "vacation_requests_area_status_dates_idx")
+  @@index([employeeId, status], map: "vacation_requests_employee_status_idx")
+  @@map("vacation_requests")
+}
+
+/// BDD-ADP-001 ADP-P12..14 / BR-ADP-004 / BR-ADP-005 - Cascada de salidas a campo (3 niveles, sin 4to).
+model FieldTripRequest {
+  id                 String          @id @default(uuid())
+  employeeId         String          @map("employee_id")
+  destination        String          @db.VarChar(255)
+  objective          String          @db.Text
+  estimatedDeparture DateTime        @map("estimated_departure")
+  estimatedReturn    DateTime        @map("estimated_return")
+  actualDeparture    DateTime?       @map("actual_departure")
+  actualReturn       DateTime?       @map("actual_return")
+  status             FieldTripStatus @default(PENDIENTE_NIVEL_1)
+  authorizationLevel Int?            @map("authorization_level")
+  authorizedById     String?         @map("authorized_by_id")
+  authorizedByName   String?         @map("authorized_by_name") @db.VarChar(200)
+  authorizedAt       DateTime?       @map("authorized_at")
+  level1TimeoutAt    DateTime?       @map("level1_timeout_at")
+  level2TimeoutAt    DateTime?       @map("level2_timeout_at")
+  level3TimeoutAt    DateTime?       @map("level3_timeout_at")
+  lateMinutes        Int             @default(0) @map("late_minutes")
+  returnNotes        String?         @map("return_notes") @db.Text
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, status], map: "field_trips_employee_status_idx")
+  @@index([status, createdAt], map: "field_trips_status_created_idx")
+  @@map("field_trip_requests")
+}
+
+/// BDD-ADP-001 ADP-P15..17 / BR-ADP-006 / ADR-KAI-006 - Término de relación laboral.
+model EmploymentTermination {
+  id                  String            @id @default(uuid())
+  employeeId          String            @unique @map("employee_id")
+  reason              TerminationReason
+  noticeDays          Int               @default(0) @map("notice_days")
+  finalSettlementPaid Boolean           @default(false) @map("final_settlement_paid")
+  settlementAmount    Decimal           @default(0) @map("settlement_amount") @db.Decimal(10, 2)
+  notes               String?           @db.Text
+  terminatedById      String            @map("terminated_by_id")
+  terminatedAt        DateTime          @default(now()) @map("terminated_at")
+  createdAt           DateTime          @default(now()) @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employment_terminations")
 }
 

@@ -5,7 +5,7 @@
  * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
-export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE'] as const;
+export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION'] as const;
 
 /** Modulos cuyas acciones administra la matriz ADM-02 (unica definicion; antes estaba repetida en ~6 sitios). */
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
@@ -89,6 +89,16 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   // TEMPLATE (2 acciones — TDD-KAIROS-MVP-002-TPL TDD-TPL-ADR-004)
   { module: 'TEMPLATE', action: 'VIEW', label: 'Plantillas: consultar' },
   { module: 'TEMPLATE', action: 'MANAGE', label: 'Plantillas: crear/activar/retirar' },
+  // HR_ADMINISTRATION (9 acciones — hr-administration-role-policy.ts)
+  { module: 'HR_ADMINISTRATION', action: 'VIEW_EMPLOYEES', label: 'Personal: consultar colaboradores y expedientes' },
+  { module: 'HR_ADMINISTRATION', action: 'MANAGE_EMPLOYEES', label: 'Personal: crear y editar colaboradores' },
+  { module: 'HR_ADMINISTRATION', action: 'LOG_ATTENDANCE', label: 'Personal: registrar asistencia y faltas' },
+  { module: 'HR_ADMINISTRATION', action: 'AUTHORIZE_LEAVE', label: 'Personal: autorizar permisos y salidas antes de hora' },
+  { module: 'HR_ADMINISTRATION', action: 'SCHEDULE_VACATION', label: 'Personal: programar vacaciones' },
+  { module: 'HR_ADMINISTRATION', action: 'REQUEST_FIELD_TRIP', label: 'Personal: solicitar salida a campo' },
+  { module: 'HR_ADMINISTRATION', action: 'AUTHORIZE_FIELD_TRIP', label: 'Personal: autorizar salida a campo en cascada' },
+  { module: 'HR_ADMINISTRATION', action: 'EVALUATE_FIELD_TRIP_RETURN', label: 'Personal: evaluar retorno de campo y tardanzas' },
+  { module: 'HR_ADMINISTRATION', action: 'TERMINATE_EMPLOYMENT', label: 'Personal: registrar término de relación laboral' },
 ];
 
 /**
