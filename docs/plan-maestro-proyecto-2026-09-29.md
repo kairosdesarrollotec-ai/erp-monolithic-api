@@ -1,94 +1,122 @@
-# Plan Maestro — KAIROS/VeloxRent ERP (estado real al 30-sep-2026)
+# Plan Maestro — KAIROS/VeloxRent ERP (estado real al 11-oct-2026)
 
-> Construido cruzando la documentación de negocio (BDD/SDD/TDD/PANTALLAS/MATRIZ) contra lo realmente implementado en código. Versión anterior: 29-sep-2026. Esta actualización incorpora el avance de Alquiler (backend + frontend) y las actualizaciones de infraestructura/seguridad hechas fuera de esta sesión (vía "omniroute" en Terminal).
+> Actualizado el 2026-10-11 cruzando módulos reales en `main` contra documentación de negocio.
+> Versión anterior: 30-sep-2026.
 
 ## 1. Resumen ejecutivo
 
-El proyecto tiene **documentación de negocio prácticamente completa** para los 6 procesos + Transversal + Soporte (BDD/SDD/TDD/pantallas). La implementación sigue por detrás de esa documentación, pero **Alquiler dejó de estar en cero**: hoy se construyó el backend completo del flujo principal más el módulo de ampliaciones, y el frontend del asistente de 5 etapas. Sigue pendiente de merge (bloqueado por un tema de facturación de GitHub Actions, no de código) y tiene gaps conocidos.
+El proyecto completó en main los 6 módulos de negocio del MVP core: Consulta, Reserva, Alquiler, Devolución, Reclutamiento y Administración de Personal. También están completos Flota, Clientes, Admin/Soporte, Incidencias y el módulo de Plantillas de documentos.
 
-- **Devolución, Reclutamiento y Administración de Personal siguen sin una línea de código.**
-- **Alquiler pasó de "sin empezar" a "implementado con gaps documentados, pendiente de merge a develop".**
-- Entre el 29 y 30-sep, en paralelo a esta sesión, se aplicaron actualizaciones transversales de infraestructura y seguridad (Node 22 LTS, NestJS v10→v12, firebase-admin v12→v14 backend / v10→v12 frontend, vitest v2→v5, vite v5→v8, fix de 2 CVEs en `@grpc/grpc-js`, Dockerfile.dev para desarrollo local con HMR) — ya mergeadas y sincronizadas en `main` de ambos repos.
-- El orden real de construcción sigue sin seguir el orden documentado (Consulta→Reserva→Alquiler→Devolución→Reclutamiento→ADP). Orden real: Reserva/Flota/Clientes → Consulta → Administración del sistema (ADM) y TR-06/07 → refinamiento (29-sep) → Alquiler backend+frontend (30-sep, pendiente de merge).
+**Estado actual (11-oct-2026):**
+- **11 módulos de negocio** completamente implementados y mergeados a `main`.
+- **Backend**: 21 módulos NestJS activos en `apps/api/src/modules/`.
+- **Frontend**: 16 áreas funcionales activas en `apps/web/src/app/`.
+- **Pendiente principal**: TR-08 (offline), TR-09 (perfil frontend), reportes, pagos standalone, búsqueda global.
+
+Desde la versión anterior del plan (30-sep) se completaron:
+- Alquiler (ALQ-01..11): mergeado backend + frontend.
+- Devolución (DEV-01..10): construido e mergeado — estaba "sin empezar".
+- Incidencias (INC-01/02): construido e mergeado.
+- Reclutamiento (REC-01..08): construido e mergeado — estaba "sin empezar".
+- Administración de Personal (ADP-01..09): construido e mergeado — estaba "sin empezar".
+- Templates de documentos: módulo standalone backend (`templates`, `document-templates`, `notification-templates`), pantalla ADM-03 frontend.
+- Roles dinámicos (ROLES-DIN-03): eliminación de legacy-role-policy, usePermissions unificado.
+- Seguridad: rate limiting global (`@nestjs/throttler`), cabecera CSP, fix CRITICAL handlebars CVE.
+
+---
 
 ## 2. Estado real por módulo
 
-| Módulo | Documentación | Implementación | Pendiente según los propios docs |
-|---|---|---|---|
-| **Consulta (CON-01..04)** | ✅ Completa, sin preguntas de negocio abiertas | ✅ Construido, integrado con Flota real, refinado 29-sep | Ninguno de negocio |
-| **Reserva (RES-01..08)** | ✅ Completa | ✅ Construido, es el motor de eventos que alimenta el Tablero | — |
-| **Alquiler (ALQ-01..11)** | ✅ Completa (asistente de 5 etapas) | ⚠️ **Backend y frontend construidos, en ramas `feature/rental-extensions-api` y `feature/rentals-wizard`, pendientes de merge a develop.** Ver detalle en sección 2.1 | UC-ALQ-006 caso de falta grave (BR-ALQ-013); subida real de evidencia (fotos/videos) en el backend; integración real RENIEC/MTC; catálogo de plantillas de contrato; modo offline de ENTREGA-04 |
-| **Devolución (DEV-01..10)** | ✅ Completa (DEV-05 como hub) | ❌ **Sin empezar** | Todo |
-| **Reclutamiento (REC-01..08)** | ✅ Completa | ❌ Sin empezar | Todo |
-| **Administración de Personal (ADP-01..10)** | ✅ Completa (TO-BE aspiracional, no AS-IS) | ❌ Sin empezar | Todo |
-| **Flota (FLO-01/02)** | ✅ Completa | ✅ Construido + edición, baja (OUT_OF_SERVICE), foto real vía file picker, manejo tipado de `GcsUploadError` | Rama `feat/fleet-gcs-photo-upload` (subida a GCS con URL firmada) aún sin mergear en ninguno de los 2 repos |
-| **Clientes (CLI-01/02)** | ✅ Completa | ✅ Construido + edición de datos | — |
-| **Admin/Soporte (ADM-01..05)** | ✅ Completa | ✅ Las 5 pantallas construidas; selector multi-empresa/sede al agregar usuario | ADM-02 (Roles y permisos) — enforcement real, estado a confirmar |
-| **TR-01 a TR-05** (login, activación, MFA, sesión) | ✅ | ✅ Completo | — |
-| **TR-06 (Tablero por rol)** | ✅ (7 roles) | ⚠️ Backend+frontend listos, pero solo Front-office tiene datos reales — los otros roles dependen de módulos que no existen (Devolución, RRHH) o que están pendientes de merge (Alquiler) | Depende de que se mergeen/construyan esos módulos |
-| **TR-07 (Notificaciones)** | ✅ | ⚠️ Registro interno completo; solo el correo de bienvenida despacha de verdad, vía Resend | Despachador general |
-| **TR-08 (Sincronización offline)** | ✅ | ❌ Sin empezar (backend y frontend) | Todo — nota: ENTREGA-04 de Alquiler necesita exactamente esto y hoy quedó online-only |
-| **TR-09 (Menú perfil/sesión)** | ✅ | ⚠️ Parcial backend, sin frontend dedicado | Frontend |
-| **TR-10 (Control de acceso)** | ✅ | ⚠️ Parcial | — |
-| **TR-11 / HU-25 (Menú de 12 módulos)** | ⚠️ Aprobado provisionalmente | ✅ Cerrado | Enlace `/modulos` desde el Dashboard |
-| **Búsqueda global** | — | ❌ Sin empezar | Todo |
-| **Pagos y garantías (PAG-01/02)** | ✅ | ❌ Sin empezar (aunque Alquiler ya registra pago/garantía dentro de su propio flujo — `formalize-contract`, `deposits` — no existe un módulo de Pagos independiente) | Todo |
-| **Incidencias (INC-01/02)** | ✅ | ❌ Sin empezar | Todo |
-| **Reportes (REP-01)** | ✅ | ❌ Sin empezar | Todo |
+| Módulo | Doc | Backend | Frontend | Pendiente |
+|--------|-----|---------|----------|-----------|
+| **Consulta (CON-01..04)** | ✅ | ✅ | ✅ Incluye conversión a Alquiler directo | — |
+| **Reserva (RES-01..08)** | ✅ | ✅ | ✅ | — |
+| **Alquiler (ALQ-01..11)** | ✅ | ✅ mergeado | ✅ mergeado | BR-ALQ-013 falta grave; subida real evidencia; RENIEC/MTC real; modo offline ENTREGA-04 |
+| **Devolución (DEV-01..10)** | ✅ | ✅ mergeado | ✅ mergeado | — |
+| **Reclutamiento (REC-01..08)** | ✅ | ✅ mergeado | ✅ mergeado | — |
+| **Personal/RRHH (ADP-01..09)** | ✅ | ✅ mergeado | ✅ mergeado 11-oct | — |
+| **Flota (FLO-01/02)** | ✅ | ✅ | ✅ | Rama `feat/fleet-gcs-photo-upload` pendiente de evaluar (subida GCS con URL firmada) |
+| **Clientes (CLI-01/02)** | ✅ | ✅ | ✅ | — |
+| **Admin/Soporte (ADM-01..05)** | ✅ | ✅ | ✅ incl. ADM-03 plantillas | ADM-02 enforcement real de roles — pendiente de verificación |
+| **Incidencias (INC-01/02)** | ✅ | ✅ | ✅ | — |
+| **Plantillas de documentos** | ✅ TDD-TPL v1.0 | ✅ módulo standalone | ✅ ADM-03 | — |
+| **TR-01 a TR-05** (auth/sesión) | ✅ | ✅ | ✅ | — |
+| **TR-06 (Tablero por rol)** | ✅ 7 roles | ✅ | ⚠️ Funcional para todos los roles ya construidos; datos reales disponibles | Roles de módulos no construidos aún (reportes, pagos) |
+| **TR-07 (Notificaciones)** | ✅ | ⚠️ Registro interno completo; correo de bienvenida vía Resend | ⚠️ Parcial | Despachador general de notificaciones |
+| **TR-08 (Offline sync)** | ✅ | ❌ Sin empezar | ❌ Sin empezar | Bloqueador para ENTREGA-04 de Alquiler en campo |
+| **TR-09 (Perfil/sesión)** | ✅ | ⚠️ Parcial | ❌ Sin frontend dedicado | Frontend de perfil de usuario |
+| **TR-10 (Control de acceso)** | ✅ | ⚠️ Parcial | ✅ usePermissions unificado (ROLES-DIN-03) | Verificar enforcement completo en backend |
+| **TR-11 / HU-25 (Hub módulos)** | ✅ | ✅ | ✅ | — |
+| **Pagos y garantías (PAG-01/02)** | ✅ | ❌ Sin módulo standalone (Alquiler registra pago/garantía dentro de su flujo) | ❌ | Módulo independiente de pagos |
+| **Reportes (REP-01)** | ✅ | ❌ | ❌ | Todo |
+| **Búsqueda global** | — | ❌ | ❌ | Todo |
 
-### 2.1 Detalle — Alquiler (avance 30-sep-2026)
+### 2.1 Gaps conocidos — Alquiler
 
-**Backend** (`feature/rental-extensions-api`, sobre `apps/api/src/modules/rentals/`):
-- Flujo principal completo y testeado (UC-ALQ-001 a UC-ALQ-005): crear, crear desde reserva, listar, obtener, validar documentos, registrar alcoholímetro, evaluar notaría + aprobar excepción, formalizar contrato, completar entrega.
-- UC-ALQ-006 (Ampliaciones) parcialmente implementado: `request-extension`, `authorize-extension`, `reject-extension`, con RBAC (autorizar/rechazar restringido a Gerencia). **Falta**: el caso de falta grave (BR-ALQ-013 — cliente no cumple los 4 requisitos, debe retener toda la garantía + evaluar proceso penal + marcar cliente "rojo").
-- 114/114 tests unitarios pasan, `tsc --noEmit` limpio. No se pudo verificar la migración contra Postgres real desde el entorno de desarrollo remoto — pendiente confirmar con `npx prisma migrate status`.
-- **Pendiente de merge**: el PR está creado pero los 4 checks de CI no llegaron a correr — es un bloqueo de facturación de GitHub Actions a nivel de organización (`kairosdesarrollotec-ai`), no un problema de código. Requiere revisar Billing & plans de la organización.
+- **BR-ALQ-013 (falta grave en ampliación)**: cliente no cumple los 4 requisitos → retener toda la garantía + evaluar proceso penal + marcar cliente "rojo". No implementado.
+- **Subida de evidencia real (fotos/videos)**: `complete-delivery` actual solo acepta contadores. No hay endpoint de archivos.
+- **RENIEC/MTC**: verificación simulada en UI, sin integración real en backend.
+- **Modo offline ENTREGA-04**: depende de TR-08.
 
-**Frontend** (`feature/rentals-wizard`, en `apps/web/src/app/rentals/`):
-- ALQ-01 (bandeja de alquileres), ALQ-02 (inicio/conversión desde Consulta o Reserva), y el asistente completo ENTREGA-01 a ENTREGA-05 según `PANTALLAS-V3-B-ALQUILER.md`.
-- ENTREGA-04 (checklist de 35 fotos + 3 videos) quedó **online-only**: el backend actual (`complete-delivery`) solo acepta contadores, no subida de archivos ni guardado parcial — no hay endpoint de evidencia real todavía. El modo offline/sync documentado en TR-08 no se pudo implementar sobre un backend que no lo soporta.
-- RENIEC/MTC en ENTREGA-02 están simulados en UI (no hay integración real en el backend de rentals).
-- 8/8 tests pasan, `tsc --noEmit` y eslint limpios.
-- **Pendiente de merge**: mismo bloqueo de CI que el backend.
+### 2.2 Seguridad — estado actual
 
-## 3. Discrepancias importantes a tener en cuenta
+- ✅ Rate limiting global (`@nestjs/throttler`).
+- ✅ Content-Security-Policy header.
+- ✅ handlebars CRITICAL CVE resuelto (override `4.7.10`).
+- ✅ NestJS v10→v12, firebase-admin v12→v14.
+- ⚠️ `sprintf-js` MODERATE (devDep, en allowlist hasta 2027-01-06).
+- `npm run audit:prod` → 0 vulnerabilidades en producción.
 
-1. La documentación de Devolución/Reclutamiento/ADP "suena" terminada pero no hay código — riesgo de que alguien externo asuma que el sistema está más avanzado de lo que está.
-2. TR-06 documentado como tablero de 7 roles sigue siendo, en la práctica, un tablero de 1 rol funcional (Front-office) hasta que Alquiler se mergee y Devolución exista.
-3. ADM-02 (Roles y permisos) sigue con estado contradictorio entre documentos — pendiente de verificación puntual.
-4. Hay 3 ramas de trabajo sin mergear que representan avance real ya hecho, no solo planeado: `feature/rental-extensions-api`, `feature/rentals-wizard` (backend/frontend de Alquiler, bloqueadas por CI/billing) y `feat/fleet-gcs-photo-upload` (mejora de subida de fotos a GCS, sin bloqueo técnico conocido, solo pendiente de decidir el flujo de PR).
-5. TR-08 (sincronización offline) ya no es solo "documentado pero sin empezar" en abstracto — es un bloqueador concreto para que ENTREGA-04 de Alquiler funcione completo en campo.
+---
 
-## 4. ¿Ir por features o por Historias de Usuario (HU)?
+## 3. Discrepancias activas
 
-**Recomendación sin cambios: por feature/proceso de negocio completo, no por HU aislada.** El patrón se confirmó de nuevo hoy: Alquiler se construyó como dos tracks paralelos (backend completo / frontend completo) coordinados por módulo, no por HU suelta, igual que Clientes/Flota/Admin/Consultas el día anterior.
+1. **ADM-02 (Roles y permisos)**: enforcement real pendiente de verificación puntual. El sistema usa roles dinámicos (ROLES-DIN-03) pero no se ha auditado que todos los guards apliquen el nuevo modelo consistentemente.
+2. **TR-06 Tablero**: funcional para los roles ya construidos; cuando se construyan Reportes y Pagos el tablero necesitará widgets adicionales.
+3. **Rama `feat/fleet-gcs-photo-upload`**: mejora de Flota sin mergear. No hay bloqueo técnico — pendiente de decisión de PR.
+4. **TR-08 bloqueador concreto**: ENTREGA-04 de Alquiler queda online-only sin esto.
 
-## 5. Plan maestro propuesto (fases) — actualizado
+---
 
-**Fase 0 — Completado:** Transversal TR-01–05, TR-06 (parcial), TR-07 (parcial), TR-11/HU-25, Consulta, Reserva, Flota, Clientes, Admin/Soporte.
+## 4. Plan de fases — actualizado
 
-**Fase 1 — Alquiler (ALQ-01..11).** ⚠️ **En curso, no completa.** Backend y frontend construidos, pendientes de merge (bloqueo de CI/billing) y con gaps: falta grave de ampliación (BR-ALQ-013), evidencia real en checklist de entrega (requiere endpoint de subida + más adelante TR-08 offline), integración RENIEC/MTC real, catálogo de plantillas de contrato.
+**Fase 0 — ✅ COMPLETADA:**
+TR-01..05, TR-06 (funcional), TR-07 (parcial), TR-11, Consulta, Reserva, Flota, Clientes, Admin/Soporte, Plantillas de documentos.
 
-**Fase 2 — Devolución (DEV-01..10) completo.** Depende funcionalmente de que Alquiler esté mergeado y en uso real.
+**Fase 1 — ✅ COMPLETADA:**
+Alquiler (ALQ-01..11) backend + frontend, mergeados.
 
-**Fase 3 — Cierre de huecos Transversal:**
-- TR-08 (sincronización offline) — ahora con una necesidad concreta que lo justifica (ENTREGA-04 de Alquiler).
-- TR-07 — despachador general de notificaciones.
-- ADM-02 — verificar/completar enforcement real de roles y permisos.
-- TR-09/10 — completar frontend pendiente.
-- Endpoint de subida de evidencia (fotos/videos) para Alquiler y, más adelante, Devolución — prerrequisito técnico compartido por ambos procesos.
+**Fase 2 — ✅ COMPLETADA:**
+Devolución (DEV-01..10), Incidencias (INC-01/02).
 
-**Fase 4 — Pagos y garantías, Incidencias, Reportes.**
+**Fase 3 — ✅ COMPLETADA (inesperadamente adelantada):**
+Reclutamiento (REC-01..08), Administración de Personal (ADP-01..09), Roles dinámicos.
 
-**Fase 5 — Reclutamiento y Selección + Administración de Personal.**
+**Fase 4 — EN CURSO / SIGUIENTE:**
+- TR-09 (perfil de usuario — frontend).
+- ADM-02: auditoría de enforcement de roles.
+- Endpoint de subida de evidencia (photos/videos) para Alquiler.
+- BR-ALQ-013 (falta grave en ampliación).
+- `feat/fleet-gcs-photo-upload`: evaluar y mergear.
+- TR-07: despachador general de notificaciones.
 
-**Fase 6 — Búsqueda global.**
+**Fase 5 — PRÓXIMA:**
+- TR-08 (sincronización offline) — ahora bloqueador concreto de ENTREGA-04.
+- Pagos y garantías como módulo standalone (PAG-01/02).
+- Reportes (REP-01).
 
-## 6. Próximos pasos inmediatos sugeridos
+**Fase 6 — FUTURA:**
+- Búsqueda global.
+- Integraciones reales RENIEC/MTC.
+- Expansión multisede en módulos pendientes.
 
-1. Resolver el bloqueo de facturación de GitHub Actions en la organización — sin esto, ningún PR nuevo puede pasar CI, no solo los de Alquiler.
-2. Una vez resuelto, mergear `feature/rental-extensions-api` y `feature/rentals-wizard` a `develop`, probar el flujo integrado end-to-end en navegador (no se probó contra backend real todavía, solo con tests unitarios/mock).
-3. Decidir sobre `feat/fleet-gcs-photo-upload`: mergear por el flujo normal (PR a develop) o evaluar si ya quedó obsoleta frente a otro trabajo de Fleet.
-4. Cerrar los gaps documentados de Alquiler antes de darlo por "completo": falta grave de ampliación, evidencia real, RENIEC/MTC, plantillas de contrato.
-5. Empezar Fase 2 (Devolución) una vez Alquiler esté mergeado y estable.
-6. Seguir actualizando este documento al cierre de cada sesión relevante.
+---
+
+## 5. Próximos pasos inmediatos sugeridos
+
+1. **Auditar ADM-02**: verificar que todos los guards NestJS aplican el modelo de roles dinámicos (ROLES-DIN-03) consistentemente.
+2. **Frontend TR-09**: pantalla de perfil/sesión de usuario (parcialmente implementada en backend, sin pantalla frontend).
+3. **Endpoint de evidencia para Alquiler**: diseñar endpoint de subida de archivos en `rentals` como prerrequisito para ENTREGA-04 y, después, Devolución.
+4. **BR-ALQ-013**: implementar el caso de falta grave en ampliación.
+5. **`feat/fleet-gcs-photo-upload`**: revisar si sigue siendo relevante y decidir el flujo de PR.
+6. **Seguir actualizando este documento al cierre de cada sesión relevante.**
