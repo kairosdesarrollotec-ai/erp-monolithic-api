@@ -119,65 +119,137 @@ Administración de Personal usa la arquitectura de ejecución y estructura de re
 
 ### 9.1 Tipos
 
-```
-CREATE TYPE employee_status AS ENUM ('PERIODO_PRUEBA','PLANILLA','TERMINADO');
-CREATE TYPE field_trip_status AS ENUM (
-  'PENDIENTE_NIVEL_1','PENDIENTE_NIVEL_2','PENDIENTE_NIVEL_3',
-  'AUTORIZADA','NO_AUTORIZADA','CERRADA_NORMAL','OBSERVADA'
+> **Actualizado 2026-10-11** para reflejar la implementación real. Ver decisiones DEC-ADP-* en `docs/decision-log.md`.
+
+```sql
+-- Implementación real (Prisma Enum / PostgreSQL)
+CREATE TYPE "EmployeeStatus"    AS ENUM ('PERIODO_PRUEBA', 'PLANILLA', 'TERMINADO');
+CREATE TYPE "AttendanceStatus"  AS ENUM ('PRESENTE', 'TARDANZA', 'FALTA_JUSTIFICADA', 'FALTA_INJUSTIFICADA', 'DIA_NO_LABORAL');
+CREATE TYPE "LeaveType"         AS ENUM ('PERMISO_HORAS', 'PERMISO_DIA', 'DESCANSO_MEDICO', 'OTRO');
+CREATE TYPE "LeaveStatus"       AS ENUM ('SOLICITADO', 'AUTORIZADO', 'RECHAZADO');
+CREATE TYPE "VacationStatus"    AS ENUM ('SOLICITADA', 'PROGRAMADA', 'REPROGRAMADA', 'COMPLETADA', 'CANCELADA');
+-- REPROGRAMADA incluido en la constraint EXCLUDE (DEC-ADP-EXCL-REPROGRAMADA-2026-10-10).
+-- SOLICITADA excluido de la constraint EXCLUDE — flujo employee-initiated no es MVP
+--   (DEC-ADP-EXCL-SOLICITADA-2026-10-10); cubierto por validación de capa aplicación.
+CREATE TYPE "FieldTripStatus"   AS ENUM (
+  'PENDIENTE_NIVEL_1', 'PENDIENTE_NIVEL_2', 'PENDIENTE_NIVEL_3',
+  'AUTORIZADA', 'NO_AUTORIZADA', 'CERRADA_NORMAL', 'OBSERVADA'
 );
+CREATE TYPE "TerminationReason" AS ENUM ('RENUNCIA', 'DESPIDO');
 ```
 
 ### 9.2 Tablas
 
+> Las siguientes definiciones reflejan la implementación migrada a producción. Las desviaciones respecto
+> a versiones previas de este documento están documentadas en `docs/decision-log.md` (sección ADP).
+
 ```sql
-CREATE TABLE employees (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  operating_company_id uuid NOT NULL,
-  candidate_id uuid NULL REFERENCES candidates(id),
-  full_name varchar(200) NOT NULL,
-  status employee_status NOT NULL DEFAULT 'PERIODO_PRUEBA',
-  probation_evaluated_at timestamptz NULL,
-  payroll_started_at timestamptz NULL,
-  terminated_at timestamptz NULL,
-  termination_reason varchar(20) NULL,  -- 'RENUNCIA' | 'DESPIDO'
-  created_at timestamptz NOT NULL DEFAULT now()
+CREATE TABLE "employees" (
+  id                      uuid           PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id         uuid           NOT NULL,
+  operating_company_id    uuid           NOT NULL,
+  branch_id               uuid           NOT NULL,
+  candidate_id            uuid           NULL REFERENCES "candidates"("id"),
+  document_type           varchar(20)    NOT NULL,
+  document_number         varchar(30)    NOT NULL,
+  full_name               varchar(200)   NOT NULL,
+  email                   varchar(200)   NULL,
+  phone                   varchar(30)    NULL,
+  area_id                 varchar(100)   NOT NULL,  -- VARCHAR(100), no uuid (DEC-ADP-AREA-ID-VARCHAR-2026-10-10)
+  area_name               varchar(200)   NOT NULL,
+  job_title               varchar(200)   NOT NULL,
+  status                  "EmployeeStatus" NOT NULL DEFAULT 'PERIODO_PRUEBA',
+  hire_date               date           NOT NULL,
+  probation_evaluated_at  timestamptz    NULL,
+  probation_passed        boolean        NOT NULL DEFAULT false,
+  payroll_started_at      timestamptz    NULL,
+  terminated_at           timestamptz    NULL,
+  termination_reason      varchar(20)    NULL,
+  termination_notice_days integer        NULL,
+  termination_notes       text           NULL,
+  field_trip_late_count   integer        NOT NULL DEFAULT 0,
+  is_field_trip_observed  boolean        NOT NULL DEFAULT false,
+  base_salary             decimal(10,2)  NOT NULL,
+  version                 integer        NOT NULL DEFAULT 1,
+  created_at              timestamptz    NOT NULL DEFAULT now(),
+  updated_at              timestamptz    NOT NULL DEFAULT now(),
+  CONSTRAINT "employees_operating_company_document_key" UNIQUE (operating_company_id, document_type, document_number)
 );
 
-CREATE TABLE vacations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id uuid NOT NULL REFERENCES employees(id),
-  area_id uuid NOT NULL,  -- área del colaborador al momento de la solicitud
-  requested_range tstzrange NOT NULL,
-  status varchar(20) NOT NULL DEFAULT 'PROGRAMADA',
-  requested_at timestamptz NOT NULL DEFAULT now(),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  EXCLUDE USING gist (
+-- Requiere extensión btree_gist (habilitada en migración 20261008000001).
+CREATE TABLE "vacation_requests" (
+  id              uuid            PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id     uuid            NOT NULL REFERENCES "employees"("id") ON DELETE CASCADE,
+  area_id         varchar(100)    NOT NULL,  -- VARCHAR(100), no uuid (DEC-ADP-AREA-ID-VARCHAR-2026-10-10)
+  start_date      date            NOT NULL,  -- DATE, no tstzrange (DEC-ADP-DATE-COLUMNS-2026-10-10)
+  end_date        date            NOT NULL,
+  status          "VacationStatus" NOT NULL DEFAULT 'PROGRAMADA',
+  requested_at    timestamptz     NOT NULL DEFAULT now(),
+  approved_by_id  uuid            NULL,
+  approved_at     timestamptz     NULL,
+  rescheduled_from date           NULL,
+  rescheduled_reason text         NULL,
+  created_at      timestamptz     NOT NULL DEFAULT now(),
+  updated_at      timestamptz     NOT NULL DEFAULT now(),
+  -- EXCLUDE implementa BR-ADP-002: capacidad máxima 1 persona por área.
+  -- Usa daterange() como adaptación a Prisma ORM (no soporta tstzrange nativo).
+  -- Cubre PROGRAMADA + REPROGRAMADA (DEC-ADP-EXCL-REPROGRAMADA-2026-10-10).
+  CONSTRAINT "vacation_requests_area_no_overlap_excl" EXCLUDE USING gist (
     area_id WITH =,
-    requested_range WITH &&
-  ) WHERE (status = 'PROGRAMADA')
+    daterange(start_date, end_date, '[]') WITH &&
+  ) WHERE (status IN ('PROGRAMADA', 'REPROGRAMADA'))
 );
 ```
 
-> ⚠️ **Corregido 02 sep 2026 (aclaración de Fiorella):** BR-ADP-002 **no** trata de "2 personas clave" designadas — es una regla de **capacidad del área**: como máximo 1 persona de cualquier área puede estar de vacaciones en un momento dado, sin importar cuántos colaboradores tenga esa área. La constraint anterior excluía por `employee_id` (que solo evita que la misma persona se traslape consigo misma, no evita que 2 personas distintas del área coincidan) — se corrige a excluir por `area_id`. Esto también implementa naturalmente la prioridad "quien solicitó primero": el `EXCLUDE` rechaza la segunda solicitud que intente insertarse sobre un rango ya ocupado, sin importar quién sea, por orden de inserción (`requested_at`).
+> **DEC-ADP-DATE-COLUMNS-2026-10-10:** Prisma ORM no soporta `tstzrange` nativamente. Se usan dos columnas `DATE` (`start_date`, `end_date`) con adaptación `daterange(start_date, end_date, '[]')` en la constraint `EXCLUDE`, funcionalmente equivalente para vacaciones (rangos de fecha, no timestamps).
+>
+> **DEC-ADP-AREA-ID-VARCHAR-2026-10-10:** El catálogo de áreas está en estado `SUPUESTO`. Se usa `VARCHAR(100)` hasta confirmar si el ID del catálogo será un UUID o un código de área. Cuando se confirme, crear forward-fix migration si aplica.
+>
+> **DEC-ADP-EXCL-REPROGRAMADA-2026-10-10:** La constraint incluye `REPROGRAMADA` porque una vacación reprogramada sigue ocupando el cupo del área. `SOLICITADA` excluido — flujo employee-initiated no es MVP (DEC-ADP-EXCL-SOLICITADA-2026-10-10).
 
 ```sql
-CREATE TABLE field_trips (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id uuid NOT NULL REFERENCES employees(id),
-  status field_trip_status NOT NULL DEFAULT 'PENDIENTE_NIVEL_1',
-  authorized_by uuid NULL,
-  authorization_level integer NULL,   -- 1=Fiorella, 2=José, 3=Cecilia — NUNCA 4
-  requested_at timestamptz NOT NULL DEFAULT now(),
-  returned_at timestamptz NULL,
-  CONSTRAINT field_trip_level_max_3 CHECK (
+CREATE TABLE "field_trip_requests" (
+  id                  uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id         uuid                NOT NULL REFERENCES "employees"("id") ON DELETE CASCADE,
+  destination         varchar(500)        NOT NULL,
+  objective           text                NOT NULL,
+  estimated_departure timestamptz         NOT NULL,
+  estimated_return    timestamptz         NOT NULL,
+  actual_departure    timestamptz         NULL,
+  actual_return       timestamptz         NULL,
+  status              "FieldTripStatus"   NOT NULL DEFAULT 'PENDIENTE_NIVEL_1',
+  authorization_level integer             NULL,  -- 1=N1, 2=N2, 3=N3 — NUNCA 4 (BR-ADP-004)
+  authorized_by_id    uuid                NULL,
+  authorized_by_name  varchar(200)        NULL,
+  authorized_at       timestamptz         NULL,
+  late_minutes        integer             NOT NULL DEFAULT 0,
+  return_notes        text                NULL,
+  is_observed         boolean             NOT NULL DEFAULT false,
+  level1_timeout_at   timestamptz         NOT NULL,
+  level2_timeout_at   timestamptz         NULL,
+  level3_timeout_at   timestamptz         NULL,
+  created_at          timestamptz         NOT NULL DEFAULT now(),
+  updated_at          timestamptz         NOT NULL DEFAULT now(),
+  CONSTRAINT "field_trip_level_max_3" CHECK (
     authorization_level IS NULL OR authorization_level BETWEEN 1 AND 3
   )
 );
+
+CREATE TABLE "employment_terminations" (
+  id                    uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id           uuid                NOT NULL UNIQUE REFERENCES "employees"("id") ON DELETE RESTRICT,
+  -- ON DELETE RESTRICT: EmploymentTermination es registro permanente de auditoría.
+  -- Impide borrar un Employee con terminación registrada (ADP-DEBT-005, migración 20261011000000).
+  reason                "TerminationReason" NOT NULL,
+  notice_days           integer             NOT NULL DEFAULT 0,
+  final_settlement_paid boolean             NOT NULL DEFAULT false,
+  settlement_amount     decimal(10,2)       NOT NULL DEFAULT 0,
+  notes                 text                NULL,
+  terminated_by_id      uuid                NOT NULL,
+  terminated_at         timestamptz         NOT NULL DEFAULT now(),
+  created_at            timestamptz         NOT NULL DEFAULT now()
+);
 ```
-
-> ⚠️ Se agrega el constraint `field_trip_level_max_3` — implementación física explícita de que **nunca puede existir un 4to nivel** en el sistema (BR-ADP-004, confirmada 31 ago). No estaba en el documento consolidado; se agrega ahora para blindar la decisión a nivel de base de datos, no solo de aplicación.
-
-La `EXCLUDE USING gist` en `vacations` es la implementación física de **BR-ADP-002, corregida el 02 sep 2026**: capacidad de 1 persona por área, no "2 personas clave" fijas. Requiere que `employees` tenga un `area_id` — el modelo de áreas todavía necesita que Datos confirme su catálogo completo (queda `SUPUESTO` en ese punto específico, aunque la regla de negocio en sí ya está `CONFIRMADO`).
 
 ### 9.3 Vinculación entre módulos
 
