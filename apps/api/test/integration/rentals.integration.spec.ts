@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
 import { PrismaTransactionManager } from '../../src/common/persistence/prisma-transaction-manager';
 import { PrismaRentalRepository } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental.repository';
-import { PrismaContractTemplatePersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-contract-template.persistence';
 import { PrismaRentalExtensionPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-extension.persistence';
 import { PrismaRentalNotaryContractPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-notary-contract.persistence';
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
@@ -27,6 +26,7 @@ import { ApproveNotaryExceptionHandler } from '../../src/modules/rentals/applica
 import { ApproveNotaryExceptionCommand } from '../../src/modules/rentals/application/commands/approve-notary-exception.command';
 import { FormalizeContractHandler } from '../../src/modules/rentals/application/commands/formalize-contract.handler';
 import { FormalizeContractCommand } from '../../src/modules/rentals/application/commands/formalize-contract.command';
+import { PrismaTemplateRepository } from '../../src/modules/templates/infrastructure/persistence/prisma-template.repository';
 import { CompleteDeliveryHandler } from '../../src/modules/rentals/application/commands/complete-delivery.handler';
 import { CompleteDeliveryCommand } from '../../src/modules/rentals/application/commands/complete-delivery.command';
 import { GetRentalHandler } from '../../src/modules/rentals/application/queries/get-rental.handler';
@@ -48,7 +48,6 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
   const branch = randomUUID();
   const customer = randomUUID();
   const vehicle = randomUUID();
-  let templateId: string;
 
   const UID = 'uid-it-rental';
 
@@ -60,7 +59,6 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     const ps = buildPrismaService();
     return new PrismaRentalRepository(
       ps,
-      new PrismaContractTemplatePersistence(ps),
       new PrismaRentalExtensionPersistence(ps),
       new PrismaRentalNotaryContractPersistence(ps),
     );
@@ -115,16 +113,21 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
         model: 'Versa',
       },
     });
-    const tpl = await prisma.contractTemplate.create({
+    await prisma.template.create({
       data: {
+        organizationId: org,
         companyId: company,
-        type: 'STANDARD',
+        type: 'RENTAL_CONTRACT',
+        name: 'Plantilla Estándar IT',
         version: 1,
-        effectiveFrom: new Date('2026-01-01'),
         status: 'ACTIVE',
+        documentUrl: 'https://storage.test/template-it.pdf',
+        documentFormat: 'PDF',
+        effectiveFrom: new Date('2026-01-01'),
+        createdBy: 'seed-it',
+        updatedBy: 'seed-it',
       },
     });
-    templateId = tpl.id;
   }, 60000);
 
   afterAll(async () => {
@@ -235,6 +238,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     // 5. Formalizar contrato (CONTRACTING → PENDING_DELIVERY)
     const formalizeHandler = new FormalizeContractHandler(
       rentalRepo,
+      new PrismaTemplateRepository(ps),
       workContext,
       matrixAuth,
       txManager,
@@ -248,7 +252,6 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
         company,
         branch,
         contractingRental.version,
-        templateId,
         `doc-ref-it-${randomUUID().slice(0, 8)}`,
         '500.00',
         'PEN',
