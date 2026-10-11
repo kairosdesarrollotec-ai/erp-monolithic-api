@@ -192,8 +192,8 @@ sources:
   module: Administración de Personal
   version: '1.9'
   date: unknown
-  status: pending_review
-  estado_original: unknown
+  status: approved
+  estado_original: APROBADO v1.9 — aprobación registrada 2026-10-10. Fuente autorizada para implementación del módulo Administración de Personal (PR #69 / PR #78).
   sha256: 9730670d7d91d722f9e05a726dbe3a383e81eee9386f43b8b10603dc3e36ea9c
   authority: business
   supersedes: null
@@ -293,8 +293,8 @@ sources:
   module: Administración de Personal
   version: '2.1'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  status: approved
+  estado_original: APROBADO v2.1 — aprobación registrada 2026-10-10. Revisión arquitectónica completada. Fuente autorizada para implementación del módulo Administración de Personal (PR #69 / PR #78).
   sha256: 038f4bc2454b99f3826e83accb9e365c24046ba23a6efd5ccb516792d8c2b2b6
   authority: functional
   supersedes: null
@@ -335,10 +335,10 @@ sources:
   path: docs/sources/tdd/tdd-02-reserva.md
   type: TDD
   module: Reserva
-  version: '2.3'
-  date: '2026-10-03'
+  version: '2.4'
+  date: '2026-10-09'
   status: approved
-  estado_original: Aprobado v2.3 — Bug 3: ReservationDocumentStoragePort, ReservationDocumentRepositoryPort, ReservationDocumentsController, tabla reservation_documents (GCS).
+  estado_original: Aprobado v2.4 — DEC-CON-001-FINAL: §11.1 actualizado formalmente; POST /reservations es sólo para reservas directas; inquiryId eliminado del ejemplo; convert-to-reservation es la única vía canónica para Consulta→Reserva.
   sha256: unknown
   authority: technical
   supersedes: TDD-KAIROS-MVP-002-RES-V2.2
@@ -541,6 +541,18 @@ sources:
   sha256: null
   authority: contract
   supersedes: null
+- id: TDD-KAIROS-MVP-002-TPL
+  path: docs/sources/tdd/tdd-templates.md
+  type: TDD
+  module: Templates
+  version: '1.0'
+  date: '2026-10-09'
+  status: approved
+  estado_original: >
+    Aprobado v1.0 — módulo standalone `templates` con subida docx/pdf vía GCS.
+    Consolida RENTAL_CONTRACT (antes rentals/contract-templates), RETURN_RESPONSIBILITY
+    (antes document-templates) y añade RESERVATION_CONTRACT. Decisión PROP-017.
+  sha256: unknown
 - id: OPENAPI-HR-ADMINISTRATION-V0.1.0
   path: packages/contracts/openapi/hr-administration.yaml
   type: OpenAPI

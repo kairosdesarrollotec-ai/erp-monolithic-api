@@ -1,0 +1,293 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Templates API
+  version: 0.1.0
+  description: >
+    Contrato del módulo Plantillas standalone (TDD-KAIROS-MVP-002-TPL v1.0, commit 96beb9f).
+    Gestiona plantillas de documentos base por empresa: contratos de alquiler, contratos de
+    reserva y documentos de responsabilidad en devolución. Ciclo DRAFT → ACTIVE (retira la
+    anterior de forma atómica) → RETIRED. Solo una versión ACTIVE por (companyId, type).
+
+paths:
+  /templates:
+    post:
+      operationId: createTemplate
+      summary: Crear plantilla en estado DRAFT (TPL §6.1)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTemplateRequest' }
+      responses:
+        '201':
+          description: Plantilla creada en estado DRAFT
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TemplateResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol sin permiso TEMPLATE.MANAGE
+        '428':
+          description: Idempotency-Key ausente
+        '412':
+          description: Idempotency-Key ya procesada con cuerpo distinto
+
+    get:
+      operationId: listTemplates
+      summary: Listar plantillas con filtros opcionales (TPL §6.4)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: type, in: query, required: false, schema: { $ref: '#/components/schemas/TemplateType' } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/TemplateStatus' } }
+      responses:
+        '200':
+          description: Lista de plantillas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TemplateResponse' }
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol sin permiso TEMPLATE.VIEW
+
+  /templates/{id}:
+    get:
+      operationId: getTemplate
+      summary: Obtener plantilla por ID (TPL §6.5)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Plantilla encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TemplateResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol sin permiso TEMPLATE.VIEW
+        '404':
+          description: Plantilla no encontrada en la empresa
+
+  /templates/{id}/upload-url:
+    post:
+      operationId: requestTemplateUploadUrl
+      summary: Solicitar URL firmada GCS para subir el documento (TPL §6.2)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestTemplateUploadUrlRequest' }
+      responses:
+        '201':
+          description: URL firmada generada (válida 15 min)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TemplateUploadUrlResponse' }
+        '400':
+          description: Datos inválidos o MIME type no permitido
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol sin permiso TEMPLATE.MANAGE
+        '404':
+          description: Plantilla no encontrada en la empresa
+        '409':
+          description: TEMPLATE_DRAFT_REQUIRED — la plantilla ya no está en DRAFT
+        '428':
+          description: Idempotency-Key ausente
+        '412':
+          description: Idempotency-Key ya procesada con cuerpo distinto
+
+  /templates/{id}/commands/activate:
+    post:
+      operationId: activateTemplate
+      summary: Activar plantilla y retirar la anterior activa (TPL §6.3)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivateTemplateRequest' }
+      responses:
+        '200':
+          description: Plantilla activada; versión anterior retirada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TemplateResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Rol sin permiso TEMPLATE.MANAGE
+        '404':
+          description: Plantilla no encontrada en la empresa
+        '409':
+          description: TEMPLATE_DRAFT_REQUIRED — la plantilla ya no está en DRAFT
+        '422':
+          description: MISSING_DOCUMENT_URL — objectUrl no es una URL GCS válida
+        '428':
+          description: Idempotency-Key ausente
+        '412':
+          description: Idempotency-Key ya procesada con cuerpo distinto
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID único por operación para garantizar idempotencia
+
+  schemas:
+    TemplateType:
+      type: string
+      enum: [RENTAL_CONTRACT, RESERVATION_CONTRACT, RETURN_RESPONSIBILITY]
+      description: Tipo de plantilla de documento (TDD-TPL §4.2)
+
+    TemplateStatus:
+      type: string
+      enum: [DRAFT, ACTIVE, RETIRED]
+
+    TemplateDocumentFormat:
+      type: string
+      enum: [PDF, DOCX]
+
+    CreateTemplateRequest:
+      type: object
+      required: [branchId, companyId, name, type]
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/TemplateType'
+        name:
+          type: string
+          maxLength: 200
+        effectiveFrom:
+          type: string
+          format: date-time
+          nullable: true
+
+    RequestTemplateUploadUrlRequest:
+      type: object
+      required: [branchId, companyId, contentLength, contentType]
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        contentType:
+          type: string
+          enum:
+            - application/pdf
+            - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+        contentLength:
+          type: integer
+          minimum: 1
+
+    ActivateTemplateRequest:
+      type: object
+      required: [branchId, companyId, documentFormat, objectUrl]
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        objectUrl:
+          type: string
+          format: uri
+          description: URL HTTPS de GCS del objeto subido
+        documentFormat:
+          $ref: '#/components/schemas/TemplateDocumentFormat'
+
+    TemplateResponse:
+      type: object
+      required: [companyId, createdAt, createdBy, documentFormat, documentUrl, effectiveFrom, id, name, status, type, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        name:
+          type: string
+        version:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/TemplateStatus'
+        documentUrl:
+          type: string
+          nullable: true
+        documentFormat:
+          type: string
+          nullable: true
+        effectiveFrom:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+
+    TemplateUploadUrlResponse:
+      type: object
+      required: [expiresAt, objectUrl, uploadUrl]
+      properties:
+        uploadUrl:
+          type: string
+          format: uri
+          description: PUT URL firmada válida 15 min
+        objectUrl:
+          type: string
+          format: uri
+          description: URL pública del objeto en GCS
+        expiresAt:
+          type: string
+          format: date-time

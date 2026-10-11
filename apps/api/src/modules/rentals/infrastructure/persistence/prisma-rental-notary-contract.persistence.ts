@@ -69,14 +69,14 @@ export class PrismaRentalNotaryContractPersistence {
       where: { rentalId: input.rentalId },
       create: {
         rentalId: input.rentalId,
-        templateVersionId: input.templateVersionId,
+        templateId: input.templateId ?? undefined,
         documentRef: input.documentRef,
         status: 'SIGNED',
         signedAt: new Date(),
         signatureData: input.signatureData ?? null,
       },
       update: {
-        templateVersionId: input.templateVersionId,
+        templateId: input.templateId ?? undefined,
         documentRef: input.documentRef,
         status: 'SIGNED',
         signedAt: new Date(),

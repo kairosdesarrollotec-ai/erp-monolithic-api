@@ -25,5 +25,8 @@
   "dependencies": {
     "@nestjs/throttler": "^6.7.1",
     "resend": "^6.30.0"
+  },
+  "overrides": {
+    "handlebars": "4.7.10"
   }
 }

@@ -626,68 +626,6 @@ paths:
         '428':
           description: Falta header If-Match
 
-  /rentals/contract-templates:
-    post:
-      operationId: createContractTemplate
-      summary: Crear plantilla de contrato (BR-DOC-002 / TDD-ALQ-001 §9.3)
-      description: >
-        Crea una nueva versión de plantilla de contrato para la empresa indicada.
-        Si ya existe una plantilla activa del mismo tipo en esa empresa, la versión
-        anterior pasa a SUPERSEDED y la nueva queda como ACTIVE.
-
-        La operación es idempotente mediante Idempotency-Key.
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - { name: Idempotency-Key, in: header, required: true, schema: { type: string, format: uuid }, description: UUID único por intento de creación. }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/CreateContractTemplateRequest' }
-            example:
-              companyId: '550e8400-e29b-41d4-a716-446655440010'
-              branchId: '550e8400-e29b-41d4-a716-446655440011'
-              type: 'RENTAL_CONTRACT'
-      responses:
-        '201':
-          description: Plantilla creada. Devuelve la nueva versión ACTIVE.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ContractTemplateResponse' }
-        '401':
-          description: Token de autenticación ausente o inválido.
-        '403':
-          description: No autorizado para el contexto o rol insuficiente.
-        '409':
-          description: Idempotency-Key ya procesada (operación duplicada).
-        '422':
-          description: companyId, branchId o type inválidos.
-    get:
-      operationId: listContractTemplates
-      summary: Listar plantillas de contrato de una empresa (BR-DOC-002)
-      description: >
-        Devuelve todas las versiones de plantillas de contrato de la empresa y
-        sede indicadas, ordenadas por effectiveFrom descendente.
-        Incluye plantillas ACTIVE y SUPERSEDED.
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid }, description: UUID de la empresa. }
-        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: UUID de la sede. }
-      responses:
-        '200':
-          description: Lista de plantillas (puede ser vacía).
-          content:
-            application/json:
-              schema:
-                type: array
-                items: { $ref: '#/components/schemas/ContractTemplateResponse' }
-        '401':
-          description: Token de autenticación ausente o inválido.
-        '403':
-          description: No autorizado para el contexto o rol insuficiente.
-        '422':
-          description: companyId o branchId no son UUIDs válidos.
-
 components:
   schemas:
     RentalStatus:
@@ -788,10 +726,6 @@ components:
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
-        templateVersionId:
-          type: string
-          format: uuid
-          description: Opcional - si se omite, el backend resuelve la plantilla ACTIVE vigente de la empresa.
         documentRef: { type: string }
         depositAmount: { type: string }
         depositCurrency: { type: string, enum: [PEN, USD] }
@@ -938,10 +872,10 @@ components:
 
     RentalContractResponse:
       type: object
-      required: [id, templateVersionId, documentRef, status, createdAt]
+      required: [id, documentRef, status, createdAt]
       properties:
         id: { type: string, format: uuid }
-        templateVersionId: { type: string, format: uuid }
+        templateId: { type: string, format: uuid, nullable: true }
         documentRef: { type: string }
         status: { type: string }
         signedAt: { type: string, format: date-time, nullable: true }
@@ -1020,64 +954,6 @@ components:
         deposit:
           allOf: [{ $ref: '#/components/schemas/RentalDepositResponse' }]
           nullable: true
-
-    CreateContractTemplateRequest:
-      type: object
-      required: [companyId, branchId, type]
-      properties:
-        companyId:
-          type: string
-          format: uuid
-          description: UUID de la empresa para la que se crea la plantilla.
-        branchId:
-          type: string
-          format: uuid
-          description: UUID de la sede del contexto de trabajo.
-        type:
-          type: string
-          maxLength: 30
-          description: >
-            Tipo de plantilla. Valor canónico actual: 'RENTAL_CONTRACT'.
-            El campo es abierto (varchar 30) para tipos futuros (addendums, etc.).
-          example: 'RENTAL_CONTRACT'
-        effectiveFrom:
-          type: string
-          format: date-time
-          description: >
-            Fecha de vigencia ISO 8601. Si se omite, se usa el momento de creación.
-          example: '2026-10-02T00:00:00.000Z'
-
-    ContractTemplateResponse:
-      type: object
-      required: [id, companyId, type, version, effectiveFrom, effectiveTo, status, createdAt]
-      properties:
-        id:
-          type: string
-          format: uuid
-        companyId:
-          type: string
-          format: uuid
-        type:
-          type: string
-          example: 'RENTAL_CONTRACT'
-        version:
-          type: integer
-          description: Versión incremental dentro del mismo tipo y empresa. Comienza en 1.
-        effectiveFrom:
-          type: string
-          format: date-time
-        effectiveTo:
-          type: string
-          format: date-time
-          nullable: true
-          description: Fecha de cierre de vigencia (se fija cuando llega una versión más nueva). null si es la versión activa.
-        status:
-          type: string
-          enum: [ACTIVE, SUPERSEDED]
-          description: ACTIVE = versión vigente. SUPERSEDED = reemplazada por una versión posterior.
-        createdAt:
-          type: string
-          format: date-time
 
     RentalDocumentType:
       type: string

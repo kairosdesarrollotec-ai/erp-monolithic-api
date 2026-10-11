@@ -315,8 +315,8 @@ model Company {
   vehicles     Vehicle[]
   inquiries    Inquiry[]
   rentals      Rental[]
-  contractTemplates ContractTemplate[]
   documentTemplates DocumentTemplate[]
+  templates         Template[]
   returns      RentalReturn[]
   incidents    Incident[]
   matrixVersions RolePermissionMatrixVersion[]
@@ -986,18 +986,19 @@ model NotaryEvaluation {
 }
 
 /// TDD-03-alquiler seccion 9.3 / BR-DOC-002/003 - contrato inmutable formalizado.
+/// TPL-TODO-001+002: templateVersionId eliminado (migración 20261009000002); templateId → templates.id.
 model RentalContract {
-  id                String            @id @default(uuid())
-  rentalId          String            @unique @map("rental_id")
-  templateVersionId String            @map("template_version_id")
-  documentRef       String            @map("document_ref")
-  status            String            @default("PENDING") // PENDING | SIGNED | VOID
-  signedAt          DateTime?         @map("signed_at")
-  signatureData     String?           @map("signature_data") @db.Text
-  createdAt         DateTime          @default(now()) @map("created_at")
+  id            String    @id @default(uuid())
+  rentalId      String    @unique @map("rental_id")
+  templateId    String?   @map("template_id")
+  documentRef   String    @map("document_ref")
+  status        String    @default("PENDING") // PENDING | SIGNED | VOID
+  signedAt      DateTime? @map("signed_at")
+  signatureData String?   @map("signature_data") @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
 
-  rental   Rental           @relation(fields: [rentalId], references: [id], onDelete: Cascade)
-  template ContractTemplate @relation(fields: [templateVersionId], references: [id])
+  rental      Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  templateNew Template? @relation(fields: [templateId], references: [id])
 
   @@map("rental_contracts")
 }
@@ -1032,27 +1033,34 @@ model ReservationDocument {
   @@map("reservation_documents")
 }
 
-/// TDD-03-alquiler seccion 9.3 / BR-DOC-002 - plantillas vigentes por empresa.
-/// Invariante "una sola version ACTIVE por (companyId, type)" aplicada por el
-/// indice unico parcial "contract_template_unique_active" (migracion
-/// 20261001010000_contract_template_unique_active) - Prisma no soporta
-/// indices parciales (`WHERE`) en el schema, por eso no aparece como @@unique aqui.
-model ContractTemplate {
-  id            String    @id @default(uuid())
-  companyId     String    @map("company_id")
-  type          String    @db.VarChar(30)
-  version       Int
-  effectiveFrom DateTime  @map("effective_from")
-  effectiveTo   DateTime? @map("effective_to")
-  status        String    @default("ACTIVE") // ACTIVE | RETIRED
-  createdAt     DateTime  @default(now()) @map("created_at")
 
-  company   Company          @relation(fields: [companyId], references: [id])
-  contracts RentalContract[]
+/// TDD-KAIROS-MVP-002-TPL §4.1 - plantillas de documentos base standalone.
+/// Consolida RENTAL_CONTRACT (antes ContractTemplate en rentals) y RETURN_RESPONSIBILITY
+/// (antes DocumentTemplate en document-templates) en un módulo propio.
+/// Invariante única ACTIVE por (company_id, type): índice parcial "templates_unique_active"
+/// en migración 20261009000000_add_templates — Prisma no soporta WHERE en @@unique.
+model Template {
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  companyId      String    @map("company_id")
+  type           String    @db.VarChar(50)
+  name           String    @db.VarChar(200)
+  version        Int?
+  status         String    @default("DRAFT") // DRAFT | ACTIVE | RETIRED
+  documentUrl    String?   @map("document_url")
+  documentFormat String?   @map("document_format") // PDF | DOCX
+  effectiveFrom  DateTime? @map("effective_from")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  createdBy      String    @map("created_by")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  updatedBy      String    @map("updated_by")
 
-  @@unique([companyId, type, version])
+  company         Company          @relation(fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Cascade)
+  rentalContracts RentalContract[]
+
   @@index([companyId, type])
-  @@map("contract_templates")
+  @@index([organizationId])
+  @@map("templates")
 }
 
 /// TDD-03-alquiler seccion 9.4 - garantia retenida para el alquiler.

@@ -15,6 +15,7 @@ import { IncidentsModule } from './modules/incidents/incidents.module';
 import { RecruitmentModule } from './modules/recruitment/recruitment.module';
 import { HrAdministrationModule } from './modules/hr-administration/hr-administration.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { TemplatesModule } from './modules/templates/templates.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
 import { PrismaModule } from './common/persistence/prisma.module';
@@ -43,6 +44,7 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     IncidentsModule,
     RecruitmentModule,
     HrAdministrationModule,
+    TemplatesModule,
     AdminModule,
     NotificationsModule,
   ],

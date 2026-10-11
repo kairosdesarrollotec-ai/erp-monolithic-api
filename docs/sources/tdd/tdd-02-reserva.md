@@ -282,9 +282,9 @@ Todo comando mutable exige `If-Match: "<version>"`. Versión distinta devuelve `
 
 > Convenciones generales viven en `TDD-KAIROS-TRANSVERSAL.md`.
 
-### 11.1 Crear reserva (borrador)
+### 11.1 Crear reserva directa (borrador)
 
-> ⚠️ **Sección parcialmente estale — DEC-CON-001-FINAL (2026-10-01):** cuando el body incluye `inquiryId`, el endpoint `POST /api/v1/reservations` retorna **409 `INQUIRY_CONVERSION_REQUIRED`** en lugar de 201. La única vía válida para crear una Reserva a partir de una Consulta es `POST /api/v1/inquiries/{id}/commands/convert-to-reservation`. El body de ejemplo abajo sigue siendo correcto para reservas creadas sin `inquiryId`. Ver `CONFLICT-CON-001.md` (RESUELTO) y `docs/decision-log.md` (DEC-CON-001-FINAL).
+> **DEC-CON-001-FINAL (2026-10-01):** `POST /api/v1/reservations` crea exclusivamente **reservas directas** (sin origen en una Consulta). Si el body incluye `inquiryId`, el endpoint responde **409 `INQUIRY_CONVERSION_REQUIRED`** — este comportamiento es permanente, no provisional. La única vía canónica para crear una Reserva a partir de una Consulta existente es `POST /api/v1/inquiries/{id}/commands/convert-to-reservation` (documentado en `TDD-CON-001.md §11.x`). Ver `docs/decision-log.md` (DEC-CON-001-FINAL) y `docs/conflicts/CONFLICT-CON-001.md` (RESUELTO).
 
 ```
 POST /api/v1/reservations
@@ -293,7 +293,6 @@ Idempotency-Key: 018f...
 
 ```json
 {
-  "inquiryId": "uuid",
   "customerId": "uuid",
   "vehicleId": "uuid",
   "branchId": "uuid",
@@ -303,7 +302,9 @@ Idempotency-Key: 018f...
 }
 ```
 
-Respuesta `201` (solo cuando no hay `inquiryId`; con `inquiryId` → 409 `INQUIRY_CONVERSION_REQUIRED`):
+> El campo `inquiryId` **no es válido** en este endpoint. Enviarlo devuelve 409 `INQUIRY_CONVERSION_REQUIRED`.
+
+Respuesta `201`:
 
 ```json
 {
@@ -315,7 +316,7 @@ Respuesta `201` (solo cuando no hay `inquiryId`; con `inquiryId` → 409 `INQUIR
 }
 ```
 
-> ⚠️ Corregido 31 ago: ya no existe `holdExpiresAt` en la respuesta — no hay bloqueo que expire en este paso.
+> No existe `holdExpiresAt` en la respuesta — no hay bloqueo que expire en este paso.
 
 ### 11.2 Registrar pago
 

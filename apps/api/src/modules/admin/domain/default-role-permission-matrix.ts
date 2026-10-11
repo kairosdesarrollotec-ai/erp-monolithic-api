@@ -9,6 +9,7 @@ import { assertAdminRoleAllowed, AdminAction } from '../application/policies/adm
 import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application/policies/return-role-policy';
 import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../../fleet/application/policies/fleet-role.policy';
 import { assertCustomerWrite, assertCustomerRead } from '../../customers/application/policies/customer-role.policy';
+import { assertTemplateRoleAllowed, type TemplateAction } from '../../templates/application/policies/template-role-policy';
 import { PERMISSION_ACTION_CATALOG, type PermissionModule } from './permission-action-catalog';
 import { PLATFORM_ADMIN_KEY } from './system-roles';
 import type { RolePermissionEntry } from '../application/ports/role-permission-matrix.port';
@@ -68,6 +69,8 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       else assertCustomerRead(role);
     } else if (module === 'RECRUITMENT') {
       assertRecruitmentRoleAllowed(role, action as RecruitmentAction);
+    } else if (module === 'TEMPLATE') {
+      assertTemplateRoleAllowed(role, action as TemplateAction);
     } else if (module === 'HR_ADMINISTRATION') {
       assertHrAdministrationRoleAllowed(role, action as HrAdministrationAction);
     } else {

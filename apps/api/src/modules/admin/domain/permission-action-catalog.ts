@@ -5,7 +5,7 @@
  * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
-export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'HR_ADMINISTRATION'] as const;
+export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION'] as const;
 
 /** Modulos cuyas acciones administra la matriz ADM-02 (unica definicion; antes estaba repetida en ~6 sitios). */
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
@@ -86,6 +86,9 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RECRUITMENT', action: 'DECIDE_CANDIDATE', label: 'Reclutamiento: decidir contratación' },
   { module: 'RECRUITMENT', action: 'MANAGE_ONBOARDING', label: 'Reclutamiento: gestionar incorporación' },
   { module: 'RECRUITMENT', action: 'EVALUATE_PROBATION', label: 'Reclutamiento: evaluar periodo de prueba' },
+  // TEMPLATE (2 acciones — TDD-KAIROS-MVP-002-TPL TDD-TPL-ADR-004)
+  { module: 'TEMPLATE', action: 'VIEW', label: 'Plantillas: consultar' },
+  { module: 'TEMPLATE', action: 'MANAGE', label: 'Plantillas: crear/activar/retirar' },
   // HR_ADMINISTRATION (9 acciones — hr-administration-role-policy.ts)
   { module: 'HR_ADMINISTRATION', action: 'VIEW_EMPLOYEES', label: 'Personal: consultar colaboradores y expedientes' },
   { module: 'HR_ADMINISTRATION', action: 'MANAGE_EMPLOYEES', label: 'Personal: crear y editar colaboradores' },

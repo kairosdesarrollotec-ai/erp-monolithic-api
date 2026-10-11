@@ -22,7 +22,7 @@ export interface NotaryEvaluationResponse {
 
 export interface RentalContractResponse {
   id: string;
-  templateVersionId: string;
+  templateId?: string | null;
   documentRef: string;
   status: string;
   signedAt: string | null;

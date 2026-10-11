@@ -8,7 +8,8 @@ import { METHOD_METADATA, PATH_METADATA, HTTP_CODE_METADATA, INTERCEPTORS_METADA
 import { getMetadataStorage } from 'class-validator';
 import { $Enums } from '@prisma/client';
 import { RentalsController } from './rentals.controller';
-import { ContractTemplatesController } from './contract-templates.controller';
+import { RentalsEvidenceController } from './rentals-evidence.controller';
+import { RentalsExtensionsController } from './rentals-extensions.controller';
 import { RentalDocumentsController } from './rental-documents.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
@@ -96,16 +97,11 @@ function routesOf(controller: new (...args: any[]) => unknown, basePath: string)
     });
 }
 
-/**
- * Incluye tambien ContractTemplatesController (ruta mas especifica
- * 'rentals/contract-templates') - vive aparte de RentalsController por
- * registrarse como sub-dominio de rentals (ver contract-templates.controller.ts),
- * pero comparte el mismo rentals.yaml (v1.1.0, hallazgo E-05).
- */
 function controllerRoutes() {
   return [
     ...routesOf(RentalsController, '/rentals'),
-    ...routesOf(ContractTemplatesController, '/rentals/contract-templates'),
+    ...routesOf(RentalsEvidenceController, '/rentals'),
+    ...routesOf(RentalsExtensionsController, '/rentals'),
     ...routesOf(RentalDocumentsController, '/rentals/:id/documents'),
   ];
 }

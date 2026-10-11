@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
+import { TemplateRepositoryPort } from '../../../templates/application/ports/template-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { RentalStateConflictError } from '../../domain/rental-errors';
-import { RENTAL_CONTRACT_TEMPLATE_TYPE } from '../../domain/contract-template-type';
 import { FormalizeContractCommand } from './formalize-contract.command';
 
 /**
@@ -18,6 +18,7 @@ import { FormalizeContractCommand } from './formalize-contract.command';
 export class FormalizeContractHandler {
   constructor(
     private readonly rentals: RentalRepositoryPort,
+    private readonly templateRepository: TemplateRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
     private readonly matrixAuth: MatrixAuthorizationService,
     private readonly transactionManager: TransactionManagerPort,
@@ -55,30 +56,18 @@ export class FormalizeContractHandler {
       throw new RentalStateConflictError('formalizar contrato en', existing.status);
     }
 
-    let templateVersionId = command.templateVersionId;
-    if (templateVersionId) {
-      // Provisto explicitamente: debe existir, pertenecer a la empresa y estar vigente (ACTIVE).
-      const templateOwned = await this.rentals.contractTemplateBelongsToCompany(
-        templateVersionId,
-        command.companyId,
-      );
-      if (!templateOwned) {
-        throw new BadRequestException({
-          code: 'INVALID_CONTRACT_TEMPLATE',
-          detail: 'La plantilla de contrato no existe, no pertenece a la empresa autenticada o no esta vigente.',
-        });
-      }
-    } else {
-      // No provisto: resuelve automaticamente la plantilla ACTIVE vigente de la empresa (BR-DOC-002).
-      const active = await this.rentals.findActiveContractTemplate(command.companyId, RENTAL_CONTRACT_TEMPLATE_TYPE);
-      if (!active) {
-        throw new BadRequestException({
-          code: 'NO_ACTIVE_CONTRACT_TEMPLATE',
-          detail: 'La empresa no tiene una plantilla de contrato vigente configurada.',
-        });
-      }
-      templateVersionId = active.id;
+    const activeTemplate = await this.templateRepository.findActive(
+      command.companyId,
+      'RENTAL_CONTRACT',
+      context.organizationId,
+    );
+    if (!activeTemplate) {
+      throw new BadRequestException({
+        code: 'NO_ACTIVE_CONTRACT_TEMPLATE',
+        detail: 'La empresa no tiene una plantilla de contrato de alquiler vigente configurada.',
+      });
     }
+    const templateId = activeTemplate.id;
 
     return this.transactionManager.run(async (tx) => {
       const current = await this.rentals.findById(command.id, scope, tx);
@@ -94,7 +83,7 @@ export class FormalizeContractHandler {
           rentalId: command.id,
           scope,
           expectedVersion: command.expectedVersion,
-          templateVersionId,
+          templateId,
           documentRef: command.documentRef,
           depositAmount: command.depositAmount,
           currency: command.depositCurrency,
@@ -111,7 +100,7 @@ export class FormalizeContractHandler {
           rentalId: updated.id,
           action: 'CONTRACT_FORMALIZED',
           changes: {
-            templateVersionId,
+            templateId,
             documentRef: command.documentRef,
             depositAmount: command.depositAmount,
             depositCurrency: command.depositCurrency,

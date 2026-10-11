@@ -44,7 +44,7 @@ describe('RentalPersistenceMapper', () => {
     const contract = toRentalContractRecord({
       id: 'contract-1',
       rentalId: 'rental-1',
-      templateVersionId: 'tpl-1',
+      templateId: null,
       documentRef: 'docs/c1.pdf',
       status: 'SIGNED',
       signedAt: now,
