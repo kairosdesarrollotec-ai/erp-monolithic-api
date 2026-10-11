@@ -1752,7 +1752,7 @@ model EmploymentTermination {
   terminatedAt        DateTime          @default(now()) @map("terminated_at")
   createdAt           DateTime          @default(now()) @map("created_at")
 
-  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
   @@map("employment_terminations")
 }
