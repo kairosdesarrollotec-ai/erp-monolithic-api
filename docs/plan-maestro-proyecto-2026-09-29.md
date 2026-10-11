@@ -43,7 +43,7 @@ Desde la versión anterior del plan (30-sep) se completaron:
 | **TR-01 a TR-05** (auth/sesión) | ✅ | ✅ | ✅ | — |
 | **TR-06 (Tablero por rol)** | ✅ 7 roles | ✅ | ⚠️ Funcional para todos los roles ya construidos; datos reales disponibles | Roles de módulos no construidos aún (reportes, pagos) |
 | **TR-07 (Notificaciones)** | ✅ | ⚠️ Registro interno completo; correo de bienvenida vía Resend | ⚠️ Parcial | Despachador general de notificaciones |
-| **TR-08 (Offline sync)** | ✅ | ❌ Sin empezar | ❌ Sin empezar | Bloqueador para ENTREGA-04 de Alquiler en campo |
+| **TR-08 (Offline sync)** | ✅ | ✅ N/A (solo frontend) | ✅ mergeado 11-oct | — |
 | **TR-09 (Perfil/sesión)** | ✅ | ⚠️ Parcial | ❌ Sin frontend dedicado | Frontend de perfil de usuario |
 | **TR-10 (Control de acceso)** | ✅ | ⚠️ Parcial | ✅ usePermissions unificado (ROLES-DIN-03) | Verificar enforcement completo en backend |
 | **TR-11 / HU-25 (Hub módulos)** | ✅ | ✅ | ✅ | — |
@@ -92,31 +92,29 @@ Devolución (DEV-01..10), Incidencias (INC-01/02).
 **Fase 3 — ✅ COMPLETADA (inesperadamente adelantada):**
 Reclutamiento (REC-01..08), Administración de Personal (ADP-01..09), Roles dinámicos.
 
-**Fase 4 — EN CURSO / SIGUIENTE:**
-- TR-09 (perfil de usuario — frontend).
-- ADM-02: auditoría de enforcement de roles.
-- Endpoint de subida de evidencia (photos/videos) para Alquiler.
-- BR-ALQ-013 (falta grave en ampliación).
-- `feat/fleet-gcs-photo-upload`: evaluar y mergear.
-- TR-07: despachador general de notificaciones.
+**Fase 4 — ✅ COMPLETADA (11-oct-2026):**
+- ✅ TR-09 modal logout con borradores pendientes (frontend). `PROTO-TR-09-MODAL-CERRAR-SESION-CON-FORMULARIOS-PEND`. 15/15 tests.
+- ✅ ADM-02: `FirebaseAuthGuard` registrado como `APP_GUARD` global + `@Public()` para `/health` y `POST /audit/login-attempts`.
+- ✅ Endpoint subida evidencia (fotos/videos GCS): YA estaba implementado en `Stage4ChecklistScreen` y `ChecklistScreen` (online-only).
+- ✅ BR-ALQ-013 (falta grave en ampliación): mergeado en PR #80, ya en `main`.
+- ✅ `feat/fleet-gcs-photo-upload`: commit `4cab799` ya en `main`.
+- ✅ TR-07: filtro `aggregate_type = 'Reservation'` eliminado del OutboxRelay; 7 nuevos event types en el projector; 1169/1169 tests.
 
-**Fase 5 — PRÓXIMA:**
-- TR-08 (sincronización offline) — ahora bloqueador concreto de ENTREGA-04.
-- Pagos y garantías como módulo standalone (PAG-01/02).
-- Reportes (REP-01).
+**Fase 5 — ✅ COMPLETADA (11-oct-2026):**
+- ✅ TR-08 (offline sync ALQ-09/DEV-04): `dexie@4.0.10` + `vite-plugin-pwa@1.3.0`; infraestructura `src/offline/` completa; ALQ-09 (19 tests) y DEV-04 (32 tests). Commit `8639207`.
+- ⛔ Pagos y garantías (PAG-01/02): STOP `MISSING_SOURCE` — sin BDD/SDD/TDD.
+- ⛔ Reportes (REP-01): STOP `MISSING_SOURCE` — sin BDD/SDD/TDD.
 
 **Fase 6 — FUTURA:**
 - Búsqueda global.
 - Integraciones reales RENIEC/MTC.
 - Expansión multisede en módulos pendientes.
+- Documentación BDD/SDD/TDD de PAG-01/02 y REP-01 para desbloquear Fase 5.
 
 ---
 
 ## 5. Próximos pasos inmediatos sugeridos
 
-1. **Auditar ADM-02**: verificar que todos los guards NestJS aplican el modelo de roles dinámicos (ROLES-DIN-03) consistentemente.
-2. **Frontend TR-09**: pantalla de perfil/sesión de usuario (parcialmente implementada en backend, sin pantalla frontend).
-3. **Endpoint de evidencia para Alquiler**: diseñar endpoint de subida de archivos en `rentals` como prerrequisito para ENTREGA-04 y, después, Devolución.
-4. **BR-ALQ-013**: implementar el caso de falta grave en ampliación.
-5. **`feat/fleet-gcs-photo-upload`**: revisar si sigue siendo relevante y decidir el flujo de PR.
-6. **Seguir actualizando este documento al cierre de cada sesión relevante.**
+1. **TR-08**: verificar que los agentes en curso completen ALQ-09 y DEV-04 con offline funcional y tests verdes.
+2. **PAG-01/02 y REP-01**: requieren documentación BDD/SDD/TDD antes de poder implementarse.
+3. **Seguir actualizando este documento al cierre de cada sesión relevante.**
