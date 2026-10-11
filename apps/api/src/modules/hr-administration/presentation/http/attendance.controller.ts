@@ -13,6 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import { RecentAuth, RecentAuthGuard } from '../../../users/infrastructure/auth/recent-auth.guard';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { LogAttendanceCommand } from '../../application/commands/log-attendance.command';
 import { LogAttendanceHandler } from '../../application/commands/log-attendance.handler';
@@ -103,6 +104,8 @@ export class AttendanceController {
 
   @Post('attendance/apply-deductions')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RecentAuthGuard)
+  @RecentAuth(300)
   async applyMonthDeductions(
     @Req() req: AuthenticatedRequest,
     @Body() dto: ApplyDeductionsDto,

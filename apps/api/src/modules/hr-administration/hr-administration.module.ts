@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
@@ -64,6 +65,7 @@ import { FieldTripsController } from './presentation/http/field-trips.controller
   providers: [
     HrAdministrationAccessService,
     FieldTripCascadeService,
+    RecentAuthGuard,
     FirebaseDisplayNameLookup,
     { provide: EmployeeRepositoryPort, useClass: PrismaEmployeeRepository },
     { provide: AttendanceRepositoryPort, useClass: PrismaAttendanceRepository },

@@ -14,6 +14,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import { RecentAuth, RecentAuthGuard } from '../../../users/infrastructure/auth/recent-auth.guard';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { CreateEmployeeCommand } from '../../application/commands/create-employee.command';
 import { CreateEmployeeHandler } from '../../application/commands/create-employee.handler';
@@ -127,6 +128,8 @@ export class EmployeesController {
 
   @Post(':id/terminate')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RecentAuthGuard)
+  @RecentAuth(300)
   async terminate(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
