@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
 import { PrismaTransactionManager } from '../../src/common/persistence/prisma-transaction-manager';
 import { PrismaRentalRepository } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental.repository';
-import { PrismaContractTemplatePersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-contract-template.persistence';
 import { PrismaRentalExtensionPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-extension.persistence';
 import { PrismaRentalNotaryContractPersistence } from '../../src/modules/rentals/infrastructure/persistence/prisma-rental-notary-contract.persistence';
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
@@ -54,7 +53,6 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
     const ps = buildPrismaService();
     return new PrismaRentalRepository(
       ps,
-      new PrismaContractTemplatePersistence(ps),
       new PrismaRentalExtensionPersistence(ps),
       new PrismaRentalNotaryContractPersistence(ps),
     );
