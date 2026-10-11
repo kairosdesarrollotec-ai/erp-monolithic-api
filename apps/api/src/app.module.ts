@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { FirebaseAuthGuard } from './modules/users/infrastructure/auth/firebase-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { UsersModule } from './modules/users/users.module';
@@ -49,9 +50,12 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     NotificationsModule,
   ],
   providers: [
-    // Guard global de throttling: aplica a todos los endpoints sin necesidad de decoradores.
+    // Guard global de throttling: aplica a todos los endpoints.
     // Los endpoints que requieren un límite distinto usan @Throttle({ default: { limit, ttl } }).
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Guard global de autenticación Firebase (ADM-02): aplica a todos los endpoints excepto
+    // los marcados con @Public() (/health y POST /audit/login-attempts).
+    { provide: APP_GUARD, useClass: FirebaseAuthGuard },
   ],
 })
 export class AppModule {}

@@ -4,24 +4,27 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initFirebaseAdmin } from '../../../../config/firebase-admin.config';
+import { IS_PUBLIC_KEY } from '../../../../common/decorators/public.decorator';
 
 export interface AuthenticatedRequest extends Request {
   firebaseUid?: string;
 }
 
-/**
- * Verifica el ID token de Firebase Auth enviado como
- * "Authorization: Bearer <idToken>". Los endpoints de TR-02 son los
- * primeros en requerir un usuario autenticado (el endpoint de auditoria
- * de TR-01 es publico) - initFirebaseAdmin() ya existia pero no estaba
- * conectado a ningun guard todavia.
- */
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const header = request.headers.authorization;
 

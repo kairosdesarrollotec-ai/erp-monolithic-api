@@ -129,6 +129,110 @@ describe('OutboxRelayService', () => {
     expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
   });
 
+  describe('TR-07 - claimBatch procesa eventos de cualquier aggregate_type', () => {
+    it('procesa eventos con aggregate_type distinto de Reservation (CandidatoSeleccionado.v1)', async () => {
+      const event = buildEventRow({
+        aggregateType: 'Candidate',
+        aggregateId: 'candidate-1',
+        eventType: 'CandidatoSeleccionado.v1',
+        payload: {
+          candidateId: 'candidate-1',
+          vacancyId: 'vacancy-1',
+          fullName: 'Juan Perez',
+          documentNumber: '12345678',
+          decision: 'CONTRATADO',
+          decidedAt: '2026-10-10T00:00:00Z',
+          decidedBy: 'uid-recruiter',
+          organizationId: 'org-1',
+          operatingCompanyId: 'company-1',
+          branchId: 'branch-1',
+        },
+      });
+      const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+
+      await service.processPendingEvents();
+
+      // claimBatch ejecutado (sin filtro por aggregate_type)
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+      // projectReservationEvent devuelve IGNORE para eventos no-Reservation
+      expect(dashboardItems.upsertFromEvent).not.toHaveBeenCalled();
+      expect(dashboardItems.dismissBySource).not.toHaveBeenCalled();
+      // projectNotificationEvent genera notificacion in-app para CandidatoSeleccionado.v1
+      expect(notifications.create).toHaveBeenCalledTimes(1);
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          notificationType: 'CandidatoSeleccionado.v1',
+          recipientFirebaseUid: 'uid-recruiter',
+          deepLink: '/reclutamiento',
+        }),
+      );
+      // Evento marcado como procesado
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it('procesa eventos con aggregate_type Employee (RelacionLaboralTerminada.v1) y crea notificacion in-app', async () => {
+      const event = buildEventRow({
+        aggregateType: 'Employee',
+        aggregateId: 'employee-1',
+        eventType: 'RelacionLaboralTerminada.v1',
+        payload: {
+          employeeId: 'employee-1',
+          terminationId: 'termination-1',
+          reason: 'RENUNCIA',
+          noticeDays: 15,
+          terminatedAt: '2026-10-10T00:00:00Z',
+          areaId: 'area-1',
+          areaName: 'Ventas',
+          jobTitle: 'Asesor',
+          actorUserId: 'uid-hr-manager',
+          organizationId: 'org-1',
+          operatingCompanyId: 'company-1',
+          branchId: 'branch-1',
+        },
+      });
+      const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+
+      await service.processPendingEvents();
+
+      expect(notifications.create).toHaveBeenCalledTimes(1);
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          notificationType: 'RelacionLaboralTerminada.v1',
+          recipientFirebaseUid: 'uid-hr-manager',
+          deepLink: '/personal',
+        }),
+      );
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it('procesa eventos con aggregate_type rental (ContratoFirmado.v1) y los ignora sin crear notificacion', async () => {
+      const event = buildEventRow({
+        aggregateType: 'rental',
+        aggregateId: 'rental-1',
+        eventType: 'ContratoFirmado.v1',
+        payload: {
+          rentalId: 'rental-1',
+          documentRef: 'doc-ref-001',
+          signedAt: '2026-10-10T00:00:00Z',
+        },
+      });
+      const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+
+      await service.processPendingEvents();
+
+      // Sin notificacion in-app (IGNORE: payload sin organizationId ni actor)
+      expect(notifications.create).not.toHaveBeenCalled();
+      // Evento marcado como procesado igualmente (BR-NOT-002: IGNORE no es fallo)
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
+      const [sqlFragment] = (prisma.$executeRaw as jest.Mock).mock.calls[0];
+      const rendered = sqlFragment.values ? sqlFragment.strings.join('?') : String(sqlFragment);
+      expect(rendered).toContain('processed_at = now()');
+    });
+  });
+
   describe('TR-07 - Despacho externo de notificaciones', () => {
     it('despacha a canales externos cuando la plantilla vigente tiene canales configurados', async () => {
       const event = buildEventRow({

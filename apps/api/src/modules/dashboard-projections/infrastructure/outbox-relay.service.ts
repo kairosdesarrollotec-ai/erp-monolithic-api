@@ -127,8 +127,7 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
       SET locked_until = now() + (${this.leaseMs} * interval '1 millisecond')
       WHERE id IN (
         SELECT id FROM outbox_events
-        WHERE aggregate_type = 'Reservation'
-          AND processed_at IS NULL
+        WHERE processed_at IS NULL
           AND dead_lettered_at IS NULL
           AND (locked_until IS NULL OR locked_until < now())
         ORDER BY created_at ASC
