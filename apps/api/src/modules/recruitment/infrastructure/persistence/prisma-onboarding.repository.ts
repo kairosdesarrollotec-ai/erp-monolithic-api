@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma, EmployeeOnboarding } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
+import { OnboardingVersionConflictError } from '../../domain/recruitment-errors';
 import {
   CompleteOnboardingInput,
   EvaluateProbationInput,
   OnboardingRecord,
   OnboardingRepositoryPort,
+  SetProbationFeesInput,
 } from '../../application/ports/onboarding-repository.port';
 
 @Injectable()
@@ -27,6 +29,15 @@ export class PrismaOnboardingRepository implements OnboardingRepositoryPort {
       probationEvaluation: entity.probationEvaluation,
       probationEvaluatedAt: entity.probationEvaluatedAt,
       probationEvaluatedBy: entity.probationEvaluatedBy,
+      probationMonthlyFee: entity.probationMonthlyFee != null ? Number(entity.probationMonthlyFee) : null,
+      postProbationMonthlySalary:
+        entity.postProbationMonthlySalary != null ? Number(entity.postProbationMonthlySalary) : null,
+      probationFeeNotes: entity.probationFeeNotes,
+      probationFeesRecordedAt: entity.probationFeesRecordedAt,
+      probationFeesRecordedBy: entity.probationFeesRecordedBy,
+      // Default-deny: el handler aplica `applyOnboardingFeeVisibility` segun el permiso del solicitante.
+      feesVisible: false,
+      version: entity.version,
       completedBy: entity.completedBy,
       createdAt: entity.createdAt,
     };
@@ -83,8 +94,34 @@ export class PrismaOnboardingRepository implements OnboardingRepositoryPort {
         probationEvaluation: input.qualitativeEvaluation,
         probationEvaluatedAt: input.evaluatedAt,
         probationEvaluatedBy: input.evaluatedBy,
+        version: { increment: 1 },
       },
     });
     return this.mapToRecord(updated);
+  }
+
+  async setProbationFees(
+    candidateId: string,
+    input: SetProbationFeesInput,
+    expectedVersion: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<OnboardingRecord> {
+    const client = tx ?? this.prisma;
+    const updated = await client.employeeOnboarding.updateMany({
+      where: { candidateId, version: expectedVersion },
+      data: {
+        probationMonthlyFee: input.probationMonthlyFee,
+        postProbationMonthlySalary: input.postProbationMonthlySalary,
+        probationFeeNotes: input.probationFeeNotes,
+        probationFeesRecordedAt: input.recordedAt,
+        probationFeesRecordedBy: input.recordedBy,
+        version: { increment: 1 },
+      },
+    });
+    if (updated.count === 0) {
+      throw new OnboardingVersionConflictError();
+    }
+    const reloaded = await client.employeeOnboarding.findUniqueOrThrow({ where: { candidateId } });
+    return this.mapToRecord(reloaded);
   }
 }

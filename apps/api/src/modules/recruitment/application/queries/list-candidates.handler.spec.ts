@@ -28,6 +28,8 @@ function candidate(id: string, stage: CandidateStage): CandidateRecord {
     email: 'secreto@example.com',
     phone: '999111222',
     cvDocumentId: null,
+    cv: null,
+    hasCv: false,
     salaryExpectation: 3000,
     stage,
     decision: null,

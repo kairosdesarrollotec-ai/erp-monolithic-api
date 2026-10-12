@@ -12,6 +12,15 @@ import { InterviewRepositoryPort } from './application/ports/interview-repositor
 import { PrismaInterviewRepository } from './infrastructure/persistence/prisma-interview.repository';
 import { OnboardingRepositoryPort } from './application/ports/onboarding-repository.port';
 import { PrismaOnboardingRepository } from './infrastructure/persistence/prisma-onboarding.repository';
+import { CandidateCvStoragePort } from './application/ports/candidate-cv-storage.port';
+import { GcsCandidateCvService } from './infrastructure/storage/gcs-candidate-cv.service';
+import { PauseVacancyHandler } from './application/commands/pause-vacancy.handler';
+import { ResumeVacancyHandler } from './application/commands/resume-vacancy.handler';
+import { RequestCandidateCvUploadSessionHandler } from './application/commands/request-candidate-cv-upload-session.handler';
+import { RecordCandidateCvHandler } from './application/commands/record-candidate-cv.handler';
+import { RecordNegotiationHandler } from './application/commands/record-negotiation.handler';
+import { SetProbationFeesHandler } from './application/commands/set-probation-fees.handler';
+import { GetCandidateCvHandler } from './application/queries/get-candidate-cv.handler';
 import { RegisterVacancyHandler } from './application/commands/register-vacancy.handler';
 import { PublishVacancyHandler } from './application/commands/publish-vacancy.handler';
 import { RegisterCandidateHandler } from './application/commands/register-candidate.handler';
@@ -52,6 +61,8 @@ import { InterviewsController } from './presentation/http/interviews.controller'
     { provide: InterviewerDirectoryPort, useClass: PrismaInterviewerDirectoryRepository },
     RegisterVacancyHandler,
     PublishVacancyHandler,
+    PauseVacancyHandler,
+    ResumeVacancyHandler,
     RegisterCandidateHandler,
     ChangeCandidateStageHandler,
     ScheduleInterviewHandler,
@@ -59,6 +70,12 @@ import { InterviewsController } from './presentation/http/interviews.controller'
     DecideCandidateHandler,
     CompleteOnboardingHandler,
     EvaluateProbationHandler,
+    { provide: CandidateCvStoragePort, useClass: GcsCandidateCvService },
+    RequestCandidateCvUploadSessionHandler,
+    RecordCandidateCvHandler,
+    GetCandidateCvHandler,
+    RecordNegotiationHandler,
+    SetProbationFeesHandler,
     ListVacanciesHandler,
     GetVacancyDetailHandler,
     GetCandidateDetailHandler,

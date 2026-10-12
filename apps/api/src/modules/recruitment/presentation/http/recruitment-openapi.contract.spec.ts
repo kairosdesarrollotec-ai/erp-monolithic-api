@@ -10,6 +10,7 @@ import {
   INTERVIEWERS_DEFAULT_LIMIT,
   INTERVIEWERS_MAX_LIMIT,
 } from '../../application/queries/list-interviewers.query';
+import { CANDIDATE_CV_MAX_BYTES } from '../../domain/recruitment-rules';
 import { PERMISSION_ACTION_CATALOG } from '../../../admin/domain/permission-action-catalog';
 
 const SPEC_PATH = path.resolve(__dirname, '../../../../../../../packages/contracts/openapi/recruitment.yaml');
@@ -19,7 +20,7 @@ describe('recruitment.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Recruitment & Selection API');
-    expect(spec.info.version).toBe('0.1.0');
+    expect(spec.info.version).toBe('0.2.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -39,6 +40,10 @@ describe('recruitment.yaml contract specification', () => {
     const candidateDecisionsInPrisma = Object.values($Enums.CandidateDecision).sort();
     expect(candidateDecisionsInSpec).toEqual(candidateDecisionsInPrisma);
 
+    const negotiationOutcomesInSpec = spec.components.schemas.NegotiationOutcome.enum.sort();
+    const negotiationOutcomesInPrisma = Object.values($Enums.NegotiationOutcome).sort();
+    expect(negotiationOutcomesInSpec).toEqual(negotiationOutcomesInPrisma);
+
     const interviewResultsInSpec = spec.components.schemas.InterviewResult.enum.sort();
     const interviewResultsInPrisma = Object.values($Enums.InterviewResult).sort();
     expect(interviewResultsInSpec).toEqual(interviewResultsInPrisma);
@@ -52,13 +57,20 @@ describe('recruitment.yaml contract specification', () => {
       '/candidates/{id}/commands/complete-onboarding',
       '/candidates/{id}/commands/decide',
       '/candidates/{id}/commands/evaluate-probation',
+      '/candidates/{id}/commands/record-cv',
+      '/candidates/{id}/commands/set-probation-fees',
+      '/candidates/{id}/cv',
+      '/candidates/{id}/cv/upload-session',
       '/candidates/{id}/interviews',
+      '/candidates/{id}/negotiations',
       '/interviewers',
       '/interviews/{id}/commands/record-result',
       '/vacancies',
       '/vacancies/{id}',
       '/vacancies/{id}/candidates',
+      '/vacancies/{id}/commands/pause',
       '/vacancies/{id}/commands/publish',
+      '/vacancies/{id}/commands/resume',
     ]);
   });
 
@@ -108,6 +120,11 @@ describe('recruitment.yaml contract specification', () => {
       spec.paths['/vacancies/{id}/commands/publish'].post,
       spec.paths['/candidates/{id}/commands/change-stage'].post,
       spec.paths['/candidates/{id}/commands/decide'].post,
+      spec.paths['/vacancies/{id}/commands/pause'].post,
+      spec.paths['/vacancies/{id}/commands/resume'].post,
+      spec.paths['/candidates/{id}/commands/record-cv'].post,
+      spec.paths['/candidates/{id}/negotiations'].post,
+      spec.paths['/candidates/{id}/commands/set-probation-fees'].post,
     ];
 
     for (const op of mutatingWithIfMatch) {
@@ -115,6 +132,66 @@ describe('recruitment.yaml contract specification', () => {
       expect(ifMatchParam).toBeDefined();
       expect(ifMatchParam.required).toBe(true);
     }
+  });
+
+  it('pausar/reanudar usan el permiso de publicar y devuelven el detalle de la vacante', () => {
+    for (const path of ['/vacancies/{id}/commands/pause', '/vacancies/{id}/commands/resume']) {
+      const op = spec.paths[path].post;
+      expect(op.responses['200'].content['application/json'].schema.$ref).toBe(
+        '#/components/schemas/VacancyDetailResponse',
+      );
+      expect(op.responses['403'].description).toContain('PUBLISH_VACANCY');
+      expect(op.responses['422']).toBeDefined();
+    }
+    expect(spec.components.schemas.VacancyStatus.enum).toContain('PAUSADA');
+  });
+
+  it('CV: la subida valida tipo y tamano, el visor exige datos sensibles y no hay URL firmada en la ficha', () => {
+    const request = spec.components.schemas.RequestCandidateCvUploadSessionRequest;
+    expect(request.properties.contentType.enum).toEqual([
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/png',
+    ]);
+    expect(request.properties.contentLength.maximum).toBe(CANDIDATE_CV_MAX_BYTES);
+    expect(request.required).toEqual(expect.arrayContaining(['contentType', 'contentLength']));
+
+    const view = spec.paths['/candidates/{id}/cv'].get;
+    expect(view.operationId).toBe('getCandidateCv');
+    expect(view.responses['403'].description).toContain('VIEW_CANDIDATE_SENSITIVE_DATA');
+    expect(view.responses['404']).toBeDefined();
+
+    const detail = spec.components.schemas.CandidateDetailResponse.allOf[1];
+    expect(detail.properties.hasCv.type).toBe('boolean');
+    expect(JSON.stringify(spec.components.schemas.CandidateCvResponse)).not.toMatch(/objectUrl|"url"/);
+    expect(spec.components.schemas.CandidateDetailResponse.allOf[1].required).toEqual(
+      expect.arrayContaining(['hasCv', 'negotiations']),
+    );
+  });
+
+  it('negociacion: historial en la ficha, resultado enum y sin campos de puntaje ni calculo', () => {
+    const op = spec.paths['/candidates/{id}/negotiations'].post;
+    expect(op.operationId).toBe('recordNegotiation');
+    const idempotency = op.parameters.find((p: any) => p.name === 'Idempotency-Key' && p.in === 'header');
+    expect(idempotency).toBeDefined();
+    const request = spec.components.schemas.RecordNegotiationRequest;
+    expect(request.required).toEqual(expect.arrayContaining(['outcome', 'offeredSalary']));
+    expect(request.properties.outcome.$ref).toBe('#/components/schemas/NegotiationOutcome');
+    const negotiation = JSON.stringify(spec.components.schemas.NegotiationResponse);
+    expect(negotiation).not.toMatch(/score|suggest|balance/i);
+  });
+
+  it('honorarios: OnboardingResponse informa feesRestricted/version y el comando exige If-Match', () => {
+    const response = spec.components.schemas.OnboardingResponse;
+    expect(response.required).toEqual(expect.arrayContaining(['feesRestricted', 'version']));
+    expect(response.properties.probationMonthlyFee.nullable).toBe(true);
+    const request = spec.components.schemas.SetProbationFeesRequest;
+    expect(request.required).toEqual(['companyId', 'branchId', 'probationMonthlyFee']);
+    expect(request.properties.probationMonthlyFee.minimum).toBe(0);
+    expect(spec.paths['/candidates/{id}/commands/set-probation-fees'].post.responses['403'].description).toContain(
+      'datos sensibles',
+    );
   });
 
   it('las 10 acciones del catálogo de permisos cubren todas las operaciones requeridas', () => {

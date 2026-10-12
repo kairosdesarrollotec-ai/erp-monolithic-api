@@ -42,8 +42,10 @@ export class RegisterCandidateDto {
   @MaxLength(50)
   phone?: string;
 
+  /** Obsoleto: el CV se sube despues con la sesion de subida del candidato; si falta, el servidor asigna un codigo. */
+  @IsOptional()
   @IsUUID()
-  cvDocumentId!: string;
+  cvDocumentId?: string;
 
   @IsOptional()
   @IsNumber()

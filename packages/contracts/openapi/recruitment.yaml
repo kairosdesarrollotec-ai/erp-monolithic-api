@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Recruitment & Selection API
-  version: 0.1.0
+  version: 0.2.0
   description: >
     Contrato del módulo de Reclutamiento y Selección (REC-01 a REC-08).
     Fuentes canónicas: BDD-05 (BDD-REC-001 v1.7), SDD-05 (SDD-REC-001 v2.0), TDD-05 (TDD-REC-001 v2.0)
@@ -11,6 +11,11 @@ info:
     Cumple con segregación multiempresa estricta (BR-REC-001), trazabilidad documental (BR-REC-003),
     enmascaramiento dinámico de datos sensibles (BR-REC-005, PROTO-REC-04) y matriz dinámica ADM-02.
     Concurrencia optimista mediante If-Match / ETag e Idempotency-Key en comandos de creación.
+
+    v0.2.0 (cierre de huecos): pausar/reanudar vacante (REC-02), CV del candidato con subida por URL firmada y
+    visor (REC-03/REC-04, DAT-REC-004), historial de negociación de condiciones (REC-04) y honorarios del
+    periodo de prueba (REC-08, DAT-REC-007). El CV, la negociación y los honorarios son datos sensibles: solo se
+    exponen con RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA.
 
 paths:
   /vacancies:
@@ -108,6 +113,66 @@ paths:
         '409': { description: Conflicto de versión (VERSION_CONFLICT) o estado no transicionable }
         '500': { description: Error interno }
 
+  /vacancies/{id}/commands/pause:
+    post:
+      operationId: pauseVacancy
+      summary: Pausar una vacante publicada (REC-02, PROTO-REC-02)
+      description: >
+        PUBLICADA -> PAUSADA. Detiene temporalmente la convocatoria sin perder el perfil ni los canales ya definidos.
+        Usa el mismo permiso que publicar (RECRUITMENT.PUBLISH_VACANCY). Deja rastro de auditoría (VACANCY_PAUSED).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PauseVacancyRequest' }
+      responses:
+        '200':
+          description: Vacante transicionada a PAUSADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacancyDetailResponse' }
+        '400': { description: Datos inválidos o If-Match mal formado }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.PUBLISH_VACANCY o contexto no autorizado }
+        '404': { description: Vacante no encontrada }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) }
+        '422': { description: La vacante no está publicada (VACANCY_NOT_PAUSABLE) }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
+  /vacancies/{id}/commands/resume:
+    post:
+      operationId: resumeVacancy
+      summary: Reanudar una vacante pausada (REC-02, PROTO-REC-02)
+      description: PAUSADA -> PUBLICADA. Conserva el perfil, el sueldo base y los canales. Auditoría VACANCY_RESUMED.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResumeVacancyRequest' }
+      responses:
+        '200':
+          description: Vacante transicionada a PUBLICADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacancyDetailResponse' }
+        '400': { description: Datos inválidos o If-Match mal formado }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.PUBLISH_VACANCY o contexto no autorizado }
+        '404': { description: Vacante no encontrada }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) }
+        '422': { description: La vacante no está pausada (VACANCY_NOT_PAUSABLE) }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
   /vacancies/{id}/candidates:
     post:
       operationId: registerCandidate
@@ -175,6 +240,158 @@ paths:
         '401': { description: Token ausente o inválido }
         '403': { description: Rol sin permiso RECRUITMENT.VIEW_CANDIDATE o contexto no autorizado }
         '404': { description: Candidato no encontrado }
+        '500': { description: Error interno }
+
+  /candidates/{id}/cv/upload-session:
+    post:
+      operationId: requestCandidateCvUploadSession
+      summary: Pedir URL firmada para subir el CV del candidato (REC-03/REC-04, DAT-REC-004)
+      description: >
+        Valida tipo (PDF, Word .docx, JPG o PNG) y tamaño (máximo 10 MB) ANTES de firmar. El cliente sube el archivo con
+        PUT a `uploadUrl` enviando EXACTAMENTE las cabeceras de `uploadHeaders` y luego confirma con `record-cv`.
+        Exige RECRUITMENT.REGISTER_CANDIDATE.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestCandidateCvUploadSessionRequest' }
+      responses:
+        '201':
+          description: Sesión de subida creada (vigencia 15 minutos)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateCvUploadSessionResponse' }
+        '400': { description: Datos inválidos (tipo no permitido o tamaño fuera de rango) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.REGISTER_CANDIDATE o contexto no autorizado }
+        '404': { description: Candidato no encontrado en esta empresa/sede }
+        '422': { description: Archivo no válido para CV (CANDIDATE_CV_INVALID_FILE) }
+        '503': { description: Almacenamiento no configurado }
+        '500': { description: Error interno }
+
+  /candidates/{id}/commands/record-cv:
+    post:
+      operationId: recordCandidateCv
+      summary: Confirmar el CV ya subido (REC-03/REC-04, DAT-REC-004)
+      description: >
+        Verifica contra el almacenamiento que el objeto existe, pertenece a este candidato/empresa y que su tipo y
+        tamaño reales son válidos. Reemplaza el CV anterior si lo había. Auditoría CANDIDATE_CV_UPLOADED.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordCandidateCvRequest' }
+      responses:
+        '200':
+          description: CV registrado; devuelve la ficha del candidato
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateDetailResponse' }
+        '400': { description: Datos inválidos o If-Match mal formado }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.REGISTER_CANDIDATE o contexto no autorizado }
+        '404': { description: Candidato no encontrado }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) }
+        '422': { description: Archivo inexistente, ajeno o inválido (CANDIDATE_CV_NOT_UPLOADED, CANDIDATE_CV_OBJECT_MISMATCH, CANDIDATE_CV_INVALID_FILE) }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
+  /candidates/{id}/cv:
+    get:
+      operationId: getCandidateCv
+      summary: Visor del CV - URL firmada de lectura (REC-04, DAT-REC-004)
+      description: >
+        Devuelve una URL firmada de vida corta (5 minutos) para mostrar el CV en línea. Exige
+        RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA y deja rastro de cada consulta (CANDIDATE_CV_VIEWED).
+        La respuesta no debe almacenarse en caché (Cache-Control: no-store).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: URL firmada y metadatos del CV
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateCvViewResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA o contexto no autorizado }
+        '404': { description: Candidato no encontrado o sin CV (CANDIDATE_CV_NOT_FOUND) }
+        '500': { description: Error interno }
+
+  /candidates/{id}/negotiations:
+    post:
+      operationId: recordNegotiation
+      summary: Registrar una ronda de negociación de condiciones (REC-04, REC-P06/P07)
+      description: >
+        Agrega una ronda al historial append-only (condiciones ofrecidas vs. condiciones del candidato). Resultado
+        EN_CURSO guarda la anotación; ACORDADA exige `agreedSalary` y avanza al candidato a ENTREVISTA si aún no la
+        alcanzó ("Acordar y continuar"); NO_ACORDADA exige `reason` (el descarte formal sigue siendo la decisión
+        RECHAZADO). Dato sensible: exige RECRUITMENT.REGISTER_CANDIDATE y RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA.
+        El sistema no calcula ni sugiere montos (la documentación no define una regla de cálculo).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordNegotiationRequest' }
+      responses:
+        '201':
+          description: Ronda registrada; devuelve la ficha con el historial actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandidateDetailResponse' }
+        '400': { description: Datos inválidos o If-Match mal formado }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso para registrar candidatos o ver datos sensibles }
+        '404': { description: Candidato no encontrado }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) o candidato ya decidido (CANDIDATE_ALREADY_DECIDED) }
+        '422': { description: Reglas de negociación incumplidas (NEGOTIATION_INVALID) }
+        '428': { description: Falta If-Match }
+        '500': { description: Error interno }
+
+  /candidates/{id}/commands/set-probation-fees:
+    post:
+      operationId: setProbationFees
+      summary: Registrar los honorarios del periodo de prueba (REC-08, BR-REC-005, DAT-REC-007)
+      description: >
+        Captura (sin cálculo) de los honorarios mensuales pactados durante la prueba, el sueldo posterior si hay
+        cláusula de ajuste y observaciones. Solo antes de evaluar la prueba. Dato financiero: exige
+        RECRUITMENT.EVALUATE_PROBATION y RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA. If-Match usa `onboarding.version`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SetProbationFeesRequest' }
+      responses:
+        '200':
+          description: Honorarios registrados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OnboardingResponse' }
+        '400': { description: Datos inválidos o If-Match mal formado }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso para evaluar la prueba o ver datos sensibles }
+        '404': { description: Candidato u onboarding no encontrado }
+        '409': { description: Conflicto de versión (VERSION_CONFLICT) o prueba ya evaluada (PROBATION_ALREADY_EVALUATED) }
+        '422': { description: Montos inválidos (NEGOTIATION_INVALID) }
+        '428': { description: Falta If-Match }
         '500': { description: Error interno }
 
   /candidates/{id}/commands/change-stage:
@@ -366,7 +583,7 @@ components:
 
     VacancyStatus:
       type: string
-      enum: [NECESIDAD_REGISTRADA, PUBLICADA, EN_NEGOCIACION, DECIDIDA, CANCELADA]
+      enum: [NECESIDAD_REGISTRADA, PUBLICADA, EN_NEGOCIACION, DECIDIDA, CANCELADA, PAUSADA]
 
     CandidateStage:
       type: string
@@ -379,6 +596,127 @@ components:
     InterviewResult:
       type: string
       enum: [PENDIENTE, AVANZA, NO_AVANZA]
+
+    NegotiationOutcome:
+      type: string
+      enum: [EN_CURSO, ACORDADA, NO_ACORDADA]
+
+    PauseVacancyRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        reason: { type: string, maxLength: 500, description: Motivo opcional de la pausa (queda en la auditoría) }
+
+    ResumeVacancyRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+
+    RequestCandidateCvUploadSessionRequest:
+      type: object
+      required: [companyId, branchId, contentType, contentLength]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        contentType:
+          type: string
+          enum:
+            - application/pdf
+            - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+            - image/jpeg
+            - image/png
+        contentLength: { type: integer, minimum: 1, maximum: 10485760, description: Tamaño del archivo en bytes (máximo 10 MB) }
+
+    CandidateCvUploadSessionResponse:
+      type: object
+      required: [uploadUrl, objectUrl, expiresAt, uploadHeaders]
+      properties:
+        uploadUrl: { type: string, format: uri }
+        objectUrl: { type: string, format: uri, description: Se envía tal cual a record-cv }
+        expiresAt: { type: string, format: date-time }
+        uploadHeaders:
+          type: object
+          additionalProperties: { type: string }
+          description: Cabeceras que el PUT debe enviar sin cambios (Content-Type y tope de tamaño firmado).
+
+    RecordCandidateCvRequest:
+      type: object
+      required: [companyId, branchId, objectUrl, fileName]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        objectUrl: { type: string, maxLength: 1024 }
+        fileName: { type: string, minLength: 1, maxLength: 200 }
+
+    CandidateCvResponse:
+      type: object
+      required: [fileName, contentType, sizeBytes, uploadedAt]
+      properties:
+        fileName: { type: string }
+        contentType: { type: string }
+        sizeBytes: { type: integer }
+        uploadedAt: { type: string, format: date-time }
+
+    CandidateCvViewResponse:
+      allOf:
+        - { $ref: '#/components/schemas/CandidateCvResponse' }
+        - type: object
+          required: [url, expiresAt]
+          properties:
+            url: { type: string, format: uri, description: URL firmada de lectura (credencial temporal; no almacenar) }
+            expiresAt: { type: string, format: date-time }
+
+    RecordNegotiationRequest:
+      type: object
+      required: [companyId, branchId, outcome, offeredSalary]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        outcome: { $ref: '#/components/schemas/NegotiationOutcome' }
+        offeredSalary: { type: number, minimum: 0, description: Sueldo base mensual ofrecido (PEN) }
+        offeredSchedule: { type: string, maxLength: 255 }
+        offeredOtherConditions: { type: string, maxLength: 2000, description: Alimentación, guardias, seguros u otras condiciones ofrecidas }
+        candidateSalary: { type: number, minimum: 0, description: Pretensión salarial planteada por el candidato en esta ronda }
+        candidateSchedule: { type: string, maxLength: 255 }
+        candidateOtherConditions: { type: string, maxLength: 2000 }
+        candidateStartDate: { type: string, format: date, description: Fecha de incorporación solicitada por el candidato }
+        agreedSalary: { type: number, minimum: 0, description: Obligatorio si outcome = ACORDADA; prohibido en otro caso }
+        agreedConditions: { type: string, maxLength: 2000 }
+        reason: { type: string, maxLength: 1000, description: Obligatorio si outcome = NO_ACORDADA }
+
+    NegotiationResponse:
+      type: object
+      required: [id, candidateId, outcome, offeredSalary, recordedBy, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        candidateId: { type: string, format: uuid }
+        outcome: { $ref: '#/components/schemas/NegotiationOutcome' }
+        offeredSalary: { type: number }
+        offeredSchedule: { type: string, nullable: true }
+        offeredOtherConditions: { type: string, nullable: true }
+        candidateSalary: { type: number, nullable: true }
+        candidateSchedule: { type: string, nullable: true }
+        candidateOtherConditions: { type: string, nullable: true }
+        candidateStartDate: { type: string, format: date, nullable: true }
+        agreedSalary: { type: number, nullable: true }
+        agreedConditions: { type: string, nullable: true }
+        reason: { type: string, nullable: true }
+        recordedBy: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    SetProbationFeesRequest:
+      type: object
+      required: [companyId, branchId, probationMonthlyFee]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        probationMonthlyFee: { type: number, minimum: 0, description: Honorarios mensuales brutos pactados durante la prueba (PEN) }
+        postProbationMonthlySalary: { type: number, minimum: 0, description: Sueldo posterior si hay cláusula de ajuste al pasar a planilla }
+        probationFeeNotes: { type: string, maxLength: 500, description: Jornada, guardias, viáticos u otras condiciones de la prueba }
 
     RegisterVacancyRequest:
       type: object
@@ -407,7 +745,7 @@ components:
 
     RegisterCandidateRequest:
       type: object
-      required: [companyId, branchId, fullName, documentNumber, cvDocumentId]
+      required: [companyId, branchId, fullName, documentNumber]
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
@@ -416,7 +754,11 @@ components:
         documentNumber: { type: string, minLength: 4, maxLength: 30 }
         email: { type: string, format: email, nullable: true }
         phone: { type: string, maxLength: 50, nullable: true }
-        cvDocumentId: { type: string, format: uuid }
+        cvDocumentId:
+          type: string
+          format: uuid
+          deprecated: true
+          description: Obsoleto. El CV se sube después con POST /candidates/{id}/cv/upload-session y record-cv; si se omite, el servidor asigna un código interno.
         salaryExpectation: { type: number, minimum: 0, nullable: true }
 
     ChangeCandidateStageRequest:
@@ -528,7 +870,7 @@ components:
       allOf:
         - { $ref: '#/components/schemas/CandidateResponse' }
         - type: object
-          required: [isRestrictedView, isMechanic]
+          required: [isRestrictedView, isMechanic, hasCv, negotiations]
           properties:
             isMechanic:
               type: boolean
@@ -536,6 +878,18 @@ components:
             email: { type: string, nullable: true }
             phone: { type: string, nullable: true }
             cvDocumentId: { type: string, format: uuid, nullable: true }
+            hasCv:
+              type: boolean
+              description: Hay un CV cargado (se informa también en vista restringida para mostrar el candado).
+            cv:
+              nullable: true
+              description: Metadatos del CV; null si no hay CV o la vista es restringida. El archivo se lee con GET /candidates/{id}/cv.
+              allOf:
+                - { $ref: '#/components/schemas/CandidateCvResponse' }
+            negotiations:
+              type: array
+              description: Historial de negociación, más reciente primero; vacío en vista restringida.
+              items: { $ref: '#/components/schemas/NegotiationResponse' }
             salaryExpectation: { type: number, nullable: true }
             decisionNotes: { type: string, nullable: true }
             decidedAt: { type: string, format: date-time, nullable: true }
@@ -582,7 +936,7 @@ components:
 
     OnboardingResponse:
       type: object
-      required: [id, candidateId, startDate, inductionScheduled, equipmentAssigned, responsibilityCardSigned, notarizedContractSigned, isCompleted, createdAt]
+      required: [id, candidateId, startDate, inductionScheduled, equipmentAssigned, responsibilityCardSigned, notarizedContractSigned, isCompleted, feesRestricted, version, createdAt]
       properties:
         id: { type: string, format: uuid }
         candidateId: { type: string, format: uuid }
@@ -596,4 +950,12 @@ components:
         probationPassed: { type: boolean, nullable: true }
         probationEvaluation: { type: string, nullable: true }
         probationEvaluatedAt: { type: string, format: date-time, nullable: true }
+        probationMonthlyFee: { type: number, nullable: true, description: Honorarios mensuales de la prueba (financiero); null si no se registraron o feesRestricted }
+        postProbationMonthlySalary: { type: number, nullable: true }
+        probationFeeNotes: { type: string, nullable: true }
+        probationFeesRecordedAt: { type: string, format: date-time, nullable: true }
+        feesRestricted:
+          type: boolean
+          description: true si el solicitante no tiene RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA (los honorarios no se exponen).
+        version: { type: integer, description: Versión para If-Match en set-probation-fees }
         createdAt: { type: string, format: date-time }
