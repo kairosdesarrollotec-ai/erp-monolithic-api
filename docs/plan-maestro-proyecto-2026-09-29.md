@@ -47,9 +47,9 @@ Desde la versión anterior del plan (30-sep) se completaron:
 | **TR-09 (Perfil/sesión)** | ✅ | ⚠️ Parcial | ❌ Sin frontend dedicado | Frontend de perfil de usuario |
 | **TR-10 (Control de acceso)** | ✅ | ⚠️ Parcial | ✅ usePermissions unificado (ROLES-DIN-03) | Verificar enforcement completo en backend |
 | **TR-11 / HU-25 (Hub módulos)** | ✅ | ✅ | ✅ | — |
-| **Pagos y garantías (PAG-01/02)** | ✅ | ❌ Sin módulo standalone (Alquiler registra pago/garantía dentro de su flujo) | ❌ | Módulo independiente de pagos |
-| **Reportes (REP-01)** | ✅ | ❌ | ❌ | Todo |
-| **Búsqueda global** | — | ❌ | ❌ | Todo |
+| **Pagos y garantías (PAG-01/02)** | ✅ BDD/SDD/TDD v1.0 draft — `payments.yaml` v0.1.0 | ❌ Sin módulo standalone | ❌ | Módulo NestJS `payments` → frontend |
+| **Reportes (REP-01)** | ✅ BDD/SDD/TDD v1.0 draft — `reporting.yaml` v0.1.0 | ❌ | ❌ | Módulo NestJS `reporting` → frontend |
+| **Búsqueda global (BUS-01)** | ✅ BDD/SDD/TDD v1.0 draft — `search.yaml` v0.1.0 — prototipos APPROVED | ❌ Sin módulo standalone | ❌ | Módulo NestJS `search` → componente `GlobalSearch` |
 
 ### 2.1 Gaps conocidos — Alquiler
 
@@ -102,14 +102,15 @@ Reclutamiento (REC-01..08), Administración de Personal (ADP-01..09), Roles din�
 
 **Fase 5 — ✅ COMPLETADA (11-oct-2026):**
 - ✅ TR-08 (offline sync ALQ-09/DEV-04): `dexie@4.0.10` + `vite-plugin-pwa@1.3.0`; infraestructura `src/offline/` completa; ALQ-09 (19 tests) y DEV-04 (32 tests). Commit `8639207`.
-- ⛔ Pagos y garantías (PAG-01/02): STOP `MISSING_SOURCE` — sin BDD/SDD/TDD.
-- ⛔ Reportes (REP-01): STOP `MISSING_SOURCE` — sin BDD/SDD/TDD.
+- ✅ PAG-01/02 y REP-01: BDD/SDD/TDD v1.0 draft creados (11-oct-2026). Permisos `PAYMENT.*` y `REPORT.*` agregados al catálogo. Prototipos HTML `PENDING_REVIEW` en prototype-manifest.yaml.
+  - ⚠️ Pendiente: revisión formal de fuentes, aprobación de prototipos por PRODUCTO, formalización de contratos OpenAPI antes de implementar backend/frontend.
 
-**Fase 6 — FUTURA:**
-- Búsqueda global.
-- Integraciones reales RENIEC/MTC.
+**Fase 6 — EN PROGRESO:**
+- ✅ PAG-01/02: BDD/SDD/TDD v1.0 draft + contrato `payments.yaml` v0.1.0. Prototipos APPROVED. Permisos `PAYMENT.*` en catálogo. **STOP MISSING_API_CONTRACT resuelto.** Listo para: módulo NestJS `payments` → generación cliente → frontend.
+- ✅ REP-01: BDD/SDD/TDD v1.0 draft + contrato `reporting.yaml` v0.1.0. Prototipo APPROVED. Permisos `REPORT.*` en catálogo. **STOP MISSING_API_CONTRACT resuelto.** Listo para: módulo NestJS `reporting` → generación cliente → frontend.
+- ✅ Búsqueda global (BUS-01): BDD/SDD/TDD v1.0 draft + contrato `search.yaml` v0.1.0. Prototipos APPROVED. **STOP MISSING_API_CONTRACT resuelto.** Listo para: módulo NestJS `search` → generación cliente → componente `GlobalSearch`.
+- ✅ RENIEC/MTC: **excluidas del MVP** por decisión formal `DEC-MVP-RENIEC-MTC-EXCL-2026-10-11` en `decision-log.md`. No se implementarán integraciones reales hasta post-MVP con ADR aprobado.
 - Expansión multisede en módulos pendientes.
-- Documentación BDD/SDD/TDD de PAG-01/02 y REP-01 para desbloquear Fase 5.
 
 ---
 

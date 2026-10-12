@@ -81,6 +81,14 @@ export interface RecordHrAdministrationEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordPaymentEventInput {
+  organizationId: string;
+  actorUserId: string;
+  depositId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -170,6 +178,15 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordHrAdministrationEvent(
     input: RecordHrAdministrationEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * PAG-P03..P05 (Pagos y Garantias) - ajuste, aprobacion de devolucion y cierre financiero.
+   * `tx` opcional para atomicidad con la mutacion.
+   */
+  abstract recordPaymentEvent(
+    input: RecordPaymentEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

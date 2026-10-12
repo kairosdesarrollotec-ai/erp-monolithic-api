@@ -1,0 +1,363 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP — Payments API
+  version: 0.1.0
+  description: >
+    Contrato del módulo Pagos y Garantías (PAG-01/PAG-02,
+    BDD-PAG-001, SDD-PAG-001, TDD-PAG-001).
+    Gestiona el ciclo de vida de garantías de alquiler: bandeja,
+    detalle, ajustes append-only (descuento / retención parcial /
+    devolución / cargo por inmovilización) y cierre del expediente
+    financiero. No crea nuevas tablas; opera sobre `rental_deposits`
+    y `rental_deposit_adjustments` existentes.
+    Aislamiento multiempresa obligatorio en todos los endpoints
+    (companyId + branchId del actor autenticado). Permisos
+    requeridos por acción: PAYMENT.READ_LIST, PAYMENT.READ_DETAIL,
+    PAYMENT.REGISTER_ADJUSTMENT, PAYMENT.APPROVE_REFUND,
+    PAYMENT.CLOSE_FINANCIAL (BDD-PAG-001 BR-PAG-007).
+
+paths:
+  /payments/deposits:
+    get:
+      operationId: listDeposits
+      summary: Bandeja de garantías de alquiler con filtros y paginación keyset (PAG-01)
+      description: >
+        Requiere permiso PAYMENT.READ_LIST.
+        Devuelve garantías filtradas por la empresa/sede del actor.
+        Permite filtrar por status y por rental_id.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/DepositStatus' }
+        - { name: rentalId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: cursorCreatedAt, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: cursorId, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de garantías paginada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/DepositSummary' }
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400': { description: Parámetros inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso PAYMENT.READ_LIST requerido }
+        '500': { description: Error interno del servidor }
+
+  /payments/deposits/{depositId}:
+    get:
+      operationId: getDeposit
+      summary: Detalle de garantía con historial de ajustes (PAG-02)
+      description: >
+        Requiere permiso PAYMENT.READ_DETAIL.
+        El depositId debe pertenecer a un alquiler de la empresa/sede del actor.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: depositId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Detalle completo de la garantía con sus ajustes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DepositDetail' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso PAYMENT.READ_DETAIL requerido o recurso de otra empresa }
+        '404': { description: Garantía no encontrada en la empresa/sede }
+        '500': { description: Error interno del servidor }
+
+  /payments/deposits/{depositId}/adjustments:
+    post:
+      operationId: registerAdjustment
+      summary: Registrar ajuste de garantía (append-only) (PAG-02)
+      description: >
+        Requiere permiso PAYMENT.REGISTER_ADJUSTMENT.
+        Los ajustes son inmutables una vez registrados (BR-PAG-003).
+        El monto ajustado no puede superar el monto original (BR-PAG-001).
+        No se permite ajustar una garantía en estado RETURNED o RETAINED (terminal).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: depositId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterAdjustmentRequest' }
+      responses:
+        '201':
+          description: Ajuste registrado; devuelve el ajuste creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdjustmentResponse' }
+        '400': { description: Datos inválidos o monto supera garantía original }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso PAYMENT.REGISTER_ADJUSTMENT requerido o recurso de otra empresa }
+        '404': { description: Garantía no encontrada }
+        '409':
+          description: >
+            Garantía en estado terminal (RETURNED/RETAINED) — no se pueden añadir ajustes
+            (DEPOSIT_IN_TERMINAL_STATE).
+        '500': { description: Error interno del servidor }
+
+  /payments/deposits/{depositId}/approve-refund:
+    post:
+      operationId: approveRefund
+      summary: Aprobar devolución de garantía al cliente (PAG-02)
+      description: >
+        Requiere permiso PAYMENT.APPROVE_REFUND.
+        Solo aplicable si no hay ajustes de FULL_RETENTION o daños activos pendientes (BR-PAG-005).
+        La garantía pasa a estado RETURNED. Requiere esperar 24h desde el cierre del alquiler
+        si hay ajustes pendientes de revisión (BR-PAG-004).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: depositId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApproveRefundRequest' }
+      responses:
+        '200':
+          description: Devolución aprobada; garantía pasa a RETURNED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DepositDetail' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso PAYMENT.APPROVE_REFUND requerido o recurso de otra empresa }
+        '404': { description: Garantía no encontrada }
+        '409':
+          description: >
+            Daños activos pendientes de resolución (PENDING_DAMAGE_RESOLUTION),
+            estado terminal (DEPOSIT_IN_TERMINAL_STATE),
+            o período de 24h no cumplido (REFUND_HOLD_PERIOD_NOT_MET).
+        '500': { description: Error interno del servidor }
+
+  /payments/deposits/{depositId}/close:
+    post:
+      operationId: closeFinancial
+      summary: Cerrar expediente financiero de la garantía (PAG-02)
+      description: >
+        Requiere permiso PAYMENT.CLOSE_FINANCIAL.
+        Cierra el expediente registrando la retención definitiva.
+        Solo aplicable cuando no hay ajustes pendientes de aprobación.
+        La garantía pasa a estado RETAINED o PARTIALLY_RETAINED.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: depositId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CloseFinancialRequest' }
+      responses:
+        '200':
+          description: Expediente cerrado; garantía pasa a RETAINED o PARTIALLY_RETAINED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DepositDetail' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso PAYMENT.CLOSE_FINANCIAL requerido o recurso de otra empresa }
+        '404': { description: Garantía no encontrada }
+        '409':
+          description: >
+            Ajustes pendientes de aprobación (PENDING_ADJUSTMENTS_EXIST) o
+            estado terminal (DEPOSIT_IN_TERMINAL_STATE).
+        '500': { description: Error interno del servidor }
+
+  /payments/deposits/summary:
+    get:
+      operationId: getDepositsSummary
+      summary: Resumen agregado de garantías por estado (PAG-01)
+      description: >
+        Requiere permiso PAYMENT.READ_LIST.
+        Devuelve conteos y totales agregados de garantías filtrados
+        por la empresa/sede del actor autenticado.
+        Útil para las tarjetas de resumen de la bandeja PAG-01.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Resumen de garantías por estado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DepositsSummary' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso PAYMENT.READ_LIST requerido }
+        '500': { description: Error interno del servidor }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID Token
+
+  schemas:
+    DepositStatus:
+      type: string
+      enum: [HELD, RETURNED, RETAINED, PARTIALLY_RETAINED]
+      description: >
+        HELD: en custodia activa.
+        RETURNED: devuelta al cliente.
+        RETAINED: retenida definitivamente.
+        PARTIALLY_RETAINED: parcialmente retenida con devolución parcial.
+
+    AdjustmentType:
+      type: string
+      enum: [DISCOUNT, FULL_RETENTION, RELEASE, IMMOBILIZATION_CHARGE]
+      description: >
+        DISCOUNT: descuento por daño estético.
+        FULL_RETENTION: retención total por falta grave.
+        RELEASE: liberación parcial de fondos.
+        IMMOBILIZATION_CHARGE: cargo por días de paralización.
+
+    DepositSummary:
+      type: object
+      required: [id, rentalId, rentalCode, clientName, originalAmount, currentStatus, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        rentalCode: { type: string, example: ALQ-1187 }
+        clientName: { type: string, example: 'Juan Ríos Vega' }
+        originalAmount: { type: number, format: float, example: 500.00 }
+        adjustedAmount: { type: number, format: float, nullable: true, example: 150.00 }
+        netAmount: { type: number, format: float, nullable: true, example: 350.00 }
+        currentStatus: { $ref: '#/components/schemas/DepositStatus' }
+        createdAt: { type: string, format: date-time }
+
+    AdjustmentResponse:
+      type: object
+      required: [id, depositId, type, amount, reason, actorId, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        depositId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/AdjustmentType' }
+        amount: { type: number, format: float, example: 150.00 }
+        reason: { type: string, example: 'Daño en parachoques delantero — paño 3' }
+        actorId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+
+    DepositDetail:
+      type: object
+      required: [id, rentalId, rentalCode, clientName, originalAmount, currentStatus, adjustments, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        rentalCode: { type: string, example: ALQ-1187 }
+        clientName: { type: string, example: 'Juan Ríos Vega' }
+        vehiclePlate: { type: string, example: ABC-123 }
+        originalAmount: { type: number, format: float, example: 500.00 }
+        adjustedAmount: { type: number, format: float, nullable: true, example: 150.00 }
+        netAmount: { type: number, format: float, nullable: true, example: 350.00 }
+        currentStatus: { $ref: '#/components/schemas/DepositStatus' }
+        closedAt: { type: string, format: date-time, nullable: true }
+        closureNotes: { type: string, nullable: true }
+        adjustments:
+          type: array
+          items: { $ref: '#/components/schemas/AdjustmentResponse' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    RegisterAdjustmentRequest:
+      type: object
+      required: [companyId, branchId, type, amount, reason]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/AdjustmentType' }
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 150.00
+        reason:
+          type: string
+          minLength: 5
+          maxLength: 500
+          example: 'Daño en parachoques delantero — paño 3'
+
+    ApproveRefundRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        notes:
+          type: string
+          maxLength: 500
+          nullable: true
+
+    CloseFinancialRequest:
+      type: object
+      required: [companyId, branchId, retainedAmount, notes]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        retainedAmount:
+          type: number
+          format: float
+          minimum: 0
+          example: 150.00
+          description: Monto retenido definitivamente; 0 = devolución completa; igual al original = retención total.
+        notes:
+          type: string
+          minLength: 5
+          maxLength: 500
+          example: 'Retención por daños confirmados en informe técnico Motrix ref. MT-2026-0412'
+
+    DepositsSummary:
+      type: object
+      required: [held, returned, retained, partiallyRetained, totalAmount, heldAmount]
+      properties:
+        held:
+          type: integer
+          description: Conteo de garantías en custodia (HELD)
+          example: 14
+        returned:
+          type: integer
+          description: Conteo de garantías devueltas (RETURNED)
+          example: 42
+        retained:
+          type: integer
+          description: Conteo de garantías retenidas (RETAINED)
+          example: 8
+        partiallyRetained:
+          type: integer
+          description: Conteo de garantías parcialmente retenidas (PARTIALLY_RETAINED)
+          example: 3
+        totalAmount:
+          type: number
+          format: float
+          description: Suma del originalAmount de todas las garantías del scope
+          example: 33500.00
+        heldAmount:
+          type: number
+          format: float
+          description: Suma del originalAmount de garantías en estado HELD
+          example: 18200.00
+
+    PaginationMeta:
+      type: object
+      required: [total, hasMore]
+      properties:
+        total: { type: integer, example: 42 }
+        hasMore: { type: boolean }
+        nextCursorCreatedAt: { type: string, format: date-time, nullable: true }
+        nextCursorId: { type: string, format: uuid, nullable: true }

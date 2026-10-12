@@ -13,12 +13,15 @@ import { FleetModule } from './modules/fleet/fleet.module';
 import { RentalsModule } from './modules/rentals/rentals.module';
 import { ReturnsModule } from './modules/returns/returns.module';
 import { IncidentsModule } from './modules/incidents/incidents.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { RecruitmentModule } from './modules/recruitment/recruitment.module';
 import { HrAdministrationModule } from './modules/hr-administration/hr-administration.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { ReportingModule } from './modules/reporting/reporting.module';
+import { SearchModule } from './modules/search/search.module';
 import { PrismaModule } from './common/persistence/prisma.module';
 import { IdempotencyModule } from './common/http/idempotency.module';
 
@@ -43,11 +46,14 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     RentalsModule,
     ReturnsModule,
     IncidentsModule,
+    PaymentsModule,
     RecruitmentModule,
     HrAdministrationModule,
     TemplatesModule,
     AdminModule,
     NotificationsModule,
+    ReportingModule,
+    SearchModule,
   ],
   providers: [
     // Guard global de throttling: aplica a todos los endpoints.

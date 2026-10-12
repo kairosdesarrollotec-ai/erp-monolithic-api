@@ -1,0 +1,217 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP — Search API
+  version: 0.1.0
+  description: >
+    Contrato del módulo Búsqueda Global (BUS-01,
+    BDD-BUS-001, SDD-BUS-001, TDD-BUS-001).
+    Endpoint de solo lectura que agrega resultados de múltiples
+    módulos en una sola consulta. No requiere tablas nuevas;
+    busca sobre datos existentes de rentals, reservations,
+    customers, vehicles y returns.
+    Aislamiento multiempresa obligatorio: todos los resultados
+    filtran por companyId/branchId del actor autenticado (BR-BUS-002).
+    Filtrado adicional por permisos de módulo del actor (BR-BUS-003).
+    Mínimo 2 caracteres para ejecutar la búsqueda (BR-BUS-001).
+    Máximo 5 resultados por grupo de entidad (BR-BUS-005).
+    El debounce de 300 ms es responsabilidad del frontend (BR-BUS-004).
+
+paths:
+  /search:
+    get:
+      operationId: globalSearch
+      summary: Búsqueda global transversal en tiempo real (BUS-01)
+      description: >
+        Devuelve resultados agrupados por tipo de entidad.
+        Solo incluye entidades a las que el actor tiene permiso de
+        READ_LIST o READ_DETAIL en su módulo correspondiente.
+        Los resultados de cada grupo incluyen suficiente información
+        para mostrar un ítem en el dropdown y navegar al detalle.
+        Búsqueda de solo lectura — no modifica ningún estado (BR-BUS-007).
+        No indexa ni devuelve datos biométricos, contraseñas ni
+        documentos completos (BR-BUS-008).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+          description: >
+            Término de búsqueda. Mínimo 2 caracteres (BR-BUS-001).
+            Se busca por coincidencia parcial (ILIKE o pg_trgm) en los
+            campos indexados de cada entidad.
+          example: ALQ-1203
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+            default: 5
+          description: Máximo de resultados por grupo (BR-BUS-005).
+        - name: types
+          in: query
+          required: false
+          schema:
+            type: array
+            items: { $ref: '#/components/schemas/SearchEntityType' }
+            maxItems: 5
+          style: form
+          explode: false
+          description: >
+            Filtrar por tipos de entidad específicos. Si se omite,
+            se busca en todos los tipos para los que el actor tiene permiso.
+      responses:
+        '200':
+          description: >
+            Resultados agrupados por tipo de entidad. Devuelve 200 aunque
+            no haya resultados — en ese caso groups es array vacío.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SearchResponse' }
+              examples:
+                with_results:
+                  summary: Búsqueda con resultados
+                  value:
+                    query: ALQ-12
+                    groups:
+                      - type: RENTAL
+                        label: Alquileres
+                        results:
+                          - id: '550e8400-e29b-41d4-a716-446655440000'
+                            type: RENTAL
+                            title: ALQ-1203
+                            subtitle: Juan Ríos Vega · ABC-123
+                            route: /rentals/550e8400-e29b-41d4-a716-446655440000
+                      - type: CUSTOMER
+                        label: Clientes
+                        results:
+                          - id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+                            type: CUSTOMER
+                            title: Juan Ríos Vega
+                            subtitle: DNI 45123678
+                            route: /customers/6ba7b810-9dad-11d1-80b4-00c04fd430c8
+                    totalGroups: 2
+                    generatedAt: '2026-10-11T10:00:00Z'
+                empty:
+                  summary: Sin resultados
+                  value:
+                    query: XYZ999
+                    groups: []
+                    totalGroups: 0
+                    generatedAt: '2026-10-11T10:00:00Z'
+        '400':
+          description: >
+            Término de búsqueda inválido (QUERY_TOO_SHORT si q.length < 2,
+            QUERY_TOO_LONG si q.length > 100).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SearchError' }
+        '401': { description: Token ausente o inválido }
+        '403':
+          description: >
+            El actor no tiene permiso de lectura en ningún módulo indexado.
+            En la práctica esto no debería ocurrir para un usuario autenticado
+            activo, pero se devuelve si todos los módulos están denegados.
+        '500': { description: Error interno del servidor }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID Token
+
+  schemas:
+    SearchEntityType:
+      type: string
+      enum: [RENTAL, RESERVATION, CUSTOMER, VEHICLE, RETURN]
+      description: >
+        RENTAL: alquileres (requiere RENTAL.READ_LIST).
+        RESERVATION: reservas (requiere RESERVATION.READ_LIST).
+        CUSTOMER: clientes (requiere CUSTOMER.READ_LIST).
+        VEHICLE: vehículos (requiere FLEET.READ_LIST).
+        RETURN: devoluciones (requiere RETURN.READ).
+
+    SearchResultItem:
+      type: object
+      required: [id, type, title, route]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID de la entidad en su módulo de origen
+        type:
+          $ref: '#/components/schemas/SearchEntityType'
+        title:
+          type: string
+          description: >
+            Identificador principal legible: código ALQ/RES/DEV,
+            nombre completo del cliente, placa del vehículo.
+          example: ALQ-1203
+        subtitle:
+          type: string
+          nullable: true
+          description: >
+            Información secundaria de contexto: nombre del cliente + placa,
+            DNI/RUC, marca y modelo, etc.
+          example: Juan Ríos Vega · ABC-123
+        route:
+          type: string
+          description: >
+            Ruta del frontend para navegar al detalle de la entidad.
+            El frontend usa esta ruta con useNavigate() al seleccionar el ítem.
+          example: /rentals/550e8400-e29b-41d4-a716-446655440000
+
+    SearchResultGroup:
+      type: object
+      required: [type, label, results]
+      properties:
+        type:
+          $ref: '#/components/schemas/SearchEntityType'
+        label:
+          type: string
+          description: Nombre legible del grupo para mostrar en el dropdown.
+          example: Alquileres
+        results:
+          type: array
+          items: { $ref: '#/components/schemas/SearchResultItem' }
+          maxItems: 5
+          description: Máximo 5 resultados por grupo (BR-BUS-005).
+
+    SearchResponse:
+      type: object
+      required: [query, groups, totalGroups, generatedAt]
+      properties:
+        query:
+          type: string
+          description: Término buscado (normalizado).
+        groups:
+          type: array
+          items: { $ref: '#/components/schemas/SearchResultGroup' }
+          maxItems: 3
+          description: >
+            Máximo 3 grupos en el dropdown (BR-BUS-005).
+            Array vacío si no hay resultados.
+        totalGroups:
+          type: integer
+          minimum: 0
+          maximum: 3
+        generatedAt:
+          type: string
+          format: date-time
+
+    SearchError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [QUERY_TOO_SHORT, QUERY_TOO_LONG]
+        message:
+          type: string
+          example: El término de búsqueda debe tener al menos 2 caracteres.

@@ -578,3 +578,177 @@ sources:
   sha256: a297e50455f8462ea3af34d1b604e9dc2dc476ad78c559b7825182bccc2f7b84
   authority: ux
   supersedes: null
+- id: BDD-PAG-001
+  path: docs/sources/bdd/bdd-09-pagos.md
+  type: BDD
+  module: Payments
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — consolida reglas de garantía de BDD-ALQ-001 y BDD-DEV-001
+    en un módulo observable independiente. 9 reglas de negocio, escenarios Gherkin,
+    3 preguntas abiertas. Requiere revisión formal antes de implementación.
+  sha256: null
+  authority: bdd
+  supersedes: null
+- id: SDD-PAG-001
+  path: docs/sources/sdd/sdd-08-pagos.md
+  type: SDD
+  module: Payments
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — propone módulo NestJS `payments` sobre tablas existentes
+    `rental_deposits` / `rental_deposit_adjustments`. 5 UC, endpoints propuestos.
+    STOP MISSING_API_CONTRACT: contrato OpenAPI pendiente de formalizar.
+  sha256: null
+  authority: sdd
+  supersedes: null
+- id: TDD-PAG-001
+  path: docs/sources/tdd/tdd-08-pagos.md
+  type: TDD
+  module: Payments
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — sin migraciones nuevas (tablas existen). Define arquitectura
+    de módulo, invariantes de dominio y pruebas requeridas incluyendo aislamiento
+    multiempresa (P0). Requiere revisión formal.
+  sha256: null
+  authority: tdd
+  supersedes: null
+- id: BDD-REP-001
+  path: docs/sources/bdd/bdd-10-reportes.md
+  type: BDD
+  module: Reporting
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — KPIs operativos y financieros, exportación CSV. 7 reglas
+    de negocio incluyendo aislamiento multiempresa y límite de 90 días para exportación.
+    3 preguntas abiertas. Requiere revisión formal.
+  sha256: null
+  authority: bdd
+  supersedes: null
+- id: SDD-REP-001
+  path: docs/sources/sdd/sdd-09-reportes.md
+  type: SDD
+  module: Reporting
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — módulo NestJS `reporting` de solo lectura sobre tablas
+    existentes. 3 UC, endpoints propuestos. Sin tablas nuevas.
+    STOP MISSING_API_CONTRACT: contrato OpenAPI pendiente de formalizar.
+  sha256: null
+  authority: sdd
+  supersedes: null
+- id: TDD-REP-001
+  path: docs/sources/tdd/tdd-09-reportes.md
+  type: TDD
+  module: Reporting
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — sin migraciones nuevas. Define queries de proyección sobre
+    tablas existentes, validación de rango <= 90 días y pruebas de aislamiento.
+    Requiere revisión formal.
+  sha256: null
+  authority: tdd
+  supersedes: null
+- id: BDD-BUS-001
+  path: docs/sources/bdd/bdd-11-busqueda-global.md
+  type: BDD
+  module: Search
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — componente transversal del shell. 8 reglas de negocio
+    incluyendo aislamiento multiempresa (BR-BUS-002, crítica) y filtrado por permisos
+    de módulo (BR-BUS-003). Prototipos PROTO-BUS-01-DROPDOWN-DESKTOP/MOBILE/EMPTY
+    aprobados el 2026-10-11. 2 preguntas abiertas (pg_trgm vs LIKE, alcance RRHH).
+  sha256: null
+  authority: business
+  supersedes: null
+- id: SDD-BUS-001
+  path: docs/sources/sdd/sdd-10-busqueda-global.md
+  type: SDD
+  module: Search
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — módulo NestJS `search` de solo lectura. 1 UC, endpoint
+    GET /search, componente React GlobalSearch en src/app/shared/. Sin tablas nuevas.
+    STOP MISSING_API_CONTRACT: contrato OpenAPI pendiente de formalizar antes
+    de implementar frontend.
+  sha256: null
+  authority: sdd
+  supersedes: null
+- id: TDD-BUS-001
+  path: docs/sources/tdd/tdd-10-busqueda-global.md
+  type: TDD
+  module: Search
+  version: '1.0'
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Base usable inicial — índices pg_trgm sobre tablas existentes (no tablas nuevas).
+    Migración solo de extensión e índices CONCURRENTLY. Prueba de aislamiento
+    multiempresa P0 obligatoria. Componente GlobalSearch accesible (combobox).
+    Requiere revisión formal.
+  sha256: null
+  authority: tdd
+  supersedes: null
+- id: OPENAPI-PAYMENTS-001
+  path: packages/contracts/openapi/payments.yaml
+  type: OpenAPI
+  module: Payments
+  version: 0.1.0
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Contrato inicial v0.1.0 creado para desbloquear STOP MISSING_API_CONTRACT.
+    5 endpoints: GET /payments/deposits (PAG-01), GET /payments/deposits/{id} (PAG-02),
+    POST ajustes, POST approve-refund, POST close. Resuelve BDD-PAG-001 BR-PAG-007.
+    Requiere revisión formal antes de implementación de producción.
+  sha256: null
+  authority: contract
+  supersedes: null
+- id: OPENAPI-REPORTING-001
+  path: packages/contracts/openapi/reporting.yaml
+  type: OpenAPI
+  module: Reporting
+  version: 0.1.0
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Contrato inicial v0.1.0 creado para desbloquear STOP MISSING_API_CONTRACT.
+    3 endpoints: GET /reporting/operational (REP-01), GET /reporting/financial,
+    GET /reporting/export (CSV). Resuelve BDD-REP-001 BR-REP-001/002/003.
+    Requiere revisión formal antes de implementación de producción.
+  sha256: null
+  authority: contract
+  supersedes: null
+- id: OPENAPI-SEARCH-001
+  path: packages/contracts/openapi/search.yaml
+  type: OpenAPI
+  module: Search
+  version: 0.1.0
+  date: '2026-10-11'
+  status: draft
+  estado_original: >
+    Contrato inicial v0.1.0 creado para desbloquear STOP MISSING_API_CONTRACT.
+    1 endpoint: GET /search con param q (minLength 2). Grupos máx. 3, resultados
+    máx. 5 por grupo. Entidades: RENTAL, RESERVATION, CUSTOMER, VEHICLE, RETURN.
+    Resuelve BDD-BUS-001 BR-BUS-001/002/003/005/007. Requiere revisión formal.
+  sha256: null
+  authority: contract
+  supersedes: null
