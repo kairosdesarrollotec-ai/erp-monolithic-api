@@ -11,11 +11,8 @@
   },
   "scripts": {
     "dev:api": "npm run start:dev --workspace apps/api",
-    "dev:web": "npm run dev --workspace apps/web",
     "build:api": "npm run build --workspace apps/api",
-    "build:web": "npm run build --workspace apps/web",
     "test:api": "npm run test --workspace apps/api",
-    "test:web": "npm run test --workspace apps/web",
     "lint": "npm run lint --workspaces --if-present",
     "test:integration:api": "npm run test:integration --workspace apps/api",
     "seed:platform-admin": "ts-node -P apps/api/tsconfig.json scripts/seed-platform-admin.ts",
@@ -23,8 +20,39 @@
     "audit:all": "node scripts/audit-check.mjs --include-dev"
   },
   "dependencies": {
+    "@google-cloud/storage": "^8.2.0",
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/config": "^12.0.0",
+    "@nestjs/core": "^12.0.0",
+    "@nestjs/platform-express": "^12.0.0",
     "@nestjs/throttler": "^6.7.1",
-    "resend": "^6.32.1"
+    "@prisma/client": "^5.20.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "firebase-admin": "^14.0.0",
+    "reflect-metadata": "^0.2.2",
+    "resend": "^6.32.1",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@nestjs/cli": "^12.0.0",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "^12.0.0",
+    "@testcontainers/postgresql": "^12.2.0",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.7.4",
+    "eslint": "^10.11.0",
+    "jest": "^30.5.2",
+    "js-yaml": "^5.4.2",
+    "prisma": "^5.20.0",
+    "testcontainers": "^12.1.0",
+    "ts-jest": "^29.4.14",
+    "ts-node": "^10.9.2",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1"
   },
   "overrides": {
     "handlebars": "4.7.10"

@@ -14,39 +14,6 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "test:integration": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-require-module\" jest --no-watchman --config ./test/jest-integration.json"
   },
-  "dependencies": {
-    "@google-cloud/storage": "^8.2.0",
-    "@nestjs/common": "^12.0.0",
-    "@nestjs/config": "^12.0.0",
-    "@nestjs/core": "^12.0.0",
-    "@nestjs/platform-express": "^12.0.0",
-    "@prisma/client": "^5.20.0",
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.15.1",
-    "firebase-admin": "^14.0.0",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
-  },
-  "devDependencies": {
-    "@nestjs/cli": "^12.0.0",
-    "@nestjs/schematics": "^12.0.0",
-    "@nestjs/testing": "^12.0.0",
-    "@testcontainers/postgresql": "^12.2.0",
-    "@types/express": "^5.0.6",
-    "@types/jest": "^30.0.0",
-    "@types/js-yaml": "^4.0.9",
-    "@types/node": "^22.7.4",
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.11.0",
-    "jest": "^30.5.2",
-    "js-yaml": "^5.4.2",
-    "prisma": "^5.20.0",
-    "testcontainers": "^12.1.0",
-    "ts-jest": "^29.4.14",
-    "ts-node": "^10.9.2",
-    "typescript": "~6.0.3",
-    "typescript-eslint": "^8.71.1"
-  },
   "jest": {
     "moduleFileExtensions": [
       "js",
