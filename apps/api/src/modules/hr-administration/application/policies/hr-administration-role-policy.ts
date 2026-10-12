@@ -10,10 +10,11 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
  *   - SDD-06 (v2.1) / TDD-06 (v2.1): reglas de negocio BR-ADP-001 a BR-ADP-006.
  *
  * Reglas de autorización específicas:
- *   - GERENCIA / RRHH: Control total del proceso (9 acciones).
+ *   - GERENCIA / RRHH: Control total del proceso (10 acciones).
  *   - ADMINISTRACION: Gestión operativa, registro de asistencia, colaboradores, programación de vacaciones,
  *     solicitud y evaluación de retorno de campo.
  *   - CAMPO / FRONT_OFFICE: Solicitud de salidas a campo (`REQUEST_FIELD_TRIP`).
+ *   - Capacitación interna (ADP-10): solo RR.HH. (y Gerencia) registra talleres (`REGISTER_TRAINING`).
  *   - AUDITORIA: Lectura de expedientes de colaboradores (`VIEW_EMPLOYEES`).
  *   - FINANZAS: Consulta de colaboradores y acceso a asistencias para cálculo de nómina y deducciones.
  *   - PLATFORM_ADMIN: todo permitido vía fila sembrada en la matriz dinámica.
@@ -28,6 +29,7 @@ export const HR_ADMINISTRATION_ACTIONS = [
   'AUTHORIZE_FIELD_TRIP',
   'EVALUATE_FIELD_TRIP_RETURN',
   'TERMINATE_EMPLOYMENT',
+  'REGISTER_TRAINING',
 ] as const;
 
 export type HrAdministrationAction = (typeof HR_ADMINISTRATION_ACTIONS)[number];
@@ -38,12 +40,13 @@ const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, Rea
   VIEW_EMPLOYEES: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS']),
   MANAGE_EMPLOYEES: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   LOG_ATTENDANCE: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS']),
-  AUTHORIZE_LEAVE: LEADERSHIP_ROLES, // Exclusivo Jefatura/Gerencia (BR-ADP-003: Fiorella / José)
+  AUTHORIZE_LEAVE: LEADERSHIP_ROLES, // Exclusivo de quienes tienen este permiso (BR-ADP-003): nunca por nombre
   SCHEDULE_VACATION: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   REQUEST_FIELD_TRIP: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'CAMPO', 'FRONT_OFFICE']),
-  AUTHORIZE_FIELD_TRIP: LEADERSHIP_ROLES, // Cascada N1..N3 (BR-ADP-004: Fiorella / José / Cecilia)
+  AUTHORIZE_FIELD_TRIP: LEADERSHIP_ROLES, // Cascada genérica N1..N3 (BR-ADP-004): la autoriza el permiso, no una persona fija
   EVALUATE_FIELD_TRIP_RETURN: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   TERMINATE_EMPLOYMENT: LEADERSHIP_ROLES, // Exclusivo Gerencia / RRHH (BR-ADP-006, ADR-KAI-006)
+  REGISTER_TRAINING: LEADERSHIP_ROLES, // ADP-10: talleres internos informales (BR-ADP-008), RR.HH.
 };
 
 export function isHrAdministrationRoleAllowed(role: WorkerRole, action: HrAdministrationAction): boolean {

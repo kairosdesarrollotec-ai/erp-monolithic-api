@@ -17,7 +17,7 @@ export class ListFieldTripsHandler {
         companyId: query.companyId,
         branchId: query.branchId,
       },
-      ['REQUEST_FIELD_TRIP', 'AUTHORIZE_FIELD_TRIP'],
+      ['REQUEST_FIELD_TRIP', 'AUTHORIZE_FIELD_TRIP', 'EVALUATE_FIELD_TRIP_RETURN'],
     );
 
     return this.fieldTrips.findMany({

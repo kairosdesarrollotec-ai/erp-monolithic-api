@@ -54,6 +54,40 @@ export class PrismaEmployeeRepository implements EmployeeRepositoryPort {
     return client.employee.findFirst({ where: { operatingCompanyId: companyId, documentNumber } });
   }
 
+  async findManyByIds(ids: string[], tx?: Prisma.TransactionClient): Promise<Employee[]> {
+    const client = tx ?? this.prisma;
+    return client.employee.findMany({ where: { id: { in: ids } } });
+  }
+
+  async findByFirebaseUid(
+    companyId: string,
+    firebaseUid: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<Employee | null> {
+    const client = tx ?? this.prisma;
+    return client.employee.findUnique({
+      where: { operatingCompanyId_firebaseUid: { operatingCompanyId: companyId, firebaseUid } },
+    });
+  }
+
+  async findActiveByEmail(companyId: string, email: string, tx?: Prisma.TransactionClient): Promise<Employee[]> {
+    const client = tx ?? this.prisma;
+    return client.employee.findMany({
+      where: {
+        operatingCompanyId: companyId,
+        status: { not: 'TERMINADO' },
+        email: { equals: email, mode: 'insensitive' },
+      },
+      take: 2,
+    });
+  }
+
+  async linkFirebaseUid(id: string, firebaseUid: string, tx?: Prisma.TransactionClient): Promise<Employee> {
+    const client = tx ?? this.prisma;
+    await client.employee.updateMany({ where: { id, firebaseUid: null }, data: { firebaseUid } });
+    return client.employee.findUniqueOrThrow({ where: { id } });
+  }
+
   async findMany(
     filters: ListEmployeesFilters,
     tx?: Prisma.TransactionClient,

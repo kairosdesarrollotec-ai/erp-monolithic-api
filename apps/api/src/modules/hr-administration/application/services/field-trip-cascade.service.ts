@@ -5,6 +5,7 @@ import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import {
   FieldTripNotFoundError,
   FieldTripNotAuthorizedError,
+  FieldTripNotPendingError,
   FieldTripTimeoutNotElapsedError,
   NoAuthorizationAvailableError,
 } from '../../domain/hr-administration-errors';
@@ -12,14 +13,24 @@ import {
   assertAuthorizationLevelReached,
   currentLevelTimeoutAt,
   evaluateReturnOutcome,
+  assertFieldTripRejectionReason,
   getNextCascadeStatus,
-  levelTimeoutFrom,
+  nextLevelTimeoutAfter,
+  pendingLevelOf,
   validateAuthorizationLevel,
 } from '../../domain/hr-administration-rules';
 
 export interface AuthorizeFieldTripInput {
   fieldTripId: string;
   authorizationLevel: number;
+  userId: string;
+  userName?: string | null;
+  now: Date;
+}
+
+export interface RejectFieldTripInput {
+  fieldTripId: string;
+  reason: string;
   userId: string;
   userName?: string | null;
   now: Date;
@@ -54,7 +65,7 @@ export class FieldTripCascadeService {
     private readonly employeeRepository: EmployeeRepositoryPort,
   ) {}
 
-  /** Autoriza en un nivel ya alcanzado de la cascada (1=Fiorella, 2=José, 3=Cecilia; NUNCA 4). */
+  /** Autoriza en un nivel ya alcanzado de la cascada (Nivel 1, 2 o 3 de 3; NUNCA 4). */
   async authorize(input: AuthorizeFieldTripInput, tx?: Prisma.TransactionClient): Promise<FieldTripRequest> {
     validateAuthorizationLevel(input.authorizationLevel);
 
@@ -76,6 +87,40 @@ export class FieldTripCascadeService {
         authorizedById: input.userId,
         authorizedByName: input.userName ?? null,
         authorizedAt: input.now,
+      },
+      tx,
+    );
+  }
+
+  /**
+   * Rechazo explícito de un autorizador (ADP-07): la salida queda NO_AUTORIZADA (estado terminal de la cascada,
+   * TDD-ADP-001 8.2) con el motivo y el nivel en el que se rechazó. No abre ningún nivel adicional.
+   */
+  async reject(input: RejectFieldTripInput, tx?: Prisma.TransactionClient): Promise<FieldTripRequest> {
+    const reason = assertFieldTripRejectionReason(input.reason);
+
+    const fieldTrip = await this.fieldTripRepository.findById(input.fieldTripId, tx);
+    if (!fieldTrip) {
+      throw new FieldTripNotFoundError(input.fieldTripId);
+    }
+    if (fieldTrip.status === 'NO_AUTORIZADA') {
+      throw new NoAuthorizationAvailableError(fieldTrip.id);
+    }
+    const level = pendingLevelOf(fieldTrip.status);
+    if (level === null) {
+      throw new FieldTripNotPendingError(fieldTrip.id, fieldTrip.status);
+    }
+
+    return this.fieldTripRepository.transition(
+      fieldTrip.id,
+      PENDING_FIELD_TRIP_STATUSES,
+      {
+        status: 'NO_AUTORIZADA',
+        rejectedById: input.userId,
+        rejectedByName: input.userName ?? null,
+        rejectedAt: input.now,
+        rejectedAtLevel: level,
+        rejectionReason: reason,
       },
       tx,
     );
@@ -107,10 +152,11 @@ export class FieldTripCascadeService {
       level3TimeoutAt?: Date;
     } = { status: nextStatus };
 
+    // Cada nivel dura 5 min desde el vencimiento del anterior (no desde que el programador lo detecta).
     if (nextStatus === 'PENDIENTE_NIVEL_2') {
-      updatePayload.level2TimeoutAt = levelTimeoutFrom(input.now);
+      updatePayload.level2TimeoutAt = nextLevelTimeoutAfter(timeoutAt, input.now);
     } else if (nextStatus === 'PENDIENTE_NIVEL_3') {
-      updatePayload.level3TimeoutAt = levelTimeoutFrom(input.now);
+      updatePayload.level3TimeoutAt = nextLevelTimeoutAfter(timeoutAt, input.now);
     }
 
     const updated = await this.fieldTripRepository.transition(fieldTrip.id, [fieldTrip.status], updatePayload, tx);

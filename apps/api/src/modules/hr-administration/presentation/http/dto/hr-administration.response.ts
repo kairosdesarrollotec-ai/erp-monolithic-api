@@ -55,7 +55,61 @@ export interface AttendanceRecordResponse {
   payrollMonth: string | null;
   deductionAppliedAt: string | null;
   notes: string | null;
+  justification: string | null;
+  reclassifiedAt: string | null;
+  /** Memo de advertencia generado automáticamente por esta operación (reiteración de faltas), si corresponde. */
+  memo: HrMemoResponse | null;
   createdAt: string;
+}
+
+export interface HrMemoResponse {
+  id: string;
+  employeeId: string;
+  employeeName?: string;
+  kind: string;
+  violationNumber: number;
+  reason: string;
+  issuedOn: string;
+  generatedBy: string;
+  createdAt: string;
+}
+
+export interface TrainingResponse {
+  id: string;
+  topic: string;
+  heldOn: string;
+  durationMinutes: number;
+  comprehensionNotes: string | null;
+  attendees: Array<{ employeeId: string; fullName: string }>;
+  createdAt: string;
+}
+
+export interface LeaveEvidenceResponse {
+  id: string;
+  leaveId: string;
+  objectUrl: string;
+  contentType: string;
+  uploadedById: string;
+  createdAt: string;
+}
+
+export interface LeaveEvidenceUploadSessionResponse {
+  uploadUrl: string;
+  objectUrl: string;
+  expiresAt: string;
+}
+
+export interface MyEmployeeResponse {
+  id: string;
+  companyId: string;
+  branchId: string;
+  fullName: string;
+  areaId: string;
+  areaName: string;
+  jobTitle: string;
+  status: EmployeeStatus;
+  fieldTripLateCount: number;
+  isFieldTripObserved: boolean;
 }
 
 export interface MonthlyAttendanceSummaryResponse {
@@ -113,10 +167,21 @@ export interface VacationRequestResponse {
   createdAt: string;
 }
 
+export interface FieldTripEmployeeSummary {
+  id: string;
+  fullName: string;
+  areaName: string;
+  jobTitle: string;
+  fieldTripLateCount: number;
+  isFieldTripObserved: boolean;
+}
+
 export interface FieldTripResponse {
   id: string;
   employeeId: string;
   employeeName?: string;
+  /** Datos mínimos del colaborador que se evalúa (no exige permiso de consulta de expedientes). */
+  employee?: FieldTripEmployeeSummary;
   destination: string;
   objective: string;
   estimatedDeparture: string;
@@ -133,7 +198,14 @@ export interface FieldTripResponse {
   level3TimeoutAt: string | null;
   lateMinutes: number;
   returnNotes: string | null;
+  rejectedById: string | null;
+  rejectedByName: string | null;
+  rejectedAt: string | null;
+  rejectedAtLevel: number | null;
+  rejectionReason: string | null;
   message: string | null;
+  /** Memo de advertencia generado automáticamente al registrar el retorno (4ª tardanza en adelante), si corresponde. */
+  memo: HrMemoResponse | null;
   createdAt: string;
 }
 
@@ -164,4 +236,6 @@ export interface EmployeeDetailResponse extends EmployeeResponse {
   recentVacations: VacationRequestResponse[];
   recentFieldTrips: FieldTripResponse[];
   termination: EmploymentTerminationResponse | null;
+  recentMemos: HrMemoResponse[];
+  recentTrainings: TrainingResponse[];
 }

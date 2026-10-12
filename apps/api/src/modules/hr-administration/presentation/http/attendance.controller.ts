@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -19,6 +20,8 @@ import { LogAttendanceCommand } from '../../application/commands/log-attendance.
 import { LogAttendanceHandler } from '../../application/commands/log-attendance.handler';
 import { ApplyMonthDeductionsCommand } from '../../application/commands/apply-month-deductions.command';
 import { ApplyMonthDeductionsHandler } from '../../application/commands/apply-month-deductions.handler';
+import { ReclassifyAttendanceCommand } from '../../application/commands/reclassify-attendance.command';
+import { ReclassifyAttendanceHandler } from '../../application/commands/reclassify-attendance.handler';
 import { GetEmployeeAttendanceQuery } from '../../application/queries/get-employee-attendance.query';
 import { GetEmployeeAttendanceHandler } from '../../application/queries/get-employee-attendance.handler';
 import { GetAttendanceSummaryQuery } from '../../application/queries/get-attendance-summary.query';
@@ -27,6 +30,7 @@ import { LogAttendanceDto } from './dto/log-attendance.dto';
 import { GetEmployeeAttendanceQueryDto } from './dto/get-employee-attendance-query.dto';
 import { AttendanceSummaryQueryDto } from './dto/attendance-summary-query.dto';
 import { ApplyDeductionsDto } from './dto/apply-deductions.dto';
+import { ReclassifyAttendanceDto } from './dto/reclassify-attendance.dto';
 import { parseDateOnly } from './dto/hr-date';
 import type {
   ApplyDeductionsResponse,
@@ -45,6 +49,7 @@ export class AttendanceController {
   constructor(
     private readonly logAttendance: LogAttendanceHandler,
     private readonly applyDeductions: ApplyMonthDeductionsHandler,
+    private readonly reclassifyAttendance: ReclassifyAttendanceHandler,
     private readonly getEmployeeAttendance: GetEmployeeAttendanceHandler,
     private readonly getAttendanceSummary: GetAttendanceSummaryHandler,
   ) {}
@@ -57,7 +62,7 @@ export class AttendanceController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: LogAttendanceDto,
   ): Promise<AttendanceRecordResponse> {
-    const created = await this.logAttendance.execute(
+    const { record, memo } = await this.logAttendance.execute(
       new LogAttendanceCommand(
         req.firebaseUid!,
         id,
@@ -70,7 +75,19 @@ export class AttendanceController {
         dto.notes,
       ),
     );
-    return toAttendanceRecordResponse(created);
+    return toAttendanceRecordResponse(record, undefined, memo);
+  }
+
+  @Patch('attendance/:id/reclassify')
+  async reclassify(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReclassifyAttendanceDto,
+  ): Promise<AttendanceRecordResponse> {
+    const result = await this.reclassifyAttendance.execute(
+      new ReclassifyAttendanceCommand(req.firebaseUid!, id, dto.status, dto.justification),
+    );
+    return toAttendanceRecordResponse(result.record, result.employeeName, result.memo);
   }
 
   @Get('employees/:id/attendance')

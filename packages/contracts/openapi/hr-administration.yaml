@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.1.0
+  version: 0.2.0
   description: >
     Contrato del módulo de Administración de Personal (ADP-01 a ADP-10).
     Fuentes canónicas: BDD-06 (BDD-ADP-001 v1.9), SDD-06 (SDD-KAIROS-MVP-002 / ADP v2.1) y TDD-06 (TDD-KAIROS-MVP-002 / ADP v2.1).
@@ -25,7 +25,14 @@ info:
     LEAVE_NOT_FOUND, LEAVE_ALREADY_RESOLVED, INVALID_LEAVE_STATUS, INVALID_DATE_RANGE, VACATION_OVERLAP,
     FIELD_TRIP_NOT_FOUND, FIELD_TRIP_NOT_PENDING, FIELD_TRIP_NOT_AUTHORIZED, FIELD_TRIP_TIMEOUT_NOT_ELAPSED,
     INVALID_FIELD_TRIP_DATES, INVALID_AUTHORIZATION_LEVEL, AUTHORIZATION_LEVEL_NOT_REACHED, NO_AUTHORIZATION_AVAILABLE,
-    EMPLOYMENT_ALREADY_TERMINATED, INVALID_TERMINATION_NOTICE, TERMINATION_NOTES_REQUIRED, FINAL_SETTLEMENT_REQUIRED.
+    EMPLOYMENT_ALREADY_TERMINATED, INVALID_TERMINATION_NOTICE, TERMINATION_NOTES_REQUIRED, FINAL_SETTLEMENT_REQUIRED,
+    FIELD_TRIP_REJECTION_REASON_REQUIRED, EMPLOYEE_NOT_LINKED, ATTENDANCE_NOT_FOUND, ATTENDANCE_NOT_RECLASSIFIABLE,
+    INVALID_ATTENDANCE_RECLASSIFICATION, LEAVE_EVIDENCE_NOT_ALLOWED, INVALID_LEAVE_EVIDENCE, EVIDENCE_STORAGE_UNAVAILABLE,
+    TRAINING_ATTENDEES_INVALID, INVALID_TRAINING.
+
+    Automatismos (v0.2.0): la cascada de salidas a campo avanza sola cuando vence el temporizador de cada nivel
+    (3 niveles x 5 min, termina en NO_AUTORIZADA, nunca aprueba por defecto) y el memo por reincidencia (4ª tardanza al
+    regresar de campo, 2ª falta injustificada del mes) se genera automáticamente; ambos quedan en la auditoría.
 
 paths:
   /employees:
@@ -355,7 +362,7 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/FieldTripResponse' }
         '401': { description: Token ausente o inválido }
-        '403': { description: Rol sin permiso HR_ADMINISTRATION.REQUEST_FIELD_TRIP ni AUTHORIZE_FIELD_TRIP }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.REQUEST_FIELD_TRIP, AUTHORIZE_FIELD_TRIP ni EVALUATE_FIELD_TRIP_RETURN }
 
   /employees/{id}/field-trips:
     post:
@@ -401,7 +408,7 @@ paths:
   /field-trips/{id}/authorize:
     post:
       operationId: authorizeFieldTrip
-      summary: Autorizar salida a campo en el nivel actual (1=Fiorella, 2=José, 3=Cecilia, BR-ADP-004)
+      summary: Autorizar salida a campo en el nivel actual (Nivel 1 de 3, 2 de 3 o 3 de 3; lo decide el permiso AUTHORIZE_FIELD_TRIP, BR-ADP-004)
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -488,6 +495,219 @@ paths:
         '404': { description: Colaborador no encontrado }
         '409': { description: El colaborador ya fue terminado previamente (EMPLOYMENT_ALREADY_TERMINATED) }
         '422': { description: Reglas de BR-ADP-006 incumplidas - renuncia sin pago de la quincena pendiente (FINAL_SETTLEMENT_REQUIRED), despido sin motivo documentado (TERMINATION_NOTES_REQUIRED) o aviso inválido (INVALID_TERMINATION_NOTICE) }
+
+  /field-trips/{id}/reject:
+    post:
+      operationId: rejectFieldTrip
+      summary: Rechazar salida a campo con motivo (ADP-07); queda NO_AUTORIZADA sin abrir niveles adicionales
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectFieldTripRequest' }
+      responses:
+        '200':
+          description: Salida rechazada (NO_AUTORIZADA) con el nivel pendiente y el motivo registrados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FieldTripResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.AUTHORIZE_FIELD_TRIP }
+        '404': { description: Salida a campo no encontrada }
+        '409': { description: La salida no está pendiente de autorización (FIELD_TRIP_NOT_PENDING) }
+        '422': { description: Falta el motivo del rechazo (FIELD_TRIP_REJECTION_REASON_REQUIRED) }
+
+  /attendance/{id}/reclassify:
+    patch:
+      operationId: reclassifyAttendance
+      summary: Reclasificar una falta como justificada o injustificada con su justificación (ADP-03)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReclassifyAttendanceRequest' }
+      responses:
+        '200':
+          description: Falta reclasificada; el descuento lo recalcula el sistema y sigue pendiente hasta el cierre de mes. Incluye el memo si se generó por reiteración.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceRecordResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.LOG_ATTENDANCE }
+        '404': { description: Registro de asistencia no encontrado (ATTENDANCE_NOT_FOUND) }
+        '409': { description: No es una falta, o su descuento ya se aplicó en el cierre de mes (ATTENDANCE_NOT_RECLASSIFIABLE) }
+        '422': { description: Clasificación o justificación inválida (INVALID_ATTENDANCE_RECLASSIFICATION) }
+
+  /leaves/{id}/evidence/upload-url:
+    post:
+      operationId: requestLeaveEvidenceUploadUrl
+      summary: Pedir URL firmada para subir el sustento de un permiso pendiente (ADP-04)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestLeaveEvidenceUploadRequest' }
+      responses:
+        '201':
+          description: URL firmada de subida directa y URL final del objeto
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveEvidenceUploadSessionResponse' }
+        '400': { description: Tipo de archivo no admitido, tamaño excedido o máximo de archivos alcanzado (INVALID_LEAVE_EVIDENCE) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso sobre permisos del colaborador }
+        '404': { description: Permiso no encontrado }
+        '409': { description: El permiso ya fue resuelto (LEAVE_EVIDENCE_NOT_ALLOWED) }
+        '503': { description: Almacenamiento no configurado (EVIDENCE_STORAGE_UNAVAILABLE) }
+
+  /leaves/{id}/evidence:
+    post:
+      operationId: recordLeaveEvidence
+      summary: Registrar la evidencia ya subida con la URL firmada (ADP-04)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordLeaveEvidenceRequest' }
+      responses:
+        '201':
+          description: Evidencia adjunta al permiso
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveEvidenceResponse' }
+        '400': { description: URL no emitida para este permiso/empresa o tipo no admitido (INVALID_LEAVE_EVIDENCE) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso sobre permisos del colaborador }
+        '404': { description: Permiso no encontrado }
+        '409': { description: El permiso ya fue resuelto (LEAVE_EVIDENCE_NOT_ALLOWED) }
+    get:
+      operationId: listLeaveEvidence
+      summary: Listar la evidencia adjunta de un permiso (ADP-04)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Evidencia del permiso
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/LeaveEvidenceResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso sobre permisos del colaborador }
+        '404': { description: Permiso no encontrado }
+
+  /employees/{id}/memos:
+    get:
+      operationId: getEmployeeMemos
+      summary: Memos de advertencia del colaborador, generados automáticamente por reincidencia (ADP-01, ADP-08)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Memos del colaborador, del más reciente al más antiguo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/HrMemoResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+
+  /employees/{id}/trainings:
+    get:
+      operationId: getEmployeeTrainings
+      summary: Historial de capacitaciones internas del colaborador (ADP-10)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Talleres a los que asistió el colaborador
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TrainingResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+
+  /me/employee:
+    get:
+      operationId: getMyEmployee
+      summary: Ficha del propio usuario para solicitar salidas a campo (ADP-06); no exige permisos de Personal
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Datos mínimos de la ficha del usuario
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MyEmployeeResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin asignación vigente en esa empresa/sede }
+        '404': { description: El usuario aún no está vinculado a una ficha de colaborador (EMPLOYEE_NOT_LINKED) }
+
+  /trainings:
+    post:
+      operationId: registerTraining
+      summary: Registrar un taller interno informal con sus asistentes (ADP-10, BR-ADP-008)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterTrainingRequest' }
+      responses:
+        '201':
+          description: Taller registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrainingResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.REGISTER_TRAINING }
+        '422': { description: Tema, fecha o duración inválidos (INVALID_TRAINING) o asistentes que no pertenecen a la empresa (TRAINING_ATTENDEES_INVALID) }
+    get:
+      operationId: listTrainings
+      summary: Listar los talleres internos registrados (ADP-10)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200 } }
+      responses:
+        '200':
+          description: Talleres, del más reciente al más antiguo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TrainingResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso sobre Administración de Personal }
 
 components:
   securitySchemes:
@@ -614,6 +834,12 @@ components:
               nullable: true
               allOf:
                 - { $ref: '#/components/schemas/EmploymentTerminationResponse' }
+            recentMemos:
+              type: array
+              items: { $ref: '#/components/schemas/HrMemoResponse' }
+            recentTrainings:
+              type: array
+              items: { $ref: '#/components/schemas/TrainingResponse' }
 
     LogAttendanceRequest:
       type: object
@@ -623,8 +849,8 @@ components:
         checkInTime: { type: string, format: date-time, nullable: true }
         checkOutTime: { type: string, format: date-time, nullable: true }
         status: { $ref: '#/components/schemas/AttendanceStatus' }
-        minutesLate: { type: integer, minimum: 0, default: 0 }
-        deductionAmount: { type: number, minimum: 0, default: 0 }
+        minutesLate: { type: integer, minimum: 0, description: Opcional; una tardanza lo exige mayor a 0 (el sistema no asume 0) }
+        deductionAmount: { type: number, minimum: 0, description: Opcional; si no se envía lo calcula el sistema }
         notes: { type: string, nullable: true }
 
     AttendanceRecordResponse:
@@ -644,6 +870,13 @@ components:
         payrollMonth: { type: string, nullable: true }
         deductionAppliedAt: { type: string, format: date-time, nullable: true }
         notes: { type: string, nullable: true }
+        justification: { type: string, nullable: true }
+        reclassifiedAt: { type: string, format: date-time, nullable: true }
+        memo:
+          nullable: true
+          description: Memo generado automáticamente por reiteración de faltas injustificadas del mes
+          allOf:
+            - { $ref: '#/components/schemas/HrMemoResponse' }
         createdAt: { type: string, format: date-time }
 
     MonthlyAttendanceSummaryResponse:
@@ -767,7 +1000,7 @@ components:
           type: integer
           minimum: 1
           maximum: 3
-          description: Nivel de autorización (1=Fiorella, 2=José, 3=Cecilia - NUNCA 4)
+          description: Nivel de autorización alcanzado (Nivel 1 de 3, 2 de 3 o 3 de 3 - NUNCA 4)
         notes: { type: string, nullable: true }
 
     EvaluateFieldTripReturnRequest:
@@ -800,6 +1033,17 @@ components:
         level3TimeoutAt: { type: string, format: date-time, nullable: true }
         lateMinutes: { type: integer }
         returnNotes: { type: string, nullable: true }
+        employee: { $ref: '#/components/schemas/FieldTripEmployeeSummary' }
+        rejectedById: { type: string, nullable: true }
+        rejectedByName: { type: string, nullable: true }
+        rejectedAt: { type: string, format: date-time, nullable: true }
+        rejectedAtLevel: { type: integer, nullable: true, minimum: 1, maximum: 3, description: Nivel que estaba pendiente al rechazar }
+        rejectionReason: { type: string, nullable: true }
+        memo:
+          nullable: true
+          description: Memo generado automáticamente al registrar el retorno (4ª tardanza en adelante)
+          allOf:
+            - { $ref: '#/components/schemas/HrMemoResponse' }
         message: { type: string, nullable: true, description: Mensaje informativo (ej. al terminar en NO_AUTORIZADA) }
         createdAt: { type: string, format: date-time }
 
@@ -829,6 +1073,127 @@ components:
         terminatedAt: { type: string, format: date-time }
         createdAt: { type: string, format: date-time }
         vacancyCreatedId: { type: string, format: uuid, nullable: true, description: Vacante creada automáticamente en Reclutamiento }
+
+    RejectFieldTripRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 5, maxLength: 1000, description: Motivo del rechazo (obligatorio) }
+
+    ReclassifyAttendanceRequest:
+      type: object
+      required: [status, justification]
+      properties:
+        status: { type: string, enum: [FALTA_JUSTIFICADA, FALTA_INJUSTIFICADA] }
+        justification: { type: string, minLength: 5, maxLength: 1000 }
+
+    HrMemoResponse:
+      type: object
+      required: [id, employeeId, kind, violationNumber, reason, issuedOn, generatedBy, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        employeeName: { type: string }
+        kind: { type: string, description: 'Causa del memo: tardanza reiterada al regresar de campo o falta injustificada reiterada' }
+        violationNumber: { type: integer, description: Número de la infracción que lo originó (4ª tardanza, 2ª falta del mes, etc.) }
+        reason: { type: string }
+        issuedOn: { type: string, format: date }
+        generatedBy: { type: string, description: SISTEMA cuando se genera automáticamente }
+        createdAt: { type: string, format: date-time }
+
+    TrainingResponse:
+      type: object
+      required: [id, topic, heldOn, durationMinutes, attendees, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        topic: { type: string }
+        heldOn: { type: string, format: date }
+        durationMinutes: { type: integer }
+        comprehensionNotes: { type: string, nullable: true, description: Nota cualitativa; NO es una evaluación formal de desempeño (BR-ADP-007) }
+        attendees:
+          type: array
+          items:
+            type: object
+            required: [employeeId, fullName]
+            properties:
+              employeeId: { type: string, format: uuid }
+              fullName: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    RegisterTrainingRequest:
+      type: object
+      required: [companyId, branchId, topic, heldOn, attendeeIds]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        topic: { type: string, maxLength: 200 }
+        heldOn: { type: string, format: date }
+        durationMinutes: { type: integer, minimum: 1, maximum: 480, description: Referencia ~60 min; no bloqueante }
+        attendeeIds:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { type: string, format: uuid }
+        comprehensionNotes: { type: string, nullable: true, maxLength: 2000 }
+
+    RequestLeaveEvidenceUploadRequest:
+      type: object
+      required: [contentType, contentLength]
+      properties:
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp, application/pdf] }
+        contentLength: { type: integer, minimum: 1, maximum: 10485760 }
+
+    LeaveEvidenceUploadSessionResponse:
+      type: object
+      required: [uploadUrl, objectUrl, expiresAt]
+      properties:
+        uploadUrl: { type: string }
+        objectUrl: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    RecordLeaveEvidenceRequest:
+      type: object
+      required: [objectUrl, contentType]
+      properties:
+        objectUrl: { type: string }
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp, application/pdf] }
+
+    LeaveEvidenceResponse:
+      type: object
+      required: [id, leaveId, objectUrl, contentType, uploadedById, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        leaveId: { type: string, format: uuid }
+        objectUrl: { type: string }
+        contentType: { type: string }
+        uploadedById: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    MyEmployeeResponse:
+      type: object
+      required: [id, companyId, branchId, fullName, areaId, areaName, jobTitle, status, fieldTripLateCount, isFieldTripObserved]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        fullName: { type: string }
+        areaId: { type: string }
+        areaName: { type: string }
+        jobTitle: { type: string }
+        status: { $ref: '#/components/schemas/EmployeeStatus' }
+        fieldTripLateCount: { type: integer }
+        isFieldTripObserved: { type: boolean }
+
+    FieldTripEmployeeSummary:
+      type: object
+      required: [id, fullName, areaName, jobTitle, fieldTripLateCount, isFieldTripObserved]
+      properties:
+        id: { type: string, format: uuid }
+        fullName: { type: string }
+        areaName: { type: string }
+        jobTitle: { type: string }
+        fieldTripLateCount: { type: integer }
+        isFieldTripObserved: { type: boolean }
 
     ProblemDetail:
       type: object

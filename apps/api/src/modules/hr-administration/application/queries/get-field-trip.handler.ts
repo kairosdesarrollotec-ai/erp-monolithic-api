@@ -23,7 +23,7 @@ export class GetFieldTripHandler {
         companyId: fieldTrip.employee.operatingCompanyId,
         branchId: fieldTrip.employee.branchId,
       },
-      ['REQUEST_FIELD_TRIP', 'AUTHORIZE_FIELD_TRIP'],
+      ['REQUEST_FIELD_TRIP', 'AUTHORIZE_FIELD_TRIP', 'EVALUATE_FIELD_TRIP_RETURN'],
     );
 
     return fieldTrip;

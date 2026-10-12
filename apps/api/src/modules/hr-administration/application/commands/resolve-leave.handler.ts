@@ -15,7 +15,7 @@ import { ResolveLeaveCommand } from './resolve-leave.command';
 
 /**
  * ADP-P06 / BR-ADP-003: autorizar o denegar un permiso es exclusivo de quien tenga el permiso AUTHORIZE_LEAVE en la
- * matriz (hoy Fiorella o José): la regla NUNCA se decide por nombre ni por rol hard-coded.
+ * matriz: la regla NUNCA se decide por nombre ni por rol hard-coded.
  * Estados: Solicitado -> Autorizado | Denegado (BDD 11.7).
  */
 @Injectable()

@@ -36,6 +36,7 @@ describe('FieldTripCascadeService', () => {
     level3TimeoutAt: null,
     lateMinutes: 0,
     returnNotes: null,
+    rejectedById: null, rejectedByName: null, rejectedAt: null, rejectedAtLevel: null, rejectionReason: null,
     createdAt: new Date('2026-10-15T09:00:00Z'),
     updatedAt: new Date('2026-10-15T09:00:00Z'),
   };
@@ -67,6 +68,7 @@ describe('FieldTripCascadeService', () => {
     isFieldTripObserved: false,
     baseSalary: null,
     version: 1,
+    firebaseUid: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -77,6 +79,7 @@ describe('FieldTripCascadeService', () => {
       findById: jest.fn(),
       findMany: jest.fn(),
       transition: jest.fn(),
+      claimNextDueForEscalation: jest.fn(),
     } as unknown as jest.Mocked<FieldTripRepositoryPort>;
 
     mockEmployeeRepo = {
@@ -91,7 +94,12 @@ describe('FieldTripCascadeService', () => {
   });
 
   const employeeRef = {
+    id: 'emp-1',
     fullName: 'Juan Mecánico',
+    areaName: 'Taller Mecánico',
+    jobTitle: 'Mecánico de Flota',
+    fieldTripLateCount: 0,
+    isFieldTripObserved: false,
     organizationId: 'org-1',
     operatingCompanyId: 'comp-1',
     branchId: 'branch-1',
@@ -100,21 +108,21 @@ describe('FieldTripCascadeService', () => {
   const NOW = new Date('2026-10-15T09:06:00Z');
 
   describe('authorize', () => {
-    it('autoriza en Nivel 1 (Fiorella) guardando el nivel alcanzado', async () => {
+    it('autoriza en Nivel 1 guardando el nivel alcanzado', async () => {
       mockFieldTripRepo.findById.mockResolvedValue(withEmployee());
       mockFieldTripRepo.transition.mockResolvedValue({
         ...baseFieldTrip,
         status: 'AUTORIZADA',
         authorizationLevel: 1,
         authorizedById: 'uid-fiorella',
-        authorizedByName: 'Fiorella',
+        authorizedByName: 'Autorizador 1',
       });
 
       const result = await service.authorize({
         fieldTripId: 'ft-1',
         authorizationLevel: 1,
         userId: 'uid-fiorella',
-        userName: 'Fiorella',
+        userName: 'Autorizador 1',
         now: NOW,
       });
 
@@ -128,7 +136,7 @@ describe('FieldTripCascadeService', () => {
       );
     });
 
-    it('autoriza en Nivel 2 (José) cuando la cascada ya escaló a ese nivel', async () => {
+    it('autoriza en Nivel 2 cuando la cascada ya escaló a ese nivel', async () => {
       mockFieldTripRepo.findById.mockResolvedValue(withEmployee({ status: 'PENDIENTE_NIVEL_2' }));
       mockFieldTripRepo.transition.mockResolvedValue({ ...baseFieldTrip, status: 'AUTORIZADA', authorizationLevel: 2 });
 
@@ -177,7 +185,7 @@ describe('FieldTripCascadeService', () => {
   });
 
   describe('advanceTimeout', () => {
-    it('avanza Nivel 1 a Nivel 2 fijando el temporizador de 5 min del nuevo nivel', async () => {
+    it('avanza Nivel 1 a Nivel 2 fijando el temporizador de 5 min contado desde el vencimiento anterior', async () => {
       mockFieldTripRepo.findById.mockResolvedValue(withEmployee());
       mockFieldTripRepo.transition.mockResolvedValue({ ...baseFieldTrip, status: 'PENDIENTE_NIVEL_2' });
 
@@ -186,7 +194,7 @@ describe('FieldTripCascadeService', () => {
       expect(mockFieldTripRepo.transition).toHaveBeenCalledWith(
         'ft-1',
         ['PENDIENTE_NIVEL_1'],
-        { status: 'PENDIENTE_NIVEL_2', level2TimeoutAt: new Date(NOW.getTime() + 5 * 60 * 1000) },
+        { status: 'PENDIENTE_NIVEL_2', level2TimeoutAt: new Date('2026-10-15T09:10:00Z') },
         undefined,
       );
     });

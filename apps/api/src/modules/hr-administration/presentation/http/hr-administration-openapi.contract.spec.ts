@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.1.0');
+    expect(spec.info.version).toBe('0.2.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -38,24 +38,32 @@ describe('hr-administration.yaml contract specification', () => {
     expect(Object.keys(spec.paths).sort()).toEqual([
       '/attendance/apply-deductions',
       '/attendance/summary',
+      '/attendance/{id}/reclassify',
       '/employees',
       '/employees/{id}',
       '/employees/{id}/attendance',
       '/employees/{id}/field-trips',
       '/employees/{id}/leaves',
+      '/employees/{id}/memos',
       '/employees/{id}/terminate',
+      '/employees/{id}/trainings',
       '/employees/{id}/vacations',
       '/field-trips',
       '/field-trips/{id}',
       '/field-trips/{id}/advance-timeout',
       '/field-trips/{id}/authorize',
+      '/field-trips/{id}/reject',
       '/field-trips/{id}/return',
+      '/leaves/{id}/evidence',
+      '/leaves/{id}/evidence/upload-url',
       '/leaves/{id}/resolve',
+      '/me/employee',
+      '/trainings',
       '/vacations/calendar',
     ]);
   });
 
-  it('expone exactamente las 21 operaciones esperadas', () => {
+  it('expone exactamente las 31 operaciones esperadas', () => {
     const ops: string[] = [];
     for (const item of Object.values<any>(spec.paths)) {
       for (const op of Object.values<any>(item)) {
@@ -73,14 +81,24 @@ describe('hr-administration.yaml contract specification', () => {
         'getEmployee',
         'getEmployeeAttendance',
         'getEmployeeLeaves',
+        'getEmployeeMemos',
+        'getEmployeeTrainings',
         'getEmployeeVacations',
         'getFieldTrip',
+        'getMyEmployee',
         'getVacationsCalendar',
         'listEmployees',
         'listFieldTrips',
+        'listLeaveEvidence',
+        'listTrainings',
         'logAttendance',
+        'reclassifyAttendance',
+        'recordLeaveEvidence',
+        'registerTraining',
+        'rejectFieldTrip',
         'requestFieldTrip',
         'requestLeave',
+        'requestLeaveEvidenceUploadUrl',
         'resolveLeave',
         'scheduleVacation',
         'terminateEmployment',
@@ -114,6 +132,25 @@ describe('hr-administration.yaml contract specification', () => {
     expect(level.maximum).toBe(3);
     expect(spec.components.schemas.FieldTripResponse.properties.authorizationLevel.maximum).toBe(3);
     expect(enumOf('FieldTripStatus')).toContain('NO_AUTORIZADA');
+  });
+
+  it('la cascada no nombra personas: los textos son genericos (Nivel 1 de 3, 2 de 3, 3 de 3)', () => {
+    const raw = fs.readFileSync(SPEC_PATH, 'utf8');
+    expect(raw).not.toMatch(/Fiorella|Jos[eé]\b|Cecilia/);
+  });
+
+  it('minutesLate y deductionAmount de LogAttendanceRequest no tienen default 0', () => {
+    const props = spec.components.schemas.LogAttendanceRequest.properties;
+    expect(props.minutesLate.default).toBeUndefined();
+    expect(props.deductionAmount.default).toBeUndefined();
+  });
+
+  it('rechazar una salida exige un motivo y /me/employee exige companyId y branchId', () => {
+    expect(spec.components.schemas.RejectFieldTripRequest.required).toEqual(['reason']);
+    const params: any[] = spec.paths['/me/employee'].get.parameters;
+    for (const name of ['companyId', 'branchId']) {
+      expect(params.find((x) => x.name === name && x.in === 'query')?.required).toBe(true);
+    }
   });
 
   it('la desvinculacion se registra por una operacion propia y la edicion no la expone (BR-ADP-006)', () => {

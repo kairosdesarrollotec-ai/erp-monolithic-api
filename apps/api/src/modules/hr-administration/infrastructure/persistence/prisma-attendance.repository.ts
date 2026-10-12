@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import type { AttendanceRecord, Prisma } from '@prisma/client';
+import type { AttendanceRecord, AttendanceStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   AttendanceRepositoryPort,
+  AttendanceWithEmployee,
   CreateAttendanceData,
   EmployeeAttendanceTotals,
   ListAttendanceFilters,
   MonthlyAttendanceItem,
   PendingDeductionItem,
+  ReclassifyAttendanceData,
 } from '../../application/ports/attendance-repository.port';
 
 function monthRange(month: string): { start: Date; end: Date } {
@@ -44,6 +46,50 @@ export class PrismaAttendanceRepository implements AttendanceRepositoryPort {
         createdById: data.createdById,
       },
     });
+  }
+
+  async findById(id: string, tx?: Prisma.TransactionClient): Promise<AttendanceWithEmployee | null> {
+    const client = tx ?? this.prisma;
+    return client.attendanceRecord.findUnique({
+      where: { id },
+      include: {
+        employee: {
+          select: { fullName: true, organizationId: true, operatingCompanyId: true, branchId: true, baseSalary: true },
+        },
+      },
+    });
+  }
+
+  async reclassify(
+    id: string,
+    data: ReclassifyAttendanceData,
+    tx?: Prisma.TransactionClient,
+  ): Promise<AttendanceRecord | null> {
+    const client = tx ?? this.prisma;
+    const result = await client.attendanceRecord.updateMany({
+      where: { id, isDeductionApplied: false, status: { in: ['FALTA_JUSTIFICADA', 'FALTA_INJUSTIFICADA'] } },
+      data: {
+        status: data.status,
+        deductionAmount: data.deductionAmount,
+        justification: data.justification,
+        reclassifiedById: data.reclassifiedById,
+        reclassifiedAt: data.reclassifiedAt,
+      },
+    });
+    if (result.count === 0) return null;
+    return client.attendanceRecord.findUniqueOrThrow({ where: { id } });
+  }
+
+  async countInMonthOf(
+    employeeId: string,
+    status: AttendanceStatus,
+    anyDateInMonth: Date,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number> {
+    const client = tx ?? this.prisma;
+    const month = `${anyDateInMonth.getUTCFullYear()}-${String(anyDateInMonth.getUTCMonth() + 1).padStart(2, '0')}`;
+    const { start, end } = monthRange(month);
+    return client.attendanceRecord.count({ where: { employeeId, status, date: { gte: start, lte: end } } });
   }
 
   async findByEmployeeAndDate(
