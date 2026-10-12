@@ -17,6 +17,7 @@ import {
   VehicleNotAvailableError,
 } from '../../domain/reservation-errors';
 import { TERMINAL_RESERVATION_STATUSES } from '../../domain/reservation-status';
+import { findFirstVehicleConflict } from '../../../../common/persistence/vehicle-overlap';
 
 /**
  * Hallazgo MEDIO de revision PR#6 ("as unknown as ocultan la
@@ -89,16 +90,13 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     });
   }
 
+  /**
+   * Regla compartida de solape (common/persistence/vehicle-overlap.ts):
+   * ocupado si hay un vehicle_commitment ACTIVE|CONSOLIDATED (alquileres,
+   * reservas confirmadas) o una reserva no terminal que solape [startAt, endAt).
+   */
   async isVehicleAvailable(vehicleId: string, startAt: Date, endAt: Date): Promise<boolean> {
-    const conflict = await this.prisma.reservation.findFirst({
-      where: {
-        vehicleId,
-        status: { notIn: Array.from(TERMINAL_RESERVATION_STATUSES) },
-        startAt: { lt: endAt },
-        endAt: { gt: startAt },
-      },
-      select: { id: true },
-    });
+    const conflict = await findFirstVehicleConflict(this.prisma, vehicleId, startAt, endAt);
     return conflict === null;
   }
 
@@ -249,16 +247,11 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
       throw new ReservationVersionConflictError();
     }
 
-    const overlapping = await tx.vehicleCommitment.findFirst({
-      where: {
-        vehicleId: reservation.vehicleId,
-        status: { in: ['ACTIVE', 'CONSOLIDATED'] },
-        startsAt: { lt: reservation.endAt },
-        endsAt: { gt: reservation.startAt },
-      },
+    const overlapping = await findFirstVehicleConflict(tx, reservation.vehicleId, reservation.startAt, reservation.endAt, {
+      excludeReservationId: reservation.id,
     });
     if (overlapping) {
-      throw new VehicleNotAvailableError();
+      throw new VehicleNotAvailableError({ from: overlapping.from, to: overlapping.to });
     }
 
     await tx.vehicleCommitment.create({
