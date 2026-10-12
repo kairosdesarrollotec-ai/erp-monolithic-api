@@ -6,6 +6,7 @@ import { GetWorkContextAssignmentsHandler } from './application/queries/get-work
 import { SelectWorkContextHandler } from './application/commands/select-work-context.handler';
 import { WorkContextAuthorizationService } from './application/services/work-context-authorization.service';
 import { GetDashboardHandler } from './application/queries/get-dashboard.handler';
+import { GetMyProfileHandler } from './application/queries/get-my-profile.handler';
 import { UserProfileRepositoryPort } from './application/ports/user-profile-repository.port';
 import { WorkContextRepositoryPort } from './application/ports/work-context-repository.port';
 import { PrismaUserProfileRepository } from './infrastructure/persistence/prisma-user-profile.repository';
@@ -23,6 +24,7 @@ import { DashboardProjectionsModule } from '../dashboard-projections/dashboard-p
     SelectWorkContextHandler,
     WorkContextAuthorizationService,
     GetDashboardHandler,
+    GetMyProfileHandler,
     { provide: UserProfileRepositoryPort, useClass: PrismaUserProfileRepository },
     { provide: WorkContextRepositoryPort, useClass: PrismaWorkContextRepository },
   ],
