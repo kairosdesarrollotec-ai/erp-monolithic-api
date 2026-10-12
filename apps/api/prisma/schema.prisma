@@ -995,6 +995,9 @@ model RentalContract {
   status        String    @default("PENDING") // PENDING | SIGNED | VOID
   signedAt      DateTime? @map("signed_at")
   signatureData String?   @map("signature_data") @db.Text
+  /// BR-DOC-003: combinacion (titular natural/juridica x con/sin conductor)
+  /// con la que se eligio la plantilla. NULL = contratos anteriores a la seleccion.
+  contractVariant String? @map("contract_variant") @db.VarChar(40)
   createdAt     DateTime  @default(now()) @map("created_at")
 
   rental      Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
@@ -1073,6 +1076,11 @@ model RentalDeposit {
   status         String                    @default("HELD") // HELD | RETURNED | RETAINED | PARTIALLY_RETAINED
   closedAt       DateTime?                 @map("closed_at")
   closureNotes   String?                   @map("closure_notes") @db.VarChar(500)
+  /// P0-03 opcion (a): parte de `originalAmount` (garantia TOTAL) que ya
+  /// estaba pagada como monto de la reserva y se traslada integra a la
+  /// garantia. Solo alquileres de origen Reserva (0 en alquiler directo).
+  /// Monto a cobrar al formalizar = originalAmount - reservationCreditAmount.
+  reservationCreditAmount Decimal          @default(0) @map("reservation_credit_amount") @db.Decimal(12, 2)
   createdAt      DateTime                  @default(now()) @map("created_at")
 
   rental      Rental                    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
@@ -1403,6 +1411,15 @@ enum VacancyStatus {
   EN_NEGOCIACION
   DECIDIDA
   CANCELADA
+  /// REC-02 "Pausar": convocatoria detenida temporalmente; se reanuda a PUBLICADA.
+  PAUSADA
+}
+
+/// REC-04 - Resultado de una ronda de negociacion de condiciones (REC-P06/P07).
+enum NegotiationOutcome {
+  EN_CURSO
+  ACORDADA
+  NO_ACORDADA
 }
 
 /// BDD-05 / PROTO-REC-03 - Etapas de postulantes en el tablero Kanban.
@@ -1472,6 +1489,13 @@ model Candidate {
   phone              String?            @db.VarChar(50)
   cvDocumentId       String             @map("cv_document_id")
   salaryExpectation  Decimal?           @map("salary_expectation") @db.Decimal(10, 2)
+  /// DAT-REC-004 - Archivo del CV en almacenamiento privado (URL de objeto; la lectura es por URL firmada).
+  cvObjectUrl        String?            @map("cv_object_url") @db.VarChar(1024)
+  cvFileName         String?            @map("cv_file_name") @db.VarChar(200)
+  cvContentType      String?            @map("cv_content_type") @db.VarChar(100)
+  cvSizeBytes        Int?               @map("cv_size_bytes")
+  cvUploadedAt       DateTime?          @map("cv_uploaded_at")
+  cvUploadedBy       String?            @map("cv_uploaded_by")
   stage              CandidateStage     @default(NUEVO)
   score              Decimal?           @db.Decimal(5, 2)
   decision           CandidateDecision?
@@ -1483,9 +1507,10 @@ model Candidate {
   updatedAt          DateTime           @updatedAt @map("updated_at")
 
   vacancy    Vacancy              @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
-  interviews CandidateInterview[]
-  onboarding EmployeeOnboarding?
-  employee   Employee?
+  interviews   CandidateInterview[]
+  negotiations CandidateNegotiation[]
+  onboarding   EmployeeOnboarding?
+  employee     Employee?
 
   @@unique([vacancyId, documentNumber], map: "candidates_vacancy_id_document_number_key")
   @@index([vacancyId, stage], map: "candidates_vacancy_id_stage_idx")
@@ -1512,6 +1537,31 @@ model CandidateInterview {
   @@map("candidate_interviews")
 }
 
+/// BDD-REC-001 REC-P06/P07 / PROTO-REC-04 - Historial append-only de rondas de negociacion de condiciones.
+/// Dato sensible (DAT-REC-003): solo lo ve quien tiene VIEW_CANDIDATE_SENSITIVE_DATA.
+model CandidateNegotiation {
+  id                    String             @id @default(uuid())
+  candidateId           String             @map("candidate_id")
+  offeredSalary         Decimal            @map("offered_salary") @db.Decimal(10, 2)
+  offeredSchedule       String?            @map("offered_schedule") @db.VarChar(255)
+  offeredOtherConditions String?           @map("offered_other_conditions") @db.Text
+  candidateSalary       Decimal?           @map("candidate_salary") @db.Decimal(10, 2)
+  candidateSchedule     String?            @map("candidate_schedule") @db.VarChar(255)
+  candidateOtherConditions String?         @map("candidate_other_conditions") @db.Text
+  candidateStartDate    DateTime?          @map("candidate_start_date") @db.Date
+  outcome               NegotiationOutcome @default(EN_CURSO)
+  agreedSalary          Decimal?           @map("agreed_salary") @db.Decimal(10, 2)
+  agreedConditions      String?            @map("agreed_conditions") @db.Text
+  reason                String?            @db.Text
+  recordedBy            String             @map("recorded_by")
+  createdAt             DateTime           @default(now()) @map("created_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId, createdAt(sort: Desc)], map: "candidate_negotiations_candidate_id_created_at_idx")
+  @@map("candidate_negotiations")
+}
+
 /// BDD-REC-001 REC-P11..P15 / PROTO-REC-07/08 - Incorporación y periodo de prueba.
 /// Exige contrato notariado mandatorio si la vacante fue para mecánico (BR-REC-009).
 model EmployeeOnboarding {
@@ -1529,6 +1579,13 @@ model EmployeeOnboarding {
   probationPassed          Boolean?  @map("probation_passed")
   probationEvaluatedAt     DateTime? @map("probation_evaluated_at")
   probationEvaluatedBy     String?   @map("probation_evaluated_by")
+  /// REC-08 / BR-REC-005 - Honorarios del periodo de prueba (dato financiero, DAT-REC-007).
+  probationMonthlyFee      Decimal?  @map("probation_monthly_fee") @db.Decimal(10, 2)
+  postProbationMonthlySalary Decimal? @map("post_probation_monthly_salary") @db.Decimal(10, 2)
+  probationFeeNotes        String?   @map("probation_fee_notes") @db.VarChar(500)
+  probationFeesRecordedAt  DateTime? @map("probation_fees_recorded_at")
+  probationFeesRecordedBy  String?   @map("probation_fees_recorded_by")
+  version                  Int       @default(1)
   createdAt                DateTime  @default(now()) @map("created_at")
 
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
@@ -1619,6 +1676,9 @@ model Employee {
   fieldTripLateCount    Int                @default(0) @map("field_trip_late_count")
   isFieldTripObserved   Boolean            @default(false) @map("is_field_trip_observed")
   baseSalary            Decimal?           @map("base_salary") @db.Decimal(10, 2)
+  /// Cuenta de acceso (Firebase) del colaborador: permite que un trabajador de campo encuentre su propia ficha
+  /// (`GET /me/employee`) sin elegir empleado a mano. Un usuario, como máximo un colaborador por empresa.
+  firebaseUid           String?            @map("firebase_uid") @db.VarChar(128)
   version               Int                @default(1)
   createdAt             DateTime           @default(now()) @map("created_at")
   updatedAt             DateTime           @updatedAt @map("updated_at")
@@ -1631,8 +1691,11 @@ model Employee {
   vacations        VacationRequest[]
   fieldTrips       FieldTripRequest[]
   termination      EmploymentTermination?
+  memos            HrMemo[]
+  trainings        TrainingAttendee[]
 
   @@unique([operatingCompanyId, documentNumber], map: "employees_company_document_key")
+  @@unique([operatingCompanyId, firebaseUid], map: "employees_company_firebase_uid_key")
   @@index([organizationId, operatingCompanyId, branchId, status], map: "employees_scope_status_idx")
   @@index([areaId, status], map: "employees_area_status_idx")
   @@map("employees")
@@ -1652,6 +1715,10 @@ model AttendanceRecord {
   payrollMonth       String?          @map("payroll_month") @db.VarChar(7)
   deductionAppliedAt DateTime?        @map("deduction_applied_at")
   notes              String?          @db.Text
+  /// ADP-03: justificación con la que se reclasificó la falta (JUSTIFICADA / INJUSTIFICADA).
+  justification      String?          @db.Text
+  reclassifiedAt     DateTime?        @map("reclassified_at")
+  reclassifiedById   String?          @map("reclassified_by_id")
   createdById        String           @map("created_by_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
@@ -1681,7 +1748,8 @@ model LeaveRequest {
   createdAt       DateTime    @default(now()) @map("created_at")
   updatedAt       DateTime    @updatedAt @map("updated_at")
 
-  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  evidence LeaveEvidence[]
 
   @@index([employeeId, date], map: "leave_requests_employee_date_idx")
   @@index([status, date], map: "leave_requests_status_date_idx")
@@ -1732,6 +1800,12 @@ model FieldTripRequest {
   level3TimeoutAt    DateTime?       @map("level3_timeout_at")
   lateMinutes        Int             @default(0) @map("late_minutes")
   returnNotes        String?         @map("return_notes") @db.Text
+  /// ADP-07: rechazo explícito de un autorizador (el estado resultante es NO_AUTORIZADA, igual que si nadie responde).
+  rejectedById       String?         @map("rejected_by_id")
+  rejectedByName     String?         @map("rejected_by_name") @db.VarChar(200)
+  rejectedAt         DateTime?       @map("rejected_at")
+  rejectedAtLevel    Int?            @map("rejected_at_level")
+  rejectionReason    String?         @map("rejection_reason") @db.Text
   createdAt          DateTime        @default(now()) @map("created_at")
   updatedAt          DateTime        @updatedAt @map("updated_at")
 
@@ -1758,5 +1832,75 @@ model EmploymentTermination {
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
   @@map("employment_terminations")
+}
+
+/// BDD-ADP-001 ADP-P04 / ADP-08 (evidencia adjunta de permisos, ADP-04) - archivo ya subido a almacenamiento con URL firmada.
+model LeaveEvidence {
+  id            String   @id @default(uuid())
+  leaveId       String   @map("leave_id")
+  objectUrl     String   @map("object_url") @db.Text
+  contentType   String   @map("content_type") @db.VarChar(100)
+  uploadedById  String   @map("uploaded_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  leave LeaveRequest @relation(fields: [leaveId], references: [id], onDelete: Cascade)
+
+  @@unique([leaveId, objectUrl], map: "leave_evidence_leave_object_key")
+  @@index([leaveId], map: "leave_evidence_leave_idx")
+  @@map("leave_evidence")
+}
+
+/// BDD-ADP-001 ADP-P03 / BR-ADP-005 - Memorando de advertencia generado automáticamente por reincidencia
+/// (4ª tardanza al regresar de campo, 2ª falta injustificada del mes). `sourceType + sourceId` lo hace idempotente.
+model HrMemo {
+  id              String   @id @default(uuid())
+  organizationId  String   @map("organization_id")
+  employeeId      String   @map("employee_id")
+  kind            String   @db.VarChar(40)
+  sourceType      String   @map("source_type") @db.VarChar(40)
+  sourceId        String   @map("source_id")
+  violationNumber Int      @map("violation_number")
+  reason          String   @db.Text
+  issuedOn        DateTime @map("issued_on") @db.Date
+  generatedBy     String   @default("SISTEMA") @map("generated_by") @db.VarChar(40)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceType, sourceId], map: "hr_memos_source_key")
+  @@index([employeeId, issuedOn], map: "hr_memos_employee_issued_idx")
+  @@map("hr_memos")
+}
+
+/// BDD-ADP-001 ADP-P19 / BR-ADP-008 / DAT-ADP-009 - Taller interno informal (~1 h): tema, asistentes y nota cualitativa
+/// de comprensión. NO es la evaluación de desempeño formal (fuera del MVP, BR-ADP-007).
+model TrainingSession {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  branchId           String   @map("branch_id")
+  topic              String   @db.VarChar(200)
+  heldOn             DateTime @map("held_on") @db.Date
+  durationMinutes    Int      @default(60) @map("duration_minutes")
+  comprehensionNotes String?  @map("comprehension_notes") @db.Text
+  createdById        String   @map("created_by_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  attendees TrainingAttendee[]
+
+  @@index([operatingCompanyId, heldOn], map: "training_sessions_company_held_idx")
+  @@map("training_sessions")
+}
+
+model TrainingAttendee {
+  trainingId String @map("training_id")
+  employeeId String @map("employee_id")
+
+  training TrainingSession @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  employee Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@id([trainingId, employeeId])
+  @@index([employeeId], map: "training_attendees_employee_idx")
+  @@map("training_attendees")
 }
 

@@ -89,7 +89,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   // TEMPLATE (2 acciones — TDD-KAIROS-MVP-002-TPL TDD-TPL-ADR-004)
   { module: 'TEMPLATE', action: 'VIEW', label: 'Plantillas: consultar' },
   { module: 'TEMPLATE', action: 'MANAGE', label: 'Plantillas: crear/activar/retirar' },
-  // HR_ADMINISTRATION (9 acciones — hr-administration-role-policy.ts)
+  // HR_ADMINISTRATION (10 acciones — hr-administration-role-policy.ts)
   { module: 'HR_ADMINISTRATION', action: 'VIEW_EMPLOYEES', label: 'Personal: consultar colaboradores y expedientes' },
   { module: 'HR_ADMINISTRATION', action: 'MANAGE_EMPLOYEES', label: 'Personal: crear y editar colaboradores' },
   { module: 'HR_ADMINISTRATION', action: 'LOG_ATTENDANCE', label: 'Personal: registrar asistencia y faltas' },
@@ -99,6 +99,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'HR_ADMINISTRATION', action: 'AUTHORIZE_FIELD_TRIP', label: 'Personal: autorizar salida a campo en cascada' },
   { module: 'HR_ADMINISTRATION', action: 'EVALUATE_FIELD_TRIP_RETURN', label: 'Personal: evaluar retorno de campo y tardanzas' },
   { module: 'HR_ADMINISTRATION', action: 'TERMINATE_EMPLOYMENT', label: 'Personal: registrar término de relación laboral' },
+  { module: 'HR_ADMINISTRATION', action: 'REGISTER_TRAINING', label: 'Personal: registrar capacitaciones internas' },
   // PAYMENT (5 acciones — BDD-PAG-001 / SDD-PAG-001 / TDD-PAG-001)
   { module: 'PAYMENT', action: 'READ_LIST', label: 'Pagos: listar garantías de alquiler' },
   { module: 'PAYMENT', action: 'READ_DETAIL', label: 'Pagos: ver detalle de garantía y ajustes' },
