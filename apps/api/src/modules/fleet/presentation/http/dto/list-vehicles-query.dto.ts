@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsIn,
   IsInt,
+  IsISO8601,
   IsOptional,
   IsString,
   IsUUID,
@@ -38,4 +39,14 @@ export class ListVehiclesQueryDto {
   @IsInt()
   @Min(0)
   offset?: number;
+
+  /** Inicio (inclusive) de la ventana de disponibilidad. ISO 8601 date o date-time. Requiere availableTo. */
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  availableFrom?: string;
+
+  /** Fin (exclusivo) de la ventana de disponibilidad. ISO 8601 date o date-time. Requiere availableFrom. */
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  availableTo?: string;
 }

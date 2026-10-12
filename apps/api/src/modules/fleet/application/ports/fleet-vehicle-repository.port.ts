@@ -1,4 +1,4 @@
-import { FleetVehicle, VehicleStatus } from '../../domain/vehicle';
+import { FleetVehicle, VehicleConflictSource, VehicleStatus } from '../../domain/vehicle';
 
 export interface CreateVehicleInput {
   organizationId: string;
@@ -38,7 +38,24 @@ export interface ListVehiclesFilters {
   offset?: number;
 }
 
+export interface VehicleWindowConflict {
+  vehicleId: string;
+  from: Date;
+  to: Date;
+  source: VehicleConflictSource;
+}
+
 export abstract class FleetVehicleRepositoryPort {
+  /**
+   * Primer conflicto por vehiculo en [from, to) (commitments ACTIVE|CONSOLIDATED
+   * y reservas no terminales), en lote: una query por fuente. Los vehiculos
+   * libres no aparecen en el mapa.
+   */
+  abstract findConflicts(
+    vehicleIds: readonly string[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<string, VehicleWindowConflict>>;
   abstract create(input: CreateVehicleInput): Promise<FleetVehicle>;
   abstract findById(
     id: string,

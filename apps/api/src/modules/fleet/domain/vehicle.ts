@@ -18,3 +18,17 @@ export interface FleetVehicle {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/** Origen de un conflicto de disponibilidad (vehicle_commitments vs reservas no terminales). */
+export type VehicleConflictSource = 'COMMITMENT' | 'RESERVATION';
+
+/** Disponibilidad de un vehiculo en una ventana [availableFrom, availableTo). */
+export interface VehicleAvailability {
+  available: boolean;
+  conflictFrom?: Date;
+  conflictTo?: Date;
+  conflictSource?: VehicleConflictSource;
+}
+
+/** Vehiculo del listado; `availability` solo existe cuando se pidio una ventana de fechas. */
+export type FleetVehicleWithAvailability = FleetVehicle & { availability?: VehicleAvailability };

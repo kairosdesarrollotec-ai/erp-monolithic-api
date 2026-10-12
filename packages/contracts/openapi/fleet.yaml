@@ -1,13 +1,23 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.2.0
+  version: 0.3.0
   description: >
     Contrato del módulo Flota. Expone el CRUD de vehículos para las empresas
     del Grupo KAIROS: registrar (POST /fleet/vehicles), listar con filtros
     (GET /fleet/vehicles), obtener detalle (GET /fleet/vehicles/{id}),
     actualizar estado (PATCH /fleet/vehicles/{id}/status) y actualizar datos
     (PATCH /fleet/vehicles/{id}).
+
+    0.3.0 — Disponibilidad por fechas en el listado: GET /fleet/vehicles acepta
+    los query params opcionales availableFrom y availableTo (ISO 8601 date o
+    date-time; ambos o ninguno; availableFrom < availableTo, fin exclusivo).
+    Cuando se envían, cada item incluye `availability` con {available,
+    conflictFrom?, conflictTo?, conflictSource?}. Un vehículo está ocupado en
+    la ventana si hay un vehicle_commitment ACTIVE|CONSOLIDATED (alquiler o
+    reserva confirmada) o una reserva no terminal que solape [from, to). Sin
+    los params, el campo `availability` no aparece (compatible hacia atrás).
+    Si falta uno de los dos o la ventana es inválida: 400.
 
     0.2.0 — Foto de vehículo via URL firmada de Google Cloud Storage (ADR-KAI-005
     extendido a Fleet, PROP-008): se agrega POST /fleet/vehicles/photo-upload-sessions
@@ -193,6 +203,27 @@ paths:
             type: integer
             minimum: 0
           description: Posición inicial para la paginación (0-indexed).
+        - name: availableFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            examples: ['2026-10-20', '2026-10-20T08:00:00.000Z']
+          description: >
+            Inicio (inclusivo) de la ventana de disponibilidad. ISO 8601 date o
+            date-time (una fecha sin hora = 00:00 UTC). Debe enviarse junto con
+            availableTo; si falta uno de los dos, 400 INVALID_AVAILABILITY_WINDOW.
+        - name: availableTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            examples: ['2026-10-25', '2026-10-25T08:00:00.000Z']
+          description: >
+            Fin (exclusivo) de la ventana de disponibilidad. ISO 8601 date o
+            date-time. Debe ser posterior a availableFrom.
       responses:
         '200':
           description: Lista paginada de vehículos con el total sin paginar
@@ -638,6 +669,31 @@ components:
           type: string
           format: date-time
           description: Timestamp ISO 8601 UTC de última modificación
+        availability:
+          $ref: '#/components/schemas/VehicleAvailability'
+
+    VehicleAvailability:
+      type: object
+      description: >
+        Solo presente en GET /fleet/vehicles cuando se envían availableFrom y
+        availableTo. Con available = true no hay campos de conflicto.
+      required:
+        - available
+      properties:
+        available:
+          type: boolean
+        conflictFrom:
+          type: string
+          format: date-time
+          description: Inicio del compromiso/reserva que choca (solo si available = false).
+        conflictTo:
+          type: string
+          format: date-time
+          description: Fin del compromiso/reserva que choca (solo si available = false).
+        conflictSource:
+          type: string
+          enum: [COMMITMENT, RESERVATION]
+          description: COMMITMENT = alquiler o reserva confirmada (vehicle_commitments); RESERVATION = reserva no terminal.
 
     ListVehiclesResponse:
       type: object

@@ -1,7 +1,18 @@
-import { FleetVehicle } from '../../domain/vehicle';
-import { VehicleResponse } from './dto/vehicle.response';
+import { FleetVehicle, FleetVehicleWithAvailability, VehicleAvailability } from '../../domain/vehicle';
+import { VehicleAvailabilityResponse, VehicleResponse } from './dto/vehicle.response';
 
-export function toVehicleResponse(vehicle: FleetVehicle): VehicleResponse {
+export function toAvailabilityResponse(availability: VehicleAvailability): VehicleAvailabilityResponse {
+  if (availability.available) return { available: true };
+  return {
+    available: false,
+    conflictFrom: availability.conflictFrom?.toISOString(),
+    conflictTo: availability.conflictTo?.toISOString(),
+    conflictSource: availability.conflictSource,
+  };
+}
+
+export function toVehicleResponse(vehicle: FleetVehicle | FleetVehicleWithAvailability): VehicleResponse {
+  const availability = 'availability' in vehicle ? vehicle.availability : undefined;
   return {
     id: vehicle.id,
     organizationId: vehicle.organizationId,
@@ -19,5 +30,6 @@ export function toVehicleResponse(vehicle: FleetVehicle): VehicleResponse {
     photoUrl: vehicle.photoUrl ?? null,
     createdAt: vehicle.createdAt.toISOString(),
     updatedAt: vehicle.updatedAt.toISOString(),
+    ...(availability ? { availability: toAvailabilityResponse(availability) } : {}),
   };
 }

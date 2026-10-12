@@ -10,5 +10,8 @@ export class ListVehiclesQuery {
     public readonly search?: string,
     public readonly limit: number = 50,
     public readonly offset: number = 0,
+    /** Ventana opcional [availableFrom, availableTo): ISO date o date-time. Ambos o ninguno. */
+    public readonly availableFrom?: string,
+    public readonly availableTo?: string,
   ) {}
 }
