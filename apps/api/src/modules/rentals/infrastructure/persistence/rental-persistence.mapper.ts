@@ -69,6 +69,7 @@ export function toRentalContractRecord(row: {
   documentRef: string;
   status: string;
   signedAt: Date | null;
+  contractVariant?: string | null;
   createdAt: Date;
 } | null): RentalContractRecord | null {
   if (!row) return null;
@@ -79,6 +80,7 @@ export function toRentalContractRecord(row: {
     documentRef: row.documentRef,
     status: row.status,
     signedAt: row.signedAt,
+    contractVariant: row.contractVariant ?? null,
     createdAt: row.createdAt,
   };
 }
@@ -89,6 +91,7 @@ export function toRentalDepositRecord(row: {
   originalAmount: Prisma.Decimal | string;
   currency: string;
   status: string;
+  reservationCreditAmount?: Prisma.Decimal | string;
   createdAt: Date;
 } | null): RentalDepositRecord | null {
   if (!row) return null;
@@ -98,6 +101,7 @@ export function toRentalDepositRecord(row: {
     originalAmount: row.originalAmount.toString(),
     currency: row.currency,
     status: row.status,
+    reservationCreditAmount: Number((row.reservationCreditAmount ?? 0).toString()).toFixed(2),
     createdAt: row.createdAt,
   };
 }

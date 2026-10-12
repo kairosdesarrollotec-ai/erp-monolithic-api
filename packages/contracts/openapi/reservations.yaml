@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.3.0
+  version: 0.4.0
   description: >
     Contrato del modulo Reserva (HU-27, TDD-RES-001.md seccion 11).
     Primer corte: crear, registrar pago/documentos, confirmar (bloqueo
@@ -292,7 +292,13 @@ components:
             channelMode: { $ref: '#/components/schemas/ChannelMode' }
             startAt: { type: string, format: date-time }
             endAt: { type: string, format: date-time }
-            requiredPaymentAmount: { type: string, description: 'Importe de pago requerido en formato decimal (ej. "300.00")' }
+            requiredPaymentAmount:
+              type: string
+              description: >
+                Importe de pago requerido en formato decimal (ej. "300.00"). Si la reserva llega a
+                alquiler, este monto se TRASLADA ÍNTEGRO a la garantía del alquiler y solo se cobra la
+                diferencia (P0-03 opción a; ver rentals.yaml formalize-contract). Una reserva cancelada
+                (incluye no-show) no traslada nada.
             currency: { type: string }
             paymentPolicyVersion: { type: integer, minimum: 1 }
     CancelReservationRequest:

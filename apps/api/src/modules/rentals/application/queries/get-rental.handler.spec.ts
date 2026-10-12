@@ -37,6 +37,8 @@ describe('GetRentalHandler', () => {
   function buildDeps() {
     const rentals = {
       findById: jest.fn().mockResolvedValue(fakeRental),
+      listExtensionsByRentalId: jest.fn().mockResolvedValue([]),
+      findReservationCreditSource: jest.fn().mockResolvedValue(null),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
     const workContext = {
@@ -61,7 +63,9 @@ describe('GetRentalHandler', () => {
 
     const result = await handler.execute(new GetRentalQuery('rent-600', 'uid-1', 'comp-1', 'branch-1'));
 
-    expect(result).toEqual(fakeRental);
+    // Alquiler directo: sin reserva de origen no hay credito que mostrar.
+    expect(result).toEqual({ ...fakeRental, reservationCredit: null, extensions: [] });
+    expect(deps.rentals.findReservationCreditSource).not.toHaveBeenCalled();
     expect(deps.rentals.findById).toHaveBeenCalledWith(
       'rent-600',
       expect.objectContaining({
@@ -92,5 +96,75 @@ describe('GetRentalHandler', () => {
       expect.objectContaining({ firebaseUid: 'uid-1', companyId: 'comp-1', branchId: 'branch-1' }),
     );
     expect(deps.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-FRONT_OFFICE', 'RENTAL', 'READ', expect.anything());
+  });
+
+  describe('P0-03 (a) - vista previa del traslado reserva -> garantia', () => {
+    const reservationRental: RentalRecord = { ...fakeRental, reservationId: 'res-1', status: 'CONTRACTING' };
+    const source = {
+      reservationId: 'res-1',
+      status: 'CONFIRMED',
+      amount: '300.00',
+      currency: 'PEN',
+      paymentValidatedAt: new Date('2026-10-01T10:00:00Z'),
+    };
+
+    it('origen Reserva confirmada con pago validado: expone el credito de S/300', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue(reservationRental);
+      deps.rentals.findReservationCreditSource.mockResolvedValue(source);
+      const handler = new GetRentalHandler(deps.rentals, deps.workContext, deps.matrixAuth);
+
+      const result = await handler.execute(new GetRentalQuery('rent-600', 'uid-1', 'comp-1', 'branch-1'));
+
+      expect(result.reservationCredit).toEqual({
+        applicable: true,
+        reason: 'APPLIED',
+        reservationId: 'res-1',
+        amount: '300.00',
+        currency: 'PEN',
+      });
+    });
+
+    it('reserva cancelada/no-show: el credito no aplica', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue(reservationRental);
+      deps.rentals.findReservationCreditSource.mockResolvedValue({ ...source, status: 'CANCELLED' });
+      const handler = new GetRentalHandler(deps.rentals, deps.workContext, deps.matrixAuth);
+
+      const result = await handler.execute(new GetRentalQuery('rent-600', 'uid-1', 'comp-1', 'branch-1'));
+
+      expect(result.reservationCredit).toMatchObject({ applicable: false, reason: 'RESERVATION_NOT_ACTIVE', amount: '0.00' });
+    });
+
+    it('reserva con monto distinto del estandar: expone ese monto', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue(reservationRental);
+      deps.rentals.findReservationCreditSource.mockResolvedValue({ ...source, amount: '450.00' });
+      const handler = new GetRentalHandler(deps.rentals, deps.workContext, deps.matrixAuth);
+
+      const result = await handler.execute(new GetRentalQuery('rent-600', 'uid-1', 'comp-1', 'branch-1'));
+
+      expect(result.reservationCredit?.amount).toBe('450.00');
+    });
+  });
+
+  it('ALQ-10/ALQ-11: incluye las ampliaciones del alquiler', async () => {
+    const deps = buildDeps();
+    const extension = {
+      id: 'ext-1',
+      rentalId: 'rent-600',
+      requestedEndAt: new Date('2026-10-12T10:00:00Z'),
+      status: 'PENDING' as const,
+      paymentId: null,
+      addendumDocumentRef: null,
+      requestedAt: new Date('2026-10-10T10:00:00Z'),
+      resolvedAt: null,
+    };
+    deps.rentals.listExtensionsByRentalId.mockResolvedValue([extension]);
+    const handler = new GetRentalHandler(deps.rentals, deps.workContext, deps.matrixAuth);
+
+    const result = await handler.execute(new GetRentalQuery('rent-600', 'uid-1', 'comp-1', 'branch-1'));
+
+    expect(result.extensions).toEqual([extension]);
   });
 });

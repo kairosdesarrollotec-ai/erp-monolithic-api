@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { resolveReservationCredit } from '../../domain/reservation-credit';
 import { GetRentalQuery } from './get-rental.query';
 
 @Injectable()
@@ -31,6 +32,14 @@ export class GetRentalHandler {
       throw new NotFoundException('Alquiler no encontrado.');
     }
 
-    return rental;
+    const extensions = await this.rentals.listExtensionsByRentalId(rental.id);
+
+    // P0-03 (a): vista previa del traslado reserva -> garantia para ENTREGA-03.
+    // Solo alquileres de origen Reserva; en alquiler directo queda en null.
+    if (!rental.reservationId) {
+      return { ...rental, reservationCredit: null, extensions };
+    }
+    const source = await this.rentals.findReservationCreditSource(rental.reservationId);
+    return { ...rental, reservationCredit: resolveReservationCredit(source), extensions };
   }
 }

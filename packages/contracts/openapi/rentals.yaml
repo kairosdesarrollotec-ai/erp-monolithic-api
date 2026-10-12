@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.1.0
+  version: 1.2.0
   description: >
     Contrato del módulo Alquiler (ALQ-01 a ALQ-11, TDD-03-alquiler.md).
     Implementa el ciclo de vida completo de alquiler: creación directa y desde reserva confirmada (RES-05),
@@ -261,10 +261,53 @@ paths:
         '428':
           description: Falta header If-Match
 
+  /rentals/{id}/contract-template:
+    get:
+      operationId: getRentalContractTemplate
+      summary: Plantilla de contrato vigente que corresponde al alquiler (BR-DOC-002/003)
+      description: >
+        Devuelve la plantilla ACTIVE de la empresa para la combinación titular
+        persona natural/jurídica × con/sin conductor (BR-DOC-003). Si la empresa
+        aún no cargó la plantilla de esa combinación se devuelve la plantilla
+        genérica `RENTAL_CONTRACT` con `fallbackUsed: true`. Sin `holderType` solo
+        se consulta la genérica. `template` es null cuando no hay ninguna vigente
+        (formalizar fallaría con NO_ACTIVE_CONTRACT_TEMPLATE). Solo lectura:
+        formalize-contract vuelve a resolverla en el servidor.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: holderType, in: query, required: false, schema: { $ref: '#/components/schemas/ContractHolderType' } }
+        - { name: withDriver, in: query, required: false, description: 'Obligatorio si se envía holderType.', schema: { type: string, enum: ['true', 'false'] } }
+      responses:
+        '200':
+          description: Plantilla resuelta (o null si no hay vigente)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContractTemplateSelectionResponse' }
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler no encontrado en la empresa y sede
+
   /rentals/{id}/commands/formalize-contract:
     post:
       operationId: formalizeContract
       summary: Formalizar contrato firmado y registrar garantía (BR-DOC-002/003)
+      description: >
+        `depositAmount` es la garantía TOTAL del vehículo (se digita a mano hasta
+        que Flota la provea). En alquileres de origen Reserva el monto pagado por
+        la reserva se traslada íntegro a esa garantía (P0-03 opción a) y solo se
+        cobra la diferencia: la respuesta trae `deposit.reservationCreditAmount` y
+        `deposit.amountCollected`. En alquiler directo no hay traslado. El traslado
+        solo aplica si la reserva sigue CONFIRMED/CONVERTED con el pago validado;
+        una reserva cancelada (incluye no-show) no traslada nada. La plantilla se
+        elige por `holderType` + `withDriver` (BR-DOC-003).
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -281,7 +324,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
         '400':
-          description: Plantilla de contrato no pertenece a la empresa o monto de garantía inválido
+          description: Monto de garantía inválido, o NO_ACTIVE_CONTRACT_TEMPLATE (la empresa no tiene plantilla vigente para la combinación)
         '401':
           description: Token de autenticación ausente o inválido
         '403':
@@ -290,6 +333,8 @@ paths:
           description: Estado incompatible (debe estar en CONTRACTING)
         '412':
           description: Versión no coincide (If-Match)
+        '422':
+          description: RESERVATION_CREDIT_EXCEEDS_DEPOSIT (el monto de la reserva supera la garantía) o RESERVATION_CREDIT_CURRENCY_MISMATCH (moneda distinta)
         '428':
           description: Falta header If-Match
 
@@ -611,7 +656,7 @@ paths:
             schema: { $ref: '#/components/schemas/ReportExtensionBreachRequest' }
       responses:
         '200':
-          description: Falta grave registrada; extension pasa a BREACH, garantia retenida al 100% y cliente marcado "rojo"
+          description: Falta grave registrada; extension pasa a BREACH, garantia retenida al 100%, cliente marcado "rojo" y el alquiler vuelve a ACTIVE para poder iniciar la devolucion
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalResponse' }
@@ -727,8 +772,16 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         documentRef: { type: string }
-        depositAmount: { type: string }
+        depositAmount:
+          type: string
+          description: Garantía TOTAL del vehículo (incluye el monto de reserva que se traslada, si lo hay).
         depositCurrency: { type: string, enum: [PEN, USD] }
+        holderType: { $ref: '#/components/schemas/ContractHolderType' }
+        withDriver:
+          type: boolean
+          description: >
+            BR-DOC-003. El vehículo lo maneja un conductor distinto del titular (conductor de la
+            empresa o conductor propio autorizado). Obligatorio si se envía holderType.
         signatureData:
           type: string
           nullable: true
@@ -879,17 +932,104 @@ components:
         documentRef: { type: string }
         status: { type: string }
         signedAt: { type: string, format: date-time, nullable: true }
+        contractVariant:
+          type: string
+          nullable: true
+          description: Combinación con la que se eligió la plantilla (p. ej. NATURAL_NO_DRIVER). Null en contratos anteriores.
         createdAt: { type: string, format: date-time }
+
+    ContractHolderType:
+      type: string
+      enum: [NATURAL, LEGAL]
+      description: BR-DOC-003 - titular persona natural o jurídica.
+
+    ContractTemplateSelectionResponse:
+      type: object
+      required: [rentalId, requestedType, fallbackUsed, template]
+      properties:
+        rentalId: { type: string, format: uuid }
+        variant:
+          type: object
+          nullable: true
+          required: [holderType, withDriver]
+          properties:
+            holderType: { $ref: '#/components/schemas/ContractHolderType' }
+            withDriver: { type: boolean }
+        requestedType:
+          type: string
+          description: Tipo de plantilla buscado primero (RENTAL_CONTRACT_NATURAL, ..._NATURAL_DRIVER, ..._LEGAL, ..._LEGAL_DRIVER o RENTAL_CONTRACT).
+        fallbackUsed:
+          type: boolean
+          description: true si no había plantilla vigente para la combinación y se usa la genérica.
+        template:
+          type: object
+          nullable: true
+          required: [id, type, name]
+          properties:
+            id: { type: string, format: uuid }
+            type: { type: string }
+            name: { type: string }
+            version: { type: integer, nullable: true }
+            effectiveFrom: { type: string, format: date-time, nullable: true }
 
     RentalDepositResponse:
       type: object
-      required: [id, originalAmount, currency, status, createdAt]
+      required: [id, originalAmount, currency, status, reservationCreditAmount, amountCollected, createdAt]
       properties:
         id: { type: string, format: uuid }
-        originalAmount: { type: string }
+        originalAmount:
+          type: string
+          description: Garantía TOTAL retenida (incluye el monto de reserva trasladado).
         currency: { type: string }
         status: { type: string }
+        reservationCreditAmount:
+          type: string
+          description: P0-03 (a) - parte de la garantía ya pagada como reserva. "0.00" en alquiler directo.
+        amountCollected:
+          type: string
+          description: Diferencia cobrada al formalizar = originalAmount - reservationCreditAmount.
         createdAt: { type: string, format: date-time }
+
+    ReservationCreditResponse:
+      type: object
+      required: [applicable, reason, reservationId, amount, currency]
+      description: >
+        P0-03 (a) - vista previa del traslado del monto de la reserva a la garantía (solo GET detalle,
+        solo alquileres de origen Reserva).
+      properties:
+        applicable: { type: boolean }
+        reason:
+          type: string
+          enum: [APPLIED, NO_RESERVATION, RESERVATION_NOT_ACTIVE, PAYMENT_NOT_VALIDATED]
+        reservationId: { type: string, format: uuid, nullable: true }
+        amount: { type: string }
+        currency: { type: string, nullable: true }
+
+    ExtensionRequirements:
+      type: object
+      required: [noticeGiven, authorized, paid, addendumSigned]
+      description: BR-ALQ-012/013 - estado de los 4 requisitos de la ampliación según lo registrado.
+      properties:
+        noticeGiven:
+          type: boolean
+          nullable: true
+          description: Aviso con 12 h de anticipación al vencimiento. Null si ya no se puede reconstruir.
+        authorized: { type: boolean }
+        paid: { type: boolean }
+        addendumSigned: { type: boolean }
+
+    RentalExtensionResponse:
+      type: object
+      required: [id, requestedEndAt, status, requestedAt, resolvedAt, paymentId, addendumDocumentRef, requirements]
+      properties:
+        id: { type: string, format: uuid }
+        requestedEndAt: { type: string, format: date-time }
+        status: { type: string, enum: [PENDING, AUTHORIZED, REJECTED, BREACH] }
+        requestedAt: { type: string, format: date-time }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+        paymentId: { type: string, nullable: true }
+        addendumDocumentRef: { type: string, nullable: true }
+        requirements: { $ref: '#/components/schemas/ExtensionRequirements' }
 
     RentalResponse:
       type: object
@@ -954,6 +1094,14 @@ components:
         deposit:
           allOf: [{ $ref: '#/components/schemas/RentalDepositResponse' }]
           nullable: true
+        reservationCredit:
+          allOf: [{ $ref: '#/components/schemas/ReservationCreditResponse' }]
+          nullable: true
+          description: Solo en GET /rentals/{id}. Null = alquiler sin reserva de origen.
+        extensions:
+          type: array
+          description: Solo en GET /rentals/{id}. Ampliaciones, la más reciente primero.
+          items: { $ref: '#/components/schemas/RentalExtensionResponse' }
 
     RentalDocumentType:
       type: string

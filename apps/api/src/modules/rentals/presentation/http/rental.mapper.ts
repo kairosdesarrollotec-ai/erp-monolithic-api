@@ -1,5 +1,7 @@
 import { RentalRecord } from '../../application/ports/rental-repository.port';
 import { RentalResponse } from './dto/rental.response';
+import { fromCents, toCents } from '../../domain/reservation-credit';
+import { evaluateExtensionRequirements } from '../../domain/extension-requirements';
 
 export function toRentalResponse(record: RentalRecord): RentalResponse {
   return {
@@ -52,6 +54,7 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           documentRef: record.contract.documentRef,
           status: record.contract.status,
           signedAt: record.contract.signedAt ? record.contract.signedAt.toISOString() : null,
+          contractVariant: record.contract.contractVariant ?? null,
           createdAt: record.contract.createdAt.toISOString(),
         }
       : null,
@@ -61,8 +64,27 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           originalAmount: record.deposit.originalAmount,
           currency: record.deposit.currency,
           status: record.deposit.status,
+          reservationCreditAmount: record.deposit.reservationCreditAmount ?? '0.00',
+          amountCollected: fromCents(
+            toCents(record.deposit.originalAmount) - toCents(record.deposit.reservationCreditAmount ?? '0'),
+          ),
           createdAt: record.deposit.createdAt.toISOString(),
         }
       : null,
+    ...(record.reservationCredit !== undefined ? { reservationCredit: record.reservationCredit } : {}),
+    ...(record.extensions
+      ? {
+          extensions: record.extensions.map((e) => ({
+            id: e.id,
+            requestedEndAt: e.requestedEndAt.toISOString(),
+            status: e.status,
+            requestedAt: e.requestedAt.toISOString(),
+            resolvedAt: e.resolvedAt ? e.resolvedAt.toISOString() : null,
+            paymentId: e.paymentId,
+            addendumDocumentRef: e.addendumDocumentRef,
+            requirements: evaluateExtensionRequirements(e, record.expectedEndAt),
+          })),
+        }
+      : {}),
   };
 }

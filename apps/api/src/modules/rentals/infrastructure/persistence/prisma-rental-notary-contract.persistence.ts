@@ -74,6 +74,7 @@ export class PrismaRentalNotaryContractPersistence {
         status: 'SIGNED',
         signedAt: new Date(),
         signatureData: input.signatureData ?? null,
+        contractVariant: input.contractVariant ?? null,
       },
       update: {
         templateId: input.templateId ?? undefined,
@@ -81,6 +82,7 @@ export class PrismaRentalNotaryContractPersistence {
         status: 'SIGNED',
         signedAt: new Date(),
         signatureData: input.signatureData ?? null,
+        contractVariant: input.contractVariant ?? null,
       },
     });
 
@@ -90,11 +92,13 @@ export class PrismaRentalNotaryContractPersistence {
         rentalId: input.rentalId,
         originalAmount: new Prisma.Decimal(input.depositAmount),
         currency: input.currency,
+        reservationCreditAmount: new Prisma.Decimal(input.reservationCreditAmount),
         status: 'HELD',
       },
       update: {
         originalAmount: new Prisma.Decimal(input.depositAmount),
         currency: input.currency,
+        reservationCreditAmount: new Prisma.Decimal(input.reservationCreditAmount),
         status: 'HELD',
       },
     });
