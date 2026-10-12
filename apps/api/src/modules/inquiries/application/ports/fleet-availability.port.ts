@@ -24,6 +24,12 @@ export interface VehicleEligibilityQuery {
   vehicleId: string;
   destination: string;
   estimatedDays: number;
+  /**
+   * Fecha de inicio del viaje (Inquiry.travelStartDate). Si viene, la
+   * disponibilidad se evalua en [startsAt, startsAt + estimatedDays dias);
+   * si no, en [ahora, ahora + estimatedDays dias).
+   */
+  startsAt?: Date;
 }
 
 export type VehicleEligibility =

@@ -98,6 +98,7 @@ export class QuoteHandler {
       vehicleId: command.vehicleId,
       destination: command.destination,
       estimatedDays: command.estimatedDays,
+      startsAt: existing.travelStartDate ?? undefined,
     });
     if (!eligibility.eligible) {
       throw new VehicleNotEligibleError(eligibility.reason);

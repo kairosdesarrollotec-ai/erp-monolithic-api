@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
+import { findFirstVehicleConflict, formatDateDMY } from '../../../../common/persistence/vehicle-overlap';
 import {
   FleetAvailabilityPort,
   VehicleEligibility,
@@ -16,9 +17,11 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  * Si el vehículo tiene branchId asignado, debe coincidir con el de la
  * consulta; si es null el vehículo se considera compartido entre sedes.
  *
- * Disponibilidad: consulta vehicle_commitments buscando cualquier
- * compromiso ACTIVE que se solape con [now, now + estimatedDays * 24h).
- * Solapamiento: startsAt < requestedEndsAt AND endsAt > now.
+ * Disponibilidad: ventana [startsAt, startsAt + estimatedDays * 24h), con
+ * `startsAt` = fecha de viaje de la consulta (o `now` si la consulta no la
+ * tiene). Regla compartida de solape (common/persistence/vehicle-overlap.ts):
+ * ocupado si hay un vehicle_commitment ACTIVE|CONSOLIDATED o una reserva no
+ * terminal con inicio < fin solicitado Y fin > inicio solicitado.
  *
  * El campo `destination` del query no se evalúa aquí — el catálogo de
  * rutas/trocha no está modelado (PROP-005). productionReady = true porque
@@ -63,23 +66,16 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
       };
     }
 
-    const now = new Date();
-    const requestedEndsAt = new Date(now.getTime() + query.estimatedDays * MS_PER_DAY);
+    const windowStart = query.startsAt ?? new Date();
+    const windowEnd = new Date(windowStart.getTime() + query.estimatedDays * MS_PER_DAY);
 
-    const conflict = await this.prisma.vehicleCommitment.findFirst({
-      where: {
-        vehicleId: query.vehicleId,
-        status: 'ACTIVE',
-        startsAt: { lt: requestedEndsAt },
-        endsAt: { gt: now },
-      },
-      select: { id: true },
-    });
+    const conflict = await findFirstVehicleConflict(this.prisma, query.vehicleId, windowStart, windowEnd);
 
     if (conflict) {
+      const origen = conflict.source === 'COMMITMENT' ? 'un alquiler o compromiso' : 'una reserva';
       return {
         eligible: false,
-        reason: 'El vehículo no está disponible para el período solicitado.',
+        reason: `El vehículo no está disponible para el período solicitado (${formatDateDMY(windowStart)} al ${formatDateDMY(windowEnd)}): choca con ${origen} del ${formatDateDMY(conflict.from)} al ${formatDateDMY(conflict.to)}.`,
       };
     }
 
