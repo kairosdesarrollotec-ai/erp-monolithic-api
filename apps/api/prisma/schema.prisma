@@ -1064,12 +1064,15 @@ model Template {
 }
 
 /// TDD-03-alquiler seccion 9.4 - garantia retenida para el alquiler.
+/// Migration 20261011000002: closed_at + closure_notes anadidos para PAG-01/PAG-02 (TDD-PAG-001).
 model RentalDeposit {
   id             String                    @id @default(uuid())
   rentalId       String                    @unique @map("rental_id")
   originalAmount Decimal                   @map("original_amount") @db.Decimal(12, 2)
   currency       String                    @db.Char(3)
   status         String                    @default("HELD") // HELD | RETURNED | RETAINED | PARTIALLY_RETAINED
+  closedAt       DateTime?                 @map("closed_at")
+  closureNotes   String?                   @map("closure_notes") @db.VarChar(500)
   createdAt      DateTime                  @default(now()) @map("created_at")
 
   rental      Rental                    @relation(fields: [rentalId], references: [id], onDelete: Cascade)

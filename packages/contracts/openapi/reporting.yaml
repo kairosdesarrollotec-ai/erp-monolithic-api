@@ -1,0 +1,259 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP — Reporting API
+  version: 0.1.0
+  description: >
+    Contrato del módulo Reportes (REP-01,
+    BDD-REP-001, SDD-REP-001, TDD-REP-001).
+    API de solo lectura que expone KPIs operativos y financieros
+    sobre datos existentes en las tablas de los módulos de negocio.
+    No requiere tablas nuevas.
+    Aislamiento multiempresa obligatorio: todos los endpoints filtran
+    por companyId/branchId del actor autenticado.
+    PLATFORM_ADMIN y CORPORATE_AUDITOR pueden pasar un companyId
+    arbitrario (BR-REP-007).
+    Permisos: REPORT.READ_OPERATIONAL, REPORT.READ_FINANCIAL,
+    REPORT.EXPORT (BDD-REP-001 BR-REP-001/002/003).
+
+paths:
+  /reporting/operational:
+    get:
+      operationId: getOperationalKpis
+      summary: KPIs operativos en tiempo real (REP-01)
+      description: >
+        Requiere permiso REPORT.READ_OPERATIONAL.
+        Devuelve métricas operativas actuales: alquileres activos,
+        reservas activas, devoluciones pendientes, flota disponible,
+        incidencias abiertas, tasa de ocupación de flota.
+        El rango temporal por defecto es "hoy".
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: false, schema: { type: string, format: uuid } }
+        - name: dateFrom
+          in: query
+          required: false
+          schema: { type: string, format: date, example: '2026-10-01' }
+          description: Inicio del período (ISO 8601 date). Máx. 90 días antes de dateTo (BR-REP-005).
+        - name: dateTo
+          in: query
+          required: false
+          schema: { type: string, format: date, example: '2026-10-11' }
+          description: Fin del período (ISO 8601 date). Por defecto hoy.
+      responses:
+        '200':
+          description: KPIs operativos del período
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OperationalKpisResponse' }
+        '400':
+          description: Parámetros inválidos o rango supera 90 días (RANGE_EXCEEDS_MAX)
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso REPORT.READ_OPERATIONAL requerido }
+        '500': { description: Error interno del servidor }
+
+  /reporting/financial:
+    get:
+      operationId: getFinancialKpis
+      summary: KPIs financieros del período (REP-01)
+      description: >
+        Requiere permiso REPORT.READ_FINANCIAL.
+        Devuelve métricas financieras: ingresos por alquiler,
+        garantías en custodia, garantías devueltas, retenidas,
+        ingresos netos del período.
+        Rango máximo 90 días (BR-REP-005).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: false, schema: { type: string, format: uuid } }
+        - name: dateFrom
+          in: query
+          required: true
+          schema: { type: string, format: date, example: '2026-10-01' }
+        - name: dateTo
+          in: query
+          required: true
+          schema: { type: string, format: date, example: '2026-10-11' }
+          description: Máx. 90 días desde dateFrom.
+      responses:
+        '200':
+          description: KPIs financieros del período
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinancialKpisResponse' }
+        '400':
+          description: Parámetros inválidos o rango supera 90 días (RANGE_EXCEEDS_MAX)
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso REPORT.READ_FINANCIAL requerido }
+        '500': { description: Error interno del servidor }
+
+  /reporting/export:
+    get:
+      operationId: exportReport
+      summary: Exportar datos del período en CSV (REP-01)
+      description: >
+        Requiere permiso REPORT.EXPORT.
+        Genera un archivo CSV con los datos operativos y financieros
+        del período. Rango máximo 90 días (BR-REP-005).
+        El Content-Type de la respuesta es text/csv.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: false, schema: { type: string, format: uuid } }
+        - name: dateFrom
+          in: query
+          required: true
+          schema: { type: string, format: date, example: '2026-10-01' }
+        - name: dateTo
+          in: query
+          required: true
+          schema: { type: string, format: date, example: '2026-10-11' }
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [operational, financial, combined]
+            default: combined
+      responses:
+        '200':
+          description: Archivo CSV generado
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: 'attachment; filename="reporte-2026-10-01_2026-10-11.csv"'
+        '400':
+          description: Parámetros inválidos o rango supera 90 días (RANGE_EXCEEDS_MAX)
+        '401': { description: Token ausente o inválido }
+        '403': { description: Permiso REPORT.EXPORT requerido }
+        '500': { description: Error interno del servidor }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID Token
+
+  schemas:
+    OperationalKpisResponse:
+      type: object
+      required: [companyId, dateFrom, dateTo, kpis, generatedAt]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid, nullable: true }
+        dateFrom: { type: string, format: date }
+        dateTo: { type: string, format: date }
+        kpis:
+          type: object
+          required:
+            - activeRentals
+            - activeReservations
+            - pendingReturns
+            - availableVehicles
+            - openIncidents
+            - fleetOccupancyRate
+          properties:
+            activeRentals:
+              type: integer
+              description: Alquileres en estado ACTIVE o RETURN_IN_PROGRESS
+              example: 23
+            activeReservations:
+              type: integer
+              description: Reservas en estado CONFIRMED o PENDING
+              example: 11
+            pendingReturns:
+              type: integer
+              description: Devoluciones en estado PROGRAMADA o RECEPCION_PROVISIONAL
+              example: 7
+            availableVehicles:
+              type: integer
+              description: Vehículos en estado DISPONIBLE en la flota
+              example: 14
+            openIncidents:
+              type: integer
+              description: Incidencias en estado abierto
+              example: 2
+            fleetOccupancyRate:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Tasa de ocupación de flota (alquileres activos / total activo)
+              example: 0.68
+            dailyRentals:
+              type: array
+              description: Alquileres iniciados por día en el período
+              items:
+                type: object
+                required: [date, count]
+                properties:
+                  date: { type: string, format: date }
+                  count: { type: integer }
+            recentActivity:
+              type: array
+              description: Últimos 10 eventos de dominio registrados
+              items:
+                type: object
+                required: [eventType, entityCode, occurredAt]
+                properties:
+                  eventType: { type: string, example: AlquilerIniciado }
+                  entityCode: { type: string, example: ALQ-1203 }
+                  occurredAt: { type: string, format: date-time }
+        generatedAt: { type: string, format: date-time }
+
+    FinancialKpisResponse:
+      type: object
+      required: [companyId, dateFrom, dateTo, kpis, generatedAt]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid, nullable: true }
+        dateFrom: { type: string, format: date }
+        dateTo: { type: string, format: date }
+        kpis:
+          type: object
+          required:
+            - rentalRevenue
+            - depositsHeld
+            - depositsReturned
+            - depositsRetained
+            - depositsPartiallyRetained
+            - netDepositsRetained
+          properties:
+            rentalRevenue:
+              type: number
+              format: float
+              description: Ingresos totales por alquiler del período (suma de montos de alquileres cerrados)
+              example: 18500.00
+            depositsHeld:
+              type: number
+              format: float
+              description: Monto total de garantías actualmente en custodia (HELD)
+              example: 7000.00
+            depositsReturned:
+              type: number
+              format: float
+              description: Monto total de garantías devueltas en el período
+              example: 14000.00
+            depositsRetained:
+              type: number
+              format: float
+              description: Monto total de garantías retenidas definitivamente en el período
+              example: 1000.00
+            depositsPartiallyRetained:
+              type: number
+              format: float
+              description: Monto neto retenido en garantías PARTIALLY_RETAINED del período
+              example: 450.00
+            netDepositsRetained:
+              type: number
+              format: float
+              description: depositsRetained + depositsPartiallyRetained
+              example: 1450.00
+        generatedAt: { type: string, format: date-time }

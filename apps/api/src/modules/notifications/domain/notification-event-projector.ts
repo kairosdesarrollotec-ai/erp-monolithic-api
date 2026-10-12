@@ -26,7 +26,7 @@ export type NotificationProjectionResult = { action: 'CREATE'; item: Notificatio
 // sin crear notificacion.
 
 // Payloads de Returns — incluyen organizationId/branchId pero no actor/recipient.
-interface DevolucionCompletadaPayload {
+interface _DevolucionCompletadaPayload {
   returnId: string;
   rentalId: string;
   vehicleId: string;

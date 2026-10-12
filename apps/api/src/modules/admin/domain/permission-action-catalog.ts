@@ -5,7 +5,7 @@
  * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
-export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION'] as const;
+export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION', 'PAYMENT', 'REPORT'] as const;
 
 /** Modulos cuyas acciones administra la matriz ADM-02 (unica definicion; antes estaba repetida en ~6 sitios). */
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
@@ -99,6 +99,16 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'HR_ADMINISTRATION', action: 'AUTHORIZE_FIELD_TRIP', label: 'Personal: autorizar salida a campo en cascada' },
   { module: 'HR_ADMINISTRATION', action: 'EVALUATE_FIELD_TRIP_RETURN', label: 'Personal: evaluar retorno de campo y tardanzas' },
   { module: 'HR_ADMINISTRATION', action: 'TERMINATE_EMPLOYMENT', label: 'Personal: registrar término de relación laboral' },
+  // PAYMENT (5 acciones — BDD-PAG-001 / SDD-PAG-001 / TDD-PAG-001)
+  { module: 'PAYMENT', action: 'READ_LIST', label: 'Pagos: listar garantías de alquiler' },
+  { module: 'PAYMENT', action: 'READ_DETAIL', label: 'Pagos: ver detalle de garantía y ajustes' },
+  { module: 'PAYMENT', action: 'REGISTER_ADJUSTMENT', label: 'Pagos: registrar ajuste de garantía' },
+  { module: 'PAYMENT', action: 'APPROVE_REFUND', label: 'Pagos: aprobar devolución de garantía' },
+  { module: 'PAYMENT', action: 'CLOSE_FINANCIAL', label: 'Pagos: cerrar expediente financiero' },
+  // REPORT (3 acciones — BDD-REP-001 / SDD-REP-001 / TDD-REP-001)
+  { module: 'REPORT', action: 'READ_OPERATIONAL', label: 'Reportes: ver KPIs operativos' },
+  { module: 'REPORT', action: 'READ_FINANCIAL', label: 'Reportes: ver KPIs financieros' },
+  { module: 'REPORT', action: 'EXPORT', label: 'Reportes: exportar datos (CSV)' },
 ];
 
 /**
