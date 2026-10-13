@@ -65,6 +65,7 @@ Aplica principalmente desde Reserva, también directo en Alquiler. El proceso de
 | BR-ALQ-014 | Para decisiones menores, si Fiorella y José no responden en 5 minutos, Cecilia u otro personal designado puede autorizar | Media | SRC-ALQ-001 (17 ago) | `CONFIRMADO` |
 | BR-ALQ-015 | Variantes de conductor: con conductor de la empresa, sin conductor propio, con conductor propio autorizado | Media | SRC-ALQ-001, sección 7 | `CONFIRMADO` |
 | BR-ALQ-016 | Si el MTC no responde, se bloquea la entrega sin excepción posible. Si RENIEC no responde, sí puede haber excepción, autorizada exclusivamente por Gerencia caso por caso | Alta | SRC-DL-001 (27 ago) | `CONFIRMADO` — `RESUELTO` OQ-ALQ-101 |
+| BR-ALQ-020 | Cuando el alquiler se origina desde una Reserva, el monto pagado por la reserva se traslada íntegro como crédito a la garantía del alquiler; solo se cobra la diferencia pendiente. Si el crédito de reserva iguala o supera el monto de garantía exigido, no se cobra garantía adicional. En alquiler directo (sin reserva previa) se cobra la garantía completa. El crédito no puede superar el monto de garantía exigido. | Crítica | SRC-DL-001 (6 oct — decisión Russbel/Fiorella) | `CONFIRMADO` — 2026-10-13 |
 
 ### 10.1 Notaría (Alquiler)
 
@@ -291,6 +292,60 @@ La firma digital del cliente (canvas base64, `signatureData`) es un requisito ob
 **Prioridad:** Alta
 
 Si el vehículo tiene `depositMinimum` definido, el monto de garantía registrado al formalizar el contrato debe ser ≥ `depositMinimum`. El sistema bloquea la formalización si el monto es inferior, mostrando el valor mínimo requerido. Este control opera en el frontend y es validado por el backend al recibir el comando `formalize-contract`.
+
+### BR-ALQ-020: Crédito de reserva trasladado a la garantía del alquiler (Entrega-03)
+
+**Prioridad:** Crítica  
+**Fuente:** SRC-DL-001 (decisión Russbel/Fiorella, 6 oct 2026)  
+**Aprobado:** 2026-10-13
+
+Cuando un alquiler se origina desde una Reserva, el monto abonado por la reserva (en la misma moneda que la garantía del alquiler) se acredita íntegramente a la garantía del contrato. El operador solo debe cobrar la diferencia entre el monto de garantía exigido y el crédito de reserva.
+
+Condiciones:
+- Solo aplica a alquileres creados con el comando `create-rental-from-reservation`.
+- El crédito de reserva no puede superar el monto de garantía exigido; el sistema bloquea el intento con un error de negocio.
+- Si la moneda del pago de la reserva difiere de la moneda de la garantía del alquiler, el traslado no aplica y se cobra la garantía completa.
+- En alquiler directo (sin reserva previa) se cobra la garantía completa sin crédito.
+
+```gherkin
+Scenario: Garantía parcialmente cubierta por crédito de reserva
+  Given un alquiler originado desde una Reserva
+  And el pago de reserva fue de S/ 200.00
+  And el monto de garantía exigido es S/ 500.00
+  When el operador formaliza el contrato
+  Then el sistema calcula el crédito: S/ 200.00 trasladado a garantía
+  And se cobra al cliente solo S/ 300.00 de diferencia
+  And el contrato registra depositAmount: 500.00 y reservationCreditAmount: 200.00
+
+Scenario: Garantía totalmente cubierta por crédito de reserva
+  Given un alquiler originado desde una Reserva
+  And el pago de reserva fue de S/ 500.00
+  And el monto de garantía exigido es S/ 500.00
+  When el operador formaliza el contrato
+  Then no se cobra garantía adicional al cliente
+  And el contrato registra depositAmount: 500.00 y reservationCreditAmount: 500.00
+
+Scenario: Crédito de reserva supera la garantía exigida — error
+  Given un alquiler originado desde una Reserva
+  And el pago de reserva fue de S/ 700.00
+  And el monto de garantía exigido es S/ 500.00
+  When el operador intenta formalizar el contrato
+  Then el sistema rechaza la operación con error ReservationCreditExceedsDepositError
+  And no se registra ningún contrato
+
+Scenario: Monedas distintas — sin crédito
+  Given un alquiler originado desde una Reserva
+  And el pago de reserva fue en USD
+  And la garantía del alquiler se cobra en PEN
+  When el operador formaliza el contrato
+  Then el sistema rechaza el traslado con error ReservationCreditCurrencyMismatchError
+
+Scenario: Alquiler directo — garantía completa
+  Given un alquiler creado directamente (sin reserva previa)
+  When el operador formaliza el contrato con una garantía de S/ 500.00
+  Then se cobra la garantía completa al cliente (S/ 500.00)
+  And reservationCreditAmount queda en 0
+```
 
 ### SC-ALQ-DOC-01: Carga de documento de licencia en Entrega-01
 

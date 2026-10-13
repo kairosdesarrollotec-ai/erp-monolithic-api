@@ -155,13 +155,15 @@ sources:
   path: docs/sources/bdd/bdd-03-alquiler.md
   type: BDD
   module: Alquiler
-  version: '1.7'
-  date: unknown
+  version: '1.8'
+  date: '2026-10-13'
   status: approved
+  approved_at: '2026-10-13'
   estado_original: >
-    APROBADO v1.7 — aprobación registrada 2026-10-13. Fuente autorizada para implementación
-    del módulo Alquiler (PR #73 / feature/cierre-huecos-20261012). Cubre ciclo completo:
-    contrato, entrega, documentos GCS, extensiones y cierre.
+    APROBADO v1.8 — v1.7 aprobada 2026-10-13; v1.8 añade BR-ALQ-020 (crédito de reserva
+    trasladado a garantía del alquiler) formalizado 2026-10-13. Fuente autorizada para
+    implementación del módulo Alquiler (PR #73 / feature/cierre-huecos-20261012). Cubre
+    ciclo completo: contrato, entrega, documentos GCS, extensiones y cierre.
   approved_at: '2026-10-13'
   approved_by: Russbel/usuario sesión implementación
   sha256: f3ddf5388e14784739711ffd65e65c70ce388dc5fa508e8ac93ec246ec59f837
