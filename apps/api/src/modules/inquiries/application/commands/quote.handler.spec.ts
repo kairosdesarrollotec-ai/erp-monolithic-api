@@ -79,6 +79,21 @@ describe('QuoteHandler', () => {
     expect(fleet.checkEligibility).toHaveBeenCalledWith({ ...SCOPE, vehicleId: 'veh-1', destination: 'Vilcashuaman', estimatedDays: 3 });
   });
 
+  it('pasa la fecha de viaje de la consulta (travelStartDate) como startsAt a Flota', async () => {
+    const travelStartDate = new Date('2026-11-05T00:00:00Z');
+    const { handler, fleet } = build({ existing: buildInquiry({ travelStartDate }) });
+
+    await handler.execute(command(3));
+
+    expect(fleet.checkEligibility).toHaveBeenCalledWith({
+      ...SCOPE,
+      vehicleId: 'veh-1',
+      destination: 'Vilcashuaman',
+      estimatedDays: 3,
+      startsAt: travelStartDate,
+    });
+  });
+
   it('rechaza (422 VEHICLE_NOT_ELIGIBLE) un vehiculo no elegible o de otra empresa, sin cotizar', async () => {
     const { handler, inquiries } = build({ eligible: false });
 

@@ -26,6 +26,18 @@ export class PrismaRentalExtensionPersistence {
     return row ? toRentalExtensionRecord(row) : null;
   }
 
+  async listByRentalId(
+    rentalId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalExtensionRecord[]> {
+    const client = tx ?? this.prisma;
+    const rows = await client.rentalExtension.findMany({
+      where: { rentalId },
+      orderBy: { requestedAt: 'desc' },
+    });
+    return rows.map(toRentalExtensionRecord);
+  }
+
   async findVehicleCommitmentOverlap(
     vehicleId: string,
     organizationId: string,

@@ -19,6 +19,8 @@ import { RejectExtensionHandler } from './application/commands/reject-extension.
 import { ReportExtensionBreachHandler } from './application/commands/report-extension-breach.handler';
 import { GetRentalHandler } from './application/queries/get-rental.handler';
 import { ListRentalsHandler } from './application/queries/list-rentals.handler';
+import { GetContractTemplateHandler } from './application/queries/get-contract-template.handler';
+import { ContractTemplateResolver } from './application/services/contract-template-resolver';
 import { RentalRepositoryPort } from './application/ports/rental-repository.port';
 import { RentalEvidenceRepositoryPort } from './application/ports/rental-evidence-repository.port';
 import { RentalEvidenceStoragePort } from './application/ports/rental-evidence-storage.port';
@@ -41,6 +43,7 @@ import { OutboxModule } from '../outbox/outbox.module';
 import { FleetModule } from '../fleet/fleet.module';
 import { TemplatesModule } from '../templates/templates.module';
 import { RentalCreationGuard } from './application/services/rental-creation.guard';
+import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
 
 @Module({
@@ -64,12 +67,15 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     ReportExtensionBreachHandler,
     GetRentalHandler,
     ListRentalsHandler,
+    GetContractTemplateHandler,
+    ContractTemplateResolver,
     PrismaRentalExtensionPersistence,
     PrismaRentalNotaryContractPersistence,
     RequestRentalDocumentUploadSessionHandler,
     RecordRentalDocumentHandler,
     ListRentalDocumentsHandler,
     RentalCreationGuard,
+    RecentAuthGuard,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
     { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import type { LeaveRequest, Prisma } from '@prisma/client';
+import type { LeaveEvidence, LeaveRequest, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
+  AddLeaveEvidenceData,
   CreateLeaveData,
   LeaveRepositoryPort,
   LeaveWithEmployee,
@@ -45,6 +46,34 @@ export class PrismaLeaveRepository implements LeaveRepositoryPort {
       orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       ...(limit ? { take: limit } : {}),
     });
+  }
+
+  async countEvidence(leaveId: string, tx?: Prisma.TransactionClient): Promise<number> {
+    const client = tx ?? this.prisma;
+    return client.leaveEvidence.count({ where: { leaveId } });
+  }
+
+  async addEvidence(data: AddLeaveEvidenceData, tx?: Prisma.TransactionClient): Promise<LeaveEvidence> {
+    const client = tx ?? this.prisma;
+    await client.leaveEvidence.createMany({
+      data: [
+        {
+          leaveId: data.leaveId,
+          objectUrl: data.objectUrl,
+          contentType: data.contentType,
+          uploadedById: data.uploadedById,
+        },
+      ],
+      skipDuplicates: true,
+    });
+    return client.leaveEvidence.findUniqueOrThrow({
+      where: { leaveId_objectUrl: { leaveId: data.leaveId, objectUrl: data.objectUrl } },
+    });
+  }
+
+  async listEvidence(leaveId: string, tx?: Prisma.TransactionClient): Promise<LeaveEvidence[]> {
+    const client = tx ?? this.prisma;
+    return client.leaveEvidence.findMany({ where: { leaveId }, orderBy: { createdAt: 'asc' } });
   }
 
   async resolve(id: string, data: ResolveLeaveData, tx?: Prisma.TransactionClient): Promise<LeaveRequest> {

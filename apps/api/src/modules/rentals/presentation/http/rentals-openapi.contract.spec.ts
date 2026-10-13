@@ -18,6 +18,7 @@ import { RegisterAlcoholTestDto } from './dto/register-alcohol-test.dto';
 import { CommandScopeDto } from './dto/command-scope.dto';
 import { ApproveNotaryExceptionDto } from './dto/approve-notary-exception.dto';
 import { FormalizeContractDto } from './dto/formalize-contract.dto';
+import { GetContractTemplateQueryDto } from './dto/get-contract-template-query.dto';
 import { CompleteDeliveryDto } from './dto/complete-delivery.dto';
 import { RequestExtensionDto } from './dto/request-extension.dto';
 import { AuthorizeExtensionDto } from './dto/authorize-extension.dto';
@@ -26,6 +27,7 @@ import { IdempotencyInterceptor } from '../../../../common/http/idempotency.inte
 import { RENTAL_LIST_MAX_LIMIT, RENTAL_LIST_DEFAULT_LIMIT } from '../../domain/rental-pagination';
 import { toRentalResponse } from './rental.mapper';
 import { RentalRecord } from '../../application/ports/rental-repository.port';
+import { HOLDER_TYPES } from '../../domain/contract-variant';
 
 import * as yaml from 'js-yaml';
 
@@ -235,5 +237,75 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
 
     expect(specRequired.every((k) => mapperKeys.includes(k))).toBe(true);
     expect(mapperKeys.every((k) => specProperties.includes(k))).toBe(true);
+  });
+
+  it('GET /rentals/{id}/contract-template: los query params del contrato son los del DTO', () => {
+    const op: Operation = spec.paths['/rentals/{id}/contract-template'].get;
+    const queryParams = (op.parameters ?? [])
+      .map(deref)
+      .filter((p: any) => p.in === 'query')
+      .map((p: any) => p.name)
+      .sort();
+    expect(queryParams).toEqual(dtoFields(GetContractTemplateQueryDto as new () => unknown).all);
+  });
+
+  it('formalize-contract: holderType y withDriver son opcionales y su enum coincide con el dominio', () => {
+    const contract = flatten(spec.components.schemas.FormalizeContractRequest);
+    expect(contract.required).not.toContain('holderType');
+    expect(contract.required).not.toContain('withDriver');
+    expect([...spec.components.schemas.ContractHolderType.enum].sort()).toEqual([...HOLDER_TYPES].sort());
+  });
+
+  it('P0-03: el deposito del mapper (con desglose reserva/diferencia) cumple RentalDepositResponse', () => {
+    const record = buildRentalRecord({
+      status: 'PENDING_DELIVERY',
+      reservationId: 'aaaaaaaa-0000-0000-0000-0000000000aa',
+      deposit: {
+        id: 'dep-1',
+        rentalId: 'aaaaaaaa-0000-0000-0000-000000000001',
+        originalAmount: '1000.00',
+        currency: 'PEN',
+        status: 'HELD',
+        reservationCreditAmount: '300.00',
+        createdAt: new Date('2026-10-02T00:00:00Z'),
+      },
+    });
+    const deposit = toRentalResponse(record).deposit!;
+    const contract = flatten(spec.components.schemas.RentalDepositResponse);
+    expect(Object.keys(deposit).sort()).toEqual(Object.keys(contract.properties).sort());
+    expect(contract.required.every((k) => k in deposit)).toBe(true);
+    expect(deposit.amountCollected).toBe('700.00');
+  });
+
+  it('el detalle (credito de reserva + ampliaciones) cumple ReservationCreditResponse y RentalExtensionResponse', () => {
+    const record = buildRentalRecord({
+      status: 'EXTENSION_PENDING',
+      reservationCredit: {
+        applicable: true,
+        reason: 'APPLIED',
+        reservationId: 'aaaaaaaa-0000-0000-0000-0000000000aa',
+        amount: '300.00',
+        currency: 'PEN',
+      },
+      extensions: [
+        {
+          id: 'ext-1',
+          rentalId: 'aaaaaaaa-0000-0000-0000-000000000001',
+          requestedEndAt: new Date('2026-10-06T09:00:00Z'),
+          status: 'PENDING',
+          paymentId: null,
+          addendumDocumentRef: null,
+          requestedAt: new Date('2026-10-05T08:00:00Z'),
+          resolvedAt: null,
+        },
+      ],
+    });
+    const out = toRentalResponse(record);
+    const creditContract = flatten(spec.components.schemas.ReservationCreditResponse);
+    expect(Object.keys(out.reservationCredit!).sort()).toEqual(Object.keys(creditContract.properties).sort());
+    const extContract = flatten(spec.components.schemas.RentalExtensionResponse);
+    expect(Object.keys(out.extensions![0]).sort()).toEqual(Object.keys(extContract.properties).sort());
+    const reqContract = flatten(spec.components.schemas.ExtensionRequirements);
+    expect(Object.keys(out.extensions![0].requirements).sort()).toEqual(Object.keys(reqContract.properties).sort());
   });
 });

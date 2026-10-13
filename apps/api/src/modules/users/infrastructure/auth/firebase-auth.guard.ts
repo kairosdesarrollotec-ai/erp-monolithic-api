@@ -12,6 +12,8 @@ import { IS_PUBLIC_KEY } from '../../../../common/decorators/public.decorator';
 
 export interface AuthenticatedRequest extends Request {
   firebaseUid?: string;
+  email?: string;
+  displayName?: string;
 }
 
 @Injectable()
@@ -38,6 +40,10 @@ export class FirebaseAuthGuard implements CanActivate {
       initFirebaseAdmin();
       const decoded = await getAuth().verifyIdToken(idToken);
       request.firebaseUid = decoded.uid;
+      request.email = decoded.email;
+      request.displayName =
+        (decoded.name as string | undefined) ??
+        ((decoded as Record<string, unknown>).displayName as string | undefined);
       return true;
     } catch {
       throw new UnauthorizedException('Token de autenticacion invalido o expirado.');

@@ -1,5 +1,14 @@
 import { VehicleStatus } from '../../../domain/vehicle';
 
+export interface VehicleAvailabilityResponse {
+  available: boolean;
+  /** Inicio del compromiso/reserva que choca (ISO 8601). Solo si available = false. */
+  conflictFrom?: string;
+  /** Fin del compromiso/reserva que choca (ISO 8601). Solo si available = false. */
+  conflictTo?: string;
+  conflictSource?: 'COMMITMENT' | 'RESERVATION';
+}
+
 export interface VehicleResponse {
   id: string;
   organizationId: string;
@@ -17,6 +26,8 @@ export interface VehicleResponse {
   photoUrl?: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Solo presente en GET /fleet/vehicles cuando se envian availableFrom y availableTo. */
+  availability?: VehicleAvailabilityResponse;
 }
 
 export interface ListVehiclesResponse {

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { FieldTripRequest, FieldTripStatus, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import type { FieldTripRequest, FieldTripStatus } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   CreateFieldTripData,
@@ -11,7 +12,12 @@ import {
 import { FieldTripNotAuthorizedError, FieldTripNotPendingError } from '../../domain/hr-administration-errors';
 
 const EMPLOYEE_SELECT = {
+  id: true,
   fullName: true,
+  areaName: true,
+  jobTitle: true,
+  fieldTripLateCount: true,
+  isFieldTripObserved: true,
   organizationId: true,
   operatingCompanyId: true,
   branchId: true,
@@ -63,6 +69,22 @@ export class PrismaFieldTripRepository implements FieldTripRepositoryPort {
     });
   }
 
+  async claimNextDueForEscalation(now: Date, tx: Prisma.TransactionClient): Promise<string | null> {
+    // Sin `level1_timeout_at` (filas anteriores al temporizador) se cuenta 5 min desde la creación.
+    // Las columnas son TIMESTAMP(3) sin zona (UTC): el instante se compara también en UTC.
+    const rows = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+      SELECT id FROM field_trip_requests
+      WHERE (status = 'PENDIENTE_NIVEL_1'
+             AND COALESCE(level1_timeout_at, created_at + interval '5 minutes') <= (${now}::timestamptz AT TIME ZONE 'UTC'))
+         OR (status = 'PENDIENTE_NIVEL_2' AND level2_timeout_at <= (${now}::timestamptz AT TIME ZONE 'UTC'))
+         OR (status = 'PENDIENTE_NIVEL_3' AND level3_timeout_at <= (${now}::timestamptz AT TIME ZONE 'UTC'))
+      ORDER BY created_at ASC
+      LIMIT 1
+      FOR UPDATE SKIP LOCKED
+    `);
+    return rows[0]?.id ?? null;
+  }
+
   async transition(
     id: string,
     from: readonly FieldTripStatus[],
@@ -84,6 +106,11 @@ export class PrismaFieldTripRepository implements FieldTripRepositoryPort {
         ...(data.returnNotes !== undefined ? { returnNotes: data.returnNotes } : {}),
         ...(data.level2TimeoutAt !== undefined ? { level2TimeoutAt: data.level2TimeoutAt } : {}),
         ...(data.level3TimeoutAt !== undefined ? { level3TimeoutAt: data.level3TimeoutAt } : {}),
+        ...(data.rejectedById !== undefined ? { rejectedById: data.rejectedById } : {}),
+        ...(data.rejectedByName !== undefined ? { rejectedByName: data.rejectedByName } : {}),
+        ...(data.rejectedAt !== undefined ? { rejectedAt: data.rejectedAt } : {}),
+        ...(data.rejectedAtLevel !== undefined ? { rejectedAtLevel: data.rejectedAtLevel } : {}),
+        ...(data.rejectionReason !== undefined ? { rejectionReason: data.rejectionReason } : {}),
       },
     });
 

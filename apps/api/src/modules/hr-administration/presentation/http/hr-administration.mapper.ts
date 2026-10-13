@@ -3,9 +3,13 @@ import type {
   Employee,
   EmploymentTermination,
   FieldTripRequest,
+  HrMemo,
+  LeaveEvidence,
   LeaveRequest,
   VacationRequest,
 } from '@prisma/client';
+import type { TrainingWithAttendees } from '../../application/ports/training-repository.port';
+import type { FieldTripWithEmployee } from '../../application/ports/field-trip-repository.port';
 import type { MonthlyAttendanceSummaryResult } from '../../application/queries/get-attendance-summary.handler';
 import type { EmployeeDetailResult } from '../../application/queries/get-employee-detail.handler';
 import type { ApplyMonthDeductionsResult } from '../../application/commands/apply-month-deductions.handler';
@@ -16,8 +20,12 @@ import type {
   EmployeeResponse,
   EmploymentTerminationResponse,
   FieldTripResponse,
+  HrMemoResponse,
+  LeaveEvidenceResponse,
   LeaveRequestResponse,
   MonthlyAttendanceSummaryResponse,
+  MyEmployeeResponse,
+  TrainingResponse,
   VacationRequestResponse,
 } from './dto/hr-administration.response';
 
@@ -54,7 +62,63 @@ export function toEmployeeResponse(e: Employee): EmployeeResponse {
   };
 }
 
-export function toAttendanceRecordResponse(r: AttendanceRecord, employeeName?: string): AttendanceRecordResponse {
+export function toMyEmployeeResponse(e: Employee): MyEmployeeResponse {
+  return {
+    id: e.id,
+    companyId: e.operatingCompanyId,
+    branchId: e.branchId,
+    fullName: e.fullName,
+    areaId: e.areaId,
+    areaName: e.areaName,
+    jobTitle: e.jobTitle,
+    status: e.status,
+    fieldTripLateCount: e.fieldTripLateCount,
+    isFieldTripObserved: e.isFieldTripObserved,
+  };
+}
+
+export function toHrMemoResponse(m: HrMemo, employeeName?: string): HrMemoResponse {
+  return {
+    id: m.id,
+    employeeId: m.employeeId,
+    ...(employeeName !== undefined ? { employeeName } : {}),
+    kind: m.kind,
+    violationNumber: m.violationNumber,
+    reason: m.reason,
+    issuedOn: dateOnly(m.issuedOn),
+    generatedBy: m.generatedBy,
+    createdAt: m.createdAt.toISOString(),
+  };
+}
+
+export function toTrainingResponse(t: TrainingWithAttendees): TrainingResponse {
+  return {
+    id: t.id,
+    topic: t.topic,
+    heldOn: dateOnly(t.heldOn),
+    durationMinutes: t.durationMinutes,
+    comprehensionNotes: t.comprehensionNotes,
+    attendees: t.attendees.map((a) => ({ employeeId: a.employeeId, fullName: a.employee.fullName })),
+    createdAt: t.createdAt.toISOString(),
+  };
+}
+
+export function toLeaveEvidenceResponse(e: LeaveEvidence): LeaveEvidenceResponse {
+  return {
+    id: e.id,
+    leaveId: e.leaveId,
+    objectUrl: e.objectUrl,
+    contentType: e.contentType,
+    uploadedById: e.uploadedById,
+    createdAt: e.createdAt.toISOString(),
+  };
+}
+
+export function toAttendanceRecordResponse(
+  r: AttendanceRecord,
+  employeeName?: string,
+  memo?: HrMemo | null,
+): AttendanceRecordResponse {
   return {
     id: r.id,
     employeeId: r.employeeId,
@@ -69,6 +133,9 @@ export function toAttendanceRecordResponse(r: AttendanceRecord, employeeName?: s
     payrollMonth: r.payrollMonth,
     deductionAppliedAt: iso(r.deductionAppliedAt),
     notes: r.notes,
+    justification: r.justification,
+    reclassifiedAt: iso(r.reclassifiedAt),
+    memo: memo ? toHrMemoResponse(memo) : null,
     createdAt: r.createdAt.toISOString(),
   };
 }
@@ -142,13 +209,26 @@ export function toVacationRequestResponse(
 }
 
 export function toFieldTripResponse(
-  f: FieldTripRequest,
-  options?: { employeeName?: string; message?: string | null },
+  f: FieldTripRequest | FieldTripWithEmployee,
+  options?: { employeeName?: string; message?: string | null; memo?: HrMemo | null },
 ): FieldTripResponse {
+  const employee = 'employee' in f ? f.employee : undefined;
   return {
     id: f.id,
     employeeId: f.employeeId,
     ...(options?.employeeName !== undefined ? { employeeName: options.employeeName } : {}),
+    ...(employee
+      ? {
+          employee: {
+            id: employee.id,
+            fullName: employee.fullName,
+            areaName: employee.areaName,
+            jobTitle: employee.jobTitle,
+            fieldTripLateCount: employee.fieldTripLateCount,
+            isFieldTripObserved: employee.isFieldTripObserved,
+          },
+        }
+      : {}),
     destination: f.destination,
     objective: f.objective,
     estimatedDeparture: f.estimatedDeparture.toISOString(),
@@ -165,7 +245,13 @@ export function toFieldTripResponse(
     level3TimeoutAt: iso(f.level3TimeoutAt),
     lateMinutes: f.lateMinutes,
     returnNotes: f.returnNotes,
+    rejectedById: f.rejectedById,
+    rejectedByName: f.rejectedByName,
+    rejectedAt: iso(f.rejectedAt),
+    rejectedAtLevel: f.rejectedAtLevel,
+    rejectionReason: f.rejectionReason,
     message: options?.message ?? null,
+    memo: options?.memo ? toHrMemoResponse(options.memo) : null,
     createdAt: f.createdAt.toISOString(),
   };
 }
@@ -202,5 +288,7 @@ export function toEmployeeDetailResponse(detail: EmployeeDetailResult): Employee
     ),
     recentFieldTrips: detail.recentFieldTrips.map((f) => toFieldTripResponse(f, { employeeName: f.employee.fullName })),
     termination: detail.termination ? toEmploymentTerminationResponse(detail.termination, name) : null,
+    recentMemos: detail.recentMemos.map((m) => toHrMemoResponse(m, name)),
+    recentTrainings: detail.recentTrainings.map(toTrainingResponse),
   };
 }

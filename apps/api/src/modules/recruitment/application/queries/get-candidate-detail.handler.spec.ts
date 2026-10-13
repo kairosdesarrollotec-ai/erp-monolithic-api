@@ -26,6 +26,8 @@ function detail(over: Partial<CandidateDetailRecord> = {}): CandidateDetailRecor
     email: 'ana@example.com',
     phone: '999111222',
     cvDocumentId: null,
+    cv: null,
+    hasCv: false,
     salaryExpectation: 2500,
     stage: CandidateStage.ENTREVISTA,
     decision: null,
@@ -37,6 +39,7 @@ function detail(over: Partial<CandidateDetailRecord> = {}): CandidateDetailRecor
     updatedAt: new Date('2026-10-01T00:00:00Z'),
     isMechanic: true,
     interviews: [],
+    negotiations: [],
     onboarding: null,
     ...over,
   };

@@ -8,6 +8,7 @@ import {
   UpdateVehicleInput,
 } from '../../application/ports/fleet-vehicle-repository.port';
 import { FleetVehicle, VehicleStatus } from '../../domain/vehicle';
+import { findVehicleConflicts } from '../../../../common/persistence/vehicle-overlap';
 
 function toDomain(row: {
   id: string;
@@ -96,6 +97,10 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
     });
 
     return row ? toDomain(row) : null;
+  }
+
+  async findConflicts(vehicleIds: readonly string[], from: Date, to: Date) {
+    return findVehicleConflicts(this.prisma, vehicleIds, from, to);
   }
 
   async list(

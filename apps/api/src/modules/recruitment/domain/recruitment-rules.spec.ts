@@ -1,4 +1,4 @@
-import { CandidateDecision, CandidateStage, VacancyStatus } from '@prisma/client';
+import { CandidateDecision, CandidateStage, VacancyStatus } from './recruitment-domain-types';
 import {
   assertCandidateNotDecided,
   assertCandidateStageTransition,

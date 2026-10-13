@@ -207,6 +207,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NestErrorResponse'
+  /users/me/profile:
+    get:
+      operationId: getMyProfile
+      summary: Perfil consolidado del usuario autenticado (TR-09)
+      description: >
+        Devuelve el perfil consolidado del usuario autenticado: datos basicos
+        de identidad (email, displayName), organizacion, estado de activacion
+        (cambio de contrasena y enrolamiento MFA) y asignaciones vigentes de
+        empresa/sede.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Perfil del usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          description: Token de Firebase ausente o invalido
 components:
   securitySchemes:
     bearerAuth:
@@ -360,6 +380,37 @@ components:
           type: boolean
         requiresMfaEnrollment:
           type: boolean
+    UserProfileResponse:
+      type: object
+      required:
+        - firebaseUid
+        - email
+        - displayName
+        - organizationId
+        - requiresPasswordChange
+        - mfaEnrolled
+        - mfaEnrolledAt
+        - assignments
+      properties:
+        firebaseUid:
+          type: string
+        email:
+          type: [string, 'null']
+        displayName:
+          type: [string, 'null']
+        organizationId:
+          type: string
+        requiresPasswordChange:
+          type: boolean
+        mfaEnrolled:
+          type: boolean
+        mfaEnrolledAt:
+          type: [string, 'null']
+          format: date-time
+        assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkContextAssignment'
     NestErrorResponse:
       description: >
         Forma real y actual del error (no problem+json todavia): el

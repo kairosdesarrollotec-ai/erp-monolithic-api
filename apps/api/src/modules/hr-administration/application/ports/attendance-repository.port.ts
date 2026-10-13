@@ -12,6 +12,24 @@ export interface CreateAttendanceData {
   createdById: string;
 }
 
+export interface ReclassifyAttendanceData {
+  status: AttendanceStatus;
+  deductionAmount: number;
+  justification: string;
+  reclassifiedById: string;
+  reclassifiedAt: Date;
+}
+
+export interface AttendanceWithEmployee extends AttendanceRecord {
+  employee: {
+    fullName: string;
+    organizationId: string;
+    operatingCompanyId: string;
+    branchId: string;
+    baseSalary: Prisma.Decimal | null;
+  };
+}
+
 export interface ListAttendanceFilters {
   month?: string; // YYYY-MM
   startDate?: Date;
@@ -50,6 +68,23 @@ export interface EmployeeAttendanceTotals {
 
 export abstract class AttendanceRepositoryPort {
   abstract create(data: CreateAttendanceData, tx?: Prisma.TransactionClient): Promise<AttendanceRecord>;
+  abstract findById(id: string, tx?: Prisma.TransactionClient): Promise<AttendanceWithEmployee | null>;
+  /**
+   * Reclasifica una falta de forma condicional: solo si sigue siendo falta y su descuento aún no se liquidó.
+   * Si otra operación la movió antes devuelve null.
+   */
+  abstract reclassify(
+    id: string,
+    data: ReclassifyAttendanceData,
+    tx?: Prisma.TransactionClient,
+  ): Promise<AttendanceRecord | null>;
+  /** Cantidad de registros con ese estado en el mes calendario de `anyDateInMonth`. */
+  abstract countInMonthOf(
+    employeeId: string,
+    status: AttendanceStatus,
+    anyDateInMonth: Date,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number>;
   abstract findByEmployeeAndDate(
     employeeId: string,
     date: Date,

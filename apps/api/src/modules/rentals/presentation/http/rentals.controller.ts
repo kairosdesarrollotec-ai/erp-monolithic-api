@@ -17,6 +17,10 @@ import {
   AuthenticatedRequest,
   FirebaseAuthGuard,
 } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import {
+  RecentAuth,
+  RecentAuthGuard,
+} from '../../../users/infrastructure/auth/recent-auth.guard';
 import { parseVersionIfMatch } from '../../../../common/http/etag';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { CreateRentalHandler } from '../../application/commands/create-rental.handler';
@@ -37,6 +41,8 @@ import { CompleteDeliveryHandler } from '../../application/commands/complete-del
 import { CompleteDeliveryCommand } from '../../application/commands/complete-delivery.command';
 import { GetRentalHandler } from '../../application/queries/get-rental.handler';
 import { GetRentalQuery } from '../../application/queries/get-rental.query';
+import { GetContractTemplateHandler } from '../../application/queries/get-contract-template.handler';
+import { GetContractTemplateQuery } from '../../application/queries/get-contract-template.query';
 import { ListRentalsHandler } from '../../application/queries/list-rentals.handler';
 import { ListRentalsQuery } from '../../application/queries/list-rentals.query';
 import { CreateRentalDto } from './dto/create-rental.dto';
@@ -49,6 +55,8 @@ import { FormalizeContractDto } from './dto/formalize-contract.dto';
 import { CompleteDeliveryDto } from './dto/complete-delivery.dto';
 import { ListRentalsQueryDto } from './dto/list-rentals-query.dto';
 import { GetRentalQueryDto } from './dto/get-rental-query.dto';
+import { GetContractTemplateQueryDto } from './dto/get-contract-template-query.dto';
+import { ContractTemplateSelectionResponse } from './dto/contract-template-selection.response';
 import { RentalResponse } from './dto/rental.response';
 import { toRentalResponse } from './rental.mapper';
 import { RENTAL_LIST_MAX_LIMIT } from '../../domain/rental-pagination';
@@ -67,6 +75,7 @@ export class RentalsController {
     private readonly completeDelivery: CompleteDeliveryHandler,
     private readonly getRental: GetRentalHandler,
     private readonly listRentals: ListRentalsHandler,
+    private readonly getContractTemplate: GetContractTemplateHandler,
   ) {}
 
   @Post()
@@ -155,6 +164,36 @@ export class RentalsController {
       new GetRentalQuery(id, req.firebaseUid!, query.companyId, query.branchId),
     );
     return toRentalResponse(rental);
+  }
+
+  /**
+   * BR-DOC-002/003 (ENTREGA-03): plantilla de contrato vigente que corresponde
+   * a la combinacion titular natural/juridica x con/sin conductor.
+   */
+  @Get(':id/contract-template')
+  async contractTemplate(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: GetContractTemplateQueryDto,
+  ): Promise<ContractTemplateSelectionResponse> {
+    const variant = query.holderType
+      ? { holderType: query.holderType, withDriver: query.withDriver === 'true' }
+      : undefined;
+    const selection = await this.getContractTemplate.execute(
+      new GetContractTemplateQuery(id, req.firebaseUid!, query.companyId, query.branchId, variant),
+    );
+    return {
+      rentalId: selection.rentalId,
+      variant: selection.variant,
+      requestedType: selection.requestedType,
+      fallbackUsed: selection.fallbackUsed,
+      template: selection.template
+        ? {
+            ...selection.template,
+            effectiveFrom: selection.template.effectiveFrom ? selection.template.effectiveFrom.toISOString() : null,
+          }
+        : null,
+    };
   }
 
   @Post(':id/commands/validate-documents')
@@ -257,6 +296,8 @@ export class RentalsController {
 
   @Post(':id/commands/formalize-contract')
   @HttpCode(200)
+  @UseGuards(RecentAuthGuard)
+  @RecentAuth(300)
   @UseInterceptors(IdempotencyInterceptor)
   async formalizeContractCommand(
     @Req() req: AuthenticatedRequest,
@@ -275,6 +316,7 @@ export class RentalsController {
         dto.depositAmount,
         dto.depositCurrency,
         dto.signatureData,
+        dto.holderType ? { holderType: dto.holderType, withDriver: dto.withDriver === true } : undefined,
       ),
     );
     return toRentalResponse(updated);

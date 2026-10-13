@@ -9,6 +9,8 @@ import { SelectWorkContextHandler } from '../../application/commands/select-work
 import { SelectWorkContextCommand } from '../../application/commands/select-work-context.command';
 import { GetDashboardHandler } from '../../application/queries/get-dashboard.handler';
 import { GetDashboardQuery } from '../../application/queries/get-dashboard.query';
+import { GetMyProfileHandler } from '../../application/queries/get-my-profile.handler';
+import { GetMyProfileQuery } from '../../application/queries/get-my-profile.query';
 import {
   AuthenticatedRequest,
   FirebaseAuthGuard,
@@ -18,6 +20,7 @@ import { WorkContextAssignmentsResponse } from './dto/work-context-assignments.r
 import { SelectWorkContextDto } from './dto/select-work-context.dto';
 import { DashboardResponse } from './dto/dashboard.response';
 import { GetDashboardDto } from './dto/get-dashboard.dto';
+import { UserProfileResponse } from './dto/user-profile.response';
 
 @Controller('users/me')
 @UseGuards(FirebaseAuthGuard)
@@ -28,11 +31,20 @@ export class UsersController {
     private readonly getWorkContextAssignments: GetWorkContextAssignmentsHandler,
     private readonly selectWorkContext: SelectWorkContextHandler,
     private readonly getDashboard: GetDashboardHandler,
+    private readonly getMyProfile: GetMyProfileHandler,
   ) {}
 
   @Get('activation-status')
   async activationStatus(@Req() req: AuthenticatedRequest): Promise<ActivationStatusResponse> {
     return this.getActivationStatus.execute(new GetActivationStatusQuery(req.firebaseUid!));
+  }
+
+  /** TR-09 - perfil consolidado del usuario autenticado. */
+  @Get('profile')
+  async profile(@Req() req: AuthenticatedRequest): Promise<UserProfileResponse> {
+    return this.getMyProfile.execute(
+      new GetMyProfileQuery(req.firebaseUid!, req.email, req.displayName),
+    );
   }
 
   @Post('complete-activation')

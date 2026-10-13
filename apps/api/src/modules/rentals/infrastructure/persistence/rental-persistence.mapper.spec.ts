@@ -63,6 +63,35 @@ describe('RentalPersistenceMapper', () => {
     });
     expect(deposit?.originalAmount).toBe('500.00');
     expect(toRentalDepositRecord(null)).toBeNull();
+    // Filas anteriores al traslado reserva -> garantia: sin credito y sin variante.
+    expect(deposit?.reservationCreditAmount).toBe('0.00');
+    expect(contract?.contractVariant).toBeNull();
+  });
+
+  it('P0-03 / BR-DOC-003: mapea el credito de reserva de la garantia y la combinacion del contrato', () => {
+    const now = new Date();
+    const deposit = toRentalDepositRecord({
+      id: 'dep-2',
+      rentalId: 'rental-2',
+      originalAmount: '1000.00' as any,
+      currency: 'PEN',
+      status: 'HELD',
+      reservationCreditAmount: '300' as any,
+      createdAt: now,
+    });
+    expect(deposit?.reservationCreditAmount).toBe('300.00');
+
+    const contract = toRentalContractRecord({
+      id: 'contract-2',
+      rentalId: 'rental-2',
+      templateId: 'tpl-1',
+      documentRef: 'docs/c2.pdf',
+      status: 'SIGNED',
+      signedAt: now,
+      contractVariant: 'LEGAL_WITH_DRIVER',
+      createdAt: now,
+    });
+    expect(contract?.contractVariant).toBe('LEGAL_WITH_DRIVER');
   });
 
   it('correctly maps rental extension record', () => {

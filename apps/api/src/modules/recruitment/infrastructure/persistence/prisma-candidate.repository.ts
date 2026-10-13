@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma, Candidate } from '@prisma/client';
+import type { Prisma, Candidate, CandidateNegotiation } from '@prisma/client';
 import { CandidateDecision, CandidateStage } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
@@ -7,6 +7,9 @@ import {
   CandidateRecord,
   CandidateRepositoryPort,
   CreateCandidateInput,
+  CreateNegotiationInput,
+  NegotiationRecord,
+  SetCandidateCvInput,
 } from '../../application/ports/candidate-repository.port';
 import { CandidateVersionConflictError } from '../../domain/recruitment-errors';
 
@@ -24,7 +27,18 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
       email: entity.email,
       phone: entity.phone,
       cvDocumentId: entity.cvDocumentId,
-      salaryExpectation: entity.salaryExpectation ? Number(entity.salaryExpectation) : null,
+      cv: entity.cvObjectUrl
+        ? {
+            objectUrl: entity.cvObjectUrl,
+            fileName: entity.cvFileName ?? 'cv',
+            contentType: entity.cvContentType ?? 'application/octet-stream',
+            sizeBytes: entity.cvSizeBytes ?? 0,
+            uploadedAt: entity.cvUploadedAt ?? entity.updatedAt,
+            uploadedBy: entity.cvUploadedBy,
+          }
+        : null,
+      hasCv: Boolean(entity.cvObjectUrl),
+      salaryExpectation: entity.salaryExpectation != null ? Number(entity.salaryExpectation) : null,
       stage: entity.stage,
       decision: entity.decision,
       decisionNotes: entity.decisionNotes,
@@ -33,6 +47,27 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
       version: entity.version,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+    };
+  }
+
+  private mapNegotiation(entity: CandidateNegotiation): NegotiationRecord {
+    const num = (value: unknown) => (value != null ? Number(value) : null);
+    return {
+      id: entity.id,
+      candidateId: entity.candidateId,
+      offeredSalary: Number(entity.offeredSalary),
+      offeredSchedule: entity.offeredSchedule,
+      offeredOtherConditions: entity.offeredOtherConditions,
+      candidateSalary: num(entity.candidateSalary),
+      candidateSchedule: entity.candidateSchedule,
+      candidateOtherConditions: entity.candidateOtherConditions,
+      candidateStartDate: entity.candidateStartDate,
+      outcome: entity.outcome,
+      agreedSalary: num(entity.agreedSalary),
+      agreedConditions: entity.agreedConditions,
+      reason: entity.reason,
+      recordedBy: entity.recordedBy,
+      createdAt: entity.createdAt,
     };
   }
 
@@ -82,6 +117,7 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
           orderBy: { scheduledAt: 'desc' },
         },
         onboarding: true,
+        negotiations: { orderBy: { createdAt: 'desc' } },
         vacancy: { select: { isMechanic: true } },
       },
     });
@@ -92,6 +128,7 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
     return {
       ...this.mapToRecord(found),
       isMechanic: found.vacancy.isMechanic,
+      negotiations: found.negotiations.map((n) => this.mapNegotiation(n)),
       interviews: found.interviews.map((i) => ({
         id: i.id,
         candidateId: i.candidateId,
@@ -120,11 +157,88 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
             probationEvaluation: found.onboarding.probationEvaluation,
             probationEvaluatedAt: found.onboarding.probationEvaluatedAt,
             probationEvaluatedBy: found.onboarding.probationEvaluatedBy,
+            probationMonthlyFee:
+              found.onboarding.probationMonthlyFee != null ? Number(found.onboarding.probationMonthlyFee) : null,
+            postProbationMonthlySalary:
+              found.onboarding.postProbationMonthlySalary != null
+                ? Number(found.onboarding.postProbationMonthlySalary)
+                : null,
+            probationFeeNotes: found.onboarding.probationFeeNotes,
+            probationFeesRecordedAt: found.onboarding.probationFeesRecordedAt,
+            probationFeesRecordedBy: found.onboarding.probationFeesRecordedBy,
+            // Default-deny: el handler decide la visibilidad segun el permiso del solicitante.
+            feesVisible: false,
+            version: found.onboarding.version,
             completedBy: found.onboarding.completedBy,
             createdAt: found.onboarding.createdAt,
           }
         : null,
     };
+  }
+
+  async findScopedById(
+    id: string,
+    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
+    tx?: Prisma.TransactionClient,
+  ): Promise<CandidateRecord | null> {
+    const client = tx ?? this.prisma;
+    const found = await client.candidate.findFirst({
+      where: {
+        id,
+        organizationId: scope.organizationId,
+        operatingCompanyId: scope.operatingCompanyId,
+        vacancy: { branchId: scope.branchId },
+      },
+    });
+    return found ? this.mapToRecord(found) : null;
+  }
+
+  async setCv(
+    id: string,
+    input: SetCandidateCvInput,
+    expectedVersion: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<CandidateRecord> {
+    const client = tx ?? this.prisma;
+    const updated = await client.candidate.updateMany({
+      where: { id, version: expectedVersion },
+      data: {
+        cvObjectUrl: input.objectUrl,
+        cvFileName: input.fileName,
+        cvContentType: input.contentType,
+        cvSizeBytes: input.sizeBytes,
+        cvUploadedAt: input.uploadedAt,
+        cvUploadedBy: input.uploadedBy,
+        version: { increment: 1 },
+      },
+    });
+    if (updated.count === 0) {
+      throw new CandidateVersionConflictError();
+    }
+    const reloaded = await client.candidate.findUniqueOrThrow({ where: { id } });
+    return this.mapToRecord(reloaded);
+  }
+
+  async addNegotiation(input: CreateNegotiationInput, tx?: Prisma.TransactionClient): Promise<NegotiationRecord> {
+    const client = tx ?? this.prisma;
+    const created = await client.candidateNegotiation.create({
+      data: {
+        candidateId: input.candidateId,
+        offeredSalary: input.offeredSalary,
+        offeredSchedule: input.offeredSchedule ?? null,
+        offeredOtherConditions: input.offeredOtherConditions ?? null,
+        candidateSalary: input.candidateSalary ?? null,
+        candidateSchedule: input.candidateSchedule ?? null,
+        candidateOtherConditions: input.candidateOtherConditions ?? null,
+        candidateStartDate: input.candidateStartDate ?? null,
+        outcome: input.outcome,
+        agreedSalary: input.agreedSalary ?? null,
+        agreedConditions: input.agreedConditions ?? null,
+        reason: input.reason ?? null,
+        recordedBy: input.recordedBy,
+      },
+    });
+    return this.mapNegotiation(created);
   }
 
   async findByDocumentNumber(

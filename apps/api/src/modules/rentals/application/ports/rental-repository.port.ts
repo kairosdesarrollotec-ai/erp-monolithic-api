@@ -4,6 +4,7 @@ import { AlcoholTestResult } from '../../domain/alcohol-test-result';
 import { NotaryResult } from '../../domain/notary-result';
 import { RentalPartyRole } from '../../domain/rental-party-role';
 import { ExtensionStatus } from '../../domain/extension-status';
+import type { ReservationCreditResolution, ReservationCreditSource } from '../../domain/reservation-credit';
 
 export interface RentalScope {
   organizationId: string;
@@ -37,6 +38,8 @@ export interface RentalContractRecord {
   documentRef: string;
   status: string;
   signedAt: Date | null;
+  /** BR-DOC-003: combinacion con la que se eligio la plantilla (null en contratos previos). */
+  contractVariant?: string | null;
   createdAt: Date;
 }
 
@@ -44,9 +47,12 @@ export interface RentalContractRecord {
 export interface RentalDepositRecord {
   id: string;
   rentalId: string;
+  /** Garantia TOTAL retenida (incluye el monto de reserva trasladado). */
   originalAmount: string;
   currency: string;
   status: string;
+  /** P0-03 (a): parte de la garantia ya pagada como reserva. "0.00" en alquiler directo. */
+  reservationCreditAmount?: string;
   createdAt: Date;
 }
 
@@ -79,6 +85,14 @@ export interface RentalRecord {
   notaryEvaluation?: NotaryEvaluationRecord | null;
   contract?: RentalContractRecord | null;
   deposit?: RentalDepositRecord | null;
+  /**
+   * P0-03 (a): traslado reserva -> garantia. Lo completa GetRentalHandler (no
+   * se persiste): vista previa mientras el contrato no se formaliza.
+   * null = alquiler sin reserva de origen.
+   */
+  reservationCredit?: ReservationCreditResolution | null;
+  /** Solo en el detalle (GET): ampliaciones del alquiler, la mas reciente primero. */
+  extensions?: RentalExtensionRecord[];
 }
 
 export interface CreateRentalInput {
@@ -134,8 +148,13 @@ export interface FormalizeContractInput {
   expectedVersion: number;
   templateId?: string;
   documentRef: string;
+  /** Garantia TOTAL (reserva trasladada + diferencia cobrada). */
   depositAmount: string;
   currency: string;
+  /** P0-03 (a): monto de la reserva trasladado a la garantia ("0.00" si no aplica). */
+  reservationCreditAmount: string;
+  /** BR-DOC-003: codigo de la combinacion elegida, si el cliente la indico. */
+  contractVariant?: string;
   updatedBy: string;
   signatureData?: string;
 }
@@ -275,6 +294,14 @@ export abstract class RentalRepositoryPort {
     startAt: Date;
     endAt: Date;
   } | null>;
+  /**
+   * P0-03 (a): datos de la reserva de origen (monto, estado, pago validado)
+   * para decidir el traslado a la garantia. null si la reserva no existe.
+   */
+  abstract findReservationCreditSource(
+    reservationId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationCreditSource | null>;
   abstract countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number>;
   abstract list(filter: ListRentalsFilter): Promise<RentalRecord[]>;
   abstract transitionStatus(
@@ -294,6 +321,11 @@ export abstract class RentalRepositoryPort {
     rentalId: string,
     tx?: Prisma.TransactionClient,
   ): Promise<RentalExtensionRecord | null>;
+  /** Todas las ampliaciones del alquiler, la mas reciente primero (ALQ-10/ALQ-11). */
+  abstract listExtensionsByRentalId(
+    rentalId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalExtensionRecord[]>;
   abstract findVehicleCommitmentOverlap(
     vehicleId: string,
     organizationId: string,

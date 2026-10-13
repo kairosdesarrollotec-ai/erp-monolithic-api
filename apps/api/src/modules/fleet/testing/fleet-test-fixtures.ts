@@ -56,6 +56,7 @@ export function buildFleetVehicleRepository(
     ),
     findById: jest.fn().mockImplementation(async (id: string) => (existing && existing.id === id ? existing : null)),
     findByPlate: jest.fn().mockResolvedValue(null),
+    findConflicts: jest.fn().mockResolvedValue(new Map()),
     list: jest.fn().mockResolvedValue({
       items: existing ? [existing] : [],
       total: existing ? 1 : 0,

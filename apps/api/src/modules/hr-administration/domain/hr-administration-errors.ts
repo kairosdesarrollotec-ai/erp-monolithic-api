@@ -2,6 +2,7 @@ import {
   DomainBadRequestError,
   DomainConflictError,
   DomainNotFoundError,
+  DomainServiceUnavailableError,
   DomainUnprocessableError,
 } from '../../../common/domain/domain-errors';
 
@@ -227,5 +228,85 @@ export class CandidateAlreadyEmployeeError extends DomainConflictError {
 
   constructor() {
     super('El candidato indicado ya fue registrado como colaborador.');
+  }
+}
+
+export class FieldTripRejectionReasonRequiredError extends DomainUnprocessableError {
+  readonly code = 'FIELD_TRIP_REJECTION_REASON_REQUIRED';
+
+  constructor() {
+    super('Para rechazar una salida a campo indica el motivo del rechazo (al menos 5 caracteres).');
+  }
+}
+
+export class EmployeeNotLinkedError extends DomainNotFoundError {
+  readonly code = 'EMPLOYEE_NOT_LINKED';
+
+  constructor() {
+    super('Tu usuario todavía no está vinculado a una ficha de colaborador en esta empresa. Pide a Personal que registre tu correo de acceso en tu ficha.');
+  }
+}
+
+export class AttendanceRecordNotFoundError extends DomainNotFoundError {
+  readonly code = 'ATTENDANCE_NOT_FOUND';
+
+  constructor(id: string) {
+    super(`No se encontró el registro de asistencia con ID ${id}.`);
+  }
+}
+
+export class AttendanceNotReclassifiableError extends DomainConflictError {
+  readonly code = 'ATTENDANCE_NOT_RECLASSIFIABLE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class InvalidAttendanceReclassificationError extends DomainUnprocessableError {
+  readonly code = 'INVALID_ATTENDANCE_RECLASSIFICATION';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class LeaveEvidenceNotAllowedError extends DomainConflictError {
+  readonly code = 'LEAVE_EVIDENCE_NOT_ALLOWED';
+
+  constructor(id: string, status: string) {
+    super(`Solo se puede adjuntar evidencia a un permiso pendiente de resolución (el permiso ${id} está ${status}).`);
+  }
+}
+
+export class InvalidLeaveEvidenceError extends DomainBadRequestError {
+  readonly code = 'INVALID_LEAVE_EVIDENCE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class LeaveEvidenceStorageUnavailableError extends DomainServiceUnavailableError {
+  readonly code = 'EVIDENCE_STORAGE_UNAVAILABLE';
+
+  constructor() {
+    super('Almacenamiento de evidencia no configurado (variables de entorno GCS faltantes).');
+  }
+}
+
+export class TrainingAttendeesInvalidError extends DomainUnprocessableError {
+  readonly code = 'TRAINING_ATTENDEES_INVALID';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class InvalidTrainingError extends DomainUnprocessableError {
+  readonly code = 'INVALID_TRAINING';
+
+  constructor(detail: string) {
+    super(detail);
   }
 }

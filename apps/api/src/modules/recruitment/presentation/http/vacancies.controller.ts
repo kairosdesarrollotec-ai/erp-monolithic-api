@@ -22,6 +22,12 @@ import { RegisterVacancyHandler } from '../../application/commands/register-vaca
 import { RegisterVacancyCommand } from '../../application/commands/register-vacancy.command';
 import { PublishVacancyHandler } from '../../application/commands/publish-vacancy.handler';
 import { PublishVacancyCommand } from '../../application/commands/publish-vacancy.command';
+import { PauseVacancyHandler } from '../../application/commands/pause-vacancy.handler';
+import { PauseVacancyCommand } from '../../application/commands/pause-vacancy.command';
+import { ResumeVacancyHandler } from '../../application/commands/resume-vacancy.handler';
+import { ResumeVacancyCommand } from '../../application/commands/resume-vacancy.command';
+import { PauseVacancyDto } from './dto/pause-vacancy.dto';
+import { ResumeVacancyDto } from './dto/resume-vacancy.dto';
 import { RegisterCandidateHandler } from '../../application/commands/register-candidate.handler';
 import { RegisterCandidateCommand } from '../../application/commands/register-candidate.command';
 import { ListVacanciesHandler } from '../../application/queries/list-vacancies.handler';
@@ -53,6 +59,8 @@ export class VacanciesController {
   constructor(
     private readonly registerVacancy: RegisterVacancyHandler,
     private readonly publishVacancy: PublishVacancyHandler,
+    private readonly pauseVacancy: PauseVacancyHandler,
+    private readonly resumeVacancy: ResumeVacancyHandler,
     private readonly listVacancies: ListVacanciesHandler,
     private readonly getVacancyDetail: GetVacancyDetailHandler,
     private readonly registerCandidate: RegisterCandidateHandler,
@@ -148,6 +156,36 @@ export class VacanciesController {
       ),
     );
     return toVacancyDetailResponse(published);
+  }
+
+  @Post(':id/commands/pause')
+  @HttpCode(HttpStatus.OK)
+  async pause(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Body() dto: PauseVacancyDto,
+  ): Promise<VacancyDetailResponse> {
+    const expectedVersion = parseVersionIfMatch(ifMatch);
+    const paused = await this.pauseVacancy.execute(
+      new PauseVacancyCommand(req.firebaseUid!, id, dto.companyId, dto.branchId, expectedVersion, dto.reason),
+    );
+    return toVacancyDetailResponse(paused);
+  }
+
+  @Post(':id/commands/resume')
+  @HttpCode(HttpStatus.OK)
+  async resume(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Body() dto: ResumeVacancyDto,
+  ): Promise<VacancyDetailResponse> {
+    const expectedVersion = parseVersionIfMatch(ifMatch);
+    const resumed = await this.resumeVacancy.execute(
+      new ResumeVacancyCommand(req.firebaseUid!, id, dto.companyId, dto.branchId, expectedVersion),
+    );
+    return toVacancyDetailResponse(resumed);
   }
 
   @Post(':id/candidates')

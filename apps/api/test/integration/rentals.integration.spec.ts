@@ -27,6 +27,7 @@ import { ApproveNotaryExceptionCommand } from '../../src/modules/rentals/applica
 import { FormalizeContractHandler } from '../../src/modules/rentals/application/commands/formalize-contract.handler';
 import { FormalizeContractCommand } from '../../src/modules/rentals/application/commands/formalize-contract.command';
 import { PrismaTemplateRepository } from '../../src/modules/templates/infrastructure/persistence/prisma-template.repository';
+import { ContractTemplateResolver } from '../../src/modules/rentals/application/services/contract-template-resolver';
 import { CompleteDeliveryHandler } from '../../src/modules/rentals/application/commands/complete-delivery.handler';
 import { CompleteDeliveryCommand } from '../../src/modules/rentals/application/commands/complete-delivery.command';
 import { GetRentalHandler } from '../../src/modules/rentals/application/queries/get-rental.handler';
@@ -238,7 +239,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     // 5. Formalizar contrato (CONTRACTING → PENDING_DELIVERY)
     const formalizeHandler = new FormalizeContractHandler(
       rentalRepo,
-      new PrismaTemplateRepository(ps),
+      new ContractTemplateResolver(new PrismaTemplateRepository(ps)),
       workContext,
       matrixAuth,
       txManager,

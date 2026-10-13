@@ -1,5 +1,6 @@
 import {
   DomainConflictError,
+  DomainForbiddenError,
   DomainNotFoundError,
   DomainUnprocessableError,
 } from '../../../common/domain/domain-errors';
@@ -121,5 +122,73 @@ export class OnboardingChecklistIncompleteError extends DomainUnprocessableError
 
   constructor() {
     super('Todos los ítems del checklist de incorporación deben completarse (inducción, equipo asignado y acta firmada).');
+  }
+}
+
+export class VacancyNotPausableError extends DomainUnprocessableError {
+  readonly code = 'VACANCY_NOT_PAUSABLE';
+
+  constructor(currentStatus: string, action: 'pausar' | 'reanudar') {
+    super(
+      action === 'pausar'
+        ? `Solo se puede pausar una vacante publicada (estado actual: ${currentStatus}).`
+        : `Solo se puede reanudar una vacante pausada (estado actual: ${currentStatus}).`,
+    );
+  }
+}
+
+export class CandidateCvInvalidFileError extends DomainUnprocessableError {
+  readonly code = 'CANDIDATE_CV_INVALID_FILE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class CandidateCvObjectMismatchError extends DomainUnprocessableError {
+  readonly code = 'CANDIDATE_CV_OBJECT_MISMATCH';
+
+  constructor() {
+    super('El archivo indicado no corresponde a una subida autorizada para este candidato. Vuelve a subir el CV.');
+  }
+}
+
+export class CandidateCvNotUploadedError extends DomainUnprocessableError {
+  readonly code = 'CANDIDATE_CV_NOT_UPLOADED';
+
+  constructor() {
+    super('No encontramos el archivo en el almacenamiento. Vuelve a subir el CV.');
+  }
+}
+
+export class CandidateCvNotFoundError extends DomainNotFoundError {
+  readonly code = 'CANDIDATE_CV_NOT_FOUND';
+
+  constructor() {
+    super('Este candidato todavía no tiene un CV cargado.');
+  }
+}
+
+export class NegotiationInvalidError extends DomainUnprocessableError {
+  readonly code = 'NEGOTIATION_INVALID';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class ProbationFeesRestrictedError extends DomainForbiddenError {
+  readonly code = 'ROLE_NOT_ALLOWED';
+
+  constructor() {
+    super('Registrar honorarios requiere permiso para ver datos sensibles del candidato.');
+  }
+}
+
+export class OnboardingVersionConflictError extends DomainConflictError {
+  readonly code = 'VERSION_CONFLICT';
+
+  constructor() {
+    super('La incorporación fue modificada por otra operación. Recarga los datos.');
   }
 }

@@ -45,6 +45,8 @@ function candidate(over: Partial<CandidateRecord> = {}): CandidateRecord {
     email: null,
     phone: null,
     cvDocumentId: null,
+    cv: null,
+    hasCv: false,
     salaryExpectation: null,
     stage: CandidateStage.ENTREVISTA,
     decision: null,
@@ -73,6 +75,13 @@ function onboarding(over: Partial<OnboardingRecord> = {}): OnboardingRecord {
     probationEvaluation: null,
     probationEvaluatedAt: null,
     probationEvaluatedBy: null,
+    probationMonthlyFee: null,
+    postProbationMonthlySalary: null,
+    probationFeeNotes: null,
+    probationFeesRecordedAt: null,
+    probationFeesRecordedBy: null,
+    feesVisible: false,
+    version: 1,
     completedBy: UID,
     createdAt: new Date('2026-10-07T12:00:00Z'),
     ...over,
@@ -154,7 +163,7 @@ describe('DecideCandidateHandler', () => {
     const decided = candidate({ decision: CandidateDecision.CONTRATADO, stage: CandidateStage.DECISION, version: 2 });
     s.candidates.findById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
-    s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], onboarding: null });
+    s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], negotiations: [], onboarding: null });
     const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
     await handler.execute(cmd(CandidateDecision.CONTRATADO));
     expect(s.candidates.updateDecision).toHaveBeenCalledWith(
@@ -177,7 +186,7 @@ describe('DecideCandidateHandler', () => {
     const decided = candidate({ decision: CandidateDecision.RECHAZADO, stage: CandidateStage.DECISION, version: 2 });
     s.candidates.findById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
-    s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], onboarding: null });
+    s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], negotiations: [], onboarding: null });
     const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
     await handler.execute(cmd(CandidateDecision.RECHAZADO));
     expect(s.outbox.publish).not.toHaveBeenCalled();

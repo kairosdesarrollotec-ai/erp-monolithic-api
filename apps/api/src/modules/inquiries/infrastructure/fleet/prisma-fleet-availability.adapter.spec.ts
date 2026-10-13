@@ -1,11 +1,13 @@
 import { PrismaFleetAvailabilityAdapter } from './prisma-fleet-availability.adapter';
 
 const findFirstVehicleMock = jest.fn();
-const findFirstCommitmentMock = jest.fn();
+const findManyCommitmentMock = jest.fn();
+const findManyReservationMock = jest.fn();
 
 const prisma = {
   vehicle: { findFirst: findFirstVehicleMock },
-  vehicleCommitment: { findFirst: findFirstCommitmentMock },
+  vehicleCommitment: { findMany: findManyCommitmentMock },
+  reservation: { findMany: findManyReservationMock },
 } as never;
 
 const BASE_QUERY = {
@@ -17,11 +19,15 @@ const BASE_QUERY = {
   estimatedDays: 3,
 };
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
 describe('PrismaFleetAvailabilityAdapter', () => {
   let adapter: PrismaFleetAvailabilityAdapter;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    findManyCommitmentMock.mockResolvedValue([]);
+    findManyReservationMock.mockResolvedValue([]);
     adapter = new PrismaFleetAvailabilityAdapter(prisma);
   });
 
@@ -44,7 +50,7 @@ describe('PrismaFleetAvailabilityAdapter', () => {
         },
       }),
     );
-    expect(findFirstCommitmentMock).not.toHaveBeenCalled();
+    expect(findManyCommitmentMock).not.toHaveBeenCalled();
   });
 
   it('devuelve inelegible cuando el vehículo está asignado a otra sede', async () => {
@@ -56,12 +62,11 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     if (!result.eligible) {
       expect(result.reason).toMatch(/sede/i);
     }
-    expect(findFirstCommitmentMock).not.toHaveBeenCalled();
+    expect(findManyCommitmentMock).not.toHaveBeenCalled();
   });
 
   it('no verifica sede cuando el vehículo no tiene branchId (vehículo compartido)', async () => {
     findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
-    findFirstCommitmentMock.mockResolvedValue(null);
 
     const result = await adapter.checkEligibility(BASE_QUERY);
 
@@ -77,12 +82,11 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     if (!result.eligible) {
       expect(result.reason).toMatch(/tarifa/i);
     }
-    expect(findFirstCommitmentMock).not.toHaveBeenCalled();
+    expect(findManyCommitmentMock).not.toHaveBeenCalled();
   });
 
-  it('devuelve elegible cuando la sede del vehículo coincide y no hay compromisos activos', async () => {
+  it('devuelve elegible cuando la sede del vehículo coincide y no hay compromisos ni reservas', async () => {
     findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: 'branch-1', dailyRate: '250.00' });
-    findFirstCommitmentMock.mockResolvedValue(null);
 
     const result = await adapter.checkEligibility(BASE_QUERY);
 
@@ -93,65 +97,85 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     }
   });
 
-  it('consulta compromisos solo con status ACTIVE', async () => {
+  it('considera compromisos ACTIVE y CONSOLIDATED, y también reservas no terminales', async () => {
     findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
-    findFirstCommitmentMock.mockResolvedValue(null);
 
     await adapter.checkEligibility(BASE_QUERY);
 
-    expect(findFirstCommitmentMock).toHaveBeenCalledWith(
+    expect(findManyCommitmentMock).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          vehicleId: 'vehicle-1',
-          status: 'ACTIVE',
+          vehicleId: { in: ['vehicle-1'] },
+          status: { in: ['ACTIVE', 'CONSOLIDATED'] },
         }),
+      }),
+    );
+    expect(findManyReservationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: { notIn: ['CANCELLED', 'CONVERTED'] } }),
       }),
     );
   });
 
-  it('devuelve inelegible cuando existe un compromiso ACTIVE que solapa', async () => {
+  it('devuelve inelegible con las fechas que chocan cuando hay un compromiso solapado', async () => {
     findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
-    findFirstCommitmentMock.mockResolvedValue({ id: 'commit-1' });
+    findManyCommitmentMock.mockResolvedValue([
+      { vehicleId: 'vehicle-1', startsAt: new Date('2026-10-22T00:00:00Z'), endsAt: new Date('2026-10-28T00:00:00Z') },
+    ]);
 
-    const result = await adapter.checkEligibility(BASE_QUERY);
+    const result = await adapter.checkEligibility({ ...BASE_QUERY, startsAt: new Date('2026-10-20T00:00:00Z') });
 
     expect(result.eligible).toBe(false);
     if (!result.eligible) {
-      expect(result.reason).toMatch(/disponible/i);
+      expect(result.reason).toMatch(/no está disponible/i);
+      expect(result.reason).toContain('20/10/2026 al 23/10/2026');
+      expect(result.reason).toContain('22/10/2026 al 28/10/2026');
     }
   });
 
-  it('la query de solapamiento incluye startsAt:lt y endsAt:gt con el período correcto', async () => {
-    const before = new Date();
-
+  it('devuelve inelegible cuando choca con una reserva no terminal', async () => {
     findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
-    findFirstCommitmentMock.mockResolvedValue(null);
+    findManyReservationMock.mockResolvedValue([
+      { vehicleId: 'vehicle-1', startAt: new Date('2026-10-21T00:00:00Z'), endAt: new Date('2026-10-24T00:00:00Z') },
+    ]);
+
+    const result = await adapter.checkEligibility({ ...BASE_QUERY, startsAt: new Date('2026-10-20T00:00:00Z') });
+
+    expect(result.eligible).toBe(false);
+    if (!result.eligible) {
+      expect(result.reason).toContain('reserva');
+      expect(result.reason).toContain('21/10/2026 al 24/10/2026');
+    }
+  });
+
+  it('con travelStartDate usa la ventana [startsAt, startsAt + días) y no la fecha actual', async () => {
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
+    const startsAt = new Date('2027-01-10T00:00:00Z');
+
+    const result = await adapter.checkEligibility({ ...BASE_QUERY, estimatedDays: 3, startsAt });
+
+    expect(result.eligible).toBe(true);
+    const call = findManyCommitmentMock.mock.calls[0][0] as {
+      where: { startsAt: { lt: Date }; endsAt: { gt: Date } };
+    };
+    expect(call.where.endsAt.gt).toEqual(startsAt);
+    expect(call.where.startsAt.lt).toEqual(new Date(startsAt.getTime() + 3 * MS_PER_DAY));
+  });
+
+  it('sin fecha de viaje mantiene la ventana [ahora, ahora + días)', async () => {
+    const before = new Date();
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
 
     await adapter.checkEligibility({ ...BASE_QUERY, estimatedDays: 3 });
 
     const after = new Date();
-
-    const call = findFirstCommitmentMock.mock.calls[0][0] as {
+    const call = findManyCommitmentMock.mock.calls[0][0] as {
       where: { startsAt: { lt: Date }; endsAt: { gt: Date } };
     };
     const { startsAt, endsAt } = call.where;
 
-    // endsAt.gt debe estar entre [before, after]
     expect(endsAt.gt.getTime()).toBeGreaterThanOrEqual(before.getTime());
     expect(endsAt.gt.getTime()).toBeLessThanOrEqual(after.getTime());
-
-    // startsAt.lt debe estar ~3 días después de now
-    const expectedMs = 3 * 24 * 60 * 60 * 1000;
-    expect(startsAt.lt.getTime() - endsAt.gt.getTime()).toBeCloseTo(expectedMs, -3);
-  });
-
-  it('compromisos con status RELEASED no bloquean la elegibilidad', async () => {
-    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: null, dailyRate: '100.00' });
-    // findFirst returns null because the WHERE filters status = ACTIVE
-    findFirstCommitmentMock.mockResolvedValue(null);
-
-    const result = await adapter.checkEligibility(BASE_QUERY);
-
-    expect(result.eligible).toBe(true);
+    expect(startsAt.lt.getTime() - endsAt.gt.getTime()).toBe(3 * MS_PER_DAY);
   });
 });

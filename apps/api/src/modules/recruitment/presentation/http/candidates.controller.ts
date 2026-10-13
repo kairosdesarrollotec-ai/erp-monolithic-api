@@ -12,10 +12,27 @@ import {
   Req,
   Res,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import { RecentAuth, RecentAuthGuard } from '../../../users/infrastructure/auth/recent-auth.guard';
 import { parseVersionIfMatch } from '../../../../common/http/etag';
+import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
+import { RequestCandidateCvUploadSessionHandler } from '../../application/commands/request-candidate-cv-upload-session.handler';
+import { RequestCandidateCvUploadSessionCommand } from '../../application/commands/request-candidate-cv-upload-session.command';
+import { RecordCandidateCvHandler } from '../../application/commands/record-candidate-cv.handler';
+import { RecordCandidateCvCommand } from '../../application/commands/record-candidate-cv.command';
+import { RecordNegotiationHandler } from '../../application/commands/record-negotiation.handler';
+import { RecordNegotiationCommand } from '../../application/commands/record-negotiation.command';
+import { SetProbationFeesHandler } from '../../application/commands/set-probation-fees.handler';
+import { SetProbationFeesCommand } from '../../application/commands/set-probation-fees.command';
+import { GetCandidateCvHandler } from '../../application/queries/get-candidate-cv.handler';
+import { GetCandidateCvQuery } from '../../application/queries/get-candidate-cv.query';
+import { RequestCandidateCvUploadSessionDto } from './dto/request-candidate-cv-upload-session.dto';
+import { RecordCandidateCvDto } from './dto/record-candidate-cv.dto';
+import { RecordNegotiationDto } from './dto/record-negotiation.dto';
+import { SetProbationFeesDto } from './dto/set-probation-fees.dto';
 import { ChangeCandidateStageHandler } from '../../application/commands/change-candidate-stage.handler';
 import { ChangeCandidateStageCommand } from '../../application/commands/change-candidate-stage.command';
 import { ScheduleInterviewHandler } from '../../application/commands/schedule-interview.handler';
@@ -35,12 +52,16 @@ import { DecideCandidateDto } from './dto/decide-candidate.dto';
 import { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import { EvaluateProbationDto } from './dto/evaluate-probation.dto';
 import {
+  CandidateCvUploadSessionResponse,
+  CandidateCvViewResponse,
   CandidateDetailResponse,
   CandidateInterviewResponse,
   CandidateResponse,
   OnboardingResponse,
 } from './dto/recruitment.response';
 import {
+  toCandidateCvUploadSessionResponse,
+  toCandidateCvViewResponse,
   toCandidateDetailResponse,
   toCandidateInterviewResponse,
   toCandidateResponse,
@@ -57,6 +78,11 @@ export class CandidatesController {
     private readonly decideCandidate: DecideCandidateHandler,
     private readonly completeOnboarding: CompleteOnboardingHandler,
     private readonly evaluateProbation: EvaluateProbationHandler,
+    private readonly requestCvUploadSession: RequestCandidateCvUploadSessionHandler,
+    private readonly recordCv: RecordCandidateCvHandler,
+    private readonly getCv: GetCandidateCvHandler,
+    private readonly recordNegotiation: RecordNegotiationHandler,
+    private readonly setProbationFees: SetProbationFeesHandler,
   ) {}
 
   @Get(':id')
@@ -143,6 +169,8 @@ export class CandidatesController {
 
   @Post(':id/commands/complete-onboarding')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RecentAuthGuard)
+  @RecentAuth(300)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
@@ -182,5 +210,124 @@ export class CandidatesController {
       ),
     );
     return toOnboardingResponse(evaluated);
+  }
+
+  // --- CV (DAT-REC-004) -----------------------------------------------------
+
+  @Post(':id/cv/upload-session')
+  @HttpCode(HttpStatus.CREATED)
+  async requestCvUpload(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RequestCandidateCvUploadSessionDto,
+  ): Promise<CandidateCvUploadSessionResponse> {
+    const session = await this.requestCvUploadSession.execute(
+      new RequestCandidateCvUploadSessionCommand(
+        req.firebaseUid!,
+        id,
+        dto.companyId,
+        dto.branchId,
+        dto.contentType,
+        dto.contentLength,
+      ),
+    );
+    return toCandidateCvUploadSessionResponse(session);
+  }
+
+  @Post(':id/commands/record-cv')
+  @HttpCode(HttpStatus.OK)
+  async recordCandidateCv(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Body() dto: RecordCandidateCvDto,
+  ): Promise<CandidateDetailResponse> {
+    const expectedVersion = parseVersionIfMatch(ifMatch);
+    const detail = await this.recordCv.execute(
+      new RecordCandidateCvCommand(
+        req.firebaseUid!,
+        id,
+        dto.companyId,
+        dto.branchId,
+        dto.objectUrl,
+        dto.fileName,
+        expectedVersion,
+      ),
+    );
+    return toCandidateDetailResponse(detail);
+  }
+
+  @Get(':id/cv')
+  async viewCv(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: VacancyScopeQueryDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<CandidateCvViewResponse> {
+    const view = await this.getCv.execute(new GetCandidateCvQuery(req.firebaseUid!, id, query.companyId, query.branchId));
+    // La URL firmada es una credencial temporal: nunca debe quedar en caches intermedios.
+    res.setHeader('Cache-Control', 'no-store');
+    return toCandidateCvViewResponse(view);
+  }
+
+  // --- Negociacion de condiciones (REC-04) ---------------------------------
+
+  @Post(':id/negotiations')
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(IdempotencyInterceptor)
+  async addNegotiation(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Body() dto: RecordNegotiationDto,
+  ): Promise<CandidateDetailResponse> {
+    const expectedVersion = parseVersionIfMatch(ifMatch);
+    const detail = await this.recordNegotiation.execute(
+      new RecordNegotiationCommand(
+        req.firebaseUid!,
+        id,
+        dto.companyId,
+        dto.branchId,
+        expectedVersion,
+        dto.outcome,
+        dto.offeredSalary,
+        dto.offeredSchedule,
+        dto.offeredOtherConditions,
+        dto.candidateSalary,
+        dto.candidateSchedule,
+        dto.candidateOtherConditions,
+        dto.candidateStartDate ? new Date(dto.candidateStartDate) : undefined,
+        dto.agreedSalary,
+        dto.agreedConditions,
+        dto.reason,
+      ),
+    );
+    return toCandidateDetailResponse(detail);
+  }
+
+  // --- Honorarios del periodo de prueba (REC-08) ----------------------------
+
+  @Post(':id/commands/set-probation-fees')
+  @HttpCode(HttpStatus.OK)
+  async setFees(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Body() dto: SetProbationFeesDto,
+  ): Promise<OnboardingResponse> {
+    const expectedVersion = parseVersionIfMatch(ifMatch);
+    const onboarding = await this.setProbationFees.execute(
+      new SetProbationFeesCommand(
+        req.firebaseUid!,
+        id,
+        dto.companyId,
+        dto.branchId,
+        expectedVersion,
+        dto.probationMonthlyFee,
+        dto.postProbationMonthlySalary,
+        dto.probationFeeNotes,
+      ),
+    );
+    return toOnboardingResponse(onboarding);
   }
 }

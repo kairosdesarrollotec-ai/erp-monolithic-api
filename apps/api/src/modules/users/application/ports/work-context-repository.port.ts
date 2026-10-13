@@ -8,6 +8,7 @@ export interface WorkContextAssignmentRecord {
   branchName: string;
   /** ROLES DINAMICOS: referencia del rol de la asignacion (id, nombre visible, key de sistema o null). */
   role: RoleRef;
+  organizationId?: string;
 }
 
 /** Asignacion vigente resuelta para un contexto: organizacion + rol (RoleRef). */

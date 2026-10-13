@@ -9,7 +9,7 @@ import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
 import { OnboardingRecord, OnboardingRepositoryPort } from '../ports/onboarding-repository.port';
 import { CandidateNotContractedError, CandidateNotFoundError, VacancyNotFoundError } from '../../domain/recruitment-errors';
-import { assertOnboardingValid } from '../../domain/recruitment-rules';
+import { applyOnboardingFeeVisibility, assertOnboardingValid } from '../../domain/recruitment-rules';
 import { CompleteOnboardingCommand } from './complete-onboarding.command';
 
 @Injectable()
@@ -110,7 +110,7 @@ export class CompleteOnboardingHandler {
         tx,
       );
 
-      return completed;
+      return applyOnboardingFeeVisibility(completed, await this.access.isActionAllowed(context, 'VIEW_CANDIDATE_SENSITIVE_DATA'));
     });
   }
 }

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.3.0
+  version: 0.5.0
   description: >
     Contrato del modulo Reserva (HU-27, TDD-RES-001.md seccion 11).
     Primer corte: crear, registrar pago/documentos, confirmar (bloqueo
@@ -11,6 +11,13 @@ info:
     ALQ-02) - fuera de alcance de este primer corte, ver tarea HU-27 en
     ClickUp. No expone ningun comando de "reprogramar" (BR-RES-003,
     deliberado).
+
+    Cambios 0.5.0: la disponibilidad del vehiculo (VEHICLE_NOT_AVAILABLE) usa
+    una regla unica de solape para crear y confirmar: vehicle_commitments
+    ACTIVE|CONSOLIDATED (alquileres y reservas confirmadas) y reservas no
+    terminales. Al crear responde 422 y al confirmar 409, ambos con
+    {statusCode, code: VEHICLE_NOT_AVAILABLE, detail} en espanol. Para saber
+    de antemano que vehiculos estan libres: GET /fleet/vehicles?availableFrom&availableTo.
 
     Hallazgos de revision PR#6 corregidos en esta version (0.2.0):
     formato UUID en todos los identificadores (antes `type: string`
@@ -159,7 +166,7 @@ paths:
       responses:
         '200': { description: Reserva confirmada, vehiculo bloqueado, content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
         '404': { description: Reserva no encontrada en el scope del usuario }
-        '409': { description: 'VEHICLE_NOT_AVAILABLE o RESERVATION_STATE_CONFLICT (la reserva ya no esta en DRAFT)' }
+        '409': { description: 'VEHICLE_NOT_AVAILABLE (el detail indica las fechas ocupadas, dd/mm/yyyy) o RESERVATION_STATE_CONFLICT (la reserva ya no esta en DRAFT)' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
         '422': { description: REQUIREMENTS_INCOMPLETE - falta pago o documentos }
         '428': { description: IF_MATCH_REQUIRED }
@@ -292,7 +299,13 @@ components:
             channelMode: { $ref: '#/components/schemas/ChannelMode' }
             startAt: { type: string, format: date-time }
             endAt: { type: string, format: date-time }
-            requiredPaymentAmount: { type: string, description: 'Importe de pago requerido en formato decimal (ej. "300.00")' }
+            requiredPaymentAmount:
+              type: string
+              description: >
+                Importe de pago requerido en formato decimal (ej. "300.00"). Si la reserva llega a
+                alquiler, este monto se TRASLADA ÍNTEGRO a la garantía del alquiler y solo se cobra la
+                diferencia (P0-03 opción a; ver rentals.yaml formalize-contract). Una reserva cancelada
+                (incluye no-show) no traslada nada.
             currency: { type: string }
             paymentPolicyVersion: { type: integer, minimum: 1 }
     CancelReservationRequest:

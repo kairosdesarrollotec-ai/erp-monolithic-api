@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Inquiries API
-  version: 0.4.0
+  version: 0.5.0
   description: >
     Contrato del modulo Consulta (HU-26, TDD-CON-001.md seccion 11):
     registrar (con el snapshot de CON-02), cotizar, cerrar sin conversion,
@@ -9,6 +9,13 @@ info:
     crean la Reservation / el Rental en la misma transaccion) y las consultas
     de bandeja (CON-01) y detalle (CON-04). No expone `PATCH status`.
 
+
+    Cambios 0.5.0: la cotizacion (quote) evalua la disponibilidad del vehiculo
+    en la ventana real [travelStartDate, travelStartDate + estimatedDays dias)
+    cuando la consulta tiene fecha de viaje (si no, [ahora, ahora + dias)), y
+    considera vehicle_commitments ACTIVE|CONSOLIDATED y reservas no terminales.
+    El 422 VEHICLE_NOT_ELIGIBLE indica en `detail` las fechas que chocan
+    (dd/mm/yyyy).
 
     Cambios 0.3.0 (revalidacion PR#7, d7a6124):
     - RegisterInquiryRequest incluye el snapshot de CON-02 (prospecto,
@@ -118,7 +125,7 @@ paths:
         '404': { description: Consulta no encontrada en el scope }
         '409': { $ref: '#/components/responses/IdempotencyConflict' }
         '412': { description: INQUIRY_VERSION_CONFLICT }
-        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE, o VEHICLE_NOT_ELIGIBLE (no existe en la empresa / no elegible segun Flota)' }
+        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE, o VEHICLE_NOT_ELIGIBLE (no existe en la empresa / no elegible segun Flota / ocupado en las fechas del viaje; el detail indica las fechas)' }
         '428': { description: IF_MATCH_REQUIRED }
         '503': { $ref: '#/components/responses/QuotingNotProductionReady' }
   /inquiries/{id}/commands/close:

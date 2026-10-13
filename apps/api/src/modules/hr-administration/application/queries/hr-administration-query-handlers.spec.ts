@@ -12,6 +12,8 @@ import {
   ORG_ID,
   buildEmployee,
   buildMatrixAuth,
+  buildMemoRepo,
+  buildTripEmployee,
   buildWorkContext,
 } from '../../testing/hr-administration-test-fixtures';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
@@ -20,6 +22,7 @@ import type { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import type { FieldTripRepositoryPort, FieldTripWithEmployee } from '../ports/field-trip-repository.port';
 import type { LeaveRepositoryPort } from '../ports/leave-repository.port';
 import type { VacationRepositoryPort, VacationWithEmployee } from '../ports/vacation-repository.port';
+import type { TrainingRepositoryPort } from '../ports/training-repository.port';
 import type { EmploymentTerminationRepositoryPort } from '../ports/employment-termination-repository.port';
 import { GetAttendanceSummaryHandler } from './get-attendance-summary.handler';
 import { GetAttendanceSummaryQuery } from './get-attendance-summary.query';
@@ -65,6 +68,9 @@ function setup(role: 'RRHH' | 'GERENCIA' | 'CAMPO' | 'AUDITORIA' | 'forbidden' =
     summarizeMonth: jest.fn(),
     findPendingDeductions: jest.fn(),
     applyDeductions: jest.fn(),
+    findById: jest.fn(),
+    reclassify: jest.fn(),
+    countInMonthOf: jest.fn(),
   } as unknown as jest.Mocked<AttendanceRepositoryPort>;
 
   const leaves = {
@@ -86,6 +92,7 @@ function setup(role: 'RRHH' | 'GERENCIA' | 'CAMPO' | 'AUDITORIA' | 'forbidden' =
     findById: jest.fn(),
     findMany: jest.fn(),
     transition: jest.fn(),
+    claimNextDueForEscalation: jest.fn(),
   } as unknown as jest.Mocked<FieldTripRepositoryPort>;
 
   const terminations = {
@@ -93,7 +100,14 @@ function setup(role: 'RRHH' | 'GERENCIA' | 'CAMPO' | 'AUDITORIA' | 'forbidden' =
     findByEmployeeId: jest.fn(),
   } as unknown as jest.Mocked<EmploymentTerminationRepositoryPort>;
 
-  return { access, clock, employees, attendance, leaves, vacations, fieldTrips, terminations };
+  const memoRepo = buildMemoRepo();
+  const trainingRepo = {
+    create: jest.fn(),
+    findMany: jest.fn().mockResolvedValue([]),
+    findByEmployee: jest.fn().mockResolvedValue([]),
+  } as unknown as jest.Mocked<TrainingRepositoryPort>;
+
+  return { access, clock, employees, attendance, leaves, vacations, fieldTrips, terminations, memoRepo, trainingRepo };
 }
 
 function attendanceTotals(over: Partial<EmployeeAttendanceTotals> = {}): EmployeeAttendanceTotals {
@@ -105,7 +119,7 @@ function attendanceRecord(over: Partial<AttendanceRecord> = {}): AttendanceRecor
     id: 'att-1', employeeId: EMP_ID, date: new Date('2026-10-08T00:00:00Z'),
     checkInTime: null, checkOutTime: null, status: 'TARDANZA', minutesLate: 15,
     deductionAmount: new Prisma.Decimal(50), isDeductionApplied: false,
-    payrollMonth: null, deductionAppliedAt: null, notes: null,
+    payrollMonth: null, deductionAppliedAt: null, notes: null, justification: null, reclassifiedAt: null, reclassifiedById: null,
     createdById: UID, createdAt: new Date(), updatedAt: new Date(),
     ...over,
   };
@@ -125,8 +139,8 @@ function vacationRecord(over: Partial<VacationRequest> = {}): VacationRequest {
   return {
     id: 'vac-1', employeeId: EMP_ID, areaId: 'OPERACIONES',
     startDate: new Date('2026-11-02T00:00:00Z'), endDate: new Date('2026-11-15T00:00:00Z'),
-    status: 'PROGRAMADA', requestedAt: new Date(), approvedById: UID, approvedAt: new Date(),
-    rescheduledFrom: null, rescheduledReason: null, createdAt: new Date(), updatedAt: new Date(),
+    status: 'PROGRAMADA', requestedAt: new Date(), approvedById: UID, approvedAt: new Date(), notes: null,
+    createdAt: new Date(), updatedAt: new Date(),
     ...over,
   };
 }
@@ -136,10 +150,11 @@ function fieldTripRecord(over: Partial<FieldTripWithEmployee> = {}): FieldTripWi
     id: TRIP_ID, employeeId: EMP_ID, destination: 'Sede Norte', objective: 'Entrega',
     estimatedDeparture: new Date(), estimatedReturn: new Date(), actualDeparture: null, actualReturn: null,
     status: 'PENDIENTE_NIVEL_1', authorizationLevel: null, authorizedById: null, authorizedByName: null,
-    authorizedAt: null, lateMinutes: 0, returnNotes: null, isObserved: false,
+    authorizedAt: null, lateMinutes: 0, returnNotes: null,
+    rejectedById: null, rejectedByName: null, rejectedAt: null, rejectedAtLevel: null, rejectionReason: null,
     level1TimeoutAt: new Date(), level2TimeoutAt: null, level3TimeoutAt: null,
     createdAt: new Date(), updatedAt: new Date(),
-    employee: { fullName: 'Carlos Perez', organizationId: ORG_ID, operatingCompanyId: COMPANY_ID, branchId: BRANCH_ID },
+    employee: buildTripEmployee(),
     ...over,
   };
 }
@@ -187,8 +202,8 @@ describe('ListEmployeesHandler', () => {
 // ─────────────────────────────────────────────
 describe('GetEmployeeDetailHandler', () => {
   it('devuelve el expediente completo del colaborador', async () => {
-    const { access, employees, attendance, leaves, vacations, fieldTrips, terminations } = setup('RRHH');
-    const handler = new GetEmployeeDetailHandler(access, employees, attendance, leaves, vacations, fieldTrips, terminations);
+    const { access, employees, attendance, leaves, vacations, fieldTrips, terminations, memoRepo, trainingRepo } = setup('RRHH');
+    const handler = new GetEmployeeDetailHandler(access, employees, attendance, leaves, vacations, fieldTrips, terminations, memoRepo, trainingRepo);
     const emp = buildEmployee();
     employees.findById.mockResolvedValue(emp);
     attendance.totalsByEmployee.mockResolvedValue(attendanceTotals());
@@ -209,8 +224,8 @@ describe('GetEmployeeDetailHandler', () => {
   });
 
   it('lanza EmployeeNotFoundError si el empleado no existe', async () => {
-    const { access, employees, attendance, leaves, vacations, fieldTrips, terminations } = setup();
-    const handler = new GetEmployeeDetailHandler(access, employees, attendance, leaves, vacations, fieldTrips, terminations);
+    const { access, employees, attendance, leaves, vacations, fieldTrips, terminations, memoRepo, trainingRepo } = setup();
+    const handler = new GetEmployeeDetailHandler(access, employees, attendance, leaves, vacations, fieldTrips, terminations, memoRepo, trainingRepo);
     employees.findById.mockResolvedValue(null);
 
     await expect(

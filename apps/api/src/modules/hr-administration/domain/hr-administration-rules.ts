@@ -1,5 +1,8 @@
 import {
+  AttendanceNotReclassifiableError,
   DeductionsBeforeMonthEndError,
+  FieldTripRejectionReasonRequiredError,
+  InvalidAttendanceReclassificationError,
   EmployeeStatusTransitionNotAllowedError,
   FinalSettlementRequiredError,
   FieldTripNotPendingError,
@@ -65,7 +68,7 @@ export function validateVacationAreaCapacity(
 
 /**
  * BR-ADP-004 / DR-ADP-002: cascada de autorización de salidas a campo de EXACTAMENTE 3 niveles con 5 min por nivel.
- * 1° Fiorella (Nivel 1) -> 2° José (Nivel 2) -> 3° Cecilia (Nivel 3). Si nadie responde tras el nivel 3 el estado
+ * Nivel 1 de 3 -> Nivel 2 de 3 -> Nivel 3 de 3 (genérico: quién autoriza lo define el permiso, no una persona). Si nadie responde tras el nivel 3 el estado
  * pasa a NO_AUTORIZADA. NO existe un 4to nivel automático ni aprobación por defecto (decisión 31 ago 2026).
  */
 export function getNextCascadeStatus(
@@ -148,6 +151,107 @@ export function currentLevelTimeoutAt(fieldTrip: {
 export function levelTimeoutFrom(now: Date): Date {
   return new Date(now.getTime() + FIELD_TRIP_LEVEL_TIMEOUT_MINUTES * 60 * 1000);
 }
+
+/**
+ * Vencimiento del nivel siguiente al escalar: cada nivel dura 5 min contados desde el vencimiento del anterior
+ * (no desde el momento en que el programador lo detecta), de modo que un retraso del proceso periódico no alarga
+ * la cascada (BR-ADP-004: 3 niveles x 5 min exactos). Sin vencimiento previo se cuenta desde `now`.
+ */
+export function nextLevelTimeoutAfter(previousTimeoutAt: Date | null, now: Date): Date {
+  return levelTimeoutFrom(previousTimeoutAt ?? now);
+}
+
+export const FIELD_TRIP_REJECTION_REASON_MIN_LENGTH = 5;
+
+/** ADP-07: el rechazo de una salida exige un motivo escrito. */
+export function assertFieldTripRejectionReason(reason: string | null | undefined): string {
+  const trimmed = (reason ?? '').trim();
+  if (trimmed.length < FIELD_TRIP_REJECTION_REASON_MIN_LENGTH) {
+    throw new FieldTripRejectionReasonRequiredError();
+  }
+  return trimmed;
+}
+
+/** ADP-P03 / ADP-03: a partir de la 2ª falta injustificada del mes se genera un memo de advertencia. */
+export const ABSENCE_MEMO_THRESHOLD = 2;
+
+export const MEMO_KIND_FIELD_TRIP_LATE = 'RETORNO_TARDIO_CAMPO';
+export const MEMO_KIND_REPEATED_ABSENCE = 'FALTA_INJUSTIFICADA_REITERADA';
+export const MEMO_SOURCE_FIELD_TRIP = 'field_trip';
+export const MEMO_SOURCE_ATTENDANCE = 'attendance';
+
+const ORDINALS: Record<number, string> = { 1: '1ª', 2: '2ª', 3: '3ª', 4: '4ª' };
+const ordinal = (n: number): string => ORDINALS[n] ?? `${n}ª`;
+
+/** BR-ADP-005: desde la 4ª vez que no regresa a tiempo de una salida a campo se genera el memo (queda observado). */
+export function shouldGenerateFieldTripMemo(newLateCount: number): boolean {
+  return newLateCount >= FIELD_TRIP_OBSERVED_THRESHOLD;
+}
+
+export function buildFieldTripMemoReason(input: { newLateCount: number; lateMinutes: number; destination: string }): string {
+  return `${ordinal(input.newLateCount)} vez que no regresa a tiempo de una salida a campo (${input.lateMinutes} min de retraso, destino: ${input.destination}). El colaborador queda observado.`;
+}
+
+export function shouldGenerateAbsenceMemo(unjustifiedInMonth: number): boolean {
+  return unjustifiedInMonth >= ABSENCE_MEMO_THRESHOLD;
+}
+
+export function buildAbsenceMemoReason(input: { unjustifiedInMonth: number; date: string }): string {
+  return `${ordinal(input.unjustifiedInMonth)} falta injustificada del mes (${input.date}). Se emite memo de advertencia por reiteración.`;
+}
+
+const FALTA_STATUSES = ['FALTA_JUSTIFICADA', 'FALTA_INJUSTIFICADA'] as const;
+export const isAbsenceStatus = (status: string): boolean => (FALTA_STATUSES as readonly string[]).includes(status);
+
+/**
+ * ADP-03 / DAT-ADP-002: reclasificar una falta como JUSTIFICADA o INJUSTIFICADA.
+ * - Solo se reclasifica una falta (justificada o injustificada) a la otra categoría.
+ * - Si el descuento ya se liquidó a fin de mes no se puede modificar (BR-ADP-001).
+ * - Justificada => sin descuento; injustificada => descuento proporcional calculado por el sistema (no se digita).
+ * Exige una justificación escrita.
+ */
+export function resolveReclassification(input: {
+  currentStatus: string;
+  isDeductionApplied: boolean;
+  targetStatus: string;
+  justification?: string | null;
+  baseSalary?: number | null;
+}): { status: 'FALTA_JUSTIFICADA' | 'FALTA_INJUSTIFICADA'; deductionAmount: number; justification: string } {
+  if (!isAbsenceStatus(input.currentStatus)) {
+    throw new AttendanceNotReclassifiableError('Solo se pueden reclasificar las faltas (justificadas o injustificadas).');
+  }
+  if (input.isDeductionApplied) {
+    throw new AttendanceNotReclassifiableError(
+      'El descuento de esta falta ya se aplicó en el cierre de mes y no se puede modificar (BR-ADP-001).',
+    );
+  }
+  if (!isAbsenceStatus(input.targetStatus)) {
+    throw new InvalidAttendanceReclassificationError('La falta solo puede quedar como justificada o injustificada.');
+  }
+  if (input.targetStatus === input.currentStatus) {
+    throw new InvalidAttendanceReclassificationError('La falta ya tiene esa clasificación.');
+  }
+  const justification = (input.justification ?? '').trim();
+  if (justification.length < 5) {
+    throw new InvalidAttendanceReclassificationError('Indica la justificación o el motivo del cambio (al menos 5 caracteres).');
+  }
+  const status = input.targetStatus as 'FALTA_JUSTIFICADA' | 'FALTA_INJUSTIFICADA';
+  return {
+    status,
+    justification,
+    deductionAmount:
+      status === 'FALTA_INJUSTIFICADA' ? calculateAttendanceDeductionAmount(input.baseSalary, status, 0) : 0,
+  };
+}
+
+/** Evidencia adjunta de permisos (ADP-04): tipos admitidos y tamaño máximo. */
+export const LEAVE_EVIDENCE_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
+export type LeaveEvidenceContentType = (typeof LEAVE_EVIDENCE_CONTENT_TYPES)[number];
+export const MAX_LEAVE_EVIDENCE_BYTES = 10 * 1024 * 1024;
+export const MAX_LEAVE_EVIDENCE_FILES = 5;
+
+/** Duración de referencia de un taller interno informal (BR-ADP-008): ~1 hora, no bloqueante. */
+export const TRAINING_REFERENCE_MINUTES = 60;
 
 /**
  * BR-ADP-005: consecuencia de no regresar a tiempo de una salida a campo.

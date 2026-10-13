@@ -26,6 +26,10 @@ import { ListEmployeesQuery } from '../../application/queries/list-employees.que
 import { ListEmployeesHandler } from '../../application/queries/list-employees.handler';
 import { GetEmployeeDetailQuery } from '../../application/queries/get-employee-detail.query';
 import { GetEmployeeDetailHandler } from '../../application/queries/get-employee-detail.handler';
+import { GetEmployeeMemosQuery } from '../../application/queries/get-employee-memos.query';
+import { GetEmployeeMemosHandler } from '../../application/queries/get-employee-memos.handler';
+import { GetEmployeeTrainingsQuery } from '../../application/queries/get-employee-trainings.query';
+import { GetEmployeeTrainingsHandler } from '../../application/queries/get-employee-trainings.handler';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { ListEmployeesQueryDto } from './dto/list-employees-query.dto';
@@ -36,11 +40,15 @@ import type {
   EmployeeListResponse,
   EmployeeResponse,
   EmploymentTerminationResponse,
+  HrMemoResponse,
+  TrainingResponse,
 } from './dto/hr-administration.response';
 import {
   toEmployeeDetailResponse,
   toEmployeeResponse,
   toEmploymentTerminationResponse,
+  toHrMemoResponse,
+  toTrainingResponse,
 } from './hr-administration.mapper';
 import type { UpdateEmployeeData } from '../../application/ports/employee-repository.port';
 
@@ -53,6 +61,8 @@ export class EmployeesController {
     private readonly terminateEmployment: TerminateEmploymentHandler,
     private readonly listEmployees: ListEmployeesHandler,
     private readonly getEmployeeDetail: GetEmployeeDetailHandler,
+    private readonly getEmployeeMemos: GetEmployeeMemosHandler,
+    private readonly getEmployeeTrainings: GetEmployeeTrainingsHandler,
   ) {}
 
   @Post()
@@ -107,6 +117,24 @@ export class EmployeesController {
   ): Promise<EmployeeDetailResponse> {
     const detail = await this.getEmployeeDetail.execute(new GetEmployeeDetailQuery(req.firebaseUid!, id));
     return toEmployeeDetailResponse(detail);
+  }
+
+  @Get(':id/memos')
+  async listMemos(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<HrMemoResponse[]> {
+    const result = await this.getEmployeeMemos.execute(new GetEmployeeMemosQuery(req.firebaseUid!, id));
+    return result.items.map((m) => toHrMemoResponse(m, result.employeeName));
+  }
+
+  @Get(':id/trainings')
+  async listTrainings(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<TrainingResponse[]> {
+    const result = await this.getEmployeeTrainings.execute(new GetEmployeeTrainingsQuery(req.firebaseUid!, id));
+    return result.items.map(toTrainingResponse);
   }
 
   @Patch(':id')

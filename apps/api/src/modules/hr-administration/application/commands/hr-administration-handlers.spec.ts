@@ -31,12 +31,15 @@ import {
   buildDisplayNames,
   buildEmployee,
   buildMatrixAuth,
+  buildMemoRepo,
+  buildTripEmployee,
   buildOutbox,
   buildTransactionManager,
   buildWorkContext,
 } from '../../testing/hr-administration-test-fixtures';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
+import { HrMemoService } from '../services/hr-memo.service';
 import type { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import type { AttendanceRepositoryPort } from '../ports/attendance-repository.port';
 import type { LeaveRepositoryPort } from '../ports/leave-repository.port';
@@ -78,7 +81,7 @@ function setup(role: Role = 'RRHH') {
   const clock = new FixedClock();
   const audit = buildAudit();
   const outbox = buildOutbox();
-  const displayNames = buildDisplayNames('Fiorella');
+  const displayNames = buildDisplayNames('Autorizador de prueba');
   const employees = {
     create: jest.fn(),
     findById: jest.fn(),
@@ -95,6 +98,9 @@ function setup(role: Role = 'RRHH') {
     summarizeMonth: jest.fn(),
     findPendingDeductions: jest.fn(),
     applyDeductions: jest.fn(),
+    findById: jest.fn(),
+    reclassify: jest.fn(),
+    countInMonthOf: jest.fn().mockResolvedValue(1),
   } as unknown as jest.Mocked<AttendanceRepositoryPort>;
   const leaves = {
     create: jest.fn(),
@@ -113,17 +119,22 @@ function setup(role: Role = 'RRHH') {
     findById: jest.fn(),
     findMany: jest.fn(),
     transition: jest.fn(),
+    claimNextDueForEscalation: jest.fn(),
   } as unknown as jest.Mocked<FieldTripRepositoryPort>;
   const terminations = {
     create: jest.fn(),
     findByEmployeeId: jest.fn(),
   } as unknown as jest.Mocked<EmploymentTerminationRepositoryPort>;
   const cascade = new FieldTripCascadeService(fieldTrips, employees);
-  return { access, tm, clock, audit, outbox, displayNames, employees, attendance, leaves, vacations, fieldTrips, terminations, cascade };
+  const memoRepo = buildMemoRepo();
+  const memos = new HrMemoService(memoRepo, attendance, audit);
+  return {
+    memoRepo,
+    memos, access, tm, clock, audit, outbox, displayNames, employees, attendance, leaves, vacations, fieldTrips, terminations, cascade };
 }
 
 const EMP_SCOPE = { organizationId: ORG_ID, operatingCompanyId: COMPANY_ID, branchId: BRANCH_ID };
-const tripEmployee = { fullName: 'Carlos Perez', ...EMP_SCOPE };
+const tripEmployee = buildTripEmployee();
 
 function attendanceRecord(over: Partial<AttendanceRecord> = {}): AttendanceRecord {
   return {
@@ -138,6 +149,9 @@ function attendanceRecord(over: Partial<AttendanceRecord> = {}): AttendanceRecor
     isDeductionApplied: false,
     payrollMonth: null,
     deductionAppliedAt: null,
+    justification: null,
+    reclassifiedAt: null,
+    reclassifiedById: null,
     notes: null,
     createdById: UID,
     createdAt: new Date('2026-10-08T12:00:00Z'),
@@ -204,6 +218,7 @@ function fieldTrip(over: Partial<FieldTripRequest> = {}) {
     level3TimeoutAt: null,
     lateMinutes: 0,
     returnNotes: null,
+    rejectedById: null, rejectedByName: null, rejectedAt: null, rejectedAtLevel: null, rejectionReason: null,
     createdAt: new Date('2026-10-09T08:00:00Z'),
     updatedAt: new Date('2026-10-09T08:00:00Z'),
   };
@@ -311,7 +326,7 @@ describe('LogAttendanceHandler (BR-ADP-001)', () => {
     s.employees.findById.mockResolvedValue(buildEmployee());
     s.attendance.findByEmployeeAndDate.mockResolvedValue(null);
     s.attendance.create.mockResolvedValue(attendanceRecord());
-    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit);
+    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
     await handler.execute(cmd('FALTA_INJUSTIFICADA'));
     expect(s.attendance.create).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'FALTA_INJUSTIFICADA', deductionAmount: 100, minutesLate: 0 }),
@@ -324,7 +339,7 @@ describe('LogAttendanceHandler (BR-ADP-001)', () => {
     s.employees.findById.mockResolvedValue(buildEmployee());
     s.attendance.findByEmployeeAndDate.mockResolvedValue(null);
     s.attendance.create.mockResolvedValue(attendanceRecord({ status: 'FALTA_JUSTIFICADA', deductionAmount: new Prisma.Decimal(0) }));
-    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit);
+    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
     await handler.execute(cmd('FALTA_JUSTIFICADA', 0, 500));
     expect(s.attendance.create).toHaveBeenCalledWith(expect.objectContaining({ deductionAmount: 0 }), s.tm.tx);
   });
@@ -333,7 +348,7 @@ describe('LogAttendanceHandler (BR-ADP-001)', () => {
     const s = setup();
     s.employees.findById.mockResolvedValue(buildEmployee());
     s.attendance.findByEmployeeAndDate.mockResolvedValue(null);
-    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit);
+    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
     await expect(handler.execute(cmd('TARDANZA', 0))).rejects.toBeInstanceOf(InvalidAttendanceRecordError);
   });
 
@@ -341,21 +356,21 @@ describe('LogAttendanceHandler (BR-ADP-001)', () => {
     const s = setup();
     s.employees.findById.mockResolvedValue(buildEmployee());
     s.attendance.findByEmployeeAndDate.mockResolvedValue(attendanceRecord());
-    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit);
+    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
     await expect(handler.execute(cmd('PRESENTE'))).rejects.toBeInstanceOf(AttendanceAlreadyLoggedError);
   });
 
   it('no registra asistencia de un colaborador terminado', async () => {
     const s = setup();
     s.employees.findById.mockResolvedValue(buildEmployee({ status: 'TERMINADO' }));
-    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit);
+    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
     await expect(handler.execute(cmd('PRESENTE'))).rejects.toBeInstanceOf(EmployeeTerminatedError);
   });
 
   it('403 para un rol sin LOG_ATTENDANCE (Campo)', async () => {
     const s = setup('CAMPO');
     s.employees.findById.mockResolvedValue(buildEmployee());
-    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit);
+    const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
     await expect(handler.execute(cmd('PRESENTE'))).rejects.toBeInstanceOf(ForbiddenException);
   });
 });
@@ -457,13 +472,13 @@ describe('RequestLeaveHandler / ResolveLeaveHandler (BR-ADP-003)', () => {
   it('autoriza (Solicitado -> Autorizado) guardando quién y cuándo', async () => {
     const s = setup('RRHH');
     s.leaves.findById.mockResolvedValue({ ...leave(), employee: tripEmployee });
-    s.leaves.resolve.mockResolvedValue(leave({ status: 'AUTORIZADO', authorizedById: UID, authorizedByName: 'Fiorella' }));
+    s.leaves.resolve.mockResolvedValue(leave({ status: 'AUTORIZADO', authorizedById: UID, authorizedByName: 'Autorizador de prueba' }));
     const handler = new ResolveLeaveHandler(s.access, s.leaves, s.displayNames, s.tm, s.clock, s.audit);
     const result = await handler.execute(new ResolveLeaveCommand(UID, 'leave-1', 'AUTORIZADO', ' ok '));
     expect(result.status).toBe('AUTORIZADO');
     expect(s.leaves.resolve).toHaveBeenCalledWith(
       'leave-1',
-      expect.objectContaining({ status: 'AUTORIZADO', authorizedById: UID, authorizedByName: 'Fiorella', resolutionNotes: 'ok' }),
+      expect.objectContaining({ status: 'AUTORIZADO', authorizedById: UID, authorizedByName: 'Autorizador de prueba', resolutionNotes: 'ok' }),
       s.tm.tx,
     );
   });
@@ -579,7 +594,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     expect(s.fieldTrips.transition).toHaveBeenCalledWith(
       'ft-1',
       ['PENDIENTE_NIVEL_1', 'PENDIENTE_NIVEL_2', 'PENDIENTE_NIVEL_3'],
-      expect.objectContaining({ status: 'AUTORIZADA', authorizationLevel: 2, authorizedById: UID, authorizedByName: 'Fiorella' }),
+      expect.objectContaining({ status: 'AUTORIZADA', authorizationLevel: 2, authorizedById: UID, authorizedByName: 'Autorizador de prueba' }),
       s.tm.tx,
     );
     expect(s.audit.recordHrAdministrationEvent).toHaveBeenCalledWith(
@@ -632,7 +647,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA' }));
     s.employees.findById.mockResolvedValue(buildEmployee({ fieldTripLateCount: 0 }));
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'CERRADA_NORMAL', lateMinutes: 30 }));
-    const handler = new EvaluateFieldTripReturnHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.audit);
+    const handler = new EvaluateFieldTripReturnHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.audit, s.memos);
     const result = await handler.execute(returnCmd('2026-10-09T13:30:00Z'));
     expect(result.isLate).toBe(true);
     expect(result.lateCount).toBe(1);
@@ -645,7 +660,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA' }));
     s.employees.findById.mockResolvedValue(buildEmployee({ fieldTripLateCount: 3 }));
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'OBSERVADA', lateMinutes: 45 }));
-    const handler = new EvaluateFieldTripReturnHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.audit);
+    const handler = new EvaluateFieldTripReturnHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.audit, s.memos);
     const result = await handler.execute(returnCmd('2026-10-09T13:45:00Z'));
     expect(result.lateCount).toBe(4);
     expect(result.isObserved).toBe(true);
@@ -655,7 +670,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('EvaluateFieldTripReturn: Campo no evalúa retornos', async () => {
     const s = setup('CAMPO');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA' }));
-    const handler = new EvaluateFieldTripReturnHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.audit);
+    const handler = new EvaluateFieldTripReturnHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.audit, s.memos);
     await expect(handler.execute(returnCmd('2026-10-09T13:45:00Z'))).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

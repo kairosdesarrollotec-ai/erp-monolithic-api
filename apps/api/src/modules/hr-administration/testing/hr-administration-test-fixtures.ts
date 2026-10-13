@@ -14,6 +14,7 @@ import { ClockPort } from '../../../common/application/ports/clock.port';
 import type { AuditEventRepositoryPort } from '../../audit/application/ports/audit-event-repository.port';
 import type { OutboxEventRepositoryPort } from '../../outbox/application/ports/outbox-event-repository.port';
 import type { UserDisplayNamePort } from '../application/ports/user-display-name.port';
+import type { HrMemoRepositoryPort } from '../application/ports/hr-memo-repository.port';
 
 export const ORG_ID = 'org-hr-1';
 export const COMPANY_ID = 'company-hr-1';
@@ -91,7 +92,41 @@ export function buildOutbox(): jest.Mocked<OutboxEventRepositoryPort> {
   return { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxEventRepositoryPort>;
 }
 
-export function buildDisplayNames(name: string | null = 'Fiorella'): jest.Mocked<UserDisplayNamePort> {
+/** Colaborador anidado en una salida a campo (datos mínimos + alcance), como lo devuelve el repositorio. */
+export function buildTripEmployee(over: Partial<{
+  id: string;
+  fullName: string;
+  areaName: string;
+  jobTitle: string;
+  fieldTripLateCount: number;
+  isFieldTripObserved: boolean;
+}> = {}) {
+  return {
+    id: 'emp-1',
+    fullName: 'Carlos Perez',
+    areaName: 'Operaciones y Logística',
+    jobTitle: 'Auxiliar de campo',
+    fieldTripLateCount: 0,
+    isFieldTripObserved: false,
+    organizationId: ORG_ID,
+    operatingCompanyId: COMPANY_ID,
+    branchId: BRANCH_ID,
+    ...over,
+  };
+}
+
+/** Repositorio de memos en memoria mínima: `createIfAbsent` crea siempre (created=true) salvo que el test lo cambie. */
+export function buildMemoRepo(): jest.Mocked<HrMemoRepositoryPort> {
+  return {
+    createIfAbsent: jest.fn().mockImplementation(async (d: Record<string, unknown>) => ({
+      memo: { id: 'memo-1', generatedBy: 'SISTEMA', createdAt: new Date('2026-10-09T08:00:00Z'), ...d },
+      created: true,
+    })),
+    findByEmployee: jest.fn().mockResolvedValue([]),
+  } as unknown as jest.Mocked<HrMemoRepositoryPort>;
+}
+
+export function buildDisplayNames(name: string | null = 'Autorizador de prueba'): jest.Mocked<UserDisplayNamePort> {
   return { findDisplayName: jest.fn().mockResolvedValue(name) } as unknown as jest.Mocked<UserDisplayNamePort>;
 }
 
@@ -122,6 +157,7 @@ export function buildEmployee(over: Partial<Employee> = {}): Employee {
     fieldTripLateCount: 0,
     isFieldTripObserved: false,
     baseSalary: new PrismaRuntime.Decimal(3000),
+    firebaseUid: null,
     version: 1,
     createdAt: new Date('2026-01-05T00:00:00Z'),
     updatedAt: new Date('2026-01-05T00:00:00Z'),

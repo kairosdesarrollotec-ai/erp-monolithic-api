@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { RecruitmentAccessService } from '../services/recruitment-access.service';
@@ -50,7 +51,7 @@ export class RegisterCandidateHandler {
           documentNumber: command.documentNumber.trim(),
           email: command.email?.trim() || null,
           phone: command.phone?.trim() || null,
-          cvDocumentId: command.cvDocumentId,
+          cvDocumentId: command.cvDocumentId ?? randomUUID(),
           salaryExpectation: command.salaryExpectation ?? null,
         },
         tx,

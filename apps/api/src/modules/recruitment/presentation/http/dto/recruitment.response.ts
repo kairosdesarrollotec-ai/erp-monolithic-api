@@ -1,4 +1,11 @@
-import { CandidateDecision, CandidateStage, InterviewResult, VacancySource, VacancyStatus } from '@prisma/client';
+import {
+  CandidateDecision,
+  CandidateStage,
+  InterviewResult,
+  NegotiationOutcome,
+  VacancySource,
+  VacancyStatus,
+} from '@prisma/client';
 
 export interface VacancyResponse {
   id: string;
@@ -47,10 +54,53 @@ export interface CandidateInterviewResponse {
   createdAt: string;
 }
 
+export interface CandidateCvResponse {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+}
+
+export interface CandidateCvUploadSessionResponse {
+  uploadUrl: string;
+  objectUrl: string;
+  expiresAt: string;
+  uploadHeaders: Record<string, string>;
+}
+
+export interface CandidateCvViewResponse extends CandidateCvResponse {
+  url: string;
+  expiresAt: string;
+}
+
+export interface NegotiationResponse {
+  id: string;
+  candidateId: string;
+  outcome: NegotiationOutcome;
+  offeredSalary: number;
+  offeredSchedule: string | null;
+  offeredOtherConditions: string | null;
+  candidateSalary: number | null;
+  candidateSchedule: string | null;
+  candidateOtherConditions: string | null;
+  candidateStartDate: string | null;
+  agreedSalary: number | null;
+  agreedConditions: string | null;
+  reason: string | null;
+  recordedBy: string;
+  createdAt: string;
+}
+
 export interface CandidateDetailResponse extends CandidateResponse {
   email: string | null;
   phone: string | null;
   cvDocumentId: string | null;
+  /** true si hay un CV cargado (se informa tambien en vista restringida). */
+  hasCv: boolean;
+  /** Metadatos del CV; null si no hay CV o la vista es restringida. */
+  cv: CandidateCvResponse | null;
+  /** Historial de negociacion (mas reciente primero); vacio en vista restringida. */
+  negotiations: NegotiationResponse[];
   salaryExpectation: number | null;
   decisionNotes: string | null;
   decidedAt: string | null;
@@ -83,5 +133,14 @@ export interface OnboardingResponse {
   probationPassed: boolean | null;
   probationEvaluation: string | null;
   probationEvaluatedAt: string | null;
+  /** REC-08 honorarios (financiero): null si no se registraron o `feesRestricted` es true. */
+  probationMonthlyFee: number | null;
+  postProbationMonthlySalary: number | null;
+  probationFeeNotes: string | null;
+  probationFeesRecordedAt: string | null;
+  /** true si el solicitante no tiene permiso para ver los honorarios. */
+  feesRestricted: boolean;
+  /** Version para If-Match al registrar honorarios. */
+  version: number;
   createdAt: string;
 }

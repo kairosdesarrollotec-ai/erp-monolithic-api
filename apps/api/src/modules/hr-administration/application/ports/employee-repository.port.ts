@@ -61,6 +61,13 @@ export abstract class EmployeeRepositoryPort {
     documentNumber: string,
     tx?: Prisma.TransactionClient,
   ): Promise<Employee | null>;
+  abstract findManyByIds(ids: string[], tx?: Prisma.TransactionClient): Promise<Employee[]>;
+  /** Ficha ya vinculada a la cuenta de acceso del usuario en esa empresa (`GET /me/employee`). */
+  abstract findByFirebaseUid(companyId: string, firebaseUid: string, tx?: Prisma.TransactionClient): Promise<Employee | null>;
+  /** Colaboradores vigentes (no terminados) de la empresa con ese correo, sin distinguir mayúsculas; máximo 2 filas. */
+  abstract findActiveByEmail(companyId: string, email: string, tx?: Prisma.TransactionClient): Promise<Employee[]>;
+  /** Vincula la ficha a la cuenta solo si aún no tenía una (condicional); devuelve la ficha vigente. */
+  abstract linkFirebaseUid(id: string, firebaseUid: string, tx?: Prisma.TransactionClient): Promise<Employee>;
   abstract findMany(
     filters: ListEmployeesFilters,
     tx?: Prisma.TransactionClient,

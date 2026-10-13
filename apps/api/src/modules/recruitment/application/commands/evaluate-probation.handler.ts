@@ -7,6 +7,7 @@ import { RecruitmentAccessService } from '../services/recruitment-access.service
 import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { OnboardingRecord, OnboardingRepositoryPort } from '../ports/onboarding-repository.port';
 import { CandidateNotFoundError, OnboardingNotFoundError, ProbationAlreadyEvaluatedError } from '../../domain/recruitment-errors';
+import { applyOnboardingFeeVisibility } from '../../domain/recruitment-rules';
 import { EvaluateProbationCommand } from './evaluate-probation.command';
 
 @Injectable()
@@ -99,7 +100,7 @@ export class EvaluateProbationHandler {
         tx,
       );
 
-      return updated;
+      return applyOnboardingFeeVisibility(updated, await this.access.isActionAllowed(context, 'VIEW_CANDIDATE_SENSITIVE_DATA'));
     });
   }
 }

@@ -20,6 +20,7 @@ import {
   RentalInquiryRecord,
 } from '../../application/ports/rental-repository.port';
 import { RentalStatus } from '../../domain/rental-status';
+import type { ReservationCreditSource } from '../../domain/reservation-credit';
 import { RentalVersionConflictError } from '../../domain/rental-errors';
 import {
   toRentalRecord,
@@ -193,6 +194,31 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     return overlap !== null;
   }
 
+  async findReservationCreditSource(
+    reservationId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationCreditSource | null> {
+    const client = tx ?? this.prisma;
+    const row = await client.reservation.findUnique({
+      where: { id: reservationId },
+      select: {
+        id: true,
+        status: true,
+        requiredPaymentAmount: true,
+        currency: true,
+        paymentValidatedAt: true,
+      },
+    });
+    if (!row) return null;
+    return {
+      reservationId: row.id,
+      status: row.status,
+      amount: row.requiredPaymentAmount.toString(),
+      currency: row.currency,
+      paymentValidatedAt: row.paymentValidatedAt,
+    };
+  }
+
   async findReservationById(id: string): Promise<{
     id: string;
     organizationId: string;
@@ -362,6 +388,13 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     return this.rentalExtensionPersistence.findPendingByRentalId(rentalId, tx);
   }
 
+  async listExtensionsByRentalId(
+    rentalId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalExtensionRecord[]> {
+    return this.rentalExtensionPersistence.listByRentalId(rentalId, tx);
+  }
+
   async findVehicleCommitmentOverlap(
     vehicleId: string,
     organizationId: string,
@@ -435,11 +468,15 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
   ): Promise<RentalRecord> {
     await this.rentalExtensionPersistence.processBreach(input, tx);
 
+    // La falta grave resuelve la ampliacion (BREACH): el alquiler vuelve a
+    // ACTIVE para que el vehiculo pueda recuperarse por Devolucion (que solo
+    // acepta ACTIVE/RETURN_IN_PROGRESS). Antes quedaba atascado en
+    // EXTENSION_PENDING sin ampliacion pendiente que resolver.
     return this.bumpVersion(
       input.rentalId,
       input.scope,
       input.expectedVersion,
-      { updatedBy: input.updatedBy },
+      { status: 'ACTIVE', updatedBy: input.updatedBy },
       tx,
     );
   }

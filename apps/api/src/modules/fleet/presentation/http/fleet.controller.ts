@@ -114,6 +114,8 @@ export class FleetController {
         query.search,
         query.limit,
         query.offset,
+        query.availableFrom,
+        query.availableTo,
       ),
     );
 

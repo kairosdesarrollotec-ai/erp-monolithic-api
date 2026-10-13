@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { AttendanceRecord } from '@prisma/client';
+import type { AttendanceRecord, HrMemo } from '@prisma/client';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
+import { HrMemoService } from '../services/hr-memo.service';
 import { AttendanceRepositoryPort } from '../ports/attendance-repository.port';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import {
@@ -12,6 +13,12 @@ import {
 } from '../../domain/hr-administration-errors';
 import { resolveAttendanceRecord } from '../../domain/hr-administration-rules';
 import { LogAttendanceCommand } from './log-attendance.command';
+
+export interface LogAttendanceResult {
+  record: AttendanceRecord;
+  /** Memo de advertencia generado automáticamente por reiteración de faltas injustificadas en el mes (ADP-P03). */
+  memo: HrMemo | null;
+}
 
 /**
  * ADP-P01..04 / BR-ADP-001: registra asistencia, tardanza o falta. El descuento queda PENDIENTE: la quincena se
@@ -25,9 +32,10 @@ export class LogAttendanceHandler {
     private readonly employees: EmployeeRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly memos: HrMemoService,
   ) {}
 
-  async execute(command: LogAttendanceCommand): Promise<AttendanceRecord> {
+  async execute(command: LogAttendanceCommand): Promise<LogAttendanceResult> {
     const found = await this.employees.findById(command.employeeId);
     if (!found) {
       throw new EmployeeNotFoundError(command.employeeId);
@@ -96,7 +104,20 @@ export class LogAttendanceHandler {
         tx,
       );
 
-      return created;
+      const memo =
+        created.status === 'FALTA_INJUSTIFICADA'
+          ? await this.memos.onUnjustifiedAbsence(
+              {
+                organizationId: context.organizationId,
+                employeeId: created.employeeId,
+                attendanceId: created.id,
+                date: created.date,
+              },
+              tx,
+            )
+          : null;
+
+      return { record: created, memo };
     });
   }
 }

@@ -4,6 +4,12 @@ Registro de decisiones explicitas aprobadas que resuelven contradicciones o auto
 
 Cada entrada: `ID | Fecha | Fuentes en conflicto | Decision | Aprobado por | Alcance afectado`.
 
+## Reclutamiento — ciclo de vida de vacante PAUSADA (2026-10-13)
+
+| ID | Fecha | Decisión | Estado | Alcance afectado |
+|---|---|---|---|---|
+| DEC-REC-001 | 2026-10-13 | Se autoriza el estado `VacancyStatus.PAUSADA` en el ciclo de vida de vacantes, implementado en PR #73 (feature/cierre-huecos-20261012). La regla de negocio aprobada es: solo una vacante en estado `PUBLICADA` puede ser pausada (`assertVacancyPausable`); reanudar una vacante `PAUSADA` la devuelve a `PUBLICADA` sin requerir re-edición del perfil (`assertVacancyResumable`). La transición PAUSADA→CANCELADA también está permitida. **FORMALIZADO 2026-10-13**: regla BR-REC-010 añadida a `bdd-05-reclutamiento-y-seleccion.md` v1.8 con 4 escenarios @SC-REC-005. Esta decisión queda como registro histórico de la autorización original; la fuente de autoridad pasa a ser BDD-KAIROS-MVP-002-REC v1.8. | CONFIRMADO — Russbel (usuario, sesión 2026-10-13); FORMALIZADO BDD-REC v1.8 (2026-10-13) | `apps/api/src/modules/recruitment/domain/recruitment-domain-types.ts` (enum `VacancyStatus.PAUSADA`); `recruitment-rules.ts` (`assertVacancyPausable`, `assertVacancyResumable`, `ALLOWED_VACANCY_TRANSITIONS`); migración `20261012020000_recruitment_closure` (`ALTER TYPE VacancyStatus ADD VALUE 'PAUSADA'`); **BDD-REC v1.8 BR-REC-010 @SC-REC-005** (fuente de autoridad final) |
+
 ## Infraestructura de base de datos — rol de migraciones (2026-10-12)
 
 | ID | Fecha | Decision | Estado | Alcance afectado |

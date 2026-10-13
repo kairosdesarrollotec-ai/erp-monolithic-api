@@ -87,6 +87,17 @@ export class RecruitmentAccessService {
     throw new ForbiddenException({ code: 'ROLE_NOT_ALLOWED', detail: 'Rol sin permiso sobre Reclutamiento.' });
   }
 
+  /** Exige ADEMAS una accion ya conocida el contexto (p. ej. datos sensibles); lanza el mismo 403 ROLE_NOT_ALLOWED. */
+  async assertActionAllowed(context: AuthorizedWorkContext, action: RecruitmentAction): Promise<void> {
+    await this.matrixAuth.assertAllowed(
+      context.organizationId,
+      context.roleId,
+      'RECRUITMENT',
+      action,
+      { companyId: context.companyId, branchId: context.branchId },
+    );
+  }
+
   async isActionAllowed(context: AuthorizedWorkContext, action: RecruitmentAction): Promise<boolean> {
     return this.matrixAuth.isAllowed(
       context.organizationId,
