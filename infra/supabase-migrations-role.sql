@@ -58,7 +58,31 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT ALL ON SEQUENCES TO kairos_migrations;
 
--- 6. Verificar la creación
+-- 6. search_path: incluir schema extensions (donde Supabase instala pg_trgm y otras
+--    extensiones trusted). Sin esto, gin_trgm_ops no es visible al crear índices GIN.
+ALTER ROLE kairos_migrations SET search_path TO public, extensions;
+
+-- 7. Si la base de datos ya tiene tablas creadas por otro rol (p.ej. postgres en un
+--    ambiente de desarrollo con historial previo), transferir ownership antes de correr
+--    las migraciones. En una base de datos virgen este paso no es necesario.
+--
+--    REQUISITO PREVIO: el rol que ejecuta este script (postgres) debe ser miembro de
+--    kairos_migrations. Ejecutar primero:
+--        GRANT kairos_migrations TO postgres;
+--
+--    Luego ejecutar la transferencia:
+--        DO $$
+--        DECLARE r record;
+--        BEGIN
+--          FOR r IN
+--            SELECT tablename FROM pg_tables
+--            WHERE schemaname = 'public' AND tableowner = 'postgres'
+--          LOOP
+--            EXECUTE 'ALTER TABLE public.' || quote_ident(r.tablename) || ' OWNER TO kairos_migrations';
+--          END LOOP;
+--        END $$;
+
+-- 8. Verificar la creación
 SELECT
   rolname,
   rolcanlogin,
@@ -72,3 +96,7 @@ WHERE rolname = 'kairos_migrations';
 -- Output esperado:
 --  rolname           | rolcanlogin | rolsuper | rolcreatedb | rolcreaterole | rolconnlimit
 --  kairos_migrations |      t      |    f     |      f      |       f       |      5
+
+-- 9. Verificar search_path configurado
+SELECT rolname, rolconfig FROM pg_roles WHERE rolname = 'kairos_migrations';
+-- Output esperado: rolconfig = {search_path=public, extensions}
