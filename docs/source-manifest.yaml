@@ -501,13 +501,28 @@ sources:
   sha256: null
   authority: contract
   supersedes: OPENAPI-RESERVATIONS-V0.2.0
+- id: OPENAPI-RENTALS-V1.2.0
+  path: packages/contracts/openapi/rentals.yaml
+  type: OpenAPI
+  module: Rentals
+  version: '1.2.0'
+  date: '2026-10-12'
+  status: current
+  estado_original: >
+    Contrato del módulo Alquiler v1.2.0 — agrega endpoints de extensión de alquiler
+    (UC-ALQ-006/006b, BR-ALQ-012/013): POST request-extension, authorize-extension,
+    reject-extension, report-extension-breach. Registrado en source-manifest en PR #73
+    (feature/cierre-huecos-20261012).
+  sha256: null
+  authority: contract
+  supersedes: OPENAPI-RENTALS-V1.1.0
 - id: OPENAPI-RENTALS-V1.1.0
   path: packages/contracts/openapi/rentals.yaml
   type: OpenAPI
   module: Rentals
   version: '1.1.0'
   date: '2026-10-03'
-  status: current
+  status: superseded
   estado_original: >
     Contrato del módulo Alquiler v1.1.0 — agrega endpoints de documentos GCS
     (Bug 4: POST/GET /rentals/:id/documents), campo signatureData en formalize-contract
@@ -589,13 +604,30 @@ sources:
   sha256: null
   authority: contract
   supersedes: null
+- id: OPENAPI-HR-ADMINISTRATION-V0.2.0
+  path: packages/contracts/openapi/hr-administration.yaml
+  type: OpenAPI
+  module: HrAdministration
+  version: '0.2.0'
+  date: '2026-10-12'
+  status: current
+  estado_original: >
+    Contrato del módulo Administración de Personal v0.2.0 — agrega: GET /employees/:id/memos,
+    GET /employees/:id/trainings, POST/GET /trainings, POST /leaves/:id/evidence,
+    POST /leaves/:id/evidence/upload-url, POST /field-trips/:id/advance-timeout,
+    POST /field-trips/:id/reject, GET /me/employee (ADP-04 evidencia permisos, DR-ADP-002
+    cascada temporizador, getMyEmployee). Registrado en source-manifest en PR #73
+    (feature/cierre-huecos-20261012).
+  sha256: null
+  authority: contract
+  supersedes: OPENAPI-HR-ADMINISTRATION-V0.1.0
 - id: OPENAPI-HR-ADMINISTRATION-V0.1.0
   path: packages/contracts/openapi/hr-administration.yaml
   type: OpenAPI
   module: HrAdministration
   version: '0.1.0'
   date: '2026-10-08'
-  status: current
+  status: superseded
   estado_original: >
     Contrato inicial del módulo Administración de Personal v0.1.0 — cubre empleados,
     asistencia, permisos, vacaciones, salidas a campo y término laboral (BR-ADP-001..006).
