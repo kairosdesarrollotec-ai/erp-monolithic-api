@@ -87,21 +87,7 @@ describe('HR-Administration — aislamiento multiempresa (Postgres real)', () =>
       ],
     });
 
-    // Usuarios con asignación activa en cada empresa
-    const userProfileA = randomUUID();
-    const userProfileB = randomUUID();
-    await prisma.userProfile.createMany({
-      data: [
-        { id: userProfileA, organizationId: org, firebaseUid: UID_A, fullName: 'User A ADP', email: 'a-adp@test.com' },
-        { id: userProfileB, organizationId: org, firebaseUid: UID_B, fullName: 'User B ADP', email: 'b-adp@test.com' },
-      ],
-    });
-    await prisma.userCompanyAssignment.createMany({
-      data: [
-        { userProfileId: userProfileA, companyId: companyA, branchId: branchA, roleId: roleIds.get('HR_MANAGER')!, isActive: true },
-        { userProfileId: userProfileB, companyId: companyB, branchId: branchB, roleId: roleIds.get('HR_MANAGER')!, isActive: true },
-      ],
-    });
+    // WorkContextAuthorizationService está mockeado — no se necesitan registros de userProfile en la DB.
   }, 60000);
 
   afterAll(async () => {
