@@ -109,7 +109,7 @@ describe('Recruitment — aislamiento multiempresa (Postgres real)', () => {
     const accessA = buildRecruitmentAccess(companyA, branchA);
     const registerHandler = new RegisterVacancyHandler(accessA, vacancyRepo, txManager, audit);
     const vacancy = await registerHandler.execute(
-      new RegisterVacancyCommand(UID_A, companyA, branchA, 'Asistente A', 'Operaciones', 'REFERIDO'),
+      new RegisterVacancyCommand(UID_A, companyA, branchA, 'Asistente A', 'Operaciones', 'RENUNCIA'),
     );
     expect(vacancy.operatingCompanyId).toBe(companyA);
 
@@ -135,7 +135,7 @@ describe('Recruitment — aislamiento multiempresa (Postgres real)', () => {
     const accessB = buildRecruitmentAccess(companyB, branchB);
     const registerHandler = new RegisterVacancyHandler(accessB, vacancyRepo, txManager, audit);
     const vacancyB = await registerHandler.execute(
-      new RegisterVacancyCommand(UID_B, companyB, branchB, 'Conductor B', 'Flota', 'PORTAL_WEB'),
+      new RegisterVacancyCommand(UID_B, companyB, branchB, 'Conductor B', 'Flota', 'CRECIMIENTO'),
     );
     expect(vacancyB.operatingCompanyId).toBe(companyB);
 
