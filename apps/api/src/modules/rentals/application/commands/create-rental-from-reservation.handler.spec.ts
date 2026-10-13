@@ -55,6 +55,9 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
     const rentals = {
       findReservationById: jest.fn().mockResolvedValue(fakeReservation),
       create: jest.fn().mockResolvedValue(fakeRental),
+      markReservationConverted: jest.fn().mockResolvedValue(true),
+      transferReservationCommitmentToRental: jest.fn().mockResolvedValue(1),
+      findByReservationId: jest.fn().mockResolvedValue(null),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
     const workContext = {
@@ -77,7 +80,7 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
     const auditRepository: jest.Mocked<AuditEventRepositoryPort> = {
       recordLoginAttempt: jest.fn(),
       recordWorkContextSelection: jest.fn(),
-      recordReservationEvent: jest.fn(),
+      recordReservationEvent: jest.fn().mockResolvedValue(undefined),
       recordInquiryEvent: jest.fn(),
       recordAdminEvent: jest.fn(),
       recordRentalEvent: jest.fn().mockResolvedValue(undefined),
@@ -122,6 +125,79 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       expect.objectContaining({ eventType: 'RentalCreatedFromReservation.v1' }),
       fakeTx,
     );
+  });
+
+  const SCOPE = { organizationId: 'org-1', operatingCompanyId: 'comp-1', branchId: 'branch-1' };
+
+  function buildHandler(deps: ReturnType<typeof buildDeps>) {
+    return new CreateRentalFromReservationHandler(
+      deps.rentals,
+      deps.workContext,
+      deps.matrixAuth,
+      deps.transactionManager,
+      deps.auditRepository,
+      deps.outboxRepository,
+    );
+  }
+
+  it('marca la reserva CONVERTED y traslada su vehicle_commitment al alquiler, en la misma transaccion (UC-RES-005)', async () => {
+    const deps = buildDeps();
+    await buildHandler(deps).execute(new CreateRentalFromReservationCommand('uid-1', 'comp-1', 'branch-1', 'res-1'));
+
+    expect(deps.rentals.markReservationConverted).toHaveBeenCalledWith('res-1', SCOPE, fakeTx);
+    expect(deps.rentals.transferReservationCommitmentToRental).toHaveBeenCalledWith('res-1', 'rent-200', fakeTx);
+    // El orden importa: primero se gana el cambio de estado, luego se crea el alquiler.
+    expect(deps.rentals.markReservationConverted.mock.invocationCallOrder[0]).toBeLessThan(
+      deps.rentals.create.mock.invocationCallOrder[0],
+    );
+    expect(deps.auditRepository.recordReservationEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ reservationId: 'res-1', action: 'RESERVATION_CONVERTED' }),
+      fakeTx,
+    );
+    expect(deps.outboxRepository.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        aggregateType: 'Reservation',
+        aggregateId: 'res-1',
+        eventType: 'ReservationConverted',
+        payload: expect.objectContaining({ reservationId: 'res-1', rentalId: 'rent-200' }),
+      }),
+      fakeTx,
+    );
+  });
+
+  it('409 y sin crear alquiler si otra operacion cambio el estado de la reserva (carrera)', async () => {
+    const deps = buildDeps();
+    deps.rentals.markReservationConverted.mockResolvedValueOnce(false);
+
+    await expect(
+      buildHandler(deps).execute(new CreateRentalFromReservationCommand('uid-1', 'comp-1', 'branch-1', 'res-1')),
+    ).rejects.toThrow(ConflictException);
+    expect(deps.rentals.create).not.toHaveBeenCalled();
+    expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+  });
+
+  it('es idempotente: una reserva ya CONVERTED devuelve el alquiler existente sin crear otro', async () => {
+    const deps = buildDeps();
+    deps.rentals.findReservationById.mockResolvedValueOnce({ ...fakeReservation, status: 'CONVERTED' });
+    deps.rentals.findByReservationId.mockResolvedValueOnce(fakeRental);
+
+    const result = await buildHandler(deps).execute(
+      new CreateRentalFromReservationCommand('uid-1', 'comp-1', 'branch-1', 'res-1'),
+    );
+
+    expect(result.id).toBe('rent-200');
+    expect(deps.rentals.create).not.toHaveBeenCalled();
+    expect(deps.rentals.markReservationConverted).not.toHaveBeenCalled();
+  });
+
+  it('rechaza (409) una reserva CANCELLED, p. ej. tras un no-show', async () => {
+    const deps = buildDeps();
+    deps.rentals.findReservationById.mockResolvedValueOnce({ ...fakeReservation, status: 'CANCELLED' });
+
+    await expect(
+      buildHandler(deps).execute(new CreateRentalFromReservationCommand('uid-1', 'comp-1', 'branch-1', 'res-1')),
+    ).rejects.toThrow(ConflictException);
+    expect(deps.rentals.markReservationConverted).not.toHaveBeenCalled();
   });
 
   it('rechaza si la reserva no esta en estado CONFIRMED', async () => {

@@ -283,6 +283,35 @@ export abstract class RentalRepositoryPort {
     endsAt: Date,
     tx?: Prisma.TransactionClient,
   ): Promise<boolean>;
+  /**
+   * UC-RES-005 / RES-08: CONFIRMED -> CONVERTED de la reserva de origen, en la
+   * transaccion del alquiler. `updateMany` atomico con scope completo + estado
+   * CONFIRMED en el where (version++); devuelve false si otra operacion se
+   * adelanto (cancelacion, venta, otra conversion). No toca el monto pagado
+   * (DEC-P0-03 sigue leyendose de la reserva).
+   */
+  abstract markReservationConverted(
+    reservationId: string,
+    scope: RentalScope,
+    tx: Prisma.TransactionClient,
+  ): Promise<boolean>;
+  /**
+   * El alquiler hereda el `vehicle_commitment` de la reserva: se re-asigna el
+   * mismo compromiso (RESERVATION -> RENTAL, sigue CONSOLIDATED) en lugar de
+   * liberar y crear otro, asi el vehiculo no queda libre ni un instante y no
+   * hay doble conflicto de solape. Devuelve cuantos compromisos se movieron.
+   */
+  abstract transferReservationCommitmentToRental(
+    reservationId: string,
+    rentalId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<number>;
+  /** Alquiler ya creado para una reserva (reintento idempotente de convert). */
+  abstract findByReservationId(
+    reservationId: string,
+    scope: RentalScope,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord | null>;
   abstract findReservationById(id: string): Promise<{
     id: string;
     organizationId: string;
