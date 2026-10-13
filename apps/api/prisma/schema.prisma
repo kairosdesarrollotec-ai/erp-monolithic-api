@@ -494,6 +494,8 @@ model Customer {
   @@unique([operatingCompanyId, documentType, documentNumber])
   @@index([operatingCompanyId])
   @@index([operatingCompanyId, documentNumber])
+  @@index([fullName(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_customers_fullname_trgm")
+  @@index([documentNumber(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_customers_docnumber_trgm")
   @@map("customers")
 }
 
@@ -528,6 +530,7 @@ model Vehicle {
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
   @@index([operatingCompanyId, status])
+  @@index([plate(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_vehicles_plate_trgm")
   @@map("vehicles")
 }
 
@@ -990,7 +993,7 @@ model NotaryEvaluation {
 model RentalContract {
   id            String    @id @default(uuid())
   rentalId      String    @unique @map("rental_id")
-  templateId    String?   @map("template_id")
+  templateId    String?   @map("template_id") @db.Uuid
   documentRef   String    @map("document_ref")
   status        String    @default("PENDING") // PENDING | SIGNED | VOID
   signedAt      DateTime? @map("signed_at")
@@ -998,7 +1001,7 @@ model RentalContract {
   createdAt     DateTime  @default(now()) @map("created_at")
 
   rental      Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
-  templateNew Template? @relation(fields: [templateId], references: [id])
+  templateNew Template? @relation(fields: [templateId], references: [id], onDelete: Restrict)
 
   @@map("rental_contracts")
 }
@@ -1040,7 +1043,7 @@ model ReservationDocument {
 /// Invariante única ACTIVE por (company_id, type): índice parcial "templates_unique_active"
 /// en migración 20261009000000_add_templates — Prisma no soporta WHERE en @@unique.
 model Template {
-  id             String    @id @default(uuid())
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId String    @map("organization_id")
   companyId      String    @map("company_id")
   type           String    @db.VarChar(50)
@@ -1049,17 +1052,17 @@ model Template {
   status         String    @default("DRAFT") // DRAFT | ACTIVE | RETIRED
   documentUrl    String?   @map("document_url")
   documentFormat String?   @map("document_format") // PDF | DOCX
-  effectiveFrom  DateTime? @map("effective_from")
-  createdAt      DateTime  @default(now()) @map("created_at")
+  effectiveFrom  DateTime? @map("effective_from") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   createdBy      String    @map("created_by")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   updatedBy      String    @map("updated_by")
 
   company         Company          @relation(fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Cascade)
   rentalContracts RentalContract[]
 
-  @@index([companyId, type])
-  @@index([organizationId])
+  @@index([companyId, type], map: "templates_company_type_idx")
+  @@index([organizationId], map: "templates_organization_idx")
   @@map("templates")
 }
 
@@ -1071,7 +1074,7 @@ model RentalDeposit {
   originalAmount Decimal                   @map("original_amount") @db.Decimal(12, 2)
   currency       String                    @db.Char(3)
   status         String                    @default("HELD") // HELD | RETURNED | RETAINED | PARTIALLY_RETAINED
-  closedAt       DateTime?                 @map("closed_at")
+  closedAt       DateTime?                 @map("closed_at") @db.Timestamptz(6)
   closureNotes   String?                   @map("closure_notes") @db.VarChar(500)
   createdAt      DateTime                  @default(now()) @map("created_at")
 
