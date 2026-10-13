@@ -1001,7 +1001,7 @@ model RentalContract {
   createdAt     DateTime  @default(now()) @map("created_at")
 
   rental      Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
-  templateNew Template? @relation(fields: [templateId], references: [id])
+  templateNew Template? @relation(fields: [templateId], references: [id], onDelete: Restrict)
 
   @@map("rental_contracts")
 }
@@ -1043,7 +1043,7 @@ model ReservationDocument {
 /// Invariante única ACTIVE por (company_id, type): índice parcial "templates_unique_active"
 /// en migración 20261009000000_add_templates — Prisma no soporta WHERE en @@unique.
 model Template {
-  id             String    @id @default(uuid()) @db.Uuid
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId String    @map("organization_id")
   companyId      String    @map("company_id")
   type           String    @db.VarChar(50)
