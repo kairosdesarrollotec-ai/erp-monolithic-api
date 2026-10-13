@@ -33,6 +33,9 @@ import { FlagVehicleSaleHandler } from '../../application/commands/flag-vehicle-
 import { FlagVehicleSaleCommand } from '../../application/commands/flag-vehicle-sale.command';
 import { ResolveVehicleSaleHandler } from '../../application/commands/resolve-vehicle-sale.handler';
 import { ResolveVehicleSaleCommand } from '../../application/commands/resolve-vehicle-sale.command';
+import { ChangeReservationVehicleHandler } from '../../application/commands/change-reservation-vehicle.handler';
+import { ChangeReservationVehicleCommand } from '../../application/commands/change-reservation-vehicle.command';
+import { ChangeReservationVehicleDto } from './dto/change-reservation-vehicle.dto';
 import { FlagVehicleSaleDto } from './dto/flag-vehicle-sale.dto';
 import { ResolveVehicleSaleDto } from './dto/resolve-vehicle-sale.dto';
 import { GetReservationHandler } from '../../application/queries/get-reservation.handler';
@@ -73,6 +76,7 @@ export class ReservationsController {
     private readonly cancelReservation: CancelReservationHandler,
     private readonly flagVehicleSale: FlagVehicleSaleHandler,
     private readonly resolveVehicleSale: ResolveVehicleSaleHandler,
+    private readonly changeReservationVehicle: ChangeReservationVehicleHandler,
     private readonly getReservation: GetReservationHandler,
     private readonly listReservations: ListReservationsHandler,
     private readonly requestDocumentUploadSession: RequestReservationDocumentUploadSessionHandler,
@@ -302,6 +306,22 @@ export class ReservationsController {
       ),
     );
     return toReservationResponse(resolved);
+  }
+
+  /** RES-06 "Continuar con alternativa elegida" - cambia el vehiculo de una reserva en DRAFT (no es reprogramacion, BR-RES-003). */
+  @Post(':id/commands/change-vehicle')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async changeVehicleCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ChangeReservationVehicleDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReservationResponse> {
+    const changed = await this.changeReservationVehicle.execute(
+      new ChangeReservationVehicleCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch), dto.vehicleId),
+    );
+    return toReservationResponse(changed);
   }
 
   @Post(':id/documents/upload-url')

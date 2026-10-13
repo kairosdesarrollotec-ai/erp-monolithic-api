@@ -5,6 +5,7 @@ import { findFirstVehicleConflict } from '../../../../common/persistence/vehicle
 import { ReservationRecord, ReservationScope } from '../../application/ports/reservation-repository.port';
 import {
   AcceptSaleInput,
+  ChangeVehicleInput,
   FlagSaleInput,
   RejectSaleInput,
   ReservationSaleResolutionRepositoryPort,
@@ -158,6 +159,15 @@ export class PrismaReservationSaleResolutionRepository implements ReservationSal
       resolutionNote: input.note ?? null,
       resolvedBy: input.resolvedBy,
     });
+    return this.reload(input.id, input, tx);
+  }
+
+  async changeVehicle(input: ChangeVehicleInput, tx: Prisma.TransactionClient): Promise<ReservationRecord> {
+    const result = await tx.reservation.updateMany({
+      where: { ...scopeWhere(input.id, input), version: input.expectedVersion, status: 'DRAFT' },
+      data: { vehicleId: input.vehicleId, documentsCompletedAt: null, version: { increment: 1 } },
+    });
+    if (result.count !== 1) throw new ReservationVersionConflictError();
     return this.reload(input.id, input, tx);
   }
 

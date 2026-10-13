@@ -6,6 +6,7 @@ import { RegisterDocumentsHandler } from './application/commands/register-docume
 import { ConfirmReservationHandler } from './application/commands/confirm-reservation.handler';
 import { CancelReservationHandler } from './application/commands/cancel-reservation.handler';
 import { FlagVehicleSaleHandler } from './application/commands/flag-vehicle-sale.handler';
+import { ChangeReservationVehicleHandler } from './application/commands/change-reservation-vehicle.handler';
 import { ResolveVehicleSaleHandler } from './application/commands/resolve-vehicle-sale.handler';
 import { SaleAlternativeVehicleGuard } from './application/services/sale-alternative-vehicle.guard';
 import { ReservationSaleResolutionRepositoryPort } from './application/ports/reservation-sale-resolution-repository.port';
@@ -42,6 +43,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     CancelReservationHandler,
     FlagVehicleSaleHandler,
     ResolveVehicleSaleHandler,
+    ChangeReservationVehicleHandler,
     SaleAlternativeVehicleGuard,
     GetReservationHandler,
     ListReservationsHandler,

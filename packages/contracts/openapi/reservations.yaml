@@ -1,13 +1,18 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.6.0
+  version: 0.7.0
   description: >
     Contrato del modulo Reserva (HU-27, TDD-RES-001.md seccion 11).
     Primer corte: crear, registrar pago/documentos, confirmar (bloqueo
     atomico), cancelar por cambio solicitado, y las consultas de bandeja
     (RES-01) y detalle (RES-04/RES-05). No expone ningun comando de
     "reprogramar" (BR-RES-003, deliberado).
+
+    Cambios 0.7.0 (RES-06, DEC-RES-CHANGE-VEHICLE-001):
+    - POST /reservations/{id}/commands/change-vehicle: cambia el vehiculo de una
+      reserva en DRAFT ("Continuar con alternativa elegida", RES-06 -> RES-04). No es
+      una reprogramacion: BR-RES-003 sigue prohibiendola en CONFIRMED.
 
     Cambios 0.6.0 (RES-06/RES-07/RES-08, UC-RES-004/005, DEC-RES-SALE-001):
     - POST /reservations/{id}/commands/flag-sale: Gerencia/Administrador registra
@@ -284,6 +289,35 @@ paths:
         '422': { description: 'ALTERNATIVE_VEHICLE_REQUIRED (ACCEPT_ALTERNATIVE sin alternativa en el body ni ofrecida) o ALTERNATIVE_VEHICLE_INVALID' }
         '428': { description: IF_MATCH_REQUIRED }
 
+  /reservations/{id}/commands/change-vehicle:
+    post:
+      operationId: changeReservationVehicle
+      summary: Cambia el vehiculo de una reserva en borrador (RES-06 Continuar con alternativa elegida)
+      description: >
+        Roles: FRONT_OFFICE, GERENCIA y ADMINISTRACION (accion RESERVATION.CHANGE_VEHICLE de la
+        matriz ADM-02). Solo en DRAFT (sin compromiso ni confirmacion, por eso no es reprogramar,
+        BR-RES-003); en otro estado 409. El vehiculo nuevo se valida: misma empresa, distinto del
+        actual, sede compatible, status AVAILABLE y libre en [startAt, endAt) segun la regla
+        compartida de solape. Conserva el pago validado y limpia documentsCompletedAt (los
+        documentos/contrato refieren al vehiculo; pendiente de Fiorella). Incrementa version.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangeReservationVehicleRequest' }
+      responses:
+        '200': { description: 'Reserva en DRAFT con el vehiculo nuevo', content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
+        '403': { description: 'ROLE_NOT_ALLOWED o empresa/sede no autorizada' }
+        '404': { description: Reserva no encontrada en el scope del usuario }
+        '409': { description: 'RESERVATION_STATE_CONFLICT (no esta en DRAFT) o VEHICLE_NOT_AVAILABLE (el vehiculo esta ocupado, el detail indica las fechas)' }
+        '412': { description: RESERVATION_VERSION_CONFLICT }
+        '422': { description: 'ALTERNATIVE_VEHICLE_INVALID - el mismo vehiculo, de otra empresa/sede o no esta AVAILABLE' }
+        '428': { description: IF_MATCH_REQUIRED }
   /reservations/{id}/documents/upload-url:
     post:
       operationId: requestReservationDocumentUploadSession
@@ -417,6 +451,13 @@ components:
           properties:
             alternativeVehicleId: { type: string, format: uuid, description: 'Vehiculo alternativo que se ofrece (RES-P14). Opcional.' }
             note: { type: string, maxLength: 1000 }
+    ChangeReservationVehicleRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [vehicleId]
+          properties:
+            vehicleId: { type: string, format: uuid, description: 'Vehiculo nuevo (alternativa elegida en RES-06).' }
     ResolveVehicleSaleRequest:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }

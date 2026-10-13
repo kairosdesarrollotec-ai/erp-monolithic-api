@@ -35,6 +35,12 @@ export interface AcceptSaleInput extends ReservationScope {
   note?: string;
 }
 
+export interface ChangeVehicleInput extends ReservationScope {
+  id: string;
+  expectedVersion: number;
+  vehicleId: string;
+}
+
 /**
  * Puerto de persistencia de la venta de vehiculo reservado (UC-RES-004,
  * tabla `reservation_resolutions`). Separado de ReservationRepositoryPort para
@@ -74,4 +80,10 @@ export abstract class ReservationSaleResolutionRepositoryPort {
    * BDD 10.6) y cierra la resolucion como ACCEPTED.
    */
   abstract acceptAlternative(input: AcceptSaleInput, tx: Prisma.TransactionClient): Promise<ReservationRecord>;
+
+  /**
+   * DRAFT -> DRAFT con otro vehiculo (RES-06): conserva `payment_validated_at`, limpia
+   * `documents_completed_at`, incrementa version. Sin commitment (DRAFT no lo tiene).
+   */
+  abstract changeVehicle(input: ChangeVehicleInput, tx: Prisma.TransactionClient): Promise<ReservationRecord>;
 }

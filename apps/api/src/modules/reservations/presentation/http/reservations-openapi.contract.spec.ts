@@ -184,8 +184,12 @@ describe('Contrato OpenAPI reservations.yaml vs backend', () => {
     expect([...contract.properties.decision.enum].sort()).toEqual([...SALE_DECISIONS].sort());
   });
 
-  it('flag-sale y resolve-sale: comandos con Idempotency-Key opcional, 200 y errores 403/404/409/412/422/428 declarados', () => {
-    for (const route of ['/reservations/{id}/commands/flag-sale', '/reservations/{id}/commands/resolve-sale']) {
+  it('flag-sale, resolve-sale y change-vehicle: comandos con Idempotency-Key opcional, 200 y errores 403/404/409/412/422/428 declarados', () => {
+    for (const route of [
+      '/reservations/{id}/commands/flag-sale',
+      '/reservations/{id}/commands/resolve-sale',
+      '/reservations/{id}/commands/change-vehicle',
+    ]) {
       const op: Operation = spec.paths[route].post;
       const headers = (op.parameters ?? []).map(deref).filter((p: any) => p.in === 'header').map((p: any) => p.name);
       expect(headers).toEqual(expect.arrayContaining(['If-Match', 'Idempotency-Key']));

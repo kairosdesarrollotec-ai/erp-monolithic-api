@@ -48,7 +48,8 @@ export type ReservationAction =
   | 'CANCEL_CUSTOMER_REQUESTED_CHANGE'
   | 'CANCEL_NO_SHOW'
   | 'FLAG_SALE'
-  | 'RESOLVE_SALE';
+  | 'RESOLVE_SALE'
+  | 'CHANGE_VEHICLE';
 
 const READ_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'AUDITORIA', 'ADMINISTRACION']);
 const OPERATIONAL_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'ADMINISTRACION']);
@@ -67,6 +68,9 @@ const RESERVATION_ROLE_POLICY: Readonly<Record<ReservationAction, ReadonlySet<Wo
   // participa: la venta del vehiculo y el reembolso son decisiones de Gerencia/Administracion.
   FLAG_SALE: new Set(['GERENCIA', 'ADMINISTRACION']),
   RESOLVE_SALE: new Set(['GERENCIA', 'ADMINISTRACION']),
+  // RES-06 "Continuar con alternativa elegida": cambia el vehiculo de una reserva en DRAFT (sin compromiso;
+  // no es reprogramacion, BR-RES-003). Mismo personal operativo que crea/completa la reserva.
+  CHANGE_VEHICLE: OPERATIONAL_ROLES,
 };
 
 // ROLES DINAMICOS (fase 2): esta politica ya NO decide en runtime; solo SIEMBRA la version 0 de la matriz ADM-02
