@@ -58,8 +58,13 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT ALL ON SEQUENCES TO kairos_migrations;
 
--- 6. search_path: incluir schema extensions (donde Supabase instala pg_trgm y otras
---    extensiones trusted). Sin esto, gin_trgm_ops no es visible al crear índices GIN.
+-- 6. Acceso al schema extensions (donde Supabase instala pg_trgm y otras extensiones
+--    trusted). USAGE es necesario para referenciar operator classes (gin_trgm_ops,
+--    etc.) desde CREATE INDEX aunque estén en schema distinto de public.
+GRANT USAGE ON SCHEMA extensions TO kairos_migrations;
+
+-- search_path: incluir extensions como capa adicional de comodidad (opcional si se
+-- usan nombres calificados en las migraciones, pero evita errores en queries ad-hoc).
 ALTER ROLE kairos_migrations SET search_path TO public, extensions;
 
 -- 7. Si la base de datos ya tiene tablas creadas por otro rol (p.ej. postgres en un
