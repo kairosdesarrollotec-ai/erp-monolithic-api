@@ -8,7 +8,6 @@ import { PrismaCandidateRepository } from '../../src/modules/recruitment/infrast
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../src/modules/authorization/matrix-authorization.service';
-import { PrismaRolePermissionMatrixRepository } from '../../src/modules/admin/infrastructure/persistence/prisma-role-permission-matrix.repository';
 import { RecruitmentAccessService } from '../../src/modules/recruitment/application/services/recruitment-access.service';
 import { RegisterVacancyHandler } from '../../src/modules/recruitment/application/commands/register-vacancy.handler';
 import { RegisterVacancyCommand } from '../../src/modules/recruitment/application/commands/register-vacancy.command';
@@ -55,8 +54,11 @@ describe('Recruitment — aislamiento multiempresa (Postgres real)', () => {
   }
 
   function buildMatrixAuth() {
-    const matrixRepo = new PrismaRolePermissionMatrixRepository(buildPrismaService());
-    return new MatrixAuthorizationService(matrixRepo);
+    // Mockeado: esta suite prueba aislamiento de datos, no enforcement de permisos.
+    // MatrixAuthorizationService con DB real requeriría sembrar la matriz completa.
+    return {
+      assertAllowed: async () => undefined,
+    } as unknown as MatrixAuthorizationService;
   }
 
   function buildAudit() {

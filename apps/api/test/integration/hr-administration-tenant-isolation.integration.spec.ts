@@ -6,7 +6,6 @@ import { PrismaTransactionManager } from '../../src/common/persistence/prisma-tr
 import { PrismaEmployeeRepository } from '../../src/modules/hr-administration/infrastructure/persistence/prisma-employee.repository';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../src/modules/authorization/matrix-authorization.service';
-import { PrismaRolePermissionMatrixRepository } from '../../src/modules/admin/infrastructure/persistence/prisma-role-permission-matrix.repository';
 import { HrAdministrationAccessService } from '../../src/modules/hr-administration/application/services/hr-administration-access.service';
 import { CreateEmployeeHandler } from '../../src/modules/hr-administration/application/commands/create-employee.handler';
 import { CreateEmployeeCommand } from '../../src/modules/hr-administration/application/commands/create-employee.command';
@@ -52,8 +51,11 @@ describe('HR-Administration — aislamiento multiempresa (Postgres real)', () =>
   }
 
   function buildMatrixAuth() {
-    const matrixRepo = new PrismaRolePermissionMatrixRepository(buildPrismaService());
-    return new MatrixAuthorizationService(matrixRepo);
+    // Mockeado: esta suite prueba aislamiento de datos, no enforcement de permisos.
+    // MatrixAuthorizationService con DB real requeriría sembrar la matriz completa.
+    return {
+      assertAllowed: async () => undefined,
+    } as unknown as MatrixAuthorizationService;
   }
 
   function buildAudit() {
