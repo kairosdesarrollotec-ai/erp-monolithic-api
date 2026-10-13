@@ -13,7 +13,7 @@
 |----|-----------|-------------|--------|
 | P1-E3-1 | P1→✅ | Endpoint `formalize-contract` (operación crítica: firma de expediente) sin `RecentAuthGuard` | Resuelto — `@UseGuards(RecentAuthGuard) @RecentAuth(300)` añadido a `rentals.controller.ts` |
 | F-01 | P1→✅ | `rentals.yaml` v1.2.0 no estaba registrado en `source-manifest.yaml` | Resuelto — `OPENAPI-RENTALS-V1.2.0` añadido; v1.1.0 marcado `superseded` |
-| P0-03-TRAZ | P0-abierto | `reservation_credit_amount` (traslado íntegro de reserva a garantía) implementado sin regla BDD formal | **Pendiente decisión** — ver nota abajo |
+| P0-03-TRAZ | P0→✅ | `reservation_credit_amount` (traslado íntegro de reserva a garantía) implementado sin regla BDD formal | Resuelto — BR-ALQ-020 formalizado en bdd-03-alquiler.md v1.8 (commit 2928842, 2026-10-13) |
 
 ---
 
@@ -45,5 +45,5 @@
 
 ## Riesgos y pendientes
 
-1. **P0 abierto — `reservation_credit_amount`**: La regla "el monto pagado por la reserva se traslada íntegro a la garantía del alquiler" (implementada en `domain/reservation-credit.ts`) está respaldada por la decisión del dueño del 6-oct-2026 documentada como "P0-03 opcion (a)". Sin embargo, el documento referenciado (`claude/Pregunta_Fiorella_Monto_Reserva.md`) no existe como fuente formal en el repo. **Requiere decisión**: registrar en `decision-log.md` o agregar como regla BDD en `bdd-03-alquiler.md`.
+1. **P0 resuelto — `reservation_credit_amount`**: BR-ALQ-020 formalizado en `bdd-03-alquiler.md` v1.8 (commit `2928842`, 2026-10-13). Fuente: decisión Russbel/Fiorella, 6-oct-2026 (SRC-DL-001). El comentario en `domain/reservation-credit.ts` actualizado para citar BR-ALQ-020.
 2. **Integration tests rentals con PR73**: Los tests `rentals.integration.spec.ts` y `rentals-tenant-isolation.integration.spec.ts` cubren el slice base (PR #36). Las nuevas operaciones de PR #73 no tienen cobertura de integración con DB real.

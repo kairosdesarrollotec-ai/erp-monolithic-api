@@ -1,11 +1,11 @@
 import { DomainUnprocessableError } from '../../../common/domain/domain-errors';
 
 /**
- * P0-03 opcion (a) (decision del dueno, 6-oct-2026; ver
- * claude/Pregunta_Fiorella_Monto_Reserva.md): el monto pagado por la reserva
- * se TRASLADA INTEGRO a la garantia del alquiler y la garantia se completa
- * cobrando solo la diferencia. Aplica unicamente a alquileres de origen
- * Reserva; en alquiler directo (sin reserva) se cobra la garantia completa.
+ * BR-ALQ-020 (BDD-KAIROS-MVP-002-ALQ v1.8, aprobado 2026-10-13):
+ * el monto pagado por la reserva se TRASLADA INTEGRO a la garantia del
+ * alquiler y la garantia se completa cobrando solo la diferencia. Aplica
+ * unicamente a alquileres de origen Reserva; en alquiler directo (sin
+ * reserva) se cobra la garantia completa.
  *
  * Funciones puras: la regla vive aqui para que el handler y la lectura
  * (vista previa en ENTREGA-03) usen exactamente el mismo calculo.
