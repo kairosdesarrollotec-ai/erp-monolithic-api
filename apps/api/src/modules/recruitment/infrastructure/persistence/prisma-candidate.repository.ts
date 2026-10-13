@@ -9,6 +9,7 @@ import {
   CreateCandidateInput,
   CreateNegotiationInput,
   NegotiationRecord,
+  RecruitmentRepositoryScope,
   SetCandidateCvInput,
 } from '../../application/ports/candidate-repository.port';
 import { CandidateVersionConflictError } from '../../domain/recruitment-errors';
@@ -97,21 +98,19 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
     return this.mapToRecord(created);
   }
 
-  async findById(id: string, tx?: Prisma.TransactionClient): Promise<CandidateRecord | null> {
-    const client = tx ?? this.prisma;
-    const found = await client.candidate.findUnique({
-      where: { id },
-    });
-    return found ? this.mapToRecord(found) : null;
-  }
-
   async findDetailById(
     id: string,
+    scope: RecruitmentRepositoryScope,
     tx?: Prisma.TransactionClient,
   ): Promise<CandidateDetailRecord | null> {
     const client = tx ?? this.prisma;
-    const found = await client.candidate.findUnique({
-      where: { id },
+    const found = await client.candidate.findFirst({
+      where: {
+        id,
+        organizationId: scope.organizationId,
+        operatingCompanyId: scope.operatingCompanyId,
+        vacancy: { branchId: scope.branchId },
+      },
       include: {
         interviews: {
           orderBy: { scheduledAt: 'desc' },
@@ -178,7 +177,7 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
 
   async findScopedById(
     id: string,
-    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
+    scope: RecruitmentRepositoryScope,
     tx?: Prisma.TransactionClient,
   ): Promise<CandidateRecord | null> {
     const client = tx ?? this.prisma;

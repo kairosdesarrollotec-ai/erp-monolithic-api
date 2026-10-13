@@ -32,7 +32,7 @@ export class DecideCandidateHandler {
     );
 
     return this.transactionManager.run(async (tx) => {
-      const existing = await this.candidates.findById(command.id, tx);
+      const existing = await this.candidates.findScopedById(command.id, scope, tx);
       if (!existing) {
         throw new CandidateNotFoundError(command.id);
       }
@@ -90,7 +90,7 @@ export class DecideCandidateHandler {
         tx,
       );
 
-      const detail = await this.candidates.findDetailById(command.id, tx);
+      const detail = await this.candidates.findDetailById(command.id, scope, tx);
       if (!detail) {
         throw new CandidateNotFoundError(command.id);
       }

@@ -95,7 +95,7 @@ function setup(role: 'RRHH' | 'AUDITORIA' | 'ADMINISTRACION' = 'RRHH') {
   const audit = { recordRecruitmentEvent: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AuditEventRepositoryPort>;
   const outbox = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxEventRepositoryPort>;
   const candidates = {
-    findById: jest.fn(),
+    findScopedById: jest.fn(),
     findDetailById: jest.fn(),
     updateStage: jest.fn(),
     updateDecision: jest.fn(),
@@ -122,14 +122,14 @@ describe('ChangeCandidateStageHandler', () => {
 
   it('no permite retroceder la etapa', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate({ stage: CandidateStage.ENTREVISTA }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ stage: CandidateStage.ENTREVISTA }));
     const handler = new ChangeCandidateStageHandler(s.access, s.candidates, s.tm, s.audit);
     await expect(handler.execute(cmd(CandidateStage.NUEVO))).rejects.toBeInstanceOf(CandidateStageRegressionError);
   });
 
   it('avanza de etapa y audita', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate({ stage: CandidateStage.CONTACTADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ stage: CandidateStage.CONTACTADO }));
     s.candidates.updateStage.mockResolvedValue(candidate({ stage: CandidateStage.ENTREVISTA, version: 2 }));
     const handler = new ChangeCandidateStageHandler(s.access, s.candidates, s.tm, s.audit);
     const result = await handler.execute(cmd(CandidateStage.ENTREVISTA));
@@ -150,7 +150,7 @@ describe('DecideCandidateHandler', () => {
 
   it('rechaza una segunda decision sobre el mismo candidato', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate({ decision: CandidateDecision.RECHAZADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.RECHAZADO }));
     const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
     await expect(handler.execute(cmd(CandidateDecision.CONTRATADO))).rejects.toBeInstanceOf(
       CandidateAlreadyDecidedError,
@@ -161,7 +161,7 @@ describe('DecideCandidateHandler', () => {
   it('CONTRATADO registra quien decidio y publica CandidatoSeleccionado', async () => {
     const s = setup();
     const decided = candidate({ decision: CandidateDecision.CONTRATADO, stage: CandidateStage.DECISION, version: 2 });
-    s.candidates.findById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
     s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], negotiations: [], onboarding: null });
     const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
@@ -184,7 +184,7 @@ describe('DecideCandidateHandler', () => {
   it('RECHAZADO no publica evento de seleccion', async () => {
     const s = setup();
     const decided = candidate({ decision: CandidateDecision.RECHAZADO, stage: CandidateStage.DECISION, version: 2 });
-    s.candidates.findById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
     s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], negotiations: [], onboarding: null });
     const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
@@ -212,27 +212,27 @@ describe('CompleteOnboardingHandler', () => {
 
   it('exige que el candidato este CONTRATADO', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate({ decision: CandidateDecision.RECHAZADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.RECHAZADO }));
     await expect(build(s).execute(cmd())).rejects.toBeInstanceOf(CandidateNotContractedError);
   });
 
   it('exige el checklist completo', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
     s.vacancies.findById.mockResolvedValue({ id: 'vac-1', isMechanic: false } as never);
     await expect(build(s).execute(cmd({ eq: false }))).rejects.toBeInstanceOf(OnboardingChecklistIncompleteError);
   });
 
   it('puesto mecanico sin contrato notariado es rechazado (BR-REC-009)', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
     s.vacancies.findById.mockResolvedValue({ id: 'vac-1', isMechanic: true } as never);
     await expect(build(s).execute(cmd())).rejects.toBeInstanceOf(OnboardingMissingNotarizedContractError);
   });
 
   it('completa, registra completedBy y publica PersonalIncorporado', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
     s.vacancies.findById.mockResolvedValue({ id: 'vac-1', isMechanic: true } as never);
     s.onb.complete.mockResolvedValue(onboarding({ notarizedContractSigned: true }));
     await build(s).execute(cmd({ notary: true }));
@@ -251,21 +251,21 @@ describe('EvaluateProbationHandler', () => {
 
   it('falla si no existe la incorporacion', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate());
     s.onb.findByCandidateId.mockResolvedValue(null);
     await expect(build(s).execute(cmd(true))).rejects.toBeInstanceOf(OnboardingNotFoundError);
   });
 
   it('no permite evaluar dos veces', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate());
     s.onb.findByCandidateId.mockResolvedValue(onboarding({ probationPassed: true }));
     await expect(build(s).execute(cmd(true))).rejects.toBeInstanceOf(ProbationAlreadyEvaluatedError);
   });
 
   it('aprobado: registra evaluatedBy y publica PasoAPlanilla', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate());
     s.onb.findByCandidateId.mockResolvedValue(onboarding());
     s.onb.evaluateProbation.mockResolvedValue(onboarding({ probationPassed: true, probationEvaluation: 'bien' }));
     await build(s).execute(cmd(true));
@@ -282,7 +282,7 @@ describe('EvaluateProbationHandler', () => {
 
   it('no aprobado: no publica PasoAPlanilla', async () => {
     const s = setup();
-    s.candidates.findById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate());
     s.onb.findByCandidateId.mockResolvedValue(onboarding());
     s.onb.evaluateProbation.mockResolvedValue(onboarding({ probationPassed: false }));
     await build(s).execute(cmd(false));

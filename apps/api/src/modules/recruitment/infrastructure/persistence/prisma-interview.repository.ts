@@ -45,10 +45,21 @@ export class PrismaInterviewRepository implements InterviewRepositoryPort {
     return this.mapToRecord(created);
   }
 
-  async findById(id: string, tx?: Prisma.TransactionClient): Promise<CandidateInterviewRecord | null> {
+  async findScopedById(
+    id: string,
+    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
+    tx?: Prisma.TransactionClient,
+  ): Promise<CandidateInterviewRecord | null> {
     const client = tx ?? this.prisma;
-    const found = await client.candidateInterview.findUnique({
-      where: { id },
+    const found = await client.candidateInterview.findFirst({
+      where: {
+        id,
+        candidate: {
+          organizationId: scope.organizationId,
+          operatingCompanyId: scope.operatingCompanyId,
+          vacancy: { branchId: scope.branchId },
+        },
+      },
     });
     return found ? this.mapToRecord(found) : null;
   }

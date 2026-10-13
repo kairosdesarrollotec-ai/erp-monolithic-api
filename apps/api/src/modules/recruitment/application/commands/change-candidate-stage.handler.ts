@@ -17,7 +17,7 @@ export class ChangeCandidateStageHandler {
   ) {}
 
   async execute(command: ChangeCandidateStageCommand): Promise<CandidateRecord> {
-    const { context } = await this.access.authorize(
+    const { context, scope } = await this.access.authorize(
       {
         firebaseUid: command.firebaseUid,
         companyId: command.companyId,
@@ -27,7 +27,7 @@ export class ChangeCandidateStageHandler {
     );
 
     return this.transactionManager.run(async (tx) => {
-      const existing = await this.candidates.findById(command.id, tx);
+      const existing = await this.candidates.findScopedById(command.id, scope, tx);
       if (!existing) {
         throw new CandidateNotFoundError(command.id);
       }

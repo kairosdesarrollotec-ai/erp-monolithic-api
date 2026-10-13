@@ -36,7 +36,7 @@ export class CompleteOnboardingHandler {
     );
 
     return this.transactionManager.run(async (tx) => {
-      const candidate = await this.candidates.findById(command.candidateId, tx);
+      const candidate = await this.candidates.findScopedById(command.candidateId, scope, tx);
       if (!candidate) {
         throw new CandidateNotFoundError(command.candidateId);
       }

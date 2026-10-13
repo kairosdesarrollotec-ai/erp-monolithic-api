@@ -88,7 +88,7 @@ export class RecordCandidateCvHandler {
         tx,
       );
 
-      const detail = await this.candidates.findDetailById(candidate.id, tx);
+      const detail = await this.candidates.findDetailById(candidate.id, scope, tx);
       if (!detail) {
         throw new CandidateNotFoundError(candidate.id);
       }
