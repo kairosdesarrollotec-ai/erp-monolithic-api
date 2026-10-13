@@ -61,7 +61,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 -- 6. Verificar la creación
 SELECT
   rolname,
-  rollogin,
+  rolcanlogin,
   rolsuper,
   rolcreatedb,
   rolcreaterole,
@@ -70,5 +70,5 @@ FROM pg_roles
 WHERE rolname = 'kairos_migrations';
 
 -- Output esperado:
---  rolname           | rollogin | rolsuper | rolcreatedb | rolcreaterole | rolconnlimit
---  kairos_migrations |    t     |    f     |      f      |       f       |      5
+--  rolname           | rolcanlogin | rolsuper | rolcreatedb | rolcreaterole | rolconnlimit
+--  kairos_migrations |      t      |    f     |      f      |       f       |      5
