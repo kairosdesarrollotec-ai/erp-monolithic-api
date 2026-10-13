@@ -17,6 +17,10 @@ import {
   AuthenticatedRequest,
   FirebaseAuthGuard,
 } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import {
+  RecentAuth,
+  RecentAuthGuard,
+} from '../../../users/infrastructure/auth/recent-auth.guard';
 import { parseVersionIfMatch } from '../../../../common/http/etag';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { CreateRentalHandler } from '../../application/commands/create-rental.handler';
@@ -292,6 +296,8 @@ export class RentalsController {
 
   @Post(':id/commands/formalize-contract')
   @HttpCode(200)
+  @UseGuards(RecentAuthGuard)
+  @RecentAuth(300)
   @UseInterceptors(IdempotencyInterceptor)
   async formalizeContractCommand(
     @Req() req: AuthenticatedRequest,

@@ -1,4 +1,9 @@
-import { CandidateDecision, CandidateStage, NegotiationOutcome, VacancyStatus } from '@prisma/client';
+import {
+  CandidateDecision,
+  CandidateStage,
+  NegotiationOutcome,
+  VacancyStatus,
+} from './recruitment-domain-types';
 import {
   CandidateAlreadyDecidedError,
   CandidateCvInvalidFileError,

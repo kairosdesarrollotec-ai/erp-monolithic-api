@@ -43,6 +43,7 @@ import { OutboxModule } from '../outbox/outbox.module';
 import { FleetModule } from '../fleet/fleet.module';
 import { TemplatesModule } from '../templates/templates.module';
 import { RentalCreationGuard } from './application/services/rental-creation.guard';
+import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
 
 @Module({
@@ -74,6 +75,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     RecordRentalDocumentHandler,
     ListRentalDocumentsHandler,
     RentalCreationGuard,
+    RecentAuthGuard,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
     { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },

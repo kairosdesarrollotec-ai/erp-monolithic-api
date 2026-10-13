@@ -553,6 +553,20 @@ sources:
     Consolida RENTAL_CONTRACT (antes rentals/contract-templates), RETURN_RESPONSIBILITY
     (antes document-templates) y añade RESERVATION_CONTRACT. Decisión PROP-017.
   sha256: unknown
+- id: OPENAPI-RECRUITMENT-V0.2.0
+  path: packages/contracts/openapi/recruitment.yaml
+  type: OpenAPI
+  module: Recruitment
+  version: '0.2.0'
+  date: '2026-10-12'
+  status: current
+  estado_original: >
+    Contrato del módulo Reclutamiento y Selección v0.2.0 — cubre vacantes, candidatos,
+    entrevistas, decisión de contratación, CV, negociaciones, onboarding y periodo de prueba
+    (REC-01 a REC-08). Registrado en source-manifest en PR #73 (feature/cierre-huecos-20261012).
+  sha256: null
+  authority: contract
+  supersedes: null
 - id: OPENAPI-HR-ADMINISTRATION-V0.1.0
   path: packages/contracts/openapi/hr-administration.yaml
   type: OpenAPI

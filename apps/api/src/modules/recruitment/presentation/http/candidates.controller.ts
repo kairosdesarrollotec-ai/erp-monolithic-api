@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import { RecentAuth, RecentAuthGuard } from '../../../users/infrastructure/auth/recent-auth.guard';
 import { parseVersionIfMatch } from '../../../../common/http/etag';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { RequestCandidateCvUploadSessionHandler } from '../../application/commands/request-candidate-cv-upload-session.handler';
@@ -168,6 +169,8 @@ export class CandidatesController {
 
   @Post(':id/commands/complete-onboarding')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RecentAuthGuard)
+  @RecentAuth(300)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
