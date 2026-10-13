@@ -41,4 +41,4 @@
 
 ## Riesgos y pendientes
 
-1. **Integration tests ausentes (P1 abierto)**: No existen tests de integración con DB real para hr-administration. Aislamiento multiempresa validado solo por mocks. Pendiente crear `hr-administration-tenant-isolation.integration.spec.ts`.
+1. **Integration tests — RESUELTO (P1)**: `apps/api/test/integration/hr-administration-tenant-isolation.integration.spec.ts` creado en este PR. 3 tests con PostgreSQL real (Testcontainers) cubriendo aislamiento multiempresa de empleados (empresa A no visible desde empresa B).
