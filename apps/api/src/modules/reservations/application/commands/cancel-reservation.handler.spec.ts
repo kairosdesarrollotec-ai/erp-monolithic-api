@@ -145,6 +145,34 @@ describe('CancelReservationHandler', () => {
     expect(reservations.cancel).not.toHaveBeenCalled();
   });
 
+  it('rechaza cancelar una reserva en PENDING_SALE_RESOLUTION: solo resolve-sale la resuelve (UC-RES-004)', async () => {
+    const existing = buildRecord({ status: 'PENDING_SALE_RESOLUTION' });
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+    await expect(
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE')),
+    ).rejects.toBeInstanceOf(ReservationStateConflictError);
+    expect(reservations.cancel).not.toHaveBeenCalled();
+  });
+
+  it('no-show (RES-08, EX-RES-004): Gerencia cancela con NO_SHOW usando CANCEL_NO_SHOW y se audita con la razon', async () => {
+    const existing = buildRecord();
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'GERENCIA');
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+    const result = await handler.execute(
+      new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW', 'No se presento'),
+    );
+
+    expect(result.status).toBe('CANCELLED');
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-GERENCIA', 'RESERVATION', 'CANCEL_NO_SHOW', expect.anything());
+    expect(audit.recordReservationEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ changes: { reason: 'NO_SHOW', note: 'No se presento' } }),
+      FAKE_TX,
+    );
+  });
+
   it('rechaza si la reserva no existe', async () => {
     const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(null, 'GERENCIA');
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);

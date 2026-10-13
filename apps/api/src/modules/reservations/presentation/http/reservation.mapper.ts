@@ -1,7 +1,29 @@
 import { ReservationRecord } from '../../application/ports/reservation-repository.port';
-import { ReservationResponse } from './dto/reservation.response';
+import { ReservationResponse, SaleResolutionResponse } from './dto/reservation.response';
+import type { ReservationSaleResolutionRecord } from '../../domain/reservation-sale-resolution';
 
-export function toReservationResponse(record: ReservationRecord): ReservationResponse {
+export interface ReservationResponseExtras {
+  /** Solo el detalle la carga; `undefined` = no se consulto (la clave se omite), `null` = nunca hubo venta. */
+  saleResolution?: ReservationSaleResolutionRecord | null;
+  now?: Date;
+}
+
+export function toSaleResolutionResponse(record: ReservationSaleResolutionRecord): SaleResolutionResponse {
+  return {
+    id: record.id,
+    status: record.status,
+    reason: record.reason,
+    offeredVehicle: record.offeredVehicle,
+    offerNote: record.offerNote,
+    flaggedAt: record.flaggedAt.toISOString(),
+    alternativeVehicleId: record.alternativeVehicleId,
+    refundStatus: record.refundStatus,
+    resolutionNote: record.resolutionNote,
+    resolvedAt: record.resolvedAt ? record.resolvedAt.toISOString() : null,
+  };
+}
+
+export function toReservationResponse(record: ReservationRecord, extras: ReservationResponseExtras = {}): ReservationResponse {
   const missingRequirements: string[] = [];
   if (!record.paymentValidatedAt) missingRequirements.push('PAYMENT_VALIDATION');
   if (!record.documentsCompletedAt) missingRequirements.push('DOCUMENTS_COMPLETE');
@@ -23,5 +45,9 @@ export function toReservationResponse(record: ReservationRecord): ReservationRes
     missingRequirements,
     confirmedAt: record.confirmedAt ? record.confirmedAt.toISOString() : null,
     createdAt: record.createdAt.toISOString(),
+    startDatePassed: (extras.now ?? new Date()).getTime() >= record.startAt.getTime(),
+    ...(extras.saleResolution === undefined
+      ? {}
+      : { saleResolution: extras.saleResolution ? toSaleResolutionResponse(extras.saleResolution) : null }),
   };
 }

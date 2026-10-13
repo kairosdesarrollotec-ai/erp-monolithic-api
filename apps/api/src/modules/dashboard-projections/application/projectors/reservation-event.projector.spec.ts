@@ -33,6 +33,19 @@ describe('projectReservationEvent', () => {
     expect(result).toEqual({ action: 'DISMISS', sourceType: 'RESERVATION', sourceId: 'res-1' });
   });
 
+  it('ReservationReformulated vuelve a crear la tarea pendiente de Front-office (UC-RES-004)', () => {
+    const result = projectReservationEvent({
+      id: 'evt-9',
+      aggregateId: 'res-1',
+      eventType: 'ReservationReformulated',
+      payload: { organizationId: 'org-1', operatingCompanyId: 'c-1', branchId: 'b-1', vehicleId: 'veh-2', startAt: '2026-10-20T14:00:00Z', endAt: '2026-10-22T14:00:00Z' },
+    });
+    expect(result).toEqual({
+      action: 'UPSERT',
+      item: expect.objectContaining({ role: 'FRONT_OFFICE', sourceType: 'RESERVATION', sourceId: 'res-1', sourceEventId: 'evt-9', deepLink: '/reservas/res-1' }),
+    });
+  });
+
   it('ReservationCancelled descarta la tarea pendiente', () => {
     const result = projectReservationEvent({ id: 'evt-3', aggregateId: 'res-1', eventType: 'ReservationCancelled', payload: {} });
     expect(result).toEqual({ action: 'DISMISS', sourceType: 'RESERVATION', sourceId: 'res-1' });

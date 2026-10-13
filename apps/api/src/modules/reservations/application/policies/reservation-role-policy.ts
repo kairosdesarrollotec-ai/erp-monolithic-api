@@ -46,7 +46,9 @@ export type ReservationAction =
   | 'REGISTER_DOCUMENTS'
   | 'CONFIRM'
   | 'CANCEL_CUSTOMER_REQUESTED_CHANGE'
-  | 'CANCEL_NO_SHOW';
+  | 'CANCEL_NO_SHOW'
+  | 'FLAG_SALE'
+  | 'RESOLVE_SALE';
 
 const READ_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'AUDITORIA', 'ADMINISTRACION']);
 const OPERATIONAL_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'ADMINISTRACION']);
@@ -60,6 +62,11 @@ const RESERVATION_ROLE_POLICY: Readonly<Record<ReservationAction, ReadonlySet<Wo
   CONFIRM: OPERATIONAL_ROLES,
   CANCEL_CUSTOMER_REQUESTED_CHANGE: OPERATIONAL_ROLES,
   CANCEL_NO_SHOW: new Set(['GERENCIA']),
+  // UC-RES-004 / EX-RES-001 (autorizacion: Gerencia; RES-P13 Gerencia notifica la venta, RES-P14
+  // el Administrador ofrece la alternativa y registra la decision del cliente). FRONT_OFFICE no
+  // participa: la venta del vehiculo y el reembolso son decisiones de Gerencia/Administracion.
+  FLAG_SALE: new Set(['GERENCIA', 'ADMINISTRACION']),
+  RESOLVE_SALE: new Set(['GERENCIA', 'ADMINISTRACION']),
 };
 
 // ROLES DINAMICOS (fase 2): esta politica ya NO decide en runtime; solo SIEMBRA la version 0 de la matriz ADM-02

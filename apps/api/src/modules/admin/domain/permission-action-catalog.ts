@@ -25,6 +25,8 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RESERVATION', action: 'CONFIRM', label: 'Reserva: confirmar' },
   { module: 'RESERVATION', action: 'CANCEL_CUSTOMER_REQUESTED_CHANGE', label: 'Reserva: cancelar (cambio solicitado)' },
   { module: 'RESERVATION', action: 'CANCEL_NO_SHOW', label: 'Reserva: cancelar (no-show)' },
+  { module: 'RESERVATION', action: 'FLAG_SALE', label: 'Reserva: registrar venta del vehículo reservado' },
+  { module: 'RESERVATION', action: 'RESOLVE_SALE', label: 'Reserva: resolver venta (alternativa o reembolso)' },
   { module: 'INQUIRY', action: 'READ', label: 'Consulta: leer' },
   { module: 'INQUIRY', action: 'REGISTER', label: 'Consulta: registrar' },
   { module: 'INQUIRY', action: 'QUOTE', label: 'Consulta: cotizar' },
