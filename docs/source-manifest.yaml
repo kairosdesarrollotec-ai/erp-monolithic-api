@@ -157,8 +157,13 @@ sources:
   module: Alquiler
   version: '1.7'
   date: unknown
-  status: pending_review
-  estado_original: unknown
+  status: approved
+  estado_original: >
+    APROBADO v1.7 — aprobación registrada 2026-10-13. Fuente autorizada para implementación
+    del módulo Alquiler (PR #73 / feature/cierre-huecos-20261012). Cubre ciclo completo:
+    contrato, entrega, documentos GCS, extensiones y cierre.
+  approved_at: '2026-10-13'
+  approved_by: Russbel/usuario sesión implementación
   sha256: f3ddf5388e14784739711ffd65e65c70ce388dc5fa508e8ac93ec246ec59f837
   authority: business
   supersedes: null
@@ -181,8 +186,14 @@ sources:
   module: Reclutamiento y Selección
   version: '1.7'
   date: unknown
-  status: pending_review
-  estado_original: unknown
+  status: approved
+  estado_original: >
+    APROBADO v1.7 — aprobación registrada 2026-10-13. Fuente autorizada para implementación
+    del módulo Reclutamiento y Selección (PR #73 / feature/cierre-huecos-20261012). Cubre
+    vacantes, candidatos, entrevistas, negociaciones, onboarding y periodo de prueba
+    (REC-01 a REC-08).
+  approved_at: '2026-10-13'
+  approved_by: Russbel/usuario sesión implementación
   sha256: dee619a0164bb298a151a73499d46239c1f19de4b80383acf6277fa92ae86c0d
   authority: business
   supersedes: null
@@ -258,8 +269,14 @@ sources:
   module: Alquiler
   version: '2.1'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  status: approved
+  estado_original: >
+    APROBADO v2.1 — aprobación registrada 2026-10-13. Revisión arquitectónica completada.
+    Fuente autorizada para implementación del módulo Alquiler (PR #73 /
+    feature/cierre-huecos-20261012). Cubre ciclo completo: contrato, entrega,
+    documentos GCS, extensiones y cierre.
+  approved_at: '2026-10-13'
+  approved_by: Russbel/usuario sesión implementación
   sha256: e6499df2d4c747e4cf23fc74b91cedbc49c005650439fae8b06594988fb39cbf
   authority: functional
   supersedes: null
@@ -282,8 +299,13 @@ sources:
   module: Reclutamiento y Selección
   version: '2.0'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  status: approved
+  estado_original: >
+    APROBADO v2.0 — aprobación registrada 2026-10-13. Revisión arquitectónica completada.
+    Fuente autorizada para implementación del módulo Reclutamiento y Selección (PR #73 /
+    feature/cierre-huecos-20261012).
+  approved_at: '2026-10-13'
+  approved_by: Russbel/usuario sesión implementación
   sha256: 0756c61da8e97b692f90170ad7d4830549e9bd10e7cce69f4d29ec678afd5893
   authority: functional
   supersedes: null
