@@ -31,7 +31,12 @@ export interface RecordInterviewResultInput {
 
 export abstract class InterviewRepositoryPort {
   abstract create(input: CreateInterviewInput, tx?: Prisma.TransactionClient): Promise<CandidateInterviewRecord>;
-  abstract findById(id: string, tx?: Prisma.TransactionClient): Promise<CandidateInterviewRecord | null>;
+  /** Entrevista acotada a organizacion/empresa/sede de la vacante de su candidato; fuera de alcance -> null. */
+  abstract findScopedById(
+    id: string,
+    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
+    tx?: Prisma.TransactionClient,
+  ): Promise<CandidateInterviewRecord | null>;
   abstract recordResult(
     id: string,
     input: RecordInterviewResultInput,

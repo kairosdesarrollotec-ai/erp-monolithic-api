@@ -496,6 +496,9 @@ model Customer {
   @@index([operatingCompanyId, documentNumber])
   @@index([fullName(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_customers_fullname_trgm")
   @@index([documentNumber(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_customers_docnumber_trgm")
+  // LIMITE CONOCIDO: `idx_customers_email_trgm` (GIN gin_trgm_ops sobre email WHERE email IS NOT NULL,
+  // migracion 20261011000001_search_trgm_indexes) es un indice PARCIAL; Prisma 5.22 no modela WHERE,
+  // asi que vive solo en SQL. No lo borres ni lo recrees desde el schema.
   @@map("customers")
 }
 

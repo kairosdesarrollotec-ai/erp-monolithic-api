@@ -58,12 +58,12 @@ export abstract class VacancyRepositoryPort {
   abstract create(input: CreateVacancyInput, tx?: Prisma.TransactionClient): Promise<VacancyRecord>;
   abstract findById(
     id: string,
-    scope: { organizationId: string; operatingCompanyId: string; branchId?: string },
+    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
     tx?: Prisma.TransactionClient,
   ): Promise<VacancyRecord | null>;
   abstract findDetailById(
     id: string,
-    scope: { organizationId: string; operatingCompanyId: string; branchId?: string },
+    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
     tx?: Prisma.TransactionClient,
   ): Promise<VacancyDetailRecord | null>;
   abstract publish(
