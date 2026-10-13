@@ -1,16 +1,34 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.5.0
+  version: 0.6.0
   description: >
     Contrato del modulo Reserva (HU-27, TDD-RES-001.md seccion 11).
     Primer corte: crear, registrar pago/documentos, confirmar (bloqueo
     atomico), cancelar por cambio solicitado, y las consultas de bandeja
-    (RES-01) y detalle (RES-04/RES-05). No incluye todavia resolucion de
-    venta de vehiculo (RES-06/RES-07) ni conversion a alquiler (RES-08,
-    ALQ-02) - fuera de alcance de este primer corte, ver tarea HU-27 en
-    ClickUp. No expone ningun comando de "reprogramar" (BR-RES-003,
-    deliberado).
+    (RES-01) y detalle (RES-04/RES-05). No expone ningun comando de
+    "reprogramar" (BR-RES-003, deliberado).
+
+    Cambios 0.6.0 (RES-06/RES-07/RES-08, UC-RES-004/005, DEC-RES-SALE-001):
+    - POST /reservations/{id}/commands/flag-sale: Gerencia/Administrador registra
+      la venta del vehiculo reservado y, opcionalmente, la alternativa que se
+      ofrece (CONFIRMED -> PENDING_SALE_RESOLUTION; el bloqueo del vehiculo se
+      mantiene hasta resolver).
+    - POST /reservations/{id}/commands/resolve-sale: decision del cliente.
+      ACCEPT_ALTERNATIVE reformula la reserva sobre el vehiculo alternativo y la
+      devuelve a DRAFT (pago validado conservado, documentos a reenviar, luego
+      register-documents + confirm de RES-04); REJECT cancela con motivo
+      VEHICLE_SOLD_REFUND y deja el reembolso inmediato PENDING_TRANSFER (lo
+      transfiere Gerencia fuera del sistema; no hay integracion de pagos).
+    - ReservationResponse: `startDatePassed` (RES-08) y `saleResolution` (solo en
+      GET /reservations/{id}).
+    - Vehiculos alternativos disponibles en la ventana de la reserva: GET
+      /fleet/vehicles?availableFrom=<startAt>&availableTo=<endAt> (sin endpoint nuevo).
+    - RES-08 (no-show): "se presento" -> POST /rentals/from-reservation/{id}
+      (rentals.yaml; la reserva pasa a CONVERTED); "no se presento" -> cancel con
+      reason NO_SHOW (solo Gerencia, el monto se pierde, sin reembolso). Ningun job
+      automatico marca el no-show (pendiente de Fiorella).
+    - cancel rechaza (409) una reserva PENDING_SALE_RESOLUTION: solo resolve-sale la resuelve.
 
     Cambios 0.5.0: la disponibilidad del vehiculo (VEHICLE_NOT_AVAILABLE) usa
     una regla unica de solape para crear y confirmar: vehicle_commitments
@@ -91,7 +109,12 @@ paths:
   /reservations/{id}:
     get:
       operationId: getReservation
-      summary: Detalle de una reserva (RES-04/RES-05)
+      summary: Detalle de una reserva (RES-04/RES-05/RES-07/RES-08)
+      description: >
+        Ademas de la reserva trae `startDatePassed` (RES-08: ya llego la fecha pactada, now >= startAt)
+        y `saleResolution` (RES-07: ultima resolucion por venta del vehiculo, null si nunca hubo). Para
+        RES-06/RES-07 los vehiculos alternativos libres en la ventana salen de
+        GET /fleet/vehicles?availableFrom=<startAt>&availableTo=<endAt>.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -173,7 +196,12 @@ paths:
   /reservations/{id}/commands/cancel:
     post:
       operationId: cancelReservation
-      summary: Cancela por cambio solicitado por el cliente (BR-RES-003 - nunca una reprogramacion)
+      summary: Cancela por cambio solicitado por el cliente o por no-show (BR-RES-003 - nunca una reprogramacion)
+      description: >
+        reason CUSTOMER_REQUESTED_CHANGE: Front-office/Administracion/Gerencia. reason NO_SHOW
+        (RES-08, EX-RES-004): solo Gerencia (403 ROLE_NOT_ALLOWED para otros roles); el monto de
+        reserva se pierde y no hay reembolso. En ambos casos se libera el vehicle_commitment. No
+        aplica a PENDING_SALE_RESOLUTION (usar resolve-sale).
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -186,8 +214,74 @@ paths:
       responses:
         '200': { description: Reserva cancelada, content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
         '404': { description: Reserva no encontrada en el scope del usuario }
-        '409': { description: 'RESERVATION_STATE_CONFLICT - la reserva ya esta en un estado terminal (CANCELLED/CONVERTED)' }
+        '409': { description: 'RESERVATION_STATE_CONFLICT - la reserva ya esta en un estado terminal (CANCELLED/CONVERTED) o en PENDING_SALE_RESOLUTION (usar resolve-sale)' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
+        '428': { description: IF_MATCH_REQUIRED }
+
+  /reservations/{id}/commands/flag-sale:
+    post:
+      operationId: flagReservationVehicleSale
+      summary: Registra la venta del vehiculo reservado y ofrece alternativa (UC-RES-004, RES-07, BR-RES-007)
+      description: >
+        Roles: GERENCIA y ADMINISTRACION (accion RESERVATION.FLAG_SALE de la matriz ADM-02).
+        Solo desde CONFIRMED -> PENDING_SALE_RESOLUTION. El vehicle_commitment del vehiculo
+        vendido SIGUE bloqueando hasta resolve-sale. Crea una fila abierta en
+        reservation_resolutions (visible en `saleResolution` del detalle). La alternativa es
+        opcional aqui (tambien puede indicarse al resolver); si se envia se valida: misma empresa,
+        distinta del vendido, sede compatible, status AVAILABLE y libre en [startAt, endAt).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FlagVehicleSaleRequest' }
+      responses:
+        '200': { description: 'Reserva en PENDING_SALE_RESOLUTION (el detalle trae saleResolution)', content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
+        '403': { description: 'ROLE_NOT_ALLOWED o empresa/sede no autorizada' }
+        '404': { description: Reserva no encontrada en el scope del usuario }
+        '409': { description: 'RESERVATION_STATE_CONFLICT (no esta CONFIRMED), VEHICLE_NOT_AVAILABLE (la alternativa esta ocupada, el detail indica las fechas) o SALE_RESOLUTION_ALREADY_OPEN' }
+        '412': { description: RESERVATION_VERSION_CONFLICT }
+        '422': { description: 'ALTERNATIVE_VEHICLE_INVALID - la alternativa es el mismo vehiculo, de otra empresa/sede o no esta AVAILABLE' }
+        '428': { description: IF_MATCH_REQUIRED }
+  /reservations/{id}/commands/resolve-sale:
+    post:
+      operationId: resolveReservationVehicleSale
+      summary: Resuelve la venta segun la decision del cliente (UC-RES-004, RES-06/RES-07, BR-RES-007)
+      description: >
+        Roles: GERENCIA y ADMINISTRACION (RESERVATION.RESOLVE_SALE). Solo desde PENDING_SALE_RESOLUTION.
+
+        ACCEPT_ALTERNATIVE: valida la alternativa (la del body, o la ofrecida en flag-sale) con la
+        regla unica de solape (409 VEHICLE_NOT_AVAILABLE), libera el commitment del vehiculo vendido,
+        asigna el vehiculo alternativo y devuelve la reserva a DRAFT conservando el pago validado y
+        limpiando documentsCompletedAt (el cliente reenvia requisitos / nuevo formato, BDD 10.6): el
+        frontend continua en RES-04 (register-documents + confirm), que crea el nuevo commitment. La
+        ventana de fechas no cambia (BR-RES-003). Evento ReservationReformulated.
+
+        REJECT: cancela (status CANCELLED) con motivo VEHICLE_SOLD_REFUND, libera el commitment y
+        marca el reembolso inmediato como PENDING_TRANSFER en saleResolution.refundStatus (monto =
+        requiredPayment); Gerencia transfiere fuera del sistema (no hay integracion de pagos). A
+        diferencia de CUSTOMER_REQUESTED_CHANGE/NO_SHOW, el monto NO se pierde.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveVehicleSaleRequest' }
+      responses:
+        '200': { description: 'ACCEPT_ALTERNATIVE: reserva DRAFT con el vehiculo alternativo. REJECT: reserva CANCELLED', content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
+        '403': { description: 'ROLE_NOT_ALLOWED o empresa/sede no autorizada' }
+        '404': { description: Reserva no encontrada en el scope del usuario }
+        '409': { description: 'RESERVATION_STATE_CONFLICT (no esta en PENDING_SALE_RESOLUTION) o VEHICLE_NOT_AVAILABLE (la alternativa ya no esta libre)' }
+        '412': { description: RESERVATION_VERSION_CONFLICT }
+        '422': { description: 'ALTERNATIVE_VEHICLE_REQUIRED (ACCEPT_ALTERNATIVE sin alternativa en el body ni ofrecida) o ALTERNATIVE_VEHICLE_INVALID' }
         '428': { description: IF_MATCH_REQUIRED }
 
   /reservations/{id}/documents/upload-url:
@@ -316,9 +410,43 @@ components:
           properties:
             reason: { type: string, enum: [CUSTOMER_REQUESTED_CHANGE, NO_SHOW] }
             note: { type: string }
+    FlagVehicleSaleRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          properties:
+            alternativeVehicleId: { type: string, format: uuid, description: 'Vehiculo alternativo que se ofrece (RES-P14). Opcional.' }
+            note: { type: string, maxLength: 1000 }
+    ResolveVehicleSaleRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [decision]
+          properties:
+            decision: { type: string, enum: [ACCEPT_ALTERNATIVE, REJECT] }
+            alternativeVehicleId: { type: string, format: uuid, description: 'Con ACCEPT_ALTERNATIVE: vehiculo elegido; si se omite se usa el ofrecido en flag-sale.' }
+            note: { type: string, maxLength: 1000 }
+    SaleResolution:
+      type: object
+      required: [id, status, reason, offeredVehicle, offerNote, flaggedAt, alternativeVehicleId, refundStatus, resolutionNote, resolvedAt]
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [PENDING, ACCEPTED, REJECTED] }
+        reason: { type: string, description: 'VEHICLE_SOLD' }
+        offeredVehicle:
+          type: object
+          nullable: true
+          required: [id, plate, label]
+          properties: { id: { type: string, format: uuid }, plate: { type: string }, label: { type: string } }
+        offerNote: { type: string, nullable: true }
+        flaggedAt: { type: string, format: date-time }
+        alternativeVehicleId: { type: string, format: uuid, nullable: true, description: 'Alternativa elegida (solo ACCEPTED)' }
+        refundStatus: { type: string, enum: [PENDING_TRANSFER], nullable: true, description: 'Solo REJECTED: Gerencia debe transferir la devolucion inmediata (sin integracion de pagos)' }
+        resolutionNote: { type: string, nullable: true }
+        resolvedAt: { type: string, format: date-time, nullable: true }
     ReservationResponse:
       type: object
-      required: [id, status, channelMode, version, customer, vehicle, startAt, endAt, requiredPayment, requirements, createdAt]
+      required: [id, status, channelMode, version, customer, vehicle, startAt, endAt, requiredPayment, requirements, createdAt, startDatePassed]
       properties:
         id: { type: string, format: uuid }
         status: { $ref: '#/components/schemas/ReservationStatus' }
@@ -349,6 +477,12 @@ components:
           items: { type: string }
         confirmedAt: { type: string, format: date-time, nullable: true }
         createdAt: { type: string, format: date-time }
+        startDatePassed: { type: boolean, description: 'RES-08: true si now >= startAt. El no-show no se marca solo (pendiente de Fiorella).' }
+        saleResolution:
+          description: 'RES-07: ultima resolucion por venta del vehiculo. Solo GET /reservations/{id} la incluye (null = nunca hubo venta); las demas respuestas la omiten.'
+          nullable: true
+          allOf:
+            - { $ref: '#/components/schemas/SaleResolution' }
 
     ReservationDocumentType:
       type: string
