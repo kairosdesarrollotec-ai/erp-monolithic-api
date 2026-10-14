@@ -1269,12 +1269,49 @@ model RentalReturn {
   immobilizationCharges ImmobilizationCharge[]
   evidences             ReturnEvidence[]
   incidents             Incident[]
+  reminder              ReturnReminder?
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
   @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)])
   @@index([rentalId])
   @@map("returns")
+}
+
+/// BR-DEV-004 / DAT-DEV-001 / DEC-DEV-REMINDER-001 - Estado del recordatorio previo de devolución. El envío por
+/// WhatsApp es MANUAL-ASISTIDO: el sistema genera el texto (PENDING) y el operador registra SENT | FAILED.
+enum ReturnReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// BR-DEV-004 - Recordatorio 3 h antes de la hora pactada (uno por devolución). Lo genera el scheduler
+/// (ReturnReminderScheduler); `return_id` UNIQUE hace idempotente la generación entre réplicas.
+model ReturnReminder {
+  id                 String               @id @default(uuid())
+  organizationId     String               @map("organization_id")
+  operatingCompanyId String               @map("operating_company_id")
+  branchId           String               @map("branch_id")
+  returnId           String               @unique @map("return_id")
+  status             ReturnReminderStatus @default(PENDING)
+  /// scheduledAt - 3 h.
+  dueAt              DateTime             @map("due_at")
+  messageText        String               @map("message_text")
+  generatedAt        DateTime             @default(now()) @map("generated_at")
+  sentAt             DateTime?            @map("sent_at")
+  sentBy             String?              @map("sent_by")
+  resultNote         String?              @map("result_note")
+  /// Cantidad de registros de resultado (ENVIADO/FALLIDO) del operador.
+  attempts           Int                  @default(0)
+  version            Int                  @default(1)
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @default(now()) @updatedAt @map("updated_at")
+
+  rentalReturn RentalReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, operatingCompanyId, branchId, status, dueAt], map: "idx_return_reminders_scope_status_due")
+  @@map("return_reminders")
 }
 
 /// TDD-04-devolucion seccion 9.2 - Daño detectado en devolución (estético o técnico).

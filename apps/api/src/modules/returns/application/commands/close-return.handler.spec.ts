@@ -42,6 +42,7 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
       deps.auditRepository,
       deps.outboxRepository,
       deps.openIncidents,
+      deps.vehicleCommitments,
     );
     return { deps, handler };
   }
@@ -80,6 +81,26 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
       expect.objectContaining({ action: 'RETURN_CLOSED', changes: expect.objectContaining({ signed: true }) }),
       fakeTx,
     );
+  });
+
+  it('DEC-DEV-COMMITMENT-001: libera el compromiso RENTAL del alquiler en la misma transacción (devolución anticipada incluida)', async () => {
+    const { deps, handler } = build({}, { expectedEndAt: new Date('2026-10-20T09:00:00.000Z') });
+    await handler.execute(cmd());
+    expect(deps.vehicleCommitments.releaseRentalCommitment).toHaveBeenCalledWith('rent-1', 'org-1', fakeTx);
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ changes: expect.objectContaining({ vehicleCommitmentsReleased: 1 }) }),
+      fakeTx,
+    );
+  });
+
+  it('alquiler sin compromiso (0 filas) cierra igual; sin cierre posible no se libera nada', async () => {
+    const { deps, handler } = build();
+    deps.vehicleCommitments.releaseRentalCommitment.mockResolvedValue(0);
+    await expect(handler.execute(cmd())).resolves.toMatchObject({ status: 'CERRADA' });
+
+    const blocked = build({ damages: [buildTechnicalDamage({ estimatedAmount: null })] });
+    await expect(blocked.handler.execute(cmd())).rejects.toThrow(ActiveIncidentsBlockCloseError);
+    expect(blocked.deps.vehicleCommitments.releaseRentalCommitment).not.toHaveBeenCalled();
   });
 
   it('con daño técnico: el vehículo pasa a MAINTENANCE', async () => {

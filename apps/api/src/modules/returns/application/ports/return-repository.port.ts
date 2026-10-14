@@ -9,6 +9,8 @@ import {
   AlcoholEscalationDecision,
   ReturnEvidenceType,
 } from '../../domain/return-status';
+import type { ReturnReminderStatus } from '../../domain/return-reminder';
+import type { ReturnAlerts } from '../../domain/return-alerts';
 
 export interface ReturnScope {
   organizationId: string;
@@ -49,6 +51,24 @@ export interface ReturnEvidenceRecord {
   objectUrl: string;
   uploadedBy: string;
   uploadedAt: Date;
+}
+
+/** DEV-01 / BR-DEV-004: recordatorio previo 3 h antes de la hora pactada (envío manual-asistido). */
+export interface ReturnReminderRecord {
+  id: string;
+  organizationId: string;
+  operatingCompanyId: string;
+  branchId: string;
+  returnId: string;
+  status: ReturnReminderStatus;
+  dueAt: Date;
+  messageText: string;
+  generatedAt: Date;
+  sentAt: Date | null;
+  sentBy: string | null;
+  resultNote: string | null;
+  attempts: number;
+  version: number;
 }
 
 export interface ReturnRecord {
@@ -96,6 +116,10 @@ export interface ReturnRecord {
   damages?: ReturnDamageRecord[];
   immobilizationCharges?: ImmobilizationChargeRecord[];
   evidences?: ReturnEvidenceRecord[];
+  /** Recordatorio previo (null = aún no generado). Lo carga el repositorio junto con el agregado. */
+  reminder?: ReturnReminderRecord | null;
+  /** Alertas calculadas con el reloj (garantía 24 h / inmovilización > 24 h); solo las pueblan las consultas. */
+  alerts?: ReturnAlerts;
 }
 
 export interface CreateReturnInput {

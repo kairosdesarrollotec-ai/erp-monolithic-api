@@ -1,3 +1,4 @@
+import { ReturnReminderStatus } from '../../../domain/return-reminder';
 import { CustomerRiskStatus } from '../../../domain/customer-risk-status';
 import {
   AlcoholEscalationDecision,
@@ -39,6 +40,67 @@ export interface ImmobilizationChargeResponse {
   /** Versión/etag del expediente tras el comando (para el siguiente If-Match). Solo en charge-immobilization. */
   returnVersion?: number;
   returnEtag?: string;
+}
+
+/** BR-DEV-004 / DAT-DEV-001: recordatorio previo (envío manual-asistido por WhatsApp). */
+export interface ReturnReminderResponse {
+  id: string;
+  status: ReturnReminderStatus;
+  /** Hora pactada - 3 h. */
+  dueAt: string;
+  /** Texto generado por el sistema, listo para copiar/pegar en WhatsApp. */
+  text: string;
+  generatedAt: string;
+  sentAt: string | null;
+  sentBy: string | null;
+  note: string | null;
+  attempts: number;
+  /** Versión del recordatorio = valor de If-Match de register-reminder. */
+  version: number;
+  etag: string;
+}
+
+export interface ReturnReminderInboxItemResponse {
+  returnId: string;
+  rentalId: string;
+  returnStatus: ReturnStatus;
+  scheduledAt: string;
+  vehiclePlate: string | null;
+  customerName: string | null;
+  customerPhone: string | null;
+  reminder: ReturnReminderResponse;
+}
+
+export interface WarrantyReleaseAlertResponse {
+  level: 'DUE_SOON' | 'OVERDUE';
+  deadlineAt: string;
+  hoursRemaining: number;
+}
+
+export interface ImmobilizationAlertResponse {
+  since: string;
+  hoursElapsed: number;
+  pendingDays: number;
+  dailyRate: number | null;
+  suggestedAmount: number | null;
+}
+
+export interface ReturnAlertsResponse {
+  warrantyRelease: WarrantyReleaseAlertResponse | null;
+  immobilization: ImmobilizationAlertResponse | null;
+}
+
+export interface ReturnAlertItemResponse {
+  type: 'WARRANTY_RELEASE' | 'IMMOBILIZATION';
+  returnId: string;
+  rentalId: string;
+  returnStatus: ReturnStatus;
+  returnVersion: number;
+  vehiclePlate: string | null;
+  customerName: string | null;
+  receivedAt: string;
+  warrantyRelease: WarrantyReleaseAlertResponse | null;
+  immobilization: ImmobilizationAlertResponse | null;
 }
 
 export interface AlcoholEscalationResponse {
@@ -86,6 +148,10 @@ export interface ReturnResponse {
   alcoholTestNotes: string | null;
   alcoholEscalation: AlcoholEscalationResponse | null;
   responsibilityDocument: ResponsibilityDocumentResponse | null;
+  /** Recordatorio previo 3 h antes de la hora pactada (null = aún no generado). */
+  reminder: ReturnReminderResponse | null;
+  /** Alertas operativas; solo en GET detalle y bandeja (las respuestas de comandos las omiten). */
+  alerts?: ReturnAlertsResponse;
   scheduledAt: string;
   receivedAt: string | null;
   inspectedAt: string | null;

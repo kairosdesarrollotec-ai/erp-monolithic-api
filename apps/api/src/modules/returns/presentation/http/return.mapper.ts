@@ -3,7 +3,11 @@ import {
   ReturnDamageRecord,
   ReturnEvidenceRecord,
   ReturnRecord,
+  ReturnReminderRecord,
 } from '../../application/ports/return-repository.port';
+import type { ReminderInboxItem } from '../../application/ports/return-reminder-repository.port';
+import type { ReturnAlertItem } from '../../application/queries/list-return-alerts.handler';
+import type { ImmobilizationAlert, ReturnAlerts, WarrantyReleaseAlert } from '../../domain/return-alerts';
 import { CosmeticTariffItem } from '../../domain/cosmetic-damage-rate';
 import { CustomerRiskStatus } from '../../domain/customer-risk-status';
 import {
@@ -14,6 +18,12 @@ import {
   ReturnDamageResponse,
   ReturnEvidenceResponse,
   ReturnResponse,
+  ReturnAlertItemResponse,
+  ReturnAlertsResponse,
+  ReturnReminderInboxItemResponse,
+  ReturnReminderResponse,
+  ImmobilizationAlertResponse,
+  WarrantyReleaseAlertResponse,
 } from './dto/return.response';
 
 export function toReturnDamageResponse(
@@ -89,6 +99,75 @@ function toResponsibilityDocumentResponse(record: ReturnRecord): ResponsibilityD
   };
 }
 
+export function toReturnReminderResponse(record: ReturnReminderRecord): ReturnReminderResponse {
+  return {
+    id: record.id,
+    status: record.status,
+    dueAt: record.dueAt.toISOString(),
+    text: record.messageText,
+    generatedAt: record.generatedAt.toISOString(),
+    sentAt: record.sentAt ? record.sentAt.toISOString() : null,
+    sentBy: record.sentBy,
+    note: record.resultNote,
+    attempts: record.attempts,
+    version: record.version,
+    etag: `"${record.version}"`,
+  };
+}
+
+export function toReminderInboxItemResponse(item: ReminderInboxItem): ReturnReminderInboxItemResponse {
+  return {
+    returnId: item.returnId,
+    rentalId: item.rentalId,
+    returnStatus: item.returnStatus as ReturnReminderInboxItemResponse['returnStatus'],
+    scheduledAt: item.scheduledAt.toISOString(),
+    vehiclePlate: item.vehiclePlate,
+    customerName: item.customerName,
+    customerPhone: item.customerPhone,
+    reminder: toReturnReminderResponse(item.reminder),
+  };
+}
+
+function toWarrantyReleaseAlertResponse(alert: WarrantyReleaseAlert): WarrantyReleaseAlertResponse {
+  return {
+    level: alert.level,
+    deadlineAt: alert.deadlineAt.toISOString(),
+    hoursRemaining: Math.round(alert.hoursRemaining * 100) / 100,
+  };
+}
+
+function toImmobilizationAlertResponse(alert: ImmobilizationAlert): ImmobilizationAlertResponse {
+  return {
+    since: alert.since.toISOString(),
+    hoursElapsed: Math.round(alert.hoursElapsed * 100) / 100,
+    pendingDays: alert.pendingDays,
+    dailyRate: alert.dailyRate,
+    suggestedAmount: alert.suggestedAmount,
+  };
+}
+
+export function toReturnAlertsResponse(alerts: ReturnAlerts): ReturnAlertsResponse {
+  return {
+    warrantyRelease: alerts.warrantyRelease ? toWarrantyReleaseAlertResponse(alerts.warrantyRelease) : null,
+    immobilization: alerts.immobilization ? toImmobilizationAlertResponse(alerts.immobilization) : null,
+  };
+}
+
+export function toReturnAlertItemResponse(item: ReturnAlertItem): ReturnAlertItemResponse {
+  return {
+    type: item.type,
+    returnId: item.returnId,
+    rentalId: item.rentalId,
+    returnStatus: item.returnStatus as ReturnAlertItemResponse['returnStatus'],
+    returnVersion: item.returnVersion,
+    vehiclePlate: item.vehiclePlate,
+    customerName: item.customerName,
+    receivedAt: item.receivedAt.toISOString(),
+    warrantyRelease: item.warrantyRelease ? toWarrantyReleaseAlertResponse(item.warrantyRelease) : null,
+    immobilization: item.immobilization ? toImmobilizationAlertResponse(item.immobilization) : null,
+  };
+}
+
 export function toReturnResponse(record: ReturnRecord): ReturnResponse {
   return {
     id: record.id,
@@ -109,6 +188,8 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     alcoholTestNotes: record.alcoholTestNotes,
     alcoholEscalation: toAlcoholEscalationResponse(record),
     responsibilityDocument: toResponsibilityDocumentResponse(record),
+    reminder: record.reminder ? toReturnReminderResponse(record.reminder) : null,
+    ...(record.alerts ? { alerts: toReturnAlertsResponse(record.alerts) } : {}),
     scheduledAt: record.scheduledAt.toISOString(),
     receivedAt: record.receivedAt ? record.receivedAt.toISOString() : null,
     inspectedAt: record.inspectedAt ? record.inspectedAt.toISOString() : null,

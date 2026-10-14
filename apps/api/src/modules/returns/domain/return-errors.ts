@@ -202,3 +202,40 @@ export class ReturnStorageUnavailableError extends DomainServiceUnavailableError
     super('Almacenamiento de evidencia no configurado (variables de entorno GCS faltantes).');
   }
 }
+
+/** DEV-01 / BR-DEV-004: el recordatorio previo aún no existe (el scheduler lo genera 3 h antes de la hora pactada). */
+export class ReturnReminderNotFoundError extends DomainNotFoundError {
+  readonly code = 'RETURN_REMINDER_NOT_FOUND';
+
+  constructor(returnId?: string) {
+    super(
+      returnId
+        ? `La devolución ${returnId} aún no tiene un recordatorio generado (se genera 3 horas antes de la hora pactada).`
+        : 'La devolución aún no tiene un recordatorio generado.',
+    );
+  }
+}
+
+export class ReturnReminderAlreadySentError extends DomainConflictError {
+  readonly code = 'RETURN_REMINDER_ALREADY_SENT';
+
+  constructor() {
+    super('El recordatorio de esta devolución ya fue registrado como enviado.');
+  }
+}
+
+export class ReturnReminderVersionConflictError extends DomainPreconditionError {
+  readonly code = 'RETURN_REMINDER_VERSION_CONFLICT';
+
+  constructor() {
+    super('El recordatorio fue modificado por otra operación - vuelve a cargarlo.');
+  }
+}
+
+export class InvalidReturnReminderResultError extends DomainUnprocessableError {
+  readonly code = 'INVALID_RETURN_REMINDER_RESULT';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}

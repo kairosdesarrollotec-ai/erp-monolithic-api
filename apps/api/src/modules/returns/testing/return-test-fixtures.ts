@@ -16,10 +16,14 @@ import { roleKeyOfTestRoleId } from '../../users/testing/role-fixtures';
 import { ReturnDepositSettlementPort } from '../application/ports/return-deposit-settlement.port';
 import { ReturnCustomerRiskPort } from '../application/ports/return-customer-risk.port';
 import { ReturnOpenIncidentsPort } from '../application/ports/return-open-incidents.port';
+import { ReturnVehicleCommitmentPort } from '../application/ports/return-vehicle-commitment.port';
+import { ReturnReminderRepositoryPort } from '../application/ports/return-reminder-repository.port';
+import { ReturnAlertRepositoryPort } from '../application/ports/return-alert-repository.port';
 import {
   ImmobilizationChargeRecord,
   ReturnDamageRecord,
   ReturnRecord,
+  ReturnReminderRecord,
   ReturnRepositoryPort,
   UpdateReturnInput,
 } from '../application/ports/return-repository.port';
@@ -108,6 +112,26 @@ export function buildTechnicalDamage(overrides: Partial<ReturnDamageRecord> = {}
   });
 }
 
+export function buildReminder(overrides: Partial<ReturnReminderRecord> = {}): ReturnReminderRecord {
+  return {
+    id: 'rem-1',
+    organizationId: 'org-1',
+    operatingCompanyId: 'comp-1',
+    branchId: 'branch-1',
+    returnId: 'ret-1',
+    status: 'PENDING',
+    dueAt: new Date('2026-10-05T07:00:00.000Z'),
+    messageText: 'Hola Juan Perez, le recordamos ...',
+    generatedAt: new Date('2026-10-05T07:05:00.000Z'),
+    sentAt: null,
+    sentBy: null,
+    resultNote: null,
+    attempts: 0,
+    version: 1,
+    ...overrides,
+  };
+}
+
 export function buildCharge(overrides: Partial<ImmobilizationChargeRecord> = {}): ImmobilizationChargeRecord {
   return {
     id: 'chg-1',
@@ -188,6 +212,9 @@ export interface HandlerTestDeps {
   settlement: jest.Mocked<ReturnDepositSettlementPort>;
   customerRisk: jest.Mocked<ReturnCustomerRiskPort>;
   openIncidents: jest.Mocked<ReturnOpenIncidentsPort>;
+  vehicleCommitments: jest.Mocked<ReturnVehicleCommitmentPort>;
+  reminders: jest.Mocked<ReturnReminderRepositoryPort>;
+  alerts: jest.Mocked<ReturnAlertRepositoryPort>;
   transactionManager: jest.Mocked<TransactionManagerPort>;
   clock: ClockPort;
   auditRepository: jest.Mocked<AuditEventRepositoryPort>;
@@ -263,6 +290,23 @@ export function buildDeps(
     findOpenIncidentIds: jest.fn().mockResolvedValue([]),
   };
 
+  /** Por defecto el alquiler tenía un compromiso RENTAL que se libera al cerrar. */
+  const vehicleCommitments: jest.Mocked<ReturnVehicleCommitmentPort> = {
+    releaseRentalCommitment: jest.fn().mockResolvedValue(1),
+  };
+
+  const reminders: jest.Mocked<ReturnReminderRepositoryPort> = {
+    findCandidates: jest.fn().mockResolvedValue([]),
+    createPending: jest.fn().mockResolvedValue(0),
+    findByReturnId: jest.fn().mockResolvedValue(null),
+    registerResult: jest.fn(),
+    list: jest.fn().mockResolvedValue([]),
+  };
+
+  const alerts: jest.Mocked<ReturnAlertRepositoryPort> = {
+    listCandidates: jest.fn().mockResolvedValue([]),
+  };
+
   const transactionManager: jest.Mocked<TransactionManagerPort> = {
     run: jest.fn((work: (tx: Prisma.TransactionClient) => Promise<unknown>) => work(fakeTx)) as never,
   };
@@ -293,6 +337,9 @@ export function buildDeps(
     settlement,
     customerRisk,
     openIncidents,
+    vehicleCommitments,
+    reminders,
+    alerts,
     transactionManager,
     clock: new FixedClock(options.now ?? FIXED_NOW),
     auditRepository,
