@@ -683,6 +683,11 @@ components:
       bearerFormat: 'Firebase ID token'
       description: 'ID token de Firebase Authentication, enviado como "Authorization: Bearer <idToken>"'
 
+  parameters:
+    returnId: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    companyId: { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+    branchId: { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+
   schemas:
     ReturnReminderStatus:
       type: string
