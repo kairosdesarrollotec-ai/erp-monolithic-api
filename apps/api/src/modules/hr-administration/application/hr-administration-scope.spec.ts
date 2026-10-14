@@ -160,7 +160,7 @@ describe('Administración de Personal — colaboradores de otra empresa/sede son
 });
 
 describe('Repositorios de HR Administration filtran por organización + empresa', () => {
-  it('listEmployees incluye organizationId y operatingCompanyId en el where', async () => {
+  it('findMany incluye organizationId y operatingCompanyId en el where', async () => {
     const prisma = {
       employee: {
         findMany: jest.fn().mockResolvedValue([]),
@@ -168,7 +168,7 @@ describe('Repositorios de HR Administration filtran por organización + empresa'
       },
     };
     const repo = new PrismaEmployeeRepository(prisma as never);
-    await repo.listEmployees({ organizationId: ORG_ID, companyId: COMPANY_ID });
+    await repo.findMany({ organizationId: ORG_ID, companyId: COMPANY_ID });
     const whereArg = prisma.employee.findMany.mock.calls[0][0].where;
     expect(whereArg).toMatchObject({
       organizationId: ORG_ID,
