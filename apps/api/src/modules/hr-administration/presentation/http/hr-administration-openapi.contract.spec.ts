@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.2.0');
+    expect(spec.info.version).toBe('0.3.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {

@@ -205,6 +205,15 @@ export class InvalidAttendanceRecordError extends DomainUnprocessableError {
   }
 }
 
+/** DEC-ADP-ATT-EVIDENCE-001: evidencia fotografica de asistencia mal formada (422). */
+export class InvalidAttendanceEvidenceError extends DomainUnprocessableError {
+  readonly code = 'INVALID_ATTENDANCE_EVIDENCE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
 export class InvalidPayrollMonthError extends DomainBadRequestError {
   readonly code = 'INVALID_PAYROLL_MONTH';
 

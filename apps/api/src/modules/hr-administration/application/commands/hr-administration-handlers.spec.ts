@@ -13,6 +13,7 @@ import {
   EmploymentAlreadyTerminatedError,
   FinalSettlementRequiredError,
   InvalidAttendanceRecordError,
+  InvalidAttendanceEvidenceError,
   InvalidAuthorizationLevelError,
   InvalidDateRangeError,
   InvalidFieldTripDatesError,
@@ -152,6 +153,7 @@ function attendanceRecord(over: Partial<AttendanceRecord> = {}): AttendanceRecor
     justification: null,
     reclassifiedAt: null,
     reclassifiedById: null,
+    evidenceKind: null, evidenceStorageRef: null, evidenceUrl: null, evidenceCapturedAt: null, evidenceNote: null, evidenceCorroboratedById: null, evidenceCorroboratedAt: null,
     notes: null,
     createdById: UID,
     createdAt: new Date('2026-10-08T12:00:00Z'),
@@ -320,6 +322,64 @@ describe('UpdateEmployeeHandler', () => {
 describe('LogAttendanceHandler (BR-ADP-001)', () => {
   const cmd = (status: LogAttendanceCommand['status'], minutesLate?: number, deductionAmount?: number) =>
     new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), status, minutesLate, deductionAmount);
+
+  describe('evidencia fotografica (DEC-ADP-ATT-EVIDENCE-001)', () => {
+    const evidenceCmd = (evidence: LogAttendanceCommand['evidence']) =>
+      new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), 'PRESENTE', undefined, undefined, null, null, null, evidence);
+    const okEvidence = {
+      kind: 'WHATSAPP_PHOTO' as const,
+      storageRef: ' hr/attendance/2026-10-08/foto.jpg ',
+      capturedAtLocal: new Date('2026-10-08T13:02:00Z'),
+      note: ' foto del grupo ',
+    };
+
+    it('sin evidencia: se registra igual y evidenceMissing = true (compatibilidad)', async () => {
+      const s = setup();
+      s.employees.findById.mockResolvedValue(buildEmployee());
+      s.attendance.findByEmployeeAndDate.mockResolvedValue(null);
+      s.attendance.create.mockResolvedValue(attendanceRecord({ status: 'PRESENTE' }));
+      const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
+      const result = await handler.execute(cmd('PRESENTE'));
+      expect(result.evidenceMissing).toBe(true);
+      expect(s.attendance.create).toHaveBeenCalledWith(expect.objectContaining({ evidence: null }), s.tm.tx);
+    });
+
+    it('con evidencia: la guarda normalizada y registra quien la corroboro', async () => {
+      const s = setup();
+      s.employees.findById.mockResolvedValue(buildEmployee());
+      s.attendance.findByEmployeeAndDate.mockResolvedValue(null);
+      s.attendance.create.mockResolvedValue(attendanceRecord({ status: 'PRESENTE', evidenceKind: 'WHATSAPP_PHOTO' }));
+      const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
+      const result = await handler.execute(evidenceCmd(okEvidence));
+      expect(result.evidenceMissing).toBe(false);
+      expect(s.attendance.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidence: expect.objectContaining({
+            kind: 'WHATSAPP_PHOTO',
+            storageRef: 'hr/attendance/2026-10-08/foto.jpg',
+            url: null,
+            capturedAt: okEvidence.capturedAtLocal,
+            note: 'foto del grupo',
+            corroboratedById: UID,
+          }),
+        }),
+        s.tm.tx,
+      );
+    });
+
+    it.each([
+      ['sin storageRef ni url', { ...okEvidence, storageRef: null }],
+      ['fecha invalida', { ...okEvidence, capturedAtLocal: new Date(Number.NaN) }],
+      ['fecha futura', { ...okEvidence, capturedAtLocal: new Date(Date.now() + 3_600_000) }],
+      ['tipo no admitido', { ...okEvidence, kind: 'BIOMETRIC' as never }],
+    ])('rechaza evidencia mal formada: %s', async (_name, evidence) => {
+      const s = setup();
+      s.employees.findById.mockResolvedValue(buildEmployee());
+      const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
+      await expect(handler.execute(evidenceCmd(evidence))).rejects.toBeInstanceOf(InvalidAttendanceEvidenceError);
+      expect(s.attendance.create).not.toHaveBeenCalled();
+    });
+  });
 
   it('una falta injustificada registra un día de descuento PENDIENTE (no se descuenta en la quincena)', async () => {
     const s = setup();

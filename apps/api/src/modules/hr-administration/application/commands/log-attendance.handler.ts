@@ -9,13 +9,16 @@ import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import {
   AttendanceAlreadyLoggedError,
   EmployeeNotFoundError,
+  InvalidAttendanceEvidenceError,
   EmployeeTerminatedError,
 } from '../../domain/hr-administration-errors';
 import { resolveAttendanceRecord } from '../../domain/hr-administration-rules';
-import { LogAttendanceCommand } from './log-attendance.command';
+import { LogAttendanceCommand, ATTENDANCE_EVIDENCE_KINDS } from './log-attendance.command';
 
 export interface LogAttendanceResult {
   record: AttendanceRecord;
+  /** true si el registro no trae evidencia fotografica (DEC-ADP-ATT-EVIDENCE-001: opcional, no bloquea). */
+  evidenceMissing: boolean;
   /** Memo de advertencia generado automáticamente por reiteración de faltas injustificadas en el mes (ADP-P03). */
   memo: HrMemo | null;
 }
@@ -50,6 +53,8 @@ export class LogAttendanceHandler {
       'LOG_ATTENDANCE',
     );
 
+    const evidence = this.resolveEvidence(command);
+
     return this.transactionManager.run(async (tx) => {
       const employee = await this.employees.findById(command.employeeId, tx);
       if (!employee) {
@@ -82,6 +87,7 @@ export class LogAttendanceHandler {
           deductionAmount: resolved.deductionAmount,
           notes: command.notes?.trim() || null,
           createdById: command.firebaseUid,
+          evidence,
         },
         tx,
       );
@@ -99,6 +105,8 @@ export class LogAttendanceHandler {
             status: created.status,
             minutesLate: created.minutesLate,
             deductionAmount: Number(created.deductionAmount),
+            evidenceKind: created.evidenceKind,
+            evidenceMissing: !created.evidenceKind,
           },
         },
         tx,
@@ -117,7 +125,40 @@ export class LogAttendanceHandler {
             )
           : null;
 
-      return { record: created, memo };
+      return { record: created, memo, evidenceMissing: !created.evidenceKind };
     });
+  }
+
+  /**
+   * DEC-ADP-ATT-EVIDENCE-001: valida la evidencia fotografica (opcional) y registra quien la corroboro (el usuario
+   * autenticado que registra la marcacion tras ver la foto en el grupo de WhatsApp).
+   */
+  private resolveEvidence(command: LogAttendanceCommand) {
+    const ev = command.evidence;
+    if (!ev) return null;
+    if (!(ATTENDANCE_EVIDENCE_KINDS as readonly string[]).includes(ev.kind)) {
+      throw new InvalidAttendanceEvidenceError(`Tipo de evidencia no admitido (${ev.kind}).`);
+    }
+    const storageRef = ev.storageRef?.trim() || null;
+    const url = ev.url?.trim() || null;
+    if (!storageRef && !url) {
+      throw new InvalidAttendanceEvidenceError('La evidencia requiere storageRef o url de la foto.');
+    }
+    if (Number.isNaN(ev.capturedAtLocal.getTime())) {
+      throw new InvalidAttendanceEvidenceError('capturedAtLocal no es una fecha y hora valida.');
+    }
+    const now = new Date();
+    if (ev.capturedAtLocal.getTime() > now.getTime() + 5 * 60 * 1000) {
+      throw new InvalidAttendanceEvidenceError('capturedAtLocal no puede estar en el futuro.');
+    }
+    return {
+      kind: ev.kind,
+      storageRef,
+      url,
+      capturedAt: ev.capturedAtLocal,
+      note: ev.note?.trim() || null,
+      corroboratedById: command.firebaseUid,
+      corroboratedAt: now,
+    };
   }
 }

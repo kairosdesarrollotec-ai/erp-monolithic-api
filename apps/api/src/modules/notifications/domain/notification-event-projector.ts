@@ -1,4 +1,5 @@
 import { renderNotificationTemplate } from '../../notification-templates/domain/notification-template-renderer';
+import { formatLimaDMY, parseBusinessInstant } from '../../../common/time/lima-time';
 
 export interface OutboxEventLike {
   id: string;
@@ -134,7 +135,7 @@ export function projectNotificationEvent(
       const body = templateBody ?? FALLBACK_TEMPLATES.ReservationCreated;
       const title = renderNotificationTemplate(body, {
         vehiculo: payload.vehicleId,
-        fecha: new Date(payload.startAt).toLocaleDateString('es-PE'),
+        fecha: formatLimaDMY(payload.startAt instanceof Date ? payload.startAt : parseBusinessInstant(String(payload.startAt))),
       });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.createdBy, title);
     }
@@ -175,7 +176,7 @@ export function projectNotificationEvent(
       const payload = event.payload as PersonalIncorporadoPayload;
       const body = templateBody ?? FALLBACK_TEMPLATES['PersonalIncorporado.v1'];
       const title = renderNotificationTemplate(body, {
-        fecha: new Date(payload.startDate).toLocaleDateString('es-PE'),
+        fecha: formatLimaDMY(parseBusinessInstant(String(payload.startDate))),
       });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.actorUserId, title, '/personal');
     }

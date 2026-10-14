@@ -1798,6 +1798,14 @@ model AttendanceRecord {
   justification      String?          @db.Text
   reclassifiedAt     DateTime?        @map("reclassified_at")
   reclassifiedById   String?          @map("reclassified_by_id")
+  /// DEC-ADP-ATT-EVIDENCE-001: evidencia fotografica (foto con reloj+hora+rostro enviada al grupo de WhatsApp). Opcional.
+  evidenceKind               String?   @map("evidence_kind") @db.VarChar(30)
+  evidenceStorageRef         String?   @map("evidence_storage_ref") @db.Text
+  evidenceUrl                String?   @map("evidence_url") @db.Text
+  evidenceCapturedAt         DateTime? @map("evidence_captured_at")
+  evidenceNote               String?   @map("evidence_note") @db.Text
+  evidenceCorroboratedById   String?   @map("evidence_corroborated_by_id")
+  evidenceCorroboratedAt     DateTime? @map("evidence_corroborated_at")
   createdById        String           @map("created_by_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")

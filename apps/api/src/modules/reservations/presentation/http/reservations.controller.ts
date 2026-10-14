@@ -57,6 +57,7 @@ import { ListReservationDocumentsHandler } from '../../application/queries/list-
 import { RequestReservationDocumentUploadSessionDto } from './dto/request-reservation-document-upload-session.dto';
 import { RecordReservationDocumentDto } from './dto/record-reservation-document.dto';
 import { ReservationDocumentRecord } from '../../application/ports/reservation-document-repository.port';
+import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
@@ -98,8 +99,8 @@ export class ReservationsController {
         dto.customerId,
         dto.vehicleId,
         dto.channelMode,
-        new Date(dto.startAt),
-        new Date(dto.endAt),
+        parseBusinessInstant(dto.startAt),
+        parseBusinessInstant(dto.endAt),
         dto.requiredPaymentAmount,
         dto.currency,
         dto.paymentPolicyVersion,

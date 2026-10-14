@@ -110,7 +110,11 @@ describe('findFirstVehicleConflict', () => {
 });
 
 describe('formatDateDMY', () => {
-  it('formatea dd/mm/yyyy en UTC', () => {
-    expect(formatDateDMY(new Date('2026-03-05T00:00:00Z'))).toBe('05/03/2026');
+  it('formatea dd/mm/yyyy en calendario de Lima (DEC-TZ-LIMA-001)', () => {
+    expect(formatDateDMY(new Date('2026-03-05T05:00:00Z'))).toBe('05/03/2026');
+    // medianoche UTC todavia es el dia anterior en Lima.
+    expect(formatDateDMY(new Date('2026-03-05T00:00:00Z'))).toBe('04/03/2026');
+    // 23:59 Lima sigue siendo el mismo dia aunque UTC ya cruzo.
+    expect(formatDateDMY(new Date('2026-03-06T04:59:59Z'))).toBe('05/03/2026');
   });
 });

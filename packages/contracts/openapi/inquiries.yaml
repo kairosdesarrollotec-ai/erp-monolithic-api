@@ -1,8 +1,16 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Inquiries API
-  version: 0.5.0
+  version: 0.6.0
   description: >
+    0.6.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
+    sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
+    inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
+    o reporte se interpreta como 00:00 America/Lima (= 05:00Z); los date-time
+    con offset/Z se respetan tal cual. Los textos de notificaciones/documentos
+    muestran fecha y hora de Lima. Los campos `format: date` de calendario
+    puro (p. ej. travelStartDate) no cambian.
+
     Contrato del modulo Consulta (HU-26, TDD-CON-001.md seccion 11):
     registrar (con el snapshot de CON-02), cotizar, cerrar sin conversion,
     convertir a reserva y convertir a alquiler directo (casos de uso unicos:

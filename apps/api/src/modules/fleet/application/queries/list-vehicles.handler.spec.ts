@@ -76,8 +76,32 @@ describe('ListVehiclesHandler', () => {
 
       const result = await handler.execute(query(FROM, TO));
 
-      expect(repository.findConflicts).toHaveBeenCalledWith(['veh-1'], new Date(FROM), new Date(TO));
+      expect(repository.findConflicts).toHaveBeenCalledWith(['veh-1'], new Date('2026-10-20T05:00:00.000Z'), new Date(TO));
       expect(result.items[0].availability).toEqual({ available: true });
+    });
+
+    it('date-only se interpreta como medianoche de America/Lima (DEC-TZ-LIMA-001)', async () => {
+      const { repository, handler, query } = setup();
+
+      await handler.execute(query('2026-10-20', '2026-10-25'));
+
+      expect(repository.findConflicts).toHaveBeenCalledWith(
+        ['veh-1'],
+        new Date('2026-10-20T05:00:00.000Z'),
+        new Date('2026-10-25T05:00:00.000Z'),
+      );
+    });
+
+    it('date-time con offset explicito se respeta tal cual', async () => {
+      const { repository, handler, query } = setup();
+
+      await handler.execute(query('2026-10-20T23:30:00-05:00', '2026-10-25T00:00:00Z'));
+
+      expect(repository.findConflicts).toHaveBeenCalledWith(
+        ['veh-1'],
+        new Date('2026-10-21T04:30:00.000Z'),
+        new Date('2026-10-25T00:00:00.000Z'),
+      );
     });
 
     it('con solape de commitment informa conflictFrom/conflictTo/conflictSource', async () => {

@@ -129,7 +129,8 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     if (!result.eligible) {
       expect(result.reason).toMatch(/no está disponible/i);
       expect(result.reason).toContain('20/10/2026 al 23/10/2026');
-      expect(result.reason).toContain('22/10/2026 al 28/10/2026');
+      // 22/10 00:00Z = 21/10 19:00 en Lima (DEC-TZ-LIMA-001).
+      expect(result.reason).toContain('21/10/2026 al 27/10/2026');
     }
   });
 
@@ -144,7 +145,7 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     expect(result.eligible).toBe(false);
     if (!result.eligible) {
       expect(result.reason).toContain('reserva');
-      expect(result.reason).toContain('21/10/2026 al 24/10/2026');
+      expect(result.reason).toContain('20/10/2026 al 23/10/2026');
     }
   });
 
@@ -158,8 +159,10 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     const call = findManyCommitmentMock.mock.calls[0][0] as {
       where: { startsAt: { lt: Date }; endsAt: { gt: Date } };
     };
-    expect(call.where.endsAt.gt).toEqual(startsAt);
-    expect(call.where.startsAt.lt).toEqual(new Date(startsAt.getTime() + 3 * MS_PER_DAY));
+    // travelStartDate (@db.Date, medianoche UTC) -> 00:00 America/Lima = 05:00Z.
+    const limaStart = new Date('2027-01-10T05:00:00.000Z');
+    expect(call.where.endsAt.gt).toEqual(limaStart);
+    expect(call.where.startsAt.lt).toEqual(new Date(limaStart.getTime() + 3 * MS_PER_DAY));
   });
 
   it('sin fecha de viaje mantiene la ventana [ahora, ahora + días)', async () => {

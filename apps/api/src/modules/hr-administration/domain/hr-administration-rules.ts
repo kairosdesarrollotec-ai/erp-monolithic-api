@@ -1,3 +1,4 @@
+import { LIMA_UTC_OFFSET_HOURS } from '../../../common/time/lima-time';
 import {
   AttendanceNotReclassifiableError,
   DeductionsBeforeMonthEndError,
@@ -370,7 +371,6 @@ export function resolveAttendanceRecord(input: {
 }
 
 const PAYROLL_MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
-const LIMA_UTC_OFFSET_HOURS = -5;
 
 export function parsePayrollMonth(month: string): { year: number; month: number } {
   const match = PAYROLL_MONTH_PATTERN.exec(month);

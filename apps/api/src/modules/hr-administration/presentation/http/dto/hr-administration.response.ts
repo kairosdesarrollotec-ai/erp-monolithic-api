@@ -41,6 +41,18 @@ export interface EmployeeListResponse {
   total: number;
 }
 
+export interface AttendanceEvidenceResponse {
+  kind: string;
+  storageRef: string | null;
+  url: string | null;
+  /** Hora de la foto en America/Lima, sin offset (YYYY-MM-DDTHH:mm:ss). */
+  capturedAtLocal: string;
+  note: string | null;
+  /** Usuario (Firebase UID) que corroboro la foto y registro la marcacion. */
+  corroboratedBy: string | null;
+  corroboratedAt: string | null;
+}
+
 export interface AttendanceRecordResponse {
   id: string;
   employeeId: string;
@@ -57,6 +69,10 @@ export interface AttendanceRecordResponse {
   notes: string | null;
   justification: string | null;
   reclassifiedAt: string | null;
+  /** DEC-ADP-ATT-EVIDENCE-001: foto de respaldo (reloj+hora+rostro, grupo de WhatsApp); null si no se adjunto. */
+  evidence: AttendanceEvidenceResponse | null;
+  /** true cuando el registro no tiene evidencia fotografica (incluye registros previos a la migracion). */
+  evidenceMissing: boolean;
   /** Memo de advertencia generado automáticamente por esta operación (reiteración de faltas), si corresponde. */
   memo: HrMemoResponse | null;
   createdAt: string;

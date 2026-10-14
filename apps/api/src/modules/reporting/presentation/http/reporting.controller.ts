@@ -10,6 +10,7 @@ import { ExportReportQuery } from '../../application/queries/export-report.query
 import { OperationalKpisQueryDto, FinancialKpisQueryDto, ExportQueryDto } from './dto/reporting-query.dto';
 import type { OperationalKpisResult } from './dto/operational-kpis.response';
 import type { FinancialKpisResult } from './dto/financial-kpis.response';
+import { limaTodayString, parseBusinessInstant } from '../../../../common/time/lima-time';
 
 /**
  * Reportes (REP-01) — módulo de solo lectura.
@@ -40,9 +41,10 @@ export class ReportingController {
     @Req() req: AuthenticatedRequest,
     @Query() query: OperationalKpisQueryDto,
   ): Promise<OperationalKpisResult> {
-    const today = new Date().toISOString().slice(0, 10);
-    const dateFrom = query.dateFrom ? new Date(query.dateFrom) : new Date(today);
-    const dateTo = query.dateTo ? new Date(query.dateTo) : new Date(today);
+    // DEC-TZ-LIMA-001: date-only = dia de America/Lima.
+    const today = limaTodayString();
+    const dateFrom = parseBusinessInstant(query.dateFrom ?? today);
+    const dateTo = parseBusinessInstant(query.dateTo ?? today);
 
     return this.getOperationalKpis.execute(
       new GetOperationalKpisQuery(
@@ -70,8 +72,8 @@ export class ReportingController {
         req.firebaseUid!,
         query.companyId,
         query.branchId,
-        new Date(query.dateFrom),
-        new Date(query.dateTo),
+        parseBusinessInstant(query.dateFrom),
+        parseBusinessInstant(query.dateTo),
       ),
     );
   }
@@ -95,8 +97,8 @@ export class ReportingController {
         req.firebaseUid!,
         query.companyId,
         query.branchId,
-        new Date(query.dateFrom),
-        new Date(query.dateTo),
+        parseBusinessInstant(query.dateFrom),
+        parseBusinessInstant(query.dateTo),
         exportType,
       ),
     );
