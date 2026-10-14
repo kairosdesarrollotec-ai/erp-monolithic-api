@@ -39,6 +39,8 @@ export interface RentalDepositResponse {
   status: string;
   /** P0-03 (a): parte de la garantia ya pagada como reserva ("0.00" si no aplica). */
   reservationCreditAmount: string;
+  /** DEC-ALQ-RESCREDIT-002: excedente del monto de reserva sobre la garantia ("0.00" si no hay). Saldo a favor sin reembolso automatico (pendiente Finanzas). */
+  reservationCreditExcess: string;
   /** Diferencia cobrada al formalizar = originalAmount - reservationCreditAmount. */
   amountCollected: string;
   createdAt: string;

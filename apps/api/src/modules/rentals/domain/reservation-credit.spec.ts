@@ -1,6 +1,5 @@
 import {
   ReservationCreditCurrencyMismatchError,
-  ReservationCreditExceedsDepositError,
   ReservationCreditSource,
   computeDepositBreakdown,
   resolveReservationCredit,
@@ -67,6 +66,7 @@ describe('P0-03 opcion (a) - traslado del monto de la reserva a la garantia', ()
       expect(computeDepositBreakdown('1000.00', 'PEN', credit)).toEqual({
         totalAmount: '1000.00',
         reservationCreditAmount: '300.00',
+        reservationCreditExcess: '0.00',
         amountToCollect: '700.00',
         currency: 'PEN',
       });
@@ -77,6 +77,7 @@ describe('P0-03 opcion (a) - traslado del monto de la reserva a la garantia', ()
       expect(computeDepositBreakdown('500', 'PEN', credit)).toEqual({
         totalAmount: '500.00',
         reservationCreditAmount: '0.00',
+        reservationCreditExcess: '0.00',
         amountToCollect: '500.00',
         currency: 'PEN',
       });
@@ -104,9 +105,26 @@ describe('P0-03 opcion (a) - traslado del monto de la reserva a la garantia', ()
       expect(computeDepositBreakdown('0.30', 'PEN', credit).amountToCollect).toBe('0.20');
     });
 
-    it('monto de reserva mayor que la garantia: error explicito, no se recorta en silencio', () => {
+    it('monto de reserva mayor que la garantia: NO es error; cubre la garantia y el sobrante queda como excedente', () => {
       const credit = resolveReservationCredit(source({ amount: '600.00' }));
-      expect(() => computeDepositBreakdown('500.00', 'PEN', credit)).toThrow(ReservationCreditExceedsDepositError);
+      expect(computeDepositBreakdown('500.00', 'PEN', credit)).toEqual({
+        totalAmount: '500.00',
+        reservationCreditAmount: '500.00',
+        reservationCreditExcess: '100.00',
+        amountToCollect: '0.00',
+        currency: 'PEN',
+      });
+    });
+
+    it('monto de reserva mayor que S/ 300 y menor que la garantia: sin excedente', () => {
+      const credit = resolveReservationCredit(source({ amount: '450.00' }));
+      const b = computeDepositBreakdown('800.00', 'PEN', credit);
+      expect(b.reservationCreditExcess).toBe('0.00');
+      expect(b.amountToCollect).toBe('350.00');
+    });
+
+    it('sin reserva aplicable: excedente 0.00', () => {
+      expect(computeDepositBreakdown('500.00', 'PEN', resolveReservationCredit(null)).reservationCreditExcess).toBe('0.00');
     });
 
     it('moneda de la reserva distinta de la de la garantia: error explicito', () => {

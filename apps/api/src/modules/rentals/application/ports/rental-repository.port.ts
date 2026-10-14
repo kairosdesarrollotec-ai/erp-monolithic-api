@@ -53,6 +53,8 @@ export interface RentalDepositRecord {
   status: string;
   /** P0-03 (a): parte de la garantia ya pagada como reserva. "0.00" en alquiler directo. */
   reservationCreditAmount?: string;
+  /** DEC-ALQ-RESCREDIT-002: excedente del monto de reserva sobre la garantia (saldo a favor, sin reembolso automatico). */
+  reservationCreditExcess?: string;
   createdAt: Date;
 }
 
@@ -153,6 +155,8 @@ export interface FormalizeContractInput {
   currency: string;
   /** P0-03 (a): monto de la reserva trasladado a la garantia ("0.00" si no aplica). */
   reservationCreditAmount: string;
+  /** DEC-ALQ-RESCREDIT-002: excedente del monto de reserva sobre la garantia ("0.00" si no hay). */
+  reservationCreditExcess: string;
   /** BR-DOC-003: codigo de la combinacion elegida, si el cliente la indico. */
   contractVariant?: string;
   updatedBy: string;

@@ -92,6 +92,7 @@ export function toRentalDepositRecord(row: {
   currency: string;
   status: string;
   reservationCreditAmount?: Prisma.Decimal | string;
+  reservationCreditExcess?: Prisma.Decimal | string;
   createdAt: Date;
 } | null): RentalDepositRecord | null {
   if (!row) return null;
@@ -102,6 +103,7 @@ export function toRentalDepositRecord(row: {
     currency: row.currency,
     status: row.status,
     reservationCreditAmount: Number((row.reservationCreditAmount ?? 0).toString()).toFixed(2),
+    reservationCreditExcess: Number((row.reservationCreditExcess ?? 0).toString()).toFixed(2),
     createdAt: row.createdAt,
   };
 }

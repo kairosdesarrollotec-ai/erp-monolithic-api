@@ -245,4 +245,19 @@ describe('CancelReservationHandler', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(reservations.cancel).not.toHaveBeenCalled();
   });
+
+  describe('DEC-RES-CANCEL-001: enum cerrado de razones', () => {
+    it.each(['VEHICLE_SOLD_REFUND', 'OTHER', '', 'no_show'])(
+      'rechaza el motivo %p con 400 INVALID_CANCEL_REASON sin tocar la reserva',
+      async (reason) => {
+        const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(buildRecord());
+        const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+        await expect(
+          handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, reason as any)),
+        ).rejects.toMatchObject({ response: { code: 'INVALID_CANCEL_REASON' } });
+        expect(reservations.cancel).not.toHaveBeenCalled();
+      },
+    );
+  });
 });

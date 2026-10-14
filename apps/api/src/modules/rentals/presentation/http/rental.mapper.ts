@@ -65,6 +65,7 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           currency: record.deposit.currency,
           status: record.deposit.status,
           reservationCreditAmount: record.deposit.reservationCreditAmount ?? '0.00',
+          reservationCreditExcess: record.deposit.reservationCreditExcess ?? '0.00',
           amountCollected: fromCents(
             toCents(record.deposit.originalAmount) - toCents(record.deposit.reservationCreditAmount ?? '0'),
           ),

@@ -249,10 +249,10 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     expect(queryParams).toEqual(dtoFields(GetContractTemplateQueryDto as new () => unknown).all);
   });
 
-  it('formalize-contract: holderType y withDriver son opcionales y su enum coincide con el dominio', () => {
+  it('formalize-contract: holderType y withCompanyDriver son opcionales y su enum coincide con el dominio', () => {
     const contract = flatten(spec.components.schemas.FormalizeContractRequest);
     expect(contract.required).not.toContain('holderType');
-    expect(contract.required).not.toContain('withDriver');
+    expect(contract.required).not.toContain('withCompanyDriver');
     expect([...spec.components.schemas.ContractHolderType.enum].sort()).toEqual([...HOLDER_TYPES].sort());
   });
 

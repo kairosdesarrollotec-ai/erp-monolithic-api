@@ -2,7 +2,8 @@ import { HolderType } from '../../../domain/contract-variant';
 
 export interface ContractTemplateSelectionResponse {
   rentalId: string;
-  variant: { holderType: HolderType; withDriver: boolean } | null;
+  /** `withDriver` = alias deprecado de `withCompanyDriver` (mismo valor). */
+  variant: { holderType: HolderType; withCompanyDriver: boolean; withDriver: boolean } | null;
   requestedType: string;
   fallbackUsed: boolean;
   template: {

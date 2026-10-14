@@ -60,6 +60,7 @@ import { ContractTemplateSelectionResponse } from './dto/contract-template-selec
 import { RentalResponse } from './dto/rental.response';
 import { toRentalResponse } from './rental.mapper';
 import { RENTAL_LIST_MAX_LIMIT } from '../../domain/rental-pagination';
+import { resolveWithCompanyDriver } from '../../domain/contract-variant';
 import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
 @Controller('rentals')
@@ -178,14 +179,23 @@ export class RentalsController {
     @Query() query: GetContractTemplateQueryDto,
   ): Promise<ContractTemplateSelectionResponse> {
     const variant = query.holderType
-      ? { holderType: query.holderType, withDriver: query.withDriver === 'true' }
+      ? {
+          holderType: query.holderType,
+          withCompanyDriver:
+            resolveWithCompanyDriver({
+              withCompanyDriver: query.withCompanyDriver === undefined ? undefined : query.withCompanyDriver === 'true',
+              withDriver: query.withDriver === undefined ? undefined : query.withDriver === 'true',
+            }) === true,
+        }
       : undefined;
     const selection = await this.getContractTemplate.execute(
       new GetContractTemplateQuery(id, req.firebaseUid!, query.companyId, query.branchId, variant),
     );
     return {
       rentalId: selection.rentalId,
-      variant: selection.variant,
+      variant: selection.variant
+        ? { ...selection.variant, withDriver: selection.variant.withCompanyDriver }
+        : null,
       requestedType: selection.requestedType,
       fallbackUsed: selection.fallbackUsed,
       template: selection.template
@@ -317,7 +327,9 @@ export class RentalsController {
         dto.depositAmount,
         dto.depositCurrency,
         dto.signatureData,
-        dto.holderType ? { holderType: dto.holderType, withDriver: dto.withDriver === true } : undefined,
+        dto.holderType
+          ? { holderType: dto.holderType, withCompanyDriver: resolveWithCompanyDriver(dto) === true }
+          : undefined,
       ),
     );
     return toRentalResponse(updated);
