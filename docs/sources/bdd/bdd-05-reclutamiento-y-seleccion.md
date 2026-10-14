@@ -58,6 +58,7 @@ Contrato interno notariado, por la alta responsabilidad del puesto (BR-REC-009) 
 | BR-REC-007 | "Gerencia y Subgerencia" en el Plan formal son Fiorella y José actuando en su capacidad formal | Media | SRC-DL-001 (24 ago) | `CONFIRMADO` |
 | BR-REC-008 | 3 fuentes disparan la necesidad de personal: renuncia/salida, crecimiento, nueva área | Media | SRC-DL-001 (12 ago) | `CONFIRMADO` |
 | BR-REC-009 | El personal mecánico firma un contrato interno notariado, por la alta responsabilidad de su trabajo | Alta | SRC-REC-001, Fase especial | `CONFIRMADO` |
+| BR-REC-010 | Una vacante PUBLICADA puede pausarse temporalmente (estado PAUSADA) cuando el proceso se suspende sin cancelarlo. Solo una vacante en estado PUBLICADA puede pausarse. Al reanudar, vuelve directamente a PUBLICADA sin reeditarse. Una vacante PAUSADA puede cancelarse. | Alta | DEC-REC-001 (2026-10-13, Russbel) | `CONFIRMADO` — 2026-10-13 |
 
 ### 10.7 Selección de personal (AS-IS real)
 
@@ -157,6 +158,42 @@ Feature: Aplicación íntegra del Plan de Talento Humano
     When se ejecuta un proceso de selección
     Then se sigue el Análisis de Puesto documentado y la ficha de evaluación con puntaje
     And la decisión queda respaldada por ese puntaje, no solo por el criterio de Fiorella
+```
+
+### 16.8.4 Pausar y reanudar una vacante (BR-REC-010) — nuevo, 2026-10-13
+
+**Fuente:** DEC-REC-001 (2026-10-13, Russbel). Decisión provisional hasta BDD v1.8 de ciclo completo.
+
+```gherkin
+@SC-REC-005
+Feature: Pausar y reanudar una vacante
+
+  @SC-REC-005.01
+  Scenario: Pausar una vacante PUBLICADA
+    Given una vacante en estado PUBLICADA
+    When un reclutador autorizado ejecuta el comando PauseVacancy
+    Then la vacante pasa a estado PAUSADA
+    And queda registrada la fecha y el usuario que pausó
+
+  @SC-REC-005.02
+  Scenario: Reanudar una vacante PAUSADA
+    Given una vacante en estado PAUSADA
+    When un reclutador autorizado ejecuta el comando ResumeVacancy
+    Then la vacante vuelve a estado PUBLICADA
+    And no se modifica el perfil ni las condiciones publicadas
+
+  @SC-REC-005.03
+  Scenario: No se puede pausar una vacante que no está PUBLICADA
+    Given una vacante en estado NECESIDAD_REGISTRADA o EN_NEGOCIACION o DECIDIDA o CANCELADA
+    When se intenta pausar la vacante
+    Then el sistema lanza VacancyNotPausableError
+    And el estado no cambia
+
+  @SC-REC-005.04
+  Scenario: Una vacante PAUSADA puede cancelarse
+    Given una vacante en estado PAUSADA
+    When un reclutador autorizado cancela la vacante
+    Then la vacante pasa a estado CANCELADA
 ```
 
 ### 19.5 Reclutamiento y Selección

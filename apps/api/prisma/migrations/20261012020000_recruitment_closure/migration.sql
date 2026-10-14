@@ -1,5 +1,11 @@
 -- AlterEnum
 -- REC-02 "Pausar": estado de vacante PAUSADA (se reanuda a PUBLICADA).
+-- ROLLBACK NOTE: ALTER TYPE ... ADD VALUE es irreversible en PostgreSQL (no existe DROP VALUE).
+-- Para revertir este valor en caso de necesidad: (1) convertir la columna a TEXT con
+-- ALTER TABLE vacancies ALTER COLUMN status TYPE TEXT; (2) DROP TYPE "VacancyStatus";
+-- (3) recrear el enum sin PAUSADA; (4) reconvertir la columna con USING status::"VacancyStatus".
+-- Dado que PAUSADA es aditivo y no rompe datos existentes (ninguna fila usa el valor hasta que
+-- el código lo emita), se acepta la irreversibilidad como riesgo bajo documentado.
 ALTER TYPE "VacancyStatus" ADD VALUE 'PAUSADA';
 
 -- CreateEnum

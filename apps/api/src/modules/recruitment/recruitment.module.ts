@@ -37,6 +37,7 @@ import { GetCandidateDetailHandler } from './application/queries/get-candidate-d
 import { InterviewerDirectoryPort } from './application/ports/interviewer-directory.port';
 import { PrismaInterviewerDirectoryRepository } from './infrastructure/persistence/prisma-interviewer-directory.repository';
 import { FirebaseDisplayNameLookup } from './infrastructure/identity/firebase-display-name.lookup';
+import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { ListInterviewersHandler } from './application/queries/list-interviewers.handler';
 import { InterviewersController } from './presentation/http/interviewers.controller';
 import { VacanciesController } from './presentation/http/vacancies.controller';
@@ -58,6 +59,7 @@ import { InterviewsController } from './presentation/http/interviews.controller'
     { provide: InterviewRepositoryPort, useClass: PrismaInterviewRepository },
     { provide: OnboardingRepositoryPort, useClass: PrismaOnboardingRepository },
     FirebaseDisplayNameLookup,
+    RecentAuthGuard,
     { provide: InterviewerDirectoryPort, useClass: PrismaInterviewerDirectoryRepository },
     RegisterVacancyHandler,
     PublishVacancyHandler,
