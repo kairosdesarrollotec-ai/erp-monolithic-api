@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.3.0');
+    expect(spec.info.version).toBe('0.4.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -42,8 +42,10 @@ describe('hr-administration.yaml contract specification', () => {
       '/employees',
       '/employees/{id}',
       '/employees/{id}/attendance',
+      '/employees/{id}/attendance/evidence/upload-url',
       '/employees/{id}/field-trips',
       '/employees/{id}/leaves',
+      '/employees/{id}/link-account',
       '/employees/{id}/memos',
       '/employees/{id}/terminate',
       '/employees/{id}/trainings',
@@ -63,7 +65,7 @@ describe('hr-administration.yaml contract specification', () => {
     ]);
   });
 
-  it('expone exactamente las 31 operaciones esperadas', () => {
+  it('expone exactamente las 33 operaciones esperadas', () => {
     const ops: string[] = [];
     for (const item of Object.values<any>(spec.paths)) {
       for (const op of Object.values<any>(item)) {
@@ -90,12 +92,14 @@ describe('hr-administration.yaml contract specification', () => {
         'listEmployees',
         'listFieldTrips',
         'listLeaveEvidence',
+        'linkEmployeeAccount',
         'listTrainings',
         'logAttendance',
         'reclassifyAttendance',
         'recordLeaveEvidence',
         'registerTraining',
         'rejectFieldTrip',
+        'requestAttendanceEvidenceUploadUrl',
         'requestFieldTrip',
         'requestLeave',
         'requestLeaveEvidenceUploadUrl',

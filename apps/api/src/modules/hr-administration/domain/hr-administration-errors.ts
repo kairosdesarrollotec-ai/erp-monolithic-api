@@ -214,6 +214,40 @@ export class InvalidAttendanceEvidenceError extends DomainUnprocessableError {
   }
 }
 
+export class AttendanceEvidenceRequiredError extends DomainUnprocessableError {
+  readonly code = 'ATTENDANCE_EVIDENCE_REQUIRED';
+
+  constructor() {
+    super(
+      'La asistencia requiere la foto de evidencia (reloj + hora + rostro). Súbela con la URL firmada y envía evidence con su storageRef.',
+    );
+  }
+}
+
+export class EmployeeEmailRequiredError extends DomainUnprocessableError {
+  readonly code = 'EMPLOYEE_EMAIL_REQUIRED';
+
+  constructor() {
+    super('El colaborador no tiene correo registrado: el vínculo con su cuenta de usuario se hace por correo.');
+  }
+}
+
+export class UserAccountNotFoundError extends DomainNotFoundError {
+  readonly code = 'USER_ACCOUNT_NOT_FOUND';
+
+  constructor(email: string) {
+    super(`No existe una cuenta de usuario con el correo ${email}.`);
+  }
+}
+
+export class EmployeeAccountAlreadyLinkedError extends DomainConflictError {
+  readonly code = 'EMPLOYEE_ACCOUNT_ALREADY_LINKED';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
 export class InvalidPayrollMonthError extends DomainBadRequestError {
   readonly code = 'INVALID_PAYROLL_MONTH';
 

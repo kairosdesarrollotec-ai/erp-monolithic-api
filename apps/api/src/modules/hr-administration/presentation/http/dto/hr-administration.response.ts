@@ -32,6 +32,8 @@ export interface EmployeeResponse {
   fieldTripLateCount: number;
   isFieldTripObserved: boolean;
   baseSalary: number | null;
+  /** DEC-ADP-LINK-EMAIL-001: la ficha está vinculada a una cuenta de usuario (por correo). */
+  accountLinked: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -107,6 +109,14 @@ export interface LeaveEvidenceResponse {
   contentType: string;
   uploadedById: string;
   createdAt: string;
+}
+
+export interface AttendanceEvidenceUploadSessionResponse {
+  uploadUrl: string;
+  objectUrl: string;
+  /** Clave del objeto: es el valor que va en `evidence.storageRef` de log-attendance. */
+  storageRef: string;
+  expiresAt: string;
 }
 
 export interface LeaveEvidenceUploadSessionResponse {

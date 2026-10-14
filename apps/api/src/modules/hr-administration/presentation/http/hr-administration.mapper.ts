@@ -58,6 +58,7 @@ export function toEmployeeResponse(e: Employee): EmployeeResponse {
     fieldTripLateCount: e.fieldTripLateCount,
     isFieldTripObserved: e.isFieldTripObserved,
     baseSalary: e.baseSalary === null || e.baseSalary === undefined ? null : Number(e.baseSalary),
+    accountLinked: !!e.firebaseUid,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
   };
