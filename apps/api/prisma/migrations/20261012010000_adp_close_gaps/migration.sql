@@ -67,6 +67,11 @@ CREATE TABLE "training_attendees" (
 );
 
 -- CreateIndex
+-- LOCK NOTE: CREATE UNIQUE INDEX (sin CONCURRENTLY) adquiere un SHARE lock que bloquea escrituras
+-- durante la construcción del índice. Prisma no puede generar CONCURRENTLY dentro de una transacción.
+-- La tabla employees es pequeña en MVP (~cientos de filas); el lock esperado es < 1 s.
+-- Para producción con tabla grande: ejecutar manualmente con CONCURRENTLY fuera de esta migración
+-- y documentar en decision-log.md antes del deployment window. Deployment window recomendado: baja carga.
 CREATE UNIQUE INDEX "employees_company_firebase_uid_key" ON "employees"("operating_company_id", "firebase_uid");
 
 -- CreateIndex
