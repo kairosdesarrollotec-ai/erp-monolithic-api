@@ -25,6 +25,19 @@ describe('Consultas con alertas y recordatorios de Devolución', () => {
     expect(found.reminder?.id).toBe('rem-1');
   });
 
+  it('get/list: adjunta el retraso con tolerancia de 30 min (BR-DEV-003)', async () => {
+    const deps = buildDeps({ role: 'FRONT_OFFICE' });
+    const scheduledAt = hoursBeforeNow(1);
+    const onTime = buildReturnRecord({ id: 'r-a', status: 'INSPECCION', scheduledAt, receivedAt: new Date(scheduledAt.getTime() + 30 * 60000) });
+    const late = buildReturnRecord({ id: 'r-b', status: 'INSPECCION', scheduledAt, receivedAt: new Date(scheduledAt.getTime() + 31 * 60000) });
+    deps.returns.findById.mockResolvedValue(late);
+    const one = await new GetReturnHandler(deps.access, deps.returns, deps.clock).execute(new GetReturnQuery('r-b', 'uid-1', 'comp-1', 'branch-1'));
+    expect(one.lateness).toEqual({ lateToleranceMinutes: 30, lateMinutes: 31, isLate: true, basis: 'RECEIVED' });
+    deps.returns.list.mockResolvedValue([onTime, late]);
+    const many = await new ListReturnsHandler(deps.access, deps.returns, deps.clock).execute(new ListReturnsQuery('uid-1', 'comp-1', 'branch-1'));
+    expect(many.map((r) => r.lateness?.isLate)).toEqual([false, true]);
+  });
+
   it('get/list: alerta de inmovilización > 24 h por daño técnico', async () => {
     const deps = buildDeps({ role: 'GERENCIA' });
     const record = buildReturnRecord({

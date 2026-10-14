@@ -3,6 +3,8 @@
  * DEC-DEV-REMINDER-001: el envío por WhatsApp es MANUAL-ASISTIDO (la integración no existe): el sistema genera
  * el texto y deja el recordatorio PENDING; el operador registra el resultado (SENT | FAILED + nota).
  */
+import { RETURN_LATE_TOLERANCE_MINUTES } from './return-lateness';
+
 export type ReturnReminderStatus = 'PENDING' | 'SENT' | 'FAILED';
 export const RETURN_REMINDER_STATUSES: readonly ReturnReminderStatus[] = ['PENDING', 'SENT', 'FAILED'];
 
@@ -20,8 +22,8 @@ export const RETURN_REMINDER_LEAD_MS = RETURN_REMINDER_LEAD_HOURS * 60 * 60 * 10
  */
 export const RETURN_REMINDER_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
 
-/** Tolerancia declarada por BR-DEV-004 (30 min); se informa en el texto, no bloquea nada. */
-export const RETURN_REMINDER_TOLERANCE_MINUTES = 30;
+/** Tolerancia BR-DEV-003/004 (30 min, CONFIRMADA): misma constante que el cálculo de retraso (return-lateness.ts). */
+export const RETURN_REMINDER_TOLERANCE_MINUTES = RETURN_LATE_TOLERANCE_MINUTES;
 
 /** DEC-TZ-BUSINESS-001: zona horaria de negocio America/Lima = UTC-5 fijo (sin horario de verano). */
 export const BUSINESS_TIME_ZONE = 'America/Lima';

@@ -11,6 +11,7 @@ import {
 } from '../../domain/return-status';
 import type { ReturnReminderStatus } from '../../domain/return-reminder';
 import type { ReturnAlerts } from '../../domain/return-alerts';
+import type { ReturnLateness } from '../../domain/return-lateness';
 
 export interface ReturnScope {
   organizationId: string;
@@ -120,6 +121,8 @@ export interface ReturnRecord {
   reminder?: ReturnReminderRecord | null;
   /** Alertas calculadas con el reloj (garantía 24 h / inmovilización > 24 h); solo las pueblan las consultas. */
   alerts?: ReturnAlerts;
+  /** Retraso frente a la hora pactada con tolerancia de 30 min (BR-DEV-003); solo lo pueblan las consultas. null = no aplica. */
+  lateness?: ReturnLateness | null;
 }
 
 export interface CreateReturnInput {

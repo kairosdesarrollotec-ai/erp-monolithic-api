@@ -8,7 +8,7 @@ import type { DamageOrigin, ReturnStatus } from './return-status';
  * ejecuta el reembolso, DEC-DEV-WARRANTY-ALERT-001).
  */
 export const WARRANTY_RELEASE_WINDOW_HOURS = 24;
-/** "Se acerca el límite": alerta DUE_SOON cuando faltan 4 h o menos (conservador, ajustable). */
+/** "Se acerca el límite": alerta DUE_SOON cuando faltan 4 h o menos. Decisión CONFIRMADA por el usuario (2026-10-15). */
 export const WARRANTY_RELEASE_WARNING_LEAD_HOURS = 4;
 /** BR-DEV-011: a partir de 24 h naturales de inmovilización corresponde cobro (manual). */
 export const IMMOBILIZATION_ALERT_AFTER_HOURS = 24;

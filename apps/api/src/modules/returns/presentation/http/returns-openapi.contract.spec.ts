@@ -470,6 +470,10 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expectMapperMatchesSchema('ReturnResponse', withAll);
     expectMapperMatchesSchema('ReturnReminderResponse', withAll.reminder as object);
     expectMapperMatchesSchema('ReturnAlerts', withAll.alerts as object);
+    const withLateness = toReturnResponse(buildReturnRecord({ lateness: { lateToleranceMinutes: 30, lateMinutes: 45, isLate: true, basis: 'NOW' } }));
+    expectMapperMatchesSchema('ReturnResponse', withLateness);
+    expectMapperMatchesSchema('ReturnLateness', withLateness.lateness as object);
+    expect(toReturnResponse(buildReturnRecord())).not.toHaveProperty('lateness');
     expectMapperMatchesSchema('WarrantyReleaseAlert', withAll.alerts!.warrantyRelease as object);
     expectMapperMatchesSchema('ImmobilizationAlert', withAll.alerts!.immobilization as object);
     expect(withAll.reminder).toMatchObject({ status: 'FAILED', text: expect.any(String), note: 'No contestó', version: 2, etag: '"2"' });
@@ -505,7 +509,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expectMapperMatchesSchema('ReturnAlertItem', alert);
   });
 
-  it('contrato 1.2.0', () => {
-    expect(spec.info.version).toBe('1.2.0');
+  it('contrato 1.3.0', () => {
+    expect(spec.info.version).toBe('1.3.0');
   });
 });
