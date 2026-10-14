@@ -45,7 +45,9 @@ import { ConvertToRentalResponse } from './dto/convert-to-rental.response';
 import { toInquiryResponse, toInquirySummaryResponse } from './inquiry.mapper';
 import { toReservationResponse } from '../../../reservations/presentation/http/reservation.mapper';
 import { toRentalResponse } from '../../../rentals/presentation/http/rental.mapper';
+import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
+/** travelStartDate es una fecha calendario (@db.Date): se guarda como medianoche UTC del mismo dia. */
 function toUtcDate(dateOnly: string | undefined): Date | undefined {
   return dateOnly ? new Date(`${dateOnly}T00:00:00.000Z`) : undefined;
 }
@@ -127,8 +129,8 @@ export class InquiriesController {
         query.status,
         query.channel,
         query.customerId,
-        query.createdFrom ? new Date(query.createdFrom) : undefined,
-        query.createdTo ? new Date(query.createdTo) : undefined,
+        query.createdFrom ? parseBusinessInstant(query.createdFrom) : undefined,
+        query.createdTo ? parseBusinessInstant(query.createdTo) : undefined,
         query.limit ? Number(query.limit) : INQUIRY_LIST_DEFAULT_LIMIT,
         cursor,
       ),
@@ -210,7 +212,7 @@ export class InquiriesController {
         dto.branchId,
         parseVersionIfMatch(ifMatch),
         dto.channelMode,
-        new Date(dto.startAt),
+        parseBusinessInstant(dto.startAt),
       ),
     );
     return {

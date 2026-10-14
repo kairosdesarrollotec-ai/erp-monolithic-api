@@ -4,6 +4,7 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { ExportReportQuery } from './export-report.query';
 import { validateDateRange } from './reporting.utils';
+import { toLimaDateString } from '../../../../common/time/lima-time';
 
 export interface ExportReportResult {
   csv: string;
@@ -69,7 +70,7 @@ export class ExportReportHandler {
           this.prisma.incident.count({ where: { operatingCompanyId, ...branchFilter, status: 'ABIERTA' } }),
         ]);
 
-      const periodo = `${query.dateFrom.toISOString().slice(0, 10)}_${query.dateTo.toISOString().slice(0, 10)}`;
+      const periodo = `${toLimaDateString(query.dateFrom)}_${toLimaDateString(query.dateTo)}`;
       rows.push(['Alquileres activos', String(activeRentals), periodo, operatingCompanyId]);
       rows.push(['Reservas activas', String(activeReservations), periodo, operatingCompanyId]);
       rows.push(['Devoluciones pendientes', String(pendingReturns), periodo, operatingCompanyId]);
@@ -103,15 +104,15 @@ export class ExportReportHandler {
         }),
       ]);
 
-      const periodo = `${query.dateFrom.toISOString().slice(0, 10)}_${query.dateTo.toISOString().slice(0, 10)}`;
+      const periodo = `${toLimaDateString(query.dateFrom)}_${toLimaDateString(query.dateTo)}`;
       rows.push(['Garantias en custodia (HELD)', String(Number(heldAgg._sum.originalAmount ?? 0)), periodo, operatingCompanyId]);
       rows.push(['Garantias retenidas (RETAINED)', String(Number(retainedAgg._sum.originalAmount ?? 0)), periodo, operatingCompanyId]);
       rows.push(['Garantias devueltas (RELEASE)', String(Number(returnedAgg._sum.amount ?? 0)), periodo, operatingCompanyId]);
     }
 
     const csv = rows.map((r) => r.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const from = query.dateFrom.toISOString().slice(0, 10);
-    const to = query.dateTo.toISOString().slice(0, 10);
+    const from = toLimaDateString(query.dateFrom);
+    const to = toLimaDateString(query.dateTo);
     const filename = `reporte-${from}_${to}.csv`;
 
     return { csv, filename };

@@ -56,6 +56,7 @@ import { ContractTemplateSelectionResponse } from './dto/contract-template-selec
 import { RentalResponse } from './dto/rental.response';
 import { toRentalResponse } from './rental.mapper';
 import { RENTAL_LIST_MAX_LIMIT } from '../../domain/rental-pagination';
+import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
 @Controller('rentals')
 @UseGuards(FirebaseAuthGuard)
@@ -88,8 +89,8 @@ export class RentalsController {
         dto.customerId,
         dto.vehicleId,
         dto.planCode,
-        dto.startAt ? new Date(dto.startAt) : undefined,
-        dto.expectedEndAt ? new Date(dto.expectedEndAt) : undefined,
+        dto.startAt ? parseBusinessInstant(dto.startAt) : undefined,
+        dto.expectedEndAt ? parseBusinessInstant(dto.expectedEndAt) : undefined,
         dto.inquiryId,
       ),
     );

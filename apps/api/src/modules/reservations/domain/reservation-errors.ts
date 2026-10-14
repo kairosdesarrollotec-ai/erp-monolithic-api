@@ -5,6 +5,7 @@ import {
   DomainPreconditionRequiredError,
   DomainUnprocessableError,
 } from '../../../common/domain/domain-errors';
+import { formatLimaDMY } from '../../../common/time/lima-time';
 import { ReservationStatus } from './reservation-status';
 
 /** TDD-RES-001.md seccion 12/11.4 - REQUIREMENTS_INCOMPLETE (422). */
@@ -17,9 +18,7 @@ export class RequirementsIncompleteError extends DomainUnprocessableError {
 }
 
 function dmy(date: Date): string {
-  const dd = String(date.getUTCDate()).padStart(2, '0');
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-  return `${dd}/${mm}/${date.getUTCFullYear()}`;
+  return formatLimaDMY(date);
 }
 
 /** TDD-RES-001.md seccion 11.4 - VEHICLE_NOT_AVAILABLE (409). */

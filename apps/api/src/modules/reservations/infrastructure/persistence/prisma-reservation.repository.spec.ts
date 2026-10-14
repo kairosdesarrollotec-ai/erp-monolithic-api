@@ -65,7 +65,7 @@ describe('PrismaReservationRepository.confirm - VEHICLE_NOT_AVAILABLE', () => {
     const err = error as VehicleNotAvailableError;
     expect(err.httpStatus).toBe(409);
     expect(err.code).toBe('VEHICLE_NOT_AVAILABLE');
-    expect(err.detail).toContain('22/10/2026 al 28/10/2026');
+    expect(err.detail).toContain('21/10/2026 al 27/10/2026') // 00:00Z = 19:00 del dia previo en Lima (DEC-TZ-LIMA-001);
     expect(tx.vehicleCommitment.create).not.toHaveBeenCalled();
   });
 });

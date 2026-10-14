@@ -30,6 +30,7 @@ import { RejectExtensionDto } from './dto/reject-extension.dto';
 import { ReportExtensionBreachDto } from './dto/report-extension-breach.dto';
 import { RentalResponse } from './dto/rental.response';
 import { toRentalResponse } from './rental.mapper';
+import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
 @Controller('rentals')
 @UseGuards(FirebaseAuthGuard)
@@ -57,7 +58,7 @@ export class RentalsExtensionsController {
         dto.companyId,
         dto.branchId,
         parseVersionIfMatch(ifMatch),
-        new Date(dto.requestedEndAt),
+        parseBusinessInstant(dto.requestedEndAt),
       ),
     );
     return toRentalResponse(updated);

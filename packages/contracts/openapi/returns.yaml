@@ -1,8 +1,16 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.1.0
+  version: 1.2.0
   description: >
+    1.2.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
+    sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
+    inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
+    o reporte se interpreta como 00:00 America/Lima (= 05:00Z); los date-time
+    con offset/Z se respetan tal cual. Los textos de notificaciones/documentos
+    muestran fecha y hora de Lima. Los campos `format: date` de calendario
+    puro (p. ej. travelStartDate) no cambian.
+
     Contrato del módulo Devolución (DEV-01 a DEV-10, BDD-04-devolucion.md, SDD-04-devolucion.md, TDD-04-devolucion.md).
     Implementa el ciclo de vida completo de devolución: programación, recepción provisional con custodia preventiva (DR-DEV-003),
     prueba de alcolímetro de salida con tolerancia cero (BR-DEV-005), checklist de inspección con evidencia fotográfica (BR-DEV-009, TR-08),

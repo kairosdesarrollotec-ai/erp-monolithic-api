@@ -70,6 +70,7 @@ import {
   toReturnResponse,
 } from './return.mapper';
 import { ResponsibilityTemplateResponse, toResponsibilityTemplateResponse } from './dto/responsibility-template.response';
+import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
 /**
  * Devolución (DEV-01..10) - contrato: packages/contracts/openapi/returns.yaml.
@@ -103,7 +104,7 @@ export class ReturnsController {
         dto.companyId,
         dto.branchId,
         dto.rentalId,
-        new Date(dto.scheduledAt),
+        parseBusinessInstant(dto.scheduledAt),
         dto.notes,
       ),
     );

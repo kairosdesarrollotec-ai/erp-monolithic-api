@@ -5,6 +5,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import type { FinancialKpisResult } from '../../presentation/http/dto/financial-kpis.response';
 import { GetFinancialKpisQuery } from './get-financial-kpis.query';
 import { validateDateRange } from './reporting.utils';
+import { toLimaDateString } from '../../../../common/time/lima-time';
 
 /**
  * REP-01 — KPIs financieros del período.
@@ -111,8 +112,8 @@ export class GetFinancialKpisHandler {
     return {
       companyId: operatingCompanyId,
       branchId: query.branchId,
-      dateFrom: query.dateFrom.toISOString().slice(0, 10),
-      dateTo: query.dateTo.toISOString().slice(0, 10),
+      dateFrom: toLimaDateString(query.dateFrom),
+      dateTo: toLimaDateString(query.dateTo),
       kpis: {
         rentalRevenue,
         depositsHeld,

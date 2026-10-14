@@ -5,6 +5,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import type { OperationalKpisResult } from '../../presentation/http/dto/operational-kpis.response';
 import { GetOperationalKpisQuery } from './get-operational-kpis.query';
 import { validateDateRange } from './reporting.utils';
+import { toLimaDateString } from '../../../../common/time/lima-time';
 
 /**
  * REP-01 — KPIs operativos en tiempo real.
@@ -117,7 +118,7 @@ export class GetOperationalKpisHandler {
     const dailyMap = new Map<string, number>();
     for (const r of dailyRentalsRaw) {
       if (r.startAt) {
-        const dateKey = r.startAt.toISOString().slice(0, 10);
+        const dateKey = toLimaDateString(r.startAt);
         dailyMap.set(dateKey, (dailyMap.get(dateKey) ?? 0) + 1);
       }
     }
@@ -130,8 +131,8 @@ export class GetOperationalKpisHandler {
     return {
       companyId: operatingCompanyId,
       branchId: query.branchId,
-      dateFrom: query.dateFrom.toISOString().slice(0, 10),
-      dateTo: query.dateTo.toISOString().slice(0, 10),
+      dateFrom: toLimaDateString(query.dateFrom),
+      dateTo: toLimaDateString(query.dateTo),
       kpis: {
         activeRentals,
         activeReservations,
