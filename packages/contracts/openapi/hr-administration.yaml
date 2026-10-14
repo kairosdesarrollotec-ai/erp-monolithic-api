@@ -1,8 +1,26 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.2.0
+  version: 0.3.0
   description: >
+    0.3.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
+    sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
+    inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
+    o reporte se interpreta como 00:00 America/Lima (= 05:00Z); los date-time
+    con offset/Z se respetan tal cual. Los textos de notificaciones/documentos
+    muestran fecha y hora de Lima. Los campos `format: date` de calendario
+    puro (p. ej. travelStartDate) no cambian.
+
+    0.3.0 — DEC-ADP-ATT-EVIDENCE-001: POST /employees/{id}/attendance
+    acepta `evidence` opcional {kind: WHATSAPP_PHOTO, storageRef|url,
+    capturedAtLocal, note}; la asistencia NO es biométrica ni se importa (no
+    existe ni existirá un comando de importación); la corroboración es la foto
+    con reloj+hora+rostro enviada al grupo de WhatsApp. El registro guarda
+    quién la corroboró. AttendanceRecordResponse expone `evidence` y
+    `evidenceMissing`. Compatible hacia atrás: la evidencia es opcional. Los
+    honorarios se llenan manualmente por Gerencia; el GPS de salidas a campo
+    sigue pendiente.
+
     Contrato del módulo de Administración de Personal (ADP-01 a ADP-10).
     Fuentes canónicas: BDD-06 (BDD-ADP-001 v1.9), SDD-06 (SDD-KAIROS-MVP-002 / ADP v2.1) y TDD-06 (TDD-KAIROS-MVP-002 / ADP v2.1).
     Cubre los 5 subflujos de personal:
@@ -26,7 +44,7 @@ info:
     FIELD_TRIP_NOT_FOUND, FIELD_TRIP_NOT_PENDING, FIELD_TRIP_NOT_AUTHORIZED, FIELD_TRIP_TIMEOUT_NOT_ELAPSED,
     INVALID_FIELD_TRIP_DATES, INVALID_AUTHORIZATION_LEVEL, AUTHORIZATION_LEVEL_NOT_REACHED, NO_AUTHORIZATION_AVAILABLE,
     EMPLOYMENT_ALREADY_TERMINATED, INVALID_TERMINATION_NOTICE, TERMINATION_NOTES_REQUIRED, FINAL_SETTLEMENT_REQUIRED,
-    FIELD_TRIP_REJECTION_REASON_REQUIRED, EMPLOYEE_NOT_LINKED, ATTENDANCE_NOT_FOUND, ATTENDANCE_NOT_RECLASSIFIABLE,
+    FIELD_TRIP_REJECTION_REASON_REQUIRED, EMPLOYEE_NOT_LINKED, ATTENDANCE_NOT_FOUND, ATTENDANCE_NOT_RECLASSIFIABLE, INVALID_ATTENDANCE_EVIDENCE,
     INVALID_ATTENDANCE_RECLASSIFICATION, LEAVE_EVIDENCE_NOT_ALLOWED, INVALID_LEAVE_EVIDENCE, EVIDENCE_STORAGE_UNAVAILABLE,
     TRAINING_ATTENDEES_INVALID, INVALID_TRAINING.
 
@@ -149,7 +167,7 @@ paths:
         '403': { description: Rol sin permiso HR_ADMINISTRATION.LOG_ATTENDANCE }
         '404': { description: Colaborador no encontrado }
         '409': { description: Ya existe marcación para la fecha indicada (ATTENDANCE_ALREADY_LOGGED) o el colaborador está terminado (EMPLOYEE_TERMINATED) }
-        '422': { description: Registro inválido, p. ej. una tardanza sin minutos (INVALID_ATTENDANCE_RECORD) }
+        '422': { description: Registro inválido, p. ej. una tardanza sin minutos (INVALID_ATTENDANCE_RECORD) o evidencia mal formada (INVALID_ATTENDANCE_EVIDENCE) }
     get:
       operationId: getEmployeeAttendance
       summary: Listar historial de asistencia del colaborador
@@ -852,6 +870,39 @@ components:
         minutesLate: { type: integer, minimum: 0, description: Opcional; una tardanza lo exige mayor a 0 (el sistema no asume 0) }
         deductionAmount: { type: number, minimum: 0, description: Opcional; si no se envía lo calcula el sistema }
         notes: { type: string, nullable: true }
+        evidence:
+          nullable: true
+          description: >
+            DEC-ADP-ATT-EVIDENCE-001. Foto con reloj + hora + rostro enviada al grupo de WhatsApp que corrobora la
+            marcación. Opcional (no bloquea el registro); sin ella la respuesta trae evidenceMissing = true.
+          allOf:
+            - { $ref: '#/components/schemas/AttendanceEvidenceRequest' }
+
+    AttendanceEvidenceRequest:
+      type: object
+      required: [kind, capturedAtLocal]
+      description: Requiere al menos uno de storageRef o url.
+      properties:
+        kind: { type: string, enum: [WHATSAPP_PHOTO] }
+        storageRef: { type: string, nullable: true, maxLength: 2000, description: Referencia interna al objeto almacenado }
+        url: { type: string, nullable: true, maxLength: 2000 }
+        capturedAtLocal:
+          type: string
+          description: Fecha y hora de la foto. Sin offset (YYYY-MM-DDTHH:mm[:ss]) se interpreta en America/Lima; no puede estar en el futuro.
+          examples: ['2026-10-14T08:05:00']
+        note: { type: string, nullable: true, maxLength: 1000 }
+
+    AttendanceEvidenceResponse:
+      type: object
+      required: [kind, capturedAtLocal]
+      properties:
+        kind: { type: string, enum: [WHATSAPP_PHOTO] }
+        storageRef: { type: string, nullable: true }
+        url: { type: string, nullable: true }
+        capturedAtLocal: { type: string, description: Hora de la foto en America/Lima sin offset (YYYY-MM-DDTHH:mm:ss) }
+        note: { type: string, nullable: true }
+        corroboratedBy: { type: string, nullable: true, description: Usuario (Firebase UID) que corroboró la foto y registró la marcación }
+        corroboratedAt: { type: string, format: date-time, nullable: true }
 
     AttendanceRecordResponse:
       type: object
@@ -872,6 +923,11 @@ components:
         notes: { type: string, nullable: true }
         justification: { type: string, nullable: true }
         reclassifiedAt: { type: string, format: date-time, nullable: true }
+        evidence:
+          nullable: true
+          allOf:
+            - { $ref: '#/components/schemas/AttendanceEvidenceResponse' }
+        evidenceMissing: { type: boolean, description: true si el registro no tiene evidencia fotográfica (incluye registros previos a 0.3.0) }
         memo:
           nullable: true
           description: Memo generado automáticamente por reiteración de faltas injustificadas del mes

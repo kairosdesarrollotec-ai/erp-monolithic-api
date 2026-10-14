@@ -31,6 +31,7 @@ import { GetEmployeeAttendanceQueryDto } from './dto/get-employee-attendance-que
 import { AttendanceSummaryQueryDto } from './dto/attendance-summary-query.dto';
 import { ApplyDeductionsDto } from './dto/apply-deductions.dto';
 import { ReclassifyAttendanceDto } from './dto/reclassify-attendance.dto';
+import { parseLimaLocalDateTime } from '../../../../common/time/lima-time';
 import { parseDateOnly } from './dto/hr-date';
 import type {
   ApplyDeductionsResponse,
@@ -73,6 +74,15 @@ export class AttendanceController {
         dto.checkInTime ? new Date(dto.checkInTime) : null,
         dto.checkOutTime ? new Date(dto.checkOutTime) : null,
         dto.notes,
+        dto.evidence
+          ? {
+              kind: dto.evidence.kind,
+              storageRef: dto.evidence.storageRef,
+              url: dto.evidence.url,
+              capturedAtLocal: parseLimaLocalDateTime(dto.evidence.capturedAtLocal),
+              note: dto.evidence.note,
+            }
+          : null,
       ),
     );
     return toAttendanceRecordResponse(record, undefined, memo);

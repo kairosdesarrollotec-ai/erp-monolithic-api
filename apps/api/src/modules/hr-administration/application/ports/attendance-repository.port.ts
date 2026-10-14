@@ -10,6 +10,16 @@ export interface CreateAttendanceData {
   deductionAmount?: number;
   notes?: string | null;
   createdById: string;
+  /** DEC-ADP-ATT-EVIDENCE-001 */
+  evidence?: {
+    kind: string;
+    storageRef: string | null;
+    url: string | null;
+    capturedAt: Date;
+    note: string | null;
+    corroboratedById: string;
+    corroboratedAt: Date;
+  } | null;
 }
 
 export interface ReclassifyAttendanceData {
