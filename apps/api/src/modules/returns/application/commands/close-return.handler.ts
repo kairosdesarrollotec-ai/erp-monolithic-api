@@ -8,6 +8,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnOpenIncidentsPort } from '../ports/return-open-incidents.port';
+import { ReturnVehicleCommitmentPort } from '../ports/return-vehicle-commitment.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import {
   ActiveIncidentsBlockCloseError,
@@ -23,6 +24,7 @@ import { CloseReturnCommand } from './close-return.command';
 /**
  * DEV-09 / DEV-10 / DR-DEV-001 - Cierre formal del expediente. Sin incidencias abiertas: devolución CERRADA,
  * alquiler CLOSED y vehículo de flota a AVAILABLE o MAINTENANCE (integración real con Rentals y Fleet).
+ * Libera además el compromiso RENTAL del vehículo (DEC-DEV-COMMITMENT-001).
  * La actualización de flota (sin soporte de tx en su puerto) es el último paso dentro de la transacción: si
  * falla, se revierte todo lo anterior.
  */
@@ -38,6 +40,7 @@ export class CloseReturnHandler {
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly openIncidentsPort: ReturnOpenIncidentsPort,
+    private readonly vehicleCommitments: ReturnVehicleCommitmentPort,
   ) {}
 
   async execute(command: CloseReturnCommand): Promise<ReturnRecord> {
@@ -100,6 +103,15 @@ export class CloseReturnHandler {
         await this.rentals.transitionStatus(rental.id, scope, 'CLOSED', rental.version, command.firebaseUid, tx);
       }
 
+      // DEC-DEV-COMMITMENT-001: el compromiso RENTAL del vehículo (vehicle_commitments) deja de bloquear la
+      // disponibilidad al cerrar la devolución, aunque el alquiler terminara antes de lo pactado (devolución
+      // anticipada). Idempotente: sin compromiso (alquiler directo) libera 0 filas.
+      const commitmentsReleased = await this.vehicleCommitments.releaseRentalCommitment(
+        updated.rentalId,
+        context.organizationId,
+        tx,
+      );
+
       const vehicleStatus = resolveVehicleStatusAfterReturn(damages);
 
       await this.auditRepository.recordRentalEvent(
@@ -112,6 +124,7 @@ export class CloseReturnHandler {
             returnId: updated.id,
             closedAt: now.toISOString(),
             vehicleStatus,
+            vehicleCommitmentsReleased: commitmentsReleased,
             signed: !!command.signatureData,
             warrantyActRequested: command.generateWarrantyAct ?? false,
           },

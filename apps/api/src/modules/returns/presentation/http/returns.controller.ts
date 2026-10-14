@@ -45,6 +45,20 @@ import { ListReturnsHandler } from '../../application/queries/list-returns.handl
 import { ListReturnsQuery } from '../../application/queries/list-returns.query';
 import { GetResponsibilityTemplateHandler } from '../../application/queries/get-responsibility-template.handler';
 import { GetResponsibilityTemplateQuery } from '../../application/queries/get-responsibility-template.query';
+import { RegisterReturnReminderHandler } from '../../application/commands/register-return-reminder.handler';
+import { RegisterReturnReminderCommand } from '../../application/commands/register-return-reminder.command';
+import { ListReturnRemindersHandler } from '../../application/queries/list-return-reminders.handler';
+import {
+  ListReturnRemindersQuery,
+  RETURN_REMINDER_LIST_DEFAULT_LIMIT,
+  RETURN_REMINDER_LIST_MAX_LIMIT,
+} from '../../application/queries/list-return-reminders.query';
+import { ListReturnAlertsHandler } from '../../application/queries/list-return-alerts.handler';
+import {
+  ListReturnAlertsQuery,
+  RETURN_ALERT_LIST_DEFAULT_LIMIT,
+  RETURN_ALERT_LIST_MAX_LIMIT,
+} from '../../application/queries/list-return-alerts.query';
 import { RETURN_LIST_DEFAULT_LIMIT, RETURN_LIST_MAX_LIMIT } from '../../domain/return-pagination';
 import { ScheduleReturnDto } from './dto/schedule-return.dto';
 import { ReceiveProvisionalDto } from './dto/receive-provisional.dto';
@@ -55,6 +69,9 @@ import { AssessDamageDto } from './dto/assess-damage.dto';
 import { ChargeImmobilizationDto } from './dto/charge-immobilization.dto';
 import { CloseFinancialDto } from './dto/close-financial.dto';
 import { CloseReturnDto } from './dto/close-return.dto';
+import { RegisterReturnReminderDto } from './dto/register-return-reminder.dto';
+import { ListReturnRemindersQueryDto } from './dto/list-return-reminders-query.dto';
+import { ListReturnAlertsQueryDto } from './dto/list-return-alerts-query.dto';
 import { ListReturnsQueryDto } from './dto/list-returns-query.dto';
 import { ReturnScopeQueryDto } from './dto/return-scope-query.dto';
 import {
@@ -62,12 +79,18 @@ import {
   ImmobilizationChargeResponse,
   ReturnDamageResponse,
   ReturnResponse,
+  ReturnAlertItemResponse,
+  ReturnReminderInboxItemResponse,
+  ReturnReminderResponse,
 } from './dto/return.response';
 import {
   toCosmeticTariffResponse,
   toImmobilizationChargeResponse,
   toReturnDamageResponse,
   toReturnResponse,
+  toReturnAlertItemResponse,
+  toReminderInboxItemResponse,
+  toReturnReminderResponse,
 } from './return.mapper';
 import { ResponsibilityTemplateResponse, toResponsibilityTemplateResponse } from './dto/responsibility-template.response';
 
@@ -92,6 +115,9 @@ export class ReturnsController {
     private readonly getCosmeticTariff: GetCosmeticTariffHandler,
     private readonly listReturns: ListReturnsHandler,
     private readonly getResponsibilityTemplate: GetResponsibilityTemplateHandler,
+    private readonly registerReminder: RegisterReturnReminderHandler,
+    private readonly listReminders: ListReturnRemindersHandler,
+    private readonly listAlerts: ListReturnAlertsHandler,
   ) {}
 
   @Post()
@@ -157,6 +183,47 @@ export class ReturnsController {
       ),
     );
     return toReturnResponse(received);
+  }
+
+  /** BR-DEV-004 (DEV-01): bandeja de recordatorios pendientes de envío / fallidos. Antes de `:id`. */
+  @Get('reminders')
+  async reminders(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: ListReturnRemindersQueryDto,
+  ): Promise<ReturnReminderInboxItemResponse[]> {
+    const requestedLimit = query.limit ? Number(query.limit) : undefined;
+    if (requestedLimit !== undefined && requestedLimit > RETURN_REMINDER_LIST_MAX_LIMIT) {
+      throw new BadRequestException(`limit no puede ser mayor a ${RETURN_REMINDER_LIST_MAX_LIMIT}.`);
+    }
+    const items = await this.listReminders.execute(
+      new ListReturnRemindersQuery(
+        req.firebaseUid!,
+        query.companyId,
+        query.branchId,
+        query.status ? [query.status] : ['PENDING', 'FAILED'],
+        requestedLimit ?? RETURN_REMINDER_LIST_DEFAULT_LIMIT,
+      ),
+    );
+    return items.map(toReminderInboxItemResponse);
+  }
+
+  /** BR-DEV-001 / BR-DEV-011: alertas de garantía por liberar (24 h) e inmovilización > 24 h. Antes de `:id`. */
+  @Get('alerts')
+  async alerts(@Req() req: AuthenticatedRequest, @Query() query: ListReturnAlertsQueryDto): Promise<ReturnAlertItemResponse[]> {
+    const requestedLimit = query.limit ? Number(query.limit) : undefined;
+    if (requestedLimit !== undefined && requestedLimit > RETURN_ALERT_LIST_MAX_LIMIT) {
+      throw new BadRequestException(`limit no puede ser mayor a ${RETURN_ALERT_LIST_MAX_LIMIT}.`);
+    }
+    const items = await this.listAlerts.execute(
+      new ListReturnAlertsQuery(
+        req.firebaseUid!,
+        query.companyId,
+        query.branchId,
+        query.type,
+        requestedLimit ?? RETURN_ALERT_LIST_DEFAULT_LIMIT,
+      ),
+    );
+    return items.map(toReturnAlertItemResponse);
   }
 
   /** Debe declararse antes de `:id` para que no lo capture ParseUUIDPipe. */
@@ -317,6 +384,31 @@ export class ReturnsController {
       ),
     );
     return toImmobilizationChargeResponse(result.charge, result.rentalReturn);
+  }
+
+  /** BR-DEV-004 / DAT-DEV-001: registra el resultado del envío manual del recordatorio. If-Match = reminder.version. */
+  @Post(':id/commands/register-reminder')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async registerReminderCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RegisterReturnReminderDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReturnReminderResponse> {
+    const result = await this.registerReminder.execute(
+      new RegisterReturnReminderCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.result,
+        dto.sentAt ? new Date(dto.sentAt) : undefined,
+        dto.note,
+      ),
+    );
+    return toReturnReminderResponse(result.reminder);
   }
 
   @Post(':id/commands/close-financial')

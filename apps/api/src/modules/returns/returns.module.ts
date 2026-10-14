@@ -37,6 +37,17 @@ import { PrismaReturnDepositSettlementPersistence } from './infrastructure/persi
 import { PrismaReturnOpenIncidentsPersistence } from './infrastructure/persistence/prisma-return-open-incidents.persistence';
 import { GcsReturnEvidenceService } from './infrastructure/storage/gcs-return-evidence.service';
 import { DocumentTemplatesModule } from '../document-templates/document-templates.module';
+import { GenerateDueReturnRemindersHandler } from './application/commands/generate-due-return-reminders.handler';
+import { RegisterReturnReminderHandler } from './application/commands/register-return-reminder.handler';
+import { ListReturnRemindersHandler } from './application/queries/list-return-reminders.handler';
+import { ListReturnAlertsHandler } from './application/queries/list-return-alerts.handler';
+import { ReturnReminderRepositoryPort } from './application/ports/return-reminder-repository.port';
+import { ReturnAlertRepositoryPort } from './application/ports/return-alert-repository.port';
+import { ReturnVehicleCommitmentPort } from './application/ports/return-vehicle-commitment.port';
+import { PrismaReturnReminderPersistence } from './infrastructure/persistence/prisma-return-reminder.persistence';
+import { PrismaReturnAlertPersistence } from './infrastructure/persistence/prisma-return-alert.persistence';
+import { PrismaReturnVehicleCommitmentPersistence } from './infrastructure/persistence/prisma-return-vehicle-commitment.persistence';
+import { ReturnReminderScheduler } from './infrastructure/scheduling/return-reminder.scheduler';
 import { GetResponsibilityTemplateHandler } from './application/queries/get-responsibility-template.handler';
 
 /**
@@ -66,6 +77,11 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     ListReturnsHandler,
     ListReturnEvidenceHandler,
     GetResponsibilityTemplateHandler,
+    GenerateDueReturnRemindersHandler,
+    RegisterReturnReminderHandler,
+    ListReturnRemindersHandler,
+    ListReturnAlertsHandler,
+    ReturnReminderScheduler,
     PrismaReturnDamagePersistence,
     PrismaImmobilizationChargePersistence,
     PrismaReturnEvidencePersistence,
@@ -75,6 +91,12 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     { provide: ReturnDepositSettlementPort, useClass: PrismaReturnDepositSettlementPersistence },
     // DEV-09: incidencias ABIERTAS reales (tabla `incidents`, modulo Incidencias) bloquean close-financial y close.
     { provide: ReturnOpenIncidentsPort, useClass: PrismaReturnOpenIncidentsPersistence },
+    // BR-DEV-004 (DEC-DEV-REMINDER-001): recordatorio 3 h antes, envío manual-asistido.
+    { provide: ReturnReminderRepositoryPort, useClass: PrismaReturnReminderPersistence },
+    // BR-DEV-001 / BR-DEV-011: alertas de garantía 24 h e inmovilización > 24 h (solo alerta).
+    { provide: ReturnAlertRepositoryPort, useClass: PrismaReturnAlertPersistence },
+    // DEC-DEV-COMMITMENT-001: libera el compromiso RENTAL del vehículo al cerrar la devolución.
+    { provide: ReturnVehicleCommitmentPort, useClass: PrismaReturnVehicleCommitmentPersistence },
   ],
 })
 export class ReturnsModule {}

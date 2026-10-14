@@ -4,6 +4,7 @@ import {
   ReturnDamageRecord,
   ReturnEvidenceRecord,
   ReturnRecord,
+  ReturnReminderRecord,
 } from '../../application/ports/return-repository.port';
 
 /**
@@ -15,6 +16,7 @@ export const RETURN_INCLUDE = {
   customer: { select: { fullName: true } },
   damages: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   immobilizationCharges: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
+  reminder: true,
 } satisfies Prisma.RentalReturnInclude;
 
 export type ReturnWithRelations = Prisma.RentalReturnGetPayload<{ include: typeof RETURN_INCLUDE }>;
@@ -22,6 +24,7 @@ export type ReturnWithRelations = Prisma.RentalReturnGetPayload<{ include: typeo
 type ReturnDamageRow = Prisma.ReturnDamageGetPayload<Record<string, never>>;
 type ImmobilizationChargeRow = Prisma.ImmobilizationChargeGetPayload<Record<string, never>>;
 type ReturnEvidenceRow = Prisma.ReturnEvidenceGetPayload<Record<string, never>>;
+export type ReturnReminderRow = Prisma.ReturnReminderGetPayload<Record<string, never>>;
 
 function decimalToNumber(value: Prisma.Decimal | null): number | null {
   return value === null ? null : value.toNumber();
@@ -68,6 +71,25 @@ export function toReturnEvidenceRecord(row: ReturnEvidenceRow): ReturnEvidenceRe
   };
 }
 
+export function toReturnReminderRecord(row: ReturnReminderRow): ReturnReminderRecord {
+  return {
+    id: row.id,
+    organizationId: row.organizationId,
+    operatingCompanyId: row.operatingCompanyId,
+    branchId: row.branchId,
+    returnId: row.returnId,
+    status: row.status,
+    dueAt: row.dueAt,
+    messageText: row.messageText,
+    generatedAt: row.generatedAt,
+    sentAt: row.sentAt,
+    sentBy: row.sentBy,
+    resultNote: row.resultNote,
+    attempts: row.attempts,
+    version: row.version,
+  };
+}
+
 export function toReturnRecord(row: ReturnWithRelations): ReturnRecord {
   return {
     id: row.id,
@@ -110,5 +132,6 @@ export function toReturnRecord(row: ReturnWithRelations): ReturnRecord {
     version: row.version,
     damages: row.damages.map(toReturnDamageRecord),
     immobilizationCharges: row.immobilizationCharges.map(toImmobilizationChargeRecord),
+    reminder: row.reminder ? toReturnReminderRecord(row.reminder) : null,
   };
 }
