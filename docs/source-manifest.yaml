@@ -146,8 +146,8 @@ sources:
   module: Reserva
   version: '1.9'
   date: unknown
-  status: pending_review
-  estado_original: unknown
+  status: approved
+  estado_original: approved — DEC-RES-BDD-SDD-APPROVED-2026-10-13
   sha256: c225d6d59b2793926418b692f001e867d00fd33e1ff2c05e59ed7d8cda7106ad
   authority: business
   supersedes: null

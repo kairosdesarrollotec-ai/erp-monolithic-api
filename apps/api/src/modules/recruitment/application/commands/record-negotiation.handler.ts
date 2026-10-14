@@ -112,7 +112,7 @@ export class RecordNegotiationHandler {
         );
       }
 
-      const detail = await this.candidates.findDetailById(existing.id, tx);
+      const detail = await this.candidates.findDetailById(existing.id, scope, tx);
       if (!detail) {
         throw new CandidateNotFoundError(existing.id);
       }

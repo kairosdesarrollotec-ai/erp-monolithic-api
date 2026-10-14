@@ -5,6 +5,12 @@ import { RegisterPaymentHandler } from './application/commands/register-payment.
 import { RegisterDocumentsHandler } from './application/commands/register-documents.handler';
 import { ConfirmReservationHandler } from './application/commands/confirm-reservation.handler';
 import { CancelReservationHandler } from './application/commands/cancel-reservation.handler';
+import { FlagVehicleSaleHandler } from './application/commands/flag-vehicle-sale.handler';
+import { ChangeReservationVehicleHandler } from './application/commands/change-reservation-vehicle.handler';
+import { ResolveVehicleSaleHandler } from './application/commands/resolve-vehicle-sale.handler';
+import { SaleAlternativeVehicleGuard } from './application/services/sale-alternative-vehicle.guard';
+import { ReservationSaleResolutionRepositoryPort } from './application/ports/reservation-sale-resolution-repository.port';
+import { PrismaReservationSaleResolutionRepository } from './infrastructure/persistence/prisma-reservation-sale-resolution.repository';
 import { GetReservationHandler } from './application/queries/get-reservation.handler';
 import { ListReservationsHandler } from './application/queries/list-reservations.handler';
 import { ReservationRepositoryPort } from './application/ports/reservation-repository.port';
@@ -35,12 +41,17 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     RegisterDocumentsHandler,
     ConfirmReservationHandler,
     CancelReservationHandler,
+    FlagVehicleSaleHandler,
+    ResolveVehicleSaleHandler,
+    ChangeReservationVehicleHandler,
+    SaleAlternativeVehicleGuard,
     GetReservationHandler,
     ListReservationsHandler,
     RequestReservationDocumentUploadSessionHandler,
     RecordReservationDocumentHandler,
     ListReservationDocumentsHandler,
     { provide: ReservationRepositoryPort, useClass: PrismaReservationRepository },
+    { provide: ReservationSaleResolutionRepositoryPort, useClass: PrismaReservationSaleResolutionRepository },
     { provide: ReservationDocumentRepositoryPort, useClass: PrismaReservationDocumentRepository },
     { provide: ReservationDocumentStoragePort, useClass: GcsReservationDocumentService },
   ],

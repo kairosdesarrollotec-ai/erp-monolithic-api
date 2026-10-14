@@ -4,6 +4,7 @@ import { GetReservationQuery } from './get-reservation.query';
 import { ReservationRepositoryPort, ReservationRecord, ReservationScope } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { ReservationSaleResolutionRepositoryPort } from '../ports/reservation-sale-resolution-repository.port';
 import { testRole } from '../../../users/testing/role-fixtures';
 
 function buildRecord(): ReservationRecord {
@@ -33,13 +34,16 @@ function buildDeps(record: ReservationRecord | null, opts: { forbidden?: boolean
   const matrixAuth = {
     assertAllowed: jest.fn().mockResolvedValue(undefined),
   } as unknown as jest.Mocked<MatrixAuthorizationService>;
-  return { reservations, workContext, matrixAuth };
+  const saleResolutions = {
+    findLatestByReservationId: jest.fn().mockResolvedValue(null),
+  } as unknown as jest.Mocked<ReservationSaleResolutionRepositoryPort>;
+  return { reservations, workContext, matrixAuth, saleResolutions };
 }
 
 describe('GetReservationHandler', () => {
   it('devuelve la reserva cuando la asignacion es valida', async () => {
-    const { reservations, workContext, matrixAuth } = buildDeps(buildRecord());
-    const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(buildRecord());
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
     const result = await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'));
     expect(result.id).toBe('res-1');
   });
@@ -51,39 +55,51 @@ describe('GetReservationHandler', () => {
    * accesible solo por compartir organizationId.
    */
   it('busca la reserva por el scope completo (organizationId + operatingCompanyId + branchId), no solo por organizationId', async () => {
-    const { reservations, workContext, matrixAuth } = buildDeps(buildRecord());
-    const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(buildRecord());
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
     await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'));
     expect(reservations.findById).toHaveBeenCalledWith('res-1', SCOPE);
   });
 
+  it('incluye la ultima resolucion por venta del vehiculo (RES-07), o null si nunca hubo venta', async () => {
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(buildRecord());
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
+    expect((await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'))).saleResolution).toBeNull();
+
+    const resolution = { id: 'rs-1', reservationId: 'res-1', status: 'PENDING' } as any;
+    saleResolutions.findLatestByReservationId.mockResolvedValueOnce(resolution);
+    const result = await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'));
+    expect(result.saleResolution).toBe(resolution);
+    expect(saleResolutions.findLatestByReservationId).toHaveBeenCalledWith('res-1');
+  });
+
   it('rechaza si la reserva no existe en el scope del usuario', async () => {
-    const { reservations, workContext, matrixAuth } = buildDeps(null);
-    const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(null);
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
     await expect(
       handler.execute(new GetReservationQuery('res-x', 'uid-1', 'company-1', 'branch-1')),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('rechaza si la asignacion no es vigente', async () => {
-    const { reservations, workContext, matrixAuth } = buildDeps(null, { forbidden: true });
-    const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(null, { forbidden: true });
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
     await expect(
       handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-ajena', 'branch-ajena')),
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('verifica el permiso READ_DETAIL via matrizAuth antes de consultar el repositorio', async () => {
-    const { reservations, workContext, matrixAuth } = buildDeps(buildRecord());
-    const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(buildRecord());
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
     await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'));
     expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-FRONT_OFFICE', 'RESERVATION', 'READ_DETAIL', expect.anything());
   });
 
   it('rechaza si la matriz niega READ_DETAIL al rol del usuario', async () => {
-    const { reservations, workContext, matrixAuth } = buildDeps(buildRecord(), { role: 'CAMPO' });
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(buildRecord(), { role: 'CAMPO' });
     matrixAuth.assertAllowed = jest.fn().mockRejectedValue(new ForbiddenException({ code: 'ROLE_NOT_ALLOWED' }));
-    const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
     await expect(
       handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1')),
     ).rejects.toBeInstanceOf(ForbiddenException);
@@ -91,8 +107,8 @@ describe('GetReservationHandler', () => {
   });
 
   it('AUDITORIA puede acceder al detalle de una reserva (READ_DETAIL permitido)', async () => {
-    const { reservations, workContext, matrixAuth } = buildDeps(buildRecord(), { role: 'AUDITORIA' });
-    const handler = new GetReservationHandler(reservations, workContext, matrixAuth);
+    const { reservations, workContext, matrixAuth, saleResolutions } = buildDeps(buildRecord(), { role: 'AUDITORIA' });
+    const handler = new GetReservationHandler(reservations, workContext, matrixAuth, saleResolutions);
     const result = await handler.execute(new GetReservationQuery('res-1', 'uid-1', 'company-1', 'branch-1'));
     expect(result.id).toBe('res-1');
     expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-AUDITORIA', 'RESERVATION', 'READ_DETAIL', expect.anything());

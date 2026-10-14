@@ -29,6 +29,15 @@ import { ConfirmReservationHandler } from '../../application/commands/confirm-re
 import { ConfirmReservationCommand } from '../../application/commands/confirm-reservation.command';
 import { CancelReservationHandler } from '../../application/commands/cancel-reservation.handler';
 import { CancelReservationCommand } from '../../application/commands/cancel-reservation.command';
+import { FlagVehicleSaleHandler } from '../../application/commands/flag-vehicle-sale.handler';
+import { FlagVehicleSaleCommand } from '../../application/commands/flag-vehicle-sale.command';
+import { ResolveVehicleSaleHandler } from '../../application/commands/resolve-vehicle-sale.handler';
+import { ResolveVehicleSaleCommand } from '../../application/commands/resolve-vehicle-sale.command';
+import { ChangeReservationVehicleHandler } from '../../application/commands/change-reservation-vehicle.handler';
+import { ChangeReservationVehicleCommand } from '../../application/commands/change-reservation-vehicle.command';
+import { ChangeReservationVehicleDto } from './dto/change-reservation-vehicle.dto';
+import { FlagVehicleSaleDto } from './dto/flag-vehicle-sale.dto';
+import { ResolveVehicleSaleDto } from './dto/resolve-vehicle-sale.dto';
 import { GetReservationHandler } from '../../application/queries/get-reservation.handler';
 import { GetReservationQuery } from '../../application/queries/get-reservation.query';
 import { ListReservationsHandler } from '../../application/queries/list-reservations.handler';
@@ -51,9 +60,10 @@ import { ReservationDocumentRecord } from '../../application/ports/reservation-d
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
- * ningun comando de "reprogramar" (BR-RES-003) ni operaciones de venta de
- * vehiculo/conversion a alquiler (RES-06/07/08, ALQ-02) - fuera de
- * alcance de este primer corte, ver tarea HU-27 en ClickUp.
+ * ningun comando de "reprogramar" (BR-RES-003). Venta de vehiculo reservado
+ * (flag-sale / resolve-sale, RES-06/RES-07) vive aqui; la conversion a
+ * alquiler (RES-08, "se presento") es POST /rentals/from-reservation/{id} y
+ * el no-show es `cancel` con reason NO_SHOW (solo Gerencia).
  */
 @Controller('reservations')
 @UseGuards(FirebaseAuthGuard)
@@ -64,6 +74,9 @@ export class ReservationsController {
     private readonly registerDocuments: RegisterDocumentsHandler,
     private readonly confirmReservation: ConfirmReservationHandler,
     private readonly cancelReservation: CancelReservationHandler,
+    private readonly flagVehicleSale: FlagVehicleSaleHandler,
+    private readonly resolveVehicleSale: ResolveVehicleSaleHandler,
+    private readonly changeReservationVehicle: ChangeReservationVehicleHandler,
     private readonly getReservation: GetReservationHandler,
     private readonly listReservations: ListReservationsHandler,
     private readonly requestDocumentUploadSession: RequestReservationDocumentUploadSessionHandler,
@@ -141,7 +154,7 @@ export class ReservationsController {
         cursor,
       ),
     );
-    return results.map(toReservationResponse);
+    return results.map((record) => toReservationResponse(record));
   }
 
   @Get(':id')
@@ -153,7 +166,8 @@ export class ReservationsController {
     const reservation = await this.getReservation.execute(
       new GetReservationQuery(id, req.firebaseUid!, query.companyId, query.branchId),
     );
-    return toReservationResponse(reservation);
+    const { saleResolution, ...record } = reservation;
+    return toReservationResponse(record, { saleResolution });
   }
 
   @Post(':id/commands/register-payment')
@@ -240,6 +254,74 @@ export class ReservationsController {
       ),
     );
     return toReservationResponse(cancelled);
+  }
+
+  /**
+   * UC-RES-004 / RES-07 - registra la venta del vehiculo reservado (CONFIRMED ->
+   * PENDING_SALE_RESOLUTION). Gerencia/Administrador. El commitment sigue hasta resolve-sale.
+   */
+  @Post(':id/commands/flag-sale')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async flagSaleCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: FlagVehicleSaleDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReservationResponse> {
+    const flagged = await this.flagVehicleSale.execute(
+      new FlagVehicleSaleCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.alternativeVehicleId,
+        dto.note,
+      ),
+    );
+    return toReservationResponse(flagged);
+  }
+
+  /** UC-RES-004 / RES-07 - decision del cliente: ACCEPT_ALTERNATIVE (reformula, vuelve a DRAFT) o REJECT (cancela con reembolso pendiente). */
+  @Post(':id/commands/resolve-sale')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async resolveSaleCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ResolveVehicleSaleDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReservationResponse> {
+    const resolved = await this.resolveVehicleSale.execute(
+      new ResolveVehicleSaleCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.decision,
+        dto.alternativeVehicleId,
+        dto.note,
+      ),
+    );
+    return toReservationResponse(resolved);
+  }
+
+  /** RES-06 "Continuar con alternativa elegida" - cambia el vehiculo de una reserva en DRAFT (no es reprogramacion, BR-RES-003). */
+  @Post(':id/commands/change-vehicle')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async changeVehicleCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ChangeReservationVehicleDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReservationResponse> {
+    const changed = await this.changeReservationVehicle.execute(
+      new ChangeReservationVehicleCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch), dto.vehicleId),
+    );
+    return toReservationResponse(changed);
   }
 
   @Post(':id/documents/upload-url')

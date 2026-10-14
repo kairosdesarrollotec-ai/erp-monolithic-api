@@ -5,7 +5,7 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { isTerminalReservationStatus } from '../../domain/reservation-status';
+import { isTerminalReservationStatus, ReservationStatus } from '../../domain/reservation-status';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
 import { CancelReservationCommand } from './cancel-reservation.command';
 
@@ -41,6 +41,18 @@ import { CancelReservationCommand } from './cancel-reservation.command';
  * (mismo criterio que ConfirmReservationHandler) - la cancelacion no
  * publicaba ningun evento pese a que el modelo ya existia.
  */
+/**
+ * UC-RES-004: una reserva en PENDING_SALE_RESOLUTION (vehiculo vendido) solo
+ * sale de ese estado por `resolve-sale` (acepta alternativa o rechaza con
+ * reembolso); cancelarla por aqui dejaria abierta la fila de
+ * `reservation_resolutions` y sin reembolso registrado (DEC-RES-SALE-001).
+ */
+function assertNotPendingSaleResolution(status: ReservationStatus): void {
+  if (status === 'PENDING_SALE_RESOLUTION') {
+    throw new ReservationStateConflictError('cancelar directamente (resuelve la venta con resolve-sale)', status);
+  }
+}
+
 @Injectable()
 export class CancelReservationHandler {
   constructor(
@@ -84,6 +96,7 @@ export class CancelReservationHandler {
     if (isTerminalReservationStatus(existing.status)) {
       throw new ReservationStateConflictError('cancelar', existing.status);
     }
+    assertNotPendingSaleResolution(existing.status);
 
     return this.transactionManager.run(
       async (tx) => {
@@ -94,6 +107,7 @@ export class CancelReservationHandler {
         if (isTerminalReservationStatus(current.status)) {
           throw new ReservationStateConflictError('cancelar', current.status);
         }
+        assertNotPendingSaleResolution(current.status);
 
         const cancelled = await this.reservations.cancel(
           {

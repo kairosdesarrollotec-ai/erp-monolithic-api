@@ -496,6 +496,9 @@ model Customer {
   @@index([operatingCompanyId, documentNumber])
   @@index([fullName(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_customers_fullname_trgm")
   @@index([documentNumber(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_customers_docnumber_trgm")
+  // LIMITE CONOCIDO: `idx_customers_email_trgm` (GIN gin_trgm_ops sobre email WHERE email IS NOT NULL,
+  // migracion 20261011000001_search_trgm_indexes) es un indice PARCIAL; Prisma 5.22 no modela WHERE,
+  // asi que vive solo en SQL. No lo borres ni lo recrees desde el schema.
   @@map("customers")
 }
 
@@ -775,9 +778,10 @@ model Reservation {
   operatingCompany Company  @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   branch           Branch   @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
 
-  acceptance ReservationAcceptance?
-  rental     Rental?
-  documents  ReservationDocument[]
+  acceptance  ReservationAcceptance?
+  rental      Rental?
+  documents   ReservationDocument[]
+  resolutions ReservationResolution[]
 
   // Hallazgo critico PR#6 ("IDOR entre sedes/empresas"): este indice
   // respalda el filtro de scope completo (organizationId +
@@ -804,6 +808,41 @@ model ReservationAcceptance {
   reservation Reservation @relation(fields: [reservationId], references: [id])
 
   @@map("reservation_acceptances")
+}
+
+/// TDD-RES-001.md seccion 9.3 / UC-RES-004 (BR-RES-007, RES-06/RES-07) -
+/// resolucion ante la venta de un vehiculo reservado. Una fila por evento
+/// de venta: nace al registrar la venta (flag-sale, customer_decision NULL =
+/// pendiente) y se cierra con resolve-sale. DESVIACION respecto al DDL del
+/// TDD (customer_decision NOT NULL, refund_id FK a payments): no existe
+/// modulo Payments, asi que la decision es nullable mientras esta pendiente
+/// y el reembolso se modela como `refund_status` (PENDING_TRANSFER = Gerencia
+/// debe transferir), sin integracion de pagos - ver DEC-RES-SALE-001.
+/// El indice unico parcial (una resolucion abierta por reserva) y los CHECK
+/// viven solo en SQL (Prisma 5 no los declara).
+model ReservationResolution {
+  id                   String    @id @default(uuid())
+  organizationId       String    @map("organization_id")
+  reservationId        String    @map("reservation_id")
+  reason               String    @default("VEHICLE_SOLD") @db.VarChar(30)
+  originalVehicleId    String    @map("original_vehicle_id")
+  offeredVehicleId     String?   @map("offered_vehicle_id")
+  offerNote            String?   @map("offer_note")
+  flaggedBy            String    @map("flagged_by")
+  flaggedAt            DateTime  @default(now()) @map("flagged_at")
+  /// NULL = pendiente de decision del cliente; 'ACCEPTED' | 'REJECTED'.
+  customerDecision     String?   @map("customer_decision") @db.VarChar(20)
+  alternativeVehicleId String?   @map("alternative_vehicle_id")
+  /// 'PENDING_TRANSFER' cuando el cliente rechazo (Gerencia transfiere la devolucion).
+  refundStatus         String?   @map("refund_status") @db.VarChar(30)
+  resolutionNote       String?   @map("resolution_note")
+  resolvedBy           String?   @map("resolved_by")
+  resolvedAt           DateTime? @map("resolved_at")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id])
+
+  @@index([reservationId, flaggedAt], map: "reservation_resolutions_reservation_idx")
+  @@map("reservation_resolutions")
 }
 
 /// TR-06 (SDD-KAIROS-TRANSVERSAL.md 18.2, HU-24) - proyeccion de lectura

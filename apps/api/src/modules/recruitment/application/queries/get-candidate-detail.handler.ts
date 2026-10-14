@@ -13,7 +13,7 @@ export class GetCandidateDetailHandler {
   ) {}
 
   async execute(query: GetCandidateDetailQuery): Promise<CandidateDetailRecord> {
-    const { context } = await this.access.authorize(
+    const { context, scope } = await this.access.authorize(
       {
         firebaseUid: query.firebaseUid,
         companyId: query.companyId,
@@ -22,7 +22,7 @@ export class GetCandidateDetailHandler {
       'VIEW_CANDIDATE',
     );
 
-    const candidate = await this.candidates.findDetailById(query.id);
+    const candidate = await this.candidates.findDetailById(query.id, scope);
     if (!candidate) {
       throw new CandidateNotFoundError(query.id);
     }

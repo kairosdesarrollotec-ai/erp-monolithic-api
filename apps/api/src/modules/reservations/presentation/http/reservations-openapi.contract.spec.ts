@@ -11,6 +11,9 @@ import { ReservationsController } from './reservations.controller';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { CancelReservationDto } from './dto/cancel-reservation.dto';
 import { CommandScopeDto } from './dto/command-scope.dto';
+import { FlagVehicleSaleDto } from './dto/flag-vehicle-sale.dto';
+import { ResolveVehicleSaleDto } from './dto/resolve-vehicle-sale.dto';
+import { SALE_DECISIONS } from '../../domain/reservation-sale-resolution';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { RESERVATION_LIST_MAX_LIMIT, RESERVATION_LIST_DEFAULT_LIMIT } from '../../domain/reservation-pagination';
 import { toReservationResponse } from './reservation.mapper';
@@ -167,11 +170,31 @@ describe('Contrato OpenAPI reservations.yaml vs backend', () => {
     ['CreateReservationRequest', CreateReservationDto],
     ['CancelReservationRequest', CancelReservationDto],
     ['CommandScopeRequest', CommandScopeDto],
+    ['FlagVehicleSaleRequest', FlagVehicleSaleDto],
+    ['ResolveVehicleSaleRequest', ResolveVehicleSaleDto],
   ])('%s: mismos campos y mismos obligatorios que el DTO', (schemaName, dto) => {
     const contract = flatten(spec.components.schemas[schemaName]);
     const fields = dtoFields(dto as new () => unknown);
     expect(Object.keys(contract.properties).sort()).toEqual(fields.all);
     expect([...contract.required].sort()).toEqual(fields.required);
+  });
+
+  it('ResolveVehicleSaleRequest.decision coincide con SALE_DECISIONS del dominio', () => {
+    const contract = flatten(spec.components.schemas.ResolveVehicleSaleRequest);
+    expect([...contract.properties.decision.enum].sort()).toEqual([...SALE_DECISIONS].sort());
+  });
+
+  it('flag-sale, resolve-sale y change-vehicle: comandos con Idempotency-Key opcional, 200 y errores 403/404/409/412/422/428 declarados', () => {
+    for (const route of [
+      '/reservations/{id}/commands/flag-sale',
+      '/reservations/{id}/commands/resolve-sale',
+      '/reservations/{id}/commands/change-vehicle',
+    ]) {
+      const op: Operation = spec.paths[route].post;
+      const headers = (op.parameters ?? []).map(deref).filter((p: any) => p.in === 'header').map((p: any) => p.name);
+      expect(headers).toEqual(expect.arrayContaining(['If-Match', 'Idempotency-Key']));
+      expect(Object.keys(op.responses).sort()).toEqual(['200', '403', '404', '409', '412', '422', '428']);
+    }
   });
 
   it('limite maximo de la bandeja coincide con la constante del runtime', () => {

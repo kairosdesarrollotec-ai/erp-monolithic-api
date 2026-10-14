@@ -60,7 +60,7 @@ export class PrismaVacancyRepository implements VacancyRepositoryPort {
 
   async findById(
     id: string,
-    scope: { organizationId: string; operatingCompanyId: string; branchId?: string },
+    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
     tx?: Prisma.TransactionClient,
   ): Promise<VacancyRecord | null> {
     const client = tx ?? this.prisma;
@@ -69,7 +69,7 @@ export class PrismaVacancyRepository implements VacancyRepositoryPort {
         id,
         organizationId: scope.organizationId,
         operatingCompanyId: scope.operatingCompanyId,
-        ...(scope.branchId ? { branchId: scope.branchId } : {}),
+        branchId: scope.branchId,
       },
     });
     return found ? this.mapToRecord(found) : null;
@@ -77,7 +77,7 @@ export class PrismaVacancyRepository implements VacancyRepositoryPort {
 
   async findDetailById(
     id: string,
-    scope: { organizationId: string; operatingCompanyId: string; branchId?: string },
+    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
     tx?: Prisma.TransactionClient,
   ): Promise<VacancyDetailRecord | null> {
     const client = tx ?? this.prisma;
@@ -86,7 +86,7 @@ export class PrismaVacancyRepository implements VacancyRepositoryPort {
         id,
         organizationId: scope.organizationId,
         operatingCompanyId: scope.operatingCompanyId,
-        ...(scope.branchId ? { branchId: scope.branchId } : {}),
+        branchId: scope.branchId,
       },
       include: {
         candidates: {

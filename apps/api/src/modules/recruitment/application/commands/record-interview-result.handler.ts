@@ -21,7 +21,7 @@ export class RecordInterviewResultHandler {
   ) {}
 
   async execute(command: RecordInterviewResultCommand): Promise<CandidateInterviewRecord> {
-    const { context } = await this.access.authorize(
+    const { context, scope } = await this.access.authorize(
       {
         firebaseUid: command.firebaseUid,
         companyId: command.companyId,
@@ -31,12 +31,12 @@ export class RecordInterviewResultHandler {
     );
 
     return this.transactionManager.run(async (tx) => {
-      const interview = await this.interviews.findById(command.id, tx);
+      const interview = await this.interviews.findScopedById(command.id, scope, tx);
       if (!interview) {
         throw new InterviewNotFoundError(command.id);
       }
 
-      const candidate = await this.candidates.findById(interview.candidateId, tx);
+      const candidate = await this.candidates.findScopedById(interview.candidateId, scope, tx);
       if (!candidate) {
         throw new CandidateNotFoundError(interview.candidateId);
       }

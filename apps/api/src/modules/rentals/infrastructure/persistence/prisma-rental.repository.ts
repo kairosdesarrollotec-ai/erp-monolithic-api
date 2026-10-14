@@ -246,6 +246,48 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     });
   }
 
+  async markReservationConverted(
+    reservationId: string,
+    scope: RentalScope,
+    tx: Prisma.TransactionClient,
+  ): Promise<boolean> {
+    const result = await tx.reservation.updateMany({
+      where: { ...scopeWhere(reservationId, scope), status: 'CONFIRMED' },
+      data: { status: 'CONVERTED', version: { increment: 1 } },
+    });
+    return result.count === 1;
+  }
+
+  async transferReservationCommitmentToRental(
+    reservationId: string,
+    rentalId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<number> {
+    const result = await tx.vehicleCommitment.updateMany({
+      where: { sourceType: 'RESERVATION', sourceId: reservationId, status: { in: ['ACTIVE', 'CONSOLIDATED'] } },
+      data: { sourceType: 'RENTAL', sourceId: rentalId },
+    });
+    return result.count;
+  }
+
+  async findByReservationId(
+    reservationId: string,
+    scope: RentalScope,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord | null> {
+    const client = tx ?? this.prisma;
+    const found = await client.rental.findFirst({
+      where: {
+        reservationId,
+        organizationId: scope.organizationId,
+        operatingCompanyId: scope.operatingCompanyId,
+        branchId: scope.branchId,
+      },
+      include: RENTAL_RELATIONS_INCLUDE,
+    });
+    return found ? toRentalRecord(found as RentalWithRelations) : null;
+  }
+
   async countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number> {
     return this.prisma.rental.count({
       where: {

@@ -57,6 +57,28 @@ export function projectReservationEvent(event: OutboxEventLike): ReservationProj
         },
       };
     }
+    case 'ReservationReformulated': {
+      // UC-RES-004 (RES-07): el cliente acepto la alternativa y la reserva volvio a DRAFT -
+      // vuelve a ser trabajo pendiente de Front-office (reenviar documentos y confirmar, RES-04).
+      const payload = event.payload as ReservationCreatedPayload;
+      return {
+        action: 'UPSERT',
+        item: {
+          organizationId: payload.organizationId,
+          operatingCompanyId: payload.operatingCompanyId,
+          branchId: payload.branchId,
+          role: 'FRONT_OFFICE',
+          itemType: 'TASK',
+          priority: 10,
+          title: `Reserva reformulada: reenviar documentos y confirmar`,
+          detail: `Vehiculo alternativo ${payload.vehicleId}`,
+          deepLink: `/reservas/${event.aggregateId}`,
+          sourceType: 'RESERVATION',
+          sourceId: event.aggregateId,
+          sourceEventId: event.id,
+        },
+      };
+    }
     case 'ReservationConfirmed':
     case 'ReservationCancelled':
       // La reserva ya no requiere atencion pendiente - se descarta el

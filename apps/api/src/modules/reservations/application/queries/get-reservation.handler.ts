@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
+import { ReservationSaleResolutionRepositoryPort } from '../ports/reservation-sale-resolution-repository.port';
+import type { ReservationSaleResolutionRecord } from '../../domain/reservation-sale-resolution';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { GetReservationQuery } from './get-reservation.query';
@@ -18,9 +20,11 @@ export class GetReservationHandler {
     private readonly reservations: ReservationRepositoryPort,
     private readonly workContext: WorkContextAuthorizationService,
     private readonly matrixAuth: MatrixAuthorizationService,
+    private readonly saleResolutions: ReservationSaleResolutionRepositoryPort,
   ) {}
 
-  async execute(query: GetReservationQuery): Promise<ReservationRecord> {
+  /** Detalle + ultima resolucion por venta del vehiculo (RES-07), si la hubo. */
+  async execute(query: GetReservationQuery): Promise<ReservationRecord & { saleResolution: ReservationSaleResolutionRecord | null }> {
     const context = await this.workContext.authorize({
       firebaseUid: query.firebaseUid,
       companyId: query.companyId,
@@ -36,6 +40,7 @@ export class GetReservationHandler {
     if (!reservation) {
       throw new NotFoundException('Reserva no encontrada.');
     }
-    return reservation;
+    const saleResolution = await this.saleResolutions.findLatestByReservationId(reservation.id);
+    return { ...reservation, saleResolution };
   }
 }

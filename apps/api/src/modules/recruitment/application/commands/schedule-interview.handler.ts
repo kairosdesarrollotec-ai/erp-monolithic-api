@@ -20,7 +20,7 @@ export class ScheduleInterviewHandler {
   ) {}
 
   async execute(command: ScheduleInterviewCommand): Promise<CandidateInterviewRecord> {
-    const { context } = await this.access.authorize(
+    const { context, scope } = await this.access.authorize(
       {
         firebaseUid: command.firebaseUid,
         companyId: command.companyId,
@@ -30,7 +30,7 @@ export class ScheduleInterviewHandler {
     );
 
     return this.transactionManager.run(async (tx) => {
-      const candidate = await this.candidates.findById(command.candidateId, tx);
+      const candidate = await this.candidates.findScopedById(command.candidateId, scope, tx);
       if (!candidate) {
         throw new CandidateNotFoundError(command.candidateId);
       }

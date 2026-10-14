@@ -101,20 +101,27 @@ export interface CreateCandidateInput {
   salaryExpectation?: number | null;
 }
 
+export interface RecruitmentRepositoryScope {
+  organizationId: string;
+  operatingCompanyId: string;
+  branchId: string;
+}
+
 export abstract class CandidateRepositoryPort {
   abstract create(input: CreateCandidateInput, tx?: Prisma.TransactionClient): Promise<CandidateRecord>;
-  abstract findById(
-    id: string,
-    tx?: Prisma.TransactionClient,
-  ): Promise<CandidateRecord | null>;
+  /**
+   * Detalle del candidato acotado a organizacion/empresa/sede de su vacante. No existe busqueda por id sin
+   * alcance: un id de otra sede/empresa debe resolverse como inexistente (404, no revela existencia).
+   */
   abstract findDetailById(
     id: string,
+    scope: RecruitmentRepositoryScope,
     tx?: Prisma.TransactionClient,
   ): Promise<CandidateDetailRecord | null>;
-  /** Como `findById` pero acotado a organizacion/empresa/sede de la vacante del candidato (datos sensibles). */
+  /** Candidato acotado a organizacion/empresa/sede de la vacante del candidato. */
   abstract findScopedById(
     id: string,
-    scope: { organizationId: string; operatingCompanyId: string; branchId: string },
+    scope: RecruitmentRepositoryScope,
     tx?: Prisma.TransactionClient,
   ): Promise<CandidateRecord | null>;
   abstract setCv(
