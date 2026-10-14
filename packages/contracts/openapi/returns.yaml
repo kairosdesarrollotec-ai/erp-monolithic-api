@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.2.0
+  version: 1.3.0
   description: >
+    1.3.0 — BR-DEV-003/004 (tolerancia de 30 min CONFIRMADA): ReturnResponse.lateness
+    {lateToleranceMinutes, lateMinutes, isLate, basis} en GET /returns y GET /returns/{id}
+    (solo informativo: no hay cargo por retraso definido en los documentos).
+    Recordatorio: "si el cliente no contesta, SOLO se registra" (register-reminder FAILED + nota;
+    sin escalamiento ni reintentos automáticos). DUE_SOON a 4 h del límite de garantía CONFIRMADO.
+
     1.2.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
     sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
     inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
@@ -472,7 +478,9 @@ paths:
         El sistema NO envía el WhatsApp (la integración no existe): el operador lo envía a mano y aquí registra la hora y el resultado
         (SENT | FAILED + nota; la nota es obligatoria si FAILED). `If-Match` lleva la versión del RECORDATORIO (`reminder.version` /
         `reminder.etag`), no la del expediente, y el comando no modifica la versión del expediente. Un recordatorio FAILED admite un nuevo
-        registro (reintento); uno SENT es definitivo (409 RETURN_REMINDER_ALREADY_SENT). Acción de matriz: RETURN.CREATE.
+        registro MANUAL del operador; uno SENT es definitivo (409 RETURN_REMINDER_ALREADY_SENT). Acción de matriz: RETURN.CREATE.
+        Regla CONFIRMADA: si el cliente no contesta, SOLO se registra (FAILED + nota con el motivo): el sistema no escala, no notifica a
+        terceros ni reintenta el envío automáticamente. La tolerancia de 30 min (BR-DEV-003/004) solo se informa en el texto del recordatorio.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -768,6 +776,17 @@ components:
         dailyRate: { type: number, nullable: true, description: dailyRate vigente del vehículo }
         suggestedAmount: { type: number, nullable: true, description: pendingDays x dailyRate (sugerencia; el cobro es manual) }
 
+    ReturnLateness:
+      type: object
+      required: [lateToleranceMinutes, lateMinutes, isLate, basis]
+      properties:
+        lateToleranceMinutes: { type: integer, example: 30 }
+        lateMinutes: { type: integer, minimum: 0, description: Minutos enteros pasados de la hora pactada (0 si no hay retraso bruto) }
+        isLate: { type: boolean, description: true solo si el retraso supera estrictamente la tolerancia }
+        basis:
+          type: string
+          enum: [RECEIVED, NOW]
+          description: RECEIVED = contra la recepción real (definitivo); NOW = aún no recibido (parcial, crece con el reloj)
     ReturnAlerts:
       type: object
       required: [warrantyRelease, immobilization]
@@ -1210,6 +1229,14 @@ components:
             la omiten. warrantyRelease = garantía por liberar a las 24 h; immobilization = más de 24 h sin cobrar (solo alertan).
           allOf:
             - $ref: '#/components/schemas/ReturnAlerts'
+        lateness:
+          nullable: true
+          description: >
+            BR-DEV-003 (CONFIRMADO): tolerancia de devolución sin sanción de 30 min sobre scheduledAt. Solo en GET /returns/{id}
+            y GET /returns; las respuestas de comandos la omiten. null si no aplica (CANCELADA sin recepción).
+            Informativo: no dispara cargos (los documentos no definen cargo por retraso).
+          allOf:
+            - $ref: '#/components/schemas/ReturnLateness'
         scheduledAt: { type: string, format: date-time }
         receivedAt: { type: string, format: date-time, nullable: true }
         inspectedAt: { type: string, format: date-time, nullable: true }

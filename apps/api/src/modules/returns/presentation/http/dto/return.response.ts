@@ -129,6 +129,13 @@ export interface CosmeticTariffResponse {
   items: CosmeticTariffItemResponse[];
 }
 
+export interface ReturnLatenessResponse {
+  lateToleranceMinutes: number;
+  lateMinutes: number;
+  isLate: boolean;
+  basis: 'RECEIVED' | 'NOW';
+}
+
 export interface ReturnResponse {
   id: string;
   organizationId: string;
@@ -152,6 +159,8 @@ export interface ReturnResponse {
   reminder: ReturnReminderResponse | null;
   /** Alertas operativas; solo en GET detalle y bandeja (las respuestas de comandos las omiten). */
   alerts?: ReturnAlertsResponse;
+  /** BR-DEV-003: retraso con tolerancia de 30 min. Solo en GET /returns/{id} y GET /returns. */
+  lateness?: ReturnLatenessResponse | null;
   scheduledAt: string;
   receivedAt: string | null;
   inspectedAt: string | null;

@@ -4,6 +4,7 @@ import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.p
 import { ReturnAccessService } from '../services/return-access.service';
 import { ReturnNotFoundError } from '../../domain/return-errors';
 import { computeReturnAlerts } from '../../domain/return-alerts';
+import { computeReturnLateness } from '../../domain/return-lateness';
 import { GetReturnQuery } from './get-return.query';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class GetReturnHandler {
       throw new ReturnNotFoundError(query.id);
     }
     // Alertas operativas (garantía 24 h / inmovilización > 24 h) calculadas con el reloj.
-    return { ...found, alerts: computeReturnAlerts(found, this.clock.now()) };
+    const now = this.clock.now();
+    return { ...found, alerts: computeReturnAlerts(found, now), lateness: computeReturnLateness(found, now) };
   }
 }

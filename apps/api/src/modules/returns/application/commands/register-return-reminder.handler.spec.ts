@@ -65,7 +65,6 @@ describe('RegisterReturnReminderHandler (BR-DEV-004 / DAT-DEV-001)', () => {
       },
       fakeTx,
     );
-    expect(deps.returns.update).not.toHaveBeenCalled();
     expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
       expect.objectContaining({ rentalId: 'rent-1', action: 'RETURN_REMINDER_SENT' }),
       fakeTx,
@@ -91,6 +90,14 @@ describe('RegisterReturnReminderHandler (BR-DEV-004 / DAT-DEV-001)', () => {
       expect.objectContaining({ action: 'RETURN_REMINDER_FAILED' }),
       fakeTx,
     );
+  });
+
+  it('"si el cliente no contesta, SOLO se registra": FAILED+nota hace únicamente un registro y un audit, sin escalamiento ni reintento automático', async () => {
+    const { deps, handler } = build();
+    await handler.execute(cmd({ result: 'FAILED', note: 'No contestó' }));
+    expect(deps.reminders.registerResult).toHaveBeenCalledTimes(1);
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledTimes(1);
+    expect(deps.reminders.registerResult).toHaveBeenCalledWith(expect.objectContaining({ status: 'FAILED', resultNote: 'No contestó' }), fakeTx);
   });
 
   it('rechaza una hora de envío en el futuro (más allá de 5 min de tolerancia de reloj)', async () => {

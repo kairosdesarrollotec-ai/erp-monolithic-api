@@ -3,6 +3,7 @@ import { ClockPort, SystemClock } from '../../../../common/application/ports/clo
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import { computeReturnAlerts } from '../../domain/return-alerts';
+import { computeReturnLateness } from '../../domain/return-lateness';
 import { ListReturnsQuery } from './list-returns.query';
 
 @Injectable()
@@ -26,6 +27,6 @@ export class ListReturnsHandler {
       cursor: query.cursor,
     });
     const now = this.clock.now();
-    return rows.map((row) => ({ ...row, alerts: computeReturnAlerts(row, now) }));
+    return rows.map((row) => ({ ...row, alerts: computeReturnAlerts(row, now), lateness: computeReturnLateness(row, now) }));
   }
 }
