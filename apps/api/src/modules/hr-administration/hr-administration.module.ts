@@ -18,6 +18,11 @@ import { UserDisplayNamePort } from './application/ports/user-display-name.port'
 import { UserAccountEmailPort } from './application/ports/user-account-email.port';
 import { HrMemoRepositoryPort } from './application/ports/hr-memo-repository.port';
 import { TrainingRepositoryPort } from './application/ports/training-repository.port';
+import { AttendanceEvidenceStoragePort } from './application/ports/attendance-evidence-storage.port';
+import { GcsAttendanceEvidenceService } from './infrastructure/storage/gcs-attendance-evidence.service';
+import { RequestAttendanceEvidenceUploadSessionHandler } from './application/commands/request-attendance-evidence-upload-session.handler';
+import { LinkEmployeeAccountHandler } from './application/commands/link-employee-account.handler';
+import { EmployeeAccountLinkService } from './application/services/employee-account-link.service';
 import { LeaveEvidenceStoragePort } from './application/ports/leave-evidence-storage.port';
 import { PrismaEmployeeRepository } from './infrastructure/persistence/prisma-employee.repository';
 import { PrismaAttendanceRepository } from './infrastructure/persistence/prisma-attendance.repository';
@@ -106,6 +111,8 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     { provide: HrMemoRepositoryPort, useClass: PrismaHrMemoRepository },
     { provide: TrainingRepositoryPort, useClass: PrismaTrainingRepository },
     { provide: LeaveEvidenceStoragePort, useClass: GcsLeaveEvidenceService },
+    { provide: AttendanceEvidenceStoragePort, useClass: GcsAttendanceEvidenceService },
+    EmployeeAccountLinkService,
     CreateEmployeeHandler,
     UpdateEmployeeHandler,
     LogAttendanceHandler,
@@ -121,6 +128,8 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     ProcessDueFieldTripTimeoutsHandler,
     ReclassifyAttendanceHandler,
     RequestLeaveEvidenceUploadSessionHandler,
+    RequestAttendanceEvidenceUploadSessionHandler,
+    LinkEmployeeAccountHandler,
     RecordLeaveEvidenceHandler,
     RegisterTrainingHandler,
     TerminateEmploymentHandler,

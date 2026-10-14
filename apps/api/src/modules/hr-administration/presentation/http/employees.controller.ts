@@ -20,6 +20,8 @@ import { CreateEmployeeCommand } from '../../application/commands/create-employe
 import { CreateEmployeeHandler } from '../../application/commands/create-employee.handler';
 import { UpdateEmployeeCommand } from '../../application/commands/update-employee.command';
 import { UpdateEmployeeHandler } from '../../application/commands/update-employee.handler';
+import { LinkEmployeeAccountCommand } from '../../application/commands/link-employee-account.command';
+import { LinkEmployeeAccountHandler } from '../../application/commands/link-employee-account.handler';
 import { TerminateEmploymentCommand } from '../../application/commands/terminate-employment.command';
 import { TerminateEmploymentHandler } from '../../application/commands/terminate-employment.handler';
 import { ListEmployeesQuery } from '../../application/queries/list-employees.query';
@@ -63,6 +65,7 @@ export class EmployeesController {
     private readonly getEmployeeDetail: GetEmployeeDetailHandler,
     private readonly getEmployeeMemos: GetEmployeeMemosHandler,
     private readonly getEmployeeTrainings: GetEmployeeTrainingsHandler,
+    private readonly linkEmployeeAccount: LinkEmployeeAccountHandler,
   ) {}
 
   @Post()
@@ -152,6 +155,17 @@ export class EmployeesController {
     };
     const updated = await this.updateEmployee.execute(new UpdateEmployeeCommand(req.firebaseUid!, id, data));
     return toEmployeeResponse(updated);
+  }
+
+  /** DEC-ADP-LINK-EMAIL-001: vincula la ficha con la cuenta de usuario del mismo correo (409 si ya está vinculado a otro). */
+  @Post(':id/link-account')
+  @HttpCode(HttpStatus.OK)
+  async linkAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<EmployeeResponse> {
+    const linked = await this.linkEmployeeAccount.execute(new LinkEmployeeAccountCommand(req.firebaseUid!, id));
+    return toEmployeeResponse(linked);
   }
 
   @Post(':id/terminate')
