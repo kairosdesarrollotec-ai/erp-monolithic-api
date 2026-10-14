@@ -146,8 +146,8 @@ sources:
   module: Reserva
   version: '1.9'
   date: unknown
-  status: pending_review
-  estado_original: unknown
+  status: approved
+  estado_original: approved — DEC-RES-BDD-SDD-APPROVED-2026-10-13
   sha256: c225d6d59b2793926418b692f001e867d00fd33e1ff2c05e59ed7d8cda7106ad
   authority: business
   supersedes: null
@@ -247,8 +247,8 @@ sources:
   module: Reserva
   version: '2.2'
   date: 31 de agosto de 2026
-  status: draft_pending_review
-  estado_original: DRAFT COMPLETE — candidato a revisión arquitectónica, no aprobado
+  status: approved
+  estado_original: approved — DEC-RES-BDD-SDD-APPROVED-2026-10-13
   sha256: fa2c9e0f4595aef5738f68436d31848d27101d4fce6155a3d92787d678bf1e84
   authority: functional
   supersedes: null

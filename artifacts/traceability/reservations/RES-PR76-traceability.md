@@ -17,7 +17,7 @@ BDD → SDD → TDD → OpenAPI → código → pruebas → evidencia
 | ID | Archivo | Estado | Nota |
 |---|---|---|---|
 | BDD-KAIROS-MVP-002-RES | `docs/sources/bdd/bdd-02-reserva.md` | pending_review | Autoridad sustituida por DEC-RES-SALE-001, DEC-RES-CONVERT-001, DEC-RES-CHANGE-VEHICLE-001 hasta aprobación formal |
-| BDD-KAIROS-MVP-002-ALQ | `docs/sources/bdd/bdd-03-alquiler.md` | approved v1.8 | BR-ALQ-020 — crédito de reserva trasladado a garantía |
+| DEC-RES-CONVERT-001 | `docs/decision-log.md` | APROBADO 2026-10-13 | Autoridad nivel-1 para conversión CONFIRMED→CONVERTED; BR-ALQ-020 no existe en bdd-03-alquiler.md (ver DEC-RES-CONVERT-BR-ALQ-020-2026-10-13) |
 | BDD-KAIROS-MVP-002-REC | `docs/sources/bdd/bdd-05-reclutamiento-y-seleccion.md` | approved v1.8 | Seguridad por sede |
 
 ### SDD
@@ -52,7 +52,7 @@ BDD → SDD → TDD → OpenAPI → código → pruebas → evidencia
 | RES-06 — Cambio de vehículo en borrador | BDD-KAIROS-MVP-002-RES §RES-06 | `ChangeReservationVehicleHandler` | `change-reservation-vehicle.handler.spec.ts` |
 | RES-07 — Marcar venta (flag-sale) | BDD-KAIROS-MVP-002-RES §RES-07 | `FlagVehicleSaleHandler` | `flag-vehicle-sale.handler.spec.ts` |
 | RES-07 — Resolver venta (resolve-sale) | BDD-KAIROS-MVP-002-RES §RES-07 | `ResolveVehicleSaleHandler` | `resolve-vehicle-sale.handler.spec.ts` |
-| RES-08 — Reserva CONVERTED al crear alquiler | BR-ALQ-020 | `CreateRentalFromReservationHandler` | `create-rental-from-reservation.handler.spec.ts` |
+| RES-08 — Reserva CONVERTED al crear alquiler | DEC-RES-CONVERT-001 | `CreateRentalFromReservationHandler` | `create-rental-from-reservation.handler.spec.ts` |
 | SEC-REC — Aislamiento por sede en Reclutamiento | BDD-KAIROS-MVP-002-REC | Todos los handlers de recruitment | `recruitment-scope.spec.ts` |
 | SEC-ADP — Aislamiento por sede en Administración de Personal | SDD-KAIROS-MVP-002-ADP | Todos los handlers de hr-administration | `hr-administration-scope.spec.ts` |
 
