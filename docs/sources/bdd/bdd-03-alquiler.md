@@ -325,13 +325,14 @@ Scenario: Garantía totalmente cubierta por crédito de reserva
   Then no se cobra garantía adicional al cliente
   And el contrato registra depositAmount: 500.00 y reservationCreditAmount: 500.00
 
-Scenario: Crédito de reserva supera la garantía exigida — error
+Scenario: Crédito de reserva supera la garantía exigida — se aplica hasta cubrirla y el excedente queda visible (DEC-ALQ-RESCREDIT-002)
   Given un alquiler originado desde una Reserva
   And el pago de reserva fue de S/ 700.00
   And el monto de garantía exigido es S/ 500.00
-  When el operador intenta formalizar el contrato
-  Then el sistema rechaza la operación con error ReservationCreditExceedsDepositError
-  And no se registra ningún contrato
+  When el operador formaliza el contrato
+  Then el contrato se registra con depositAmount: 500.00 y reservationCreditAmount: 500.00
+  And no se cobra garantía adicional (amountCollected: 0.00)
+  And el excedente de S/ 200.00 queda en reservationCreditExcess como saldo a favor, sin reembolso ni cálculo automático (pendiente de Finanzas)
 
 Scenario: Monedas distintas — sin crédito
   Given un alquiler originado desde una Reserva

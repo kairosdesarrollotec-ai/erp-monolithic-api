@@ -12,7 +12,6 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import { RentalStateConflictError } from '../../domain/rental-errors';
 import {
   ReservationCreditCurrencyMismatchError,
-  ReservationCreditExceedsDepositError,
   ReservationCreditSource,
 } from '../../domain/reservation-credit';
 import { testRole } from '../../../users/testing/role-fixtures';
@@ -224,7 +223,7 @@ describe('FormalizeContractHandler', () => {
         },
       });
 
-      await deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withDriver: true } }));
+      await deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withCompanyDriver: true } }));
 
       expect(deps.templateRepository.findActive).toHaveBeenCalledWith('comp-1', 'RENTAL_CONTRACT_LEGAL_DRIVER', 'org-1');
       expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
@@ -249,18 +248,18 @@ describe('FormalizeContractHandler', () => {
         RENTAL_CONTRACT_NATURAL_DRIVER: template('RENTAL_CONTRACT_NATURAL_DRIVER', 'tpl-nat-drv'),
       };
       const a = buildDeps({ activeByType });
-      await a.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withDriver: false } }));
+      await a.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withCompanyDriver: false } }));
       expect(a.rentals.formalizeContract).toHaveBeenCalledWith(expect.objectContaining({ templateId: 'tpl-nat' }), fakeTx);
 
       const b = buildDeps({ activeByType });
-      await b.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withDriver: true } }));
+      await b.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withCompanyDriver: true } }));
       expect(b.rentals.formalizeContract).toHaveBeenCalledWith(expect.objectContaining({ templateId: 'tpl-nat-drv' }), fakeTx);
     });
 
     it('si la empresa aun no cargo la plantilla de la combinacion, usa la generica y lo audita', async () => {
       const deps = buildDeps();
 
-      await deps.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withDriver: false } }));
+      await deps.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withCompanyDriver: false } }));
 
       expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
         expect.objectContaining({ templateId: 'tpl-active', contractVariant: 'NATURAL_NO_DRIVER' }),
@@ -276,7 +275,7 @@ describe('FormalizeContractHandler', () => {
       const deps = buildDeps({ activeByType: {} });
 
       await expect(
-        deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withDriver: false } })),
+        deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withCompanyDriver: false } })),
       ).rejects.toMatchObject({
         response: expect.objectContaining({
           code: 'NO_ACTIVE_CONTRACT_TEMPLATE',
@@ -406,14 +405,23 @@ describe('FormalizeContractHandler', () => {
       );
     });
 
-    it('monto de reserva mayor que la garantia → 422 RESERVATION_CREDIT_EXCEEDS_DEPOSIT, no se persiste nada', async () => {
+    it('monto de reserva mayor que la garantia → NO error: aplica hasta cubrirla y registra el excedente (DEC-ALQ-RESCREDIT-002)', async () => {
       const deps = buildDeps({ rental: reservationRental, reservation: reservationSource({ amount: '600.00' }) });
 
-      await expect(deps.handler.execute(command({ depositAmount: '500.00' }))).rejects.toThrow(
-        ReservationCreditExceedsDepositError,
+      await deps.handler.execute(command({ depositAmount: '500.00' }));
+
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          depositAmount: '500.00',
+          reservationCreditAmount: '500.00',
+          reservationCreditExcess: '100.00',
+        }),
+        fakeTx,
       );
-      expect(deps.rentals.formalizeContract).not.toHaveBeenCalled();
-      expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+      const payment = deps.outboxRepository.publish.mock.calls.find((c) => c[0].eventType === 'PagoRegistrado.v1');
+      expect(payment![0].payload).toEqual(
+        expect.objectContaining({ amountCollected: '0.00', reservationCreditExcess: '100.00' }),
+      );
     });
 
     it('moneda de la garantia distinta de la de la reserva → RESERVATION_CREDIT_CURRENCY_MISMATCH', async () => {

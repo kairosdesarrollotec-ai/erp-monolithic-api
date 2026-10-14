@@ -33,7 +33,7 @@ describe('ContractTemplateResolver (BR-DOC-002/003)', () => {
       RENTAL_CONTRACT_LEGAL_DRIVER: tpl('RENTAL_CONTRACT_LEGAL_DRIVER'),
       RENTAL_CONTRACT: tpl('RENTAL_CONTRACT'),
     });
-    const r = await resolver.resolve('comp-1', 'org-1', { holderType: 'LEGAL', withDriver: true });
+    const r = await resolver.resolve('comp-1', 'org-1', { holderType: 'LEGAL', withCompanyDriver: true });
     expect(r.template?.type).toBe('RENTAL_CONTRACT_LEGAL_DRIVER');
     expect(r.requestedType).toBe('RENTAL_CONTRACT_LEGAL_DRIVER');
     expect(r.fallbackUsed).toBe(false);
@@ -45,17 +45,17 @@ describe('ContractTemplateResolver (BR-DOC-002/003)', () => {
       RENTAL_CONTRACT_NATURAL: tpl('RENTAL_CONTRACT_NATURAL'),
       RENTAL_CONTRACT_NATURAL_DRIVER: tpl('RENTAL_CONTRACT_NATURAL_DRIVER'),
     });
-    expect((await resolver.resolve('comp-1', 'org-1', { holderType: 'NATURAL', withDriver: false })).template?.id).toBe(
+    expect((await resolver.resolve('comp-1', 'org-1', { holderType: 'NATURAL', withCompanyDriver: false })).template?.id).toBe(
       'tpl-RENTAL_CONTRACT_NATURAL',
     );
-    expect((await resolver.resolve('comp-1', 'org-1', { holderType: 'NATURAL', withDriver: true })).template?.id).toBe(
+    expect((await resolver.resolve('comp-1', 'org-1', { holderType: 'NATURAL', withCompanyDriver: true })).template?.id).toBe(
       'tpl-RENTAL_CONTRACT_NATURAL_DRIVER',
     );
   });
 
   it('sin plantilla de esa combinacion cae a la generica y lo indica', async () => {
     const { resolver } = build({ RENTAL_CONTRACT: tpl('RENTAL_CONTRACT') });
-    const r = await resolver.resolve('comp-1', 'org-1', { holderType: 'LEGAL', withDriver: false });
+    const r = await resolver.resolve('comp-1', 'org-1', { holderType: 'LEGAL', withCompanyDriver: false });
     expect(r.template?.type).toBe('RENTAL_CONTRACT');
     expect(r.requestedType).toBe('RENTAL_CONTRACT_LEGAL');
     expect(r.fallbackUsed).toBe(true);
@@ -63,7 +63,7 @@ describe('ContractTemplateResolver (BR-DOC-002/003)', () => {
 
   it('sin ninguna vigente: template null y sin fallback', async () => {
     const { resolver } = build({});
-    const r = await resolver.resolve('comp-1', 'org-1', { holderType: 'NATURAL', withDriver: false });
+    const r = await resolver.resolve('comp-1', 'org-1', { holderType: 'NATURAL', withCompanyDriver: false });
     expect(r).toEqual({ template: null, requestedType: 'RENTAL_CONTRACT_NATURAL', fallbackUsed: false });
   });
 

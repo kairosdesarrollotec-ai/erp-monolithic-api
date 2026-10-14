@@ -93,12 +93,14 @@ export class PrismaRentalNotaryContractPersistence {
         originalAmount: new Prisma.Decimal(input.depositAmount),
         currency: input.currency,
         reservationCreditAmount: new Prisma.Decimal(input.reservationCreditAmount),
+        reservationCreditExcess: new Prisma.Decimal(input.reservationCreditExcess),
         status: 'HELD',
       },
       update: {
         originalAmount: new Prisma.Decimal(input.depositAmount),
         currency: input.currency,
         reservationCreditAmount: new Prisma.Decimal(input.reservationCreditAmount),
+        reservationCreditExcess: new Prisma.Decimal(input.reservationCreditExcess),
         status: 'HELD',
       },
     });

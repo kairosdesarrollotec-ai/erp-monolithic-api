@@ -1123,6 +1123,9 @@ model RentalDeposit {
   /// garantia. Solo alquileres de origen Reserva (0 en alquiler directo).
   /// Monto a cobrar al formalizar = originalAmount - reservationCreditAmount.
   reservationCreditAmount Decimal          @default(0) @map("reservation_credit_amount") @db.Decimal(12, 2)
+  /// DEC-ALQ-RESCREDIT-002: excedente del monto de la reserva sobre la garantia
+  /// (saldo a favor visible; sin reembolso ni calculo automatico, pregunta a Finanzas).
+  reservationCreditExcess Decimal          @default(0) @map("reservation_credit_excess") @db.Decimal(12, 2)
   createdAt      DateTime                  @default(now()) @map("created_at")
 
   rental      Rental                    @relation(fields: [rentalId], references: [id], onDelete: Cascade)

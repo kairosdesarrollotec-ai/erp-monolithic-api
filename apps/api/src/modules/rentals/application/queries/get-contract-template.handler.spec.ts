@@ -49,12 +49,12 @@ describe('GetContractTemplateHandler (BR-DOC-002/003)', () => {
     const { handler, matrixAuth } = build({ RENTAL_CONTRACT_NATURAL_DRIVER: tpl('RENTAL_CONTRACT_NATURAL_DRIVER') });
 
     const result = await handler.execute(
-      new GetContractTemplateQuery('rent-1', 'uid-1', 'comp-1', 'branch-1', { holderType: 'NATURAL', withDriver: true }),
+      new GetContractTemplateQuery('rent-1', 'uid-1', 'comp-1', 'branch-1', { holderType: 'NATURAL', withCompanyDriver: true }),
     );
 
     expect(result).toMatchObject({
       rentalId: 'rent-1',
-      variant: { holderType: 'NATURAL', withDriver: true },
+      variant: { holderType: 'NATURAL', withCompanyDriver: true },
       requestedType: 'RENTAL_CONTRACT_NATURAL_DRIVER',
       fallbackUsed: false,
       template: { id: 'tpl-RENTAL_CONTRACT_NATURAL_DRIVER', version: 3 },
@@ -66,7 +66,7 @@ describe('GetContractTemplateHandler (BR-DOC-002/003)', () => {
     const { handler } = build({ RENTAL_CONTRACT: tpl('RENTAL_CONTRACT') });
 
     const result = await handler.execute(
-      new GetContractTemplateQuery('rent-1', 'uid-1', 'comp-1', 'branch-1', { holderType: 'LEGAL', withDriver: false }),
+      new GetContractTemplateQuery('rent-1', 'uid-1', 'comp-1', 'branch-1', { holderType: 'LEGAL', withCompanyDriver: false }),
     );
 
     expect(result.fallbackUsed).toBe(true);

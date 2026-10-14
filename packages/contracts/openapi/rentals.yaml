@@ -1,8 +1,20 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.4.0
+  version: 1.5.0
   description: >
+    1.5.0 — DEC-ALQ-DRIVER-001 / DEC-ALQ-RESCREDIT-002 (sesión 2026-10-15).
+    (a) `withDriver` se renombra a `withCompanyDriver` (servicio de conductor que la EMPRESA
+    ofrece al cliente, BR-DOC-003); `withDriver` se conserva como alias DEPRECADO (si llegan
+    ambos con valores distintos: 400 CONTRACT_VARIANT_DRIVER_CONFLICT). NO es el "conductor
+    distinto del titular" de BR-ALQ-015 (otra persona que maneja un alquiler ya hecho sin
+    aprobación previa), que no elige plantilla. La respuesta de contract-template trae
+    `variant.withCompanyDriver` y el alias `variant.withDriver`. (b) formalize-contract YA NO
+    responde 422 RESERVATION_CREDIT_EXCEEDS_DEPOSIT: si el monto de la reserva supera la
+    garantía, `deposit.reservationCreditAmount` = garantía (cubierta), `amountCollected` = 0.00
+    y el sobrante queda en el campo nuevo `deposit.reservationCreditExcess` (saldo a favor
+    visible; sin reembolso ni cálculo automático; pendiente de Finanzas).
+
     1.4.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
     sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
     inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
@@ -298,7 +310,8 @@ paths:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: holderType, in: query, required: false, schema: { $ref: '#/components/schemas/ContractHolderType' } }
-        - { name: withDriver, in: query, required: false, description: 'Obligatorio si se envía holderType.', schema: { type: string, enum: ['true', 'false'] } }
+        - { name: withCompanyDriver, in: query, required: false, description: 'true si el cliente pide que la empresa le ofrezca un conductor (BR-DOC-003). Obligatorio si se envía holderType (o su alias deprecado withDriver).', schema: { type: string, enum: ['true', 'false'] } }
+        - { name: withDriver, in: query, required: false, deprecated: true, description: 'DEPRECADO: alias de withCompanyDriver.', schema: { type: string, enum: ['true', 'false'] } }
       responses:
         '200':
           description: Plantilla resuelta (o null si no hay vigente)
@@ -326,7 +339,7 @@ paths:
         `deposit.amountCollected`. En alquiler directo no hay traslado. El traslado
         solo aplica si la reserva sigue CONFIRMED/CONVERTED con el pago validado;
         una reserva cancelada (incluye no-show) no traslada nada. La plantilla se
-        elige por `holderType` + `withDriver` (BR-DOC-003).
+        elige por `holderType` + `withCompanyDriver` (BR-DOC-003). Si el monto de la reserva supera la garantía, se aplica hasta cubrirla y el sobrante se informa en `deposit.reservationCreditExcess`.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -353,7 +366,7 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: RESERVATION_CREDIT_EXCEEDS_DEPOSIT (el monto de la reserva supera la garantía) o RESERVATION_CREDIT_CURRENCY_MISMATCH (moneda distinta)
+          description: RESERVATION_CREDIT_CURRENCY_MISMATCH (moneda distinta). Un monto de reserva mayor que la garantía ya NO es error (queda en deposit.reservationCreditExcess).
         '428':
           description: Falta header If-Match
 
@@ -796,11 +809,15 @@ components:
           description: Garantía TOTAL del vehículo (incluye el monto de reserva que se traslada, si lo hay).
         depositCurrency: { type: string, enum: [PEN, USD] }
         holderType: { $ref: '#/components/schemas/ContractHolderType' }
-        withDriver:
+        withCompanyDriver:
           type: boolean
           description: >
-            BR-DOC-003. El vehículo lo maneja un conductor distinto del titular (conductor de la
-            empresa o conductor propio autorizado). Obligatorio si se envía holderType.
+            BR-DOC-003. El cliente pide que la empresa le OFREZCA un conductor (servicio). No es el
+            conductor distinto del titular de BR-ALQ-015. Obligatorio si se envía holderType.
+        withDriver:
+          type: boolean
+          deprecated: true
+          description: DEPRECADO (DEC-ALQ-DRIVER-001). Alias de withCompanyDriver; si ambos difieren, 400 CONTRACT_VARIANT_DRIVER_CONFLICT.
         signatureData:
           type: string
           nullable: true
@@ -970,10 +987,11 @@ components:
         variant:
           type: object
           nullable: true
-          required: [holderType, withDriver]
+          required: [holderType, withCompanyDriver, withDriver]
           properties:
             holderType: { $ref: '#/components/schemas/ContractHolderType' }
-            withDriver: { type: boolean }
+            withCompanyDriver: { type: boolean, description: 'La empresa ofrece conductor al cliente (BR-DOC-003).' }
+            withDriver: { type: boolean, deprecated: true, description: 'Alias deprecado de withCompanyDriver (mismo valor).' }
         requestedType:
           type: string
           description: Tipo de plantilla buscado primero (RENTAL_CONTRACT_NATURAL, ..._NATURAL_DRIVER, ..._LEGAL, ..._LEGAL_DRIVER o RENTAL_CONTRACT).
@@ -993,7 +1011,7 @@ components:
 
     RentalDepositResponse:
       type: object
-      required: [id, originalAmount, currency, status, reservationCreditAmount, amountCollected, createdAt]
+      required: [id, originalAmount, currency, status, reservationCreditAmount, reservationCreditExcess, amountCollected, createdAt]
       properties:
         id: { type: string, format: uuid }
         originalAmount:
@@ -1004,6 +1022,11 @@ components:
         reservationCreditAmount:
           type: string
           description: P0-03 (a) - parte de la garantía ya pagada como reserva. "0.00" en alquiler directo.
+        reservationCreditExcess:
+          type: string
+          description: >
+            DEC-ALQ-RESCREDIT-002 - excedente del monto de la reserva sobre la garantía ("0.00" si no hay).
+            Saldo a favor solo informativo: sin reembolso ni cálculo automático (pregunta abierta a Finanzas).
         amountCollected:
           type: string
           description: Diferencia cobrada al formalizar = originalAmount - reservationCreditAmount.
