@@ -138,6 +138,18 @@ describe('ReturnPersistenceMapper', () => {
     expect(record.damages).toEqual([]);
   });
 
+  it('toReturnRecord expone garantía y ampliaciones del alquiler (null/vacío si no hay)', () => {
+    const requestedEndAt = new Date('2026-10-16T10:00:00Z');
+    const rec = toReturnRecord(buildRow({
+      rental: { deposit: { originalAmount: new Prisma.Decimal('1500.50'), currency: 'PEN' }, extensions: [{ status: 'AUTHORIZED', requestedEndAt, paymentId: 'p1' }] },
+    } as Partial<ReturnWithRelations>));
+    expect(rec.rentalDeposit).toEqual({ originalAmount: 1500.5, currency: 'PEN' });
+    expect(rec.rentalExtensions).toEqual([{ status: 'AUTHORIZED', requestedEndAt, paymentId: 'p1' }]);
+    const none = toReturnRecord(buildRow({ rental: { deposit: null, extensions: [] } } as Partial<ReturnWithRelations>));
+    expect(none.rentalDeposit).toBeNull();
+    expect(none.rentalExtensions).toEqual([]);
+  });
+
   it('toReturnRecord expone dailyRate vigente del vehículo (number) o null si no tiene tarifa', () => {
     expect(toReturnRecord(buildRow()).vehicleDailyRate).toBe(120);
     expect(

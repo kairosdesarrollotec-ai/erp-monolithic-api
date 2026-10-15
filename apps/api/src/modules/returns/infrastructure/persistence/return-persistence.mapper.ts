@@ -17,6 +17,12 @@ export const RETURN_INCLUDE = {
   damages: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   immobilizationCharges: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   reminder: true,
+  rental: {
+    select: {
+      deposit: { select: { originalAmount: true, currency: true } },
+      extensions: { select: { status: true, requestedEndAt: true, paymentId: true } },
+    },
+  },
 } satisfies Prisma.RentalReturnInclude;
 
 export type ReturnWithRelations = Prisma.RentalReturnGetPayload<{ include: typeof RETURN_INCLUDE }>;
@@ -119,6 +125,14 @@ export function toReturnRecord(row: ReturnWithRelations): ReturnRecord {
     responsibilitySignatureData: row.responsibilitySignatureData,
     responsibilitySignedAt: row.responsibilitySignedAt,
     vehicleDailyRate: decimalToNumber(row.vehicle.dailyRate),
+    rentalDeposit: row.rental?.deposit
+      ? { originalAmount: row.rental.deposit.originalAmount.toNumber(), currency: row.rental.deposit.currency }
+      : null,
+    rentalExtensions: row.rental?.extensions?.map((e) => ({
+      status: e.status,
+      requestedEndAt: e.requestedEndAt,
+      paymentId: e.paymentId,
+    })),
     scheduledAt: row.scheduledAt,
     receivedAt: row.receivedAt,
     inspectedAt: row.inspectedAt,

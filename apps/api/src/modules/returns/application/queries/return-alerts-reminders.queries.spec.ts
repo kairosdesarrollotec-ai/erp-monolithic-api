@@ -38,6 +38,24 @@ describe('Consultas con alertas y recordatorios de Devolución', () => {
     expect(many.map((r) => r.lateness?.isLate)).toEqual([false, true]);
   });
 
+  it('get/list: adjunta el cargo sugerido por retraso (tarifa del vehículo, garantía y ampliaciones del alquiler)', async () => {
+    const deps = buildDeps({ role: 'FRONT_OFFICE' });
+    const scheduledAt = hoursBeforeNow(5);
+    const late = buildReturnRecord({
+      id: 'r-c', status: 'INSPECCION', scheduledAt, receivedAt: new Date(scheduledAt.getTime() + 90 * 60000),
+      vehicleDailyRate: 200, rentalDeposit: { originalAmount: 1000, currency: 'PEN' }, rentalExtensions: [],
+    });
+    deps.returns.findById.mockResolvedValue(late);
+    const one = await new GetReturnHandler(deps.access, deps.returns, deps.clock).execute(new GetReturnQuery('r-c', 'uid-1', 'comp-1', 'branch-1'));
+    expect(one.latenessCharge).toMatchObject({
+      tier: 'EXTRA_31_120', suggestedTimeCharge: '50.00', suggestedGuaranteePenalty: '200.00', noticeAndPrepaymentVerified: false, severeBreach: false,
+    });
+    const noDeposit = { ...late, id: 'r-d', rentalDeposit: null, rentalExtensions: undefined };
+    deps.returns.list.mockResolvedValue([late, noDeposit]);
+    const many = await new ListReturnsHandler(deps.access, deps.returns, deps.clock).execute(new ListReturnsQuery('uid-1', 'comp-1', 'branch-1'));
+    expect(many[1].latenessCharge).toMatchObject({ suggestedGuaranteePenalty: null, noticeAndPrepaymentVerified: null, suggestedTimeCharge: '50.00' });
+  });
+
   it('get/list: alerta de inmovilización > 24 h por daño técnico', async () => {
     const deps = buildDeps({ role: 'GERENCIA' });
     const record = buildReturnRecord({

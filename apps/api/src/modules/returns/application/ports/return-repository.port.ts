@@ -11,7 +11,7 @@ import {
 } from '../../domain/return-status';
 import type { ReturnReminderStatus } from '../../domain/return-reminder';
 import type { ReturnAlerts } from '../../domain/return-alerts';
-import type { ReturnLateness } from '../../domain/return-lateness';
+import type { LatenessExtensionInfo, ReturnLateness, ReturnLatenessCharge } from '../../domain/return-lateness';
 
 export interface ReturnScope {
   organizationId: string;
@@ -103,6 +103,10 @@ export interface ReturnRecord {
   responsibilitySignedAt: Date | null;
   /** dailyRate vigente del vehículo del alquiler (TDD §9.3); null si el vehículo no tiene tarifa. */
   vehicleDailyRate: number | null;
+  /** Garantía del alquiler (null = sin garantía, p. ej. con conductor de la empresa). Solo para el cargo sugerido por retraso. */
+  rentalDeposit?: { originalAmount: number; currency: string } | null;
+  /** Ampliaciones del alquiler (para verificar aviso/pago previo del retraso). */
+  rentalExtensions?: LatenessExtensionInfo[];
   scheduledAt: Date;
   receivedAt: Date | null;
   inspectedAt: Date | null;
@@ -123,6 +127,8 @@ export interface ReturnRecord {
   alerts?: ReturnAlerts;
   /** Retraso frente a la hora pactada con tolerancia de 30 min (BR-DEV-003); solo lo pueblan las consultas. null = no aplica. */
   lateness?: ReturnLateness | null;
+  /** DEC-DEV-LATE-CHARGE-001: cargo SUGERIDO por retraso (informativo, cobro manual); solo lo pueblan las consultas. */
+  latenessCharge?: ReturnLatenessCharge | null;
 }
 
 export interface CreateReturnInput {

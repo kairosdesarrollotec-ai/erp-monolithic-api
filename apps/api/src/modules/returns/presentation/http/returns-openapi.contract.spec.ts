@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { computeReturnLatenessCharge } from '../../domain/return-lateness';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'node:url';
@@ -474,6 +475,18 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expectMapperMatchesSchema('ReturnResponse', withLateness);
     expectMapperMatchesSchema('ReturnLateness', withLateness.lateness as object);
     expect(toReturnResponse(buildReturnRecord())).not.toHaveProperty('lateness');
+    const charge = computeReturnLatenessCharge(
+      { status: 'INSPECCION', scheduledAt: FIXED_NOW, receivedAt: new Date(FIXED_NOW.getTime() + 150 * 60000) },
+      FIXED_NOW,
+      { dailyRate: 120, deposit: { originalAmount: 1000, currency: 'PEN' }, extensions: [] },
+    );
+    const withCharge = toReturnResponse(buildReturnRecord({ latenessCharge: charge }));
+    expectMapperMatchesSchema('ReturnResponse', withCharge);
+    expectMapperMatchesSchema('ReturnLatenessCharge', withCharge.latenessCharge as object);
+    expect(withCharge.latenessCharge).toMatchObject({ tier: 'EXTRA_121_300', suggestedTimeCharge: '60.00', suggestedGuaranteePenalty: '300.00' });
+    expectMapperMatchesSchema('ReturnLatenessCharge', computeReturnLatenessCharge(
+      { status: 'INSPECCION', scheduledAt: FIXED_NOW, receivedAt: FIXED_NOW }, FIXED_NOW, { dailyRate: null }) as object);
+    expect(toReturnResponse(buildReturnRecord())).not.toHaveProperty('latenessCharge');
     expectMapperMatchesSchema('WarrantyReleaseAlert', withAll.alerts!.warrantyRelease as object);
     expectMapperMatchesSchema('ImmobilizationAlert', withAll.alerts!.immobilization as object);
     expect(withAll.reminder).toMatchObject({ status: 'FAILED', text: expect.any(String), note: 'No contestó', version: 2, etag: '"2"' });
@@ -509,7 +522,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expectMapperMatchesSchema('ReturnAlertItem', alert);
   });
 
-  it('contrato 1.3.0', () => {
-    expect(spec.info.version).toBe('1.3.0');
+  it('contrato 1.4.0', () => {
+    expect(spec.info.version).toBe('1.4.0');
   });
 });

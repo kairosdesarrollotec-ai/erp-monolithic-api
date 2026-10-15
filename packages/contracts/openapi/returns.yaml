@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.3.0
+  version: 1.4.0
   description: >
+    1.4.0 — DEC-DEV-LATE-CHARGE-001 (Hoja de Políticas VR-GA-PA-VS.04, 26.03.2026, CONFIRMADA): ReturnResponse.latenessCharge,
+    cargo SUGERIDO por retraso en GET /returns y GET /returns/{id} (informativo: NO cobra ni bloquea; el cobro sigue manual).
+    Tramos: 31-120 min = 25% del día (penalidad sobre garantía 20%), 121-300 min = 50% (30%), >300 min = día completo (50%);
+    >12 h no autorizado = severeBreach. Montos como string decimal. Tarifa = dailyRate vigente del vehículo; garantía =
+    garantía del alquiler (null si no hay, p. ej. con conductor de la empresa).
+
     1.3.0 — BR-DEV-003/004 (tolerancia de 30 min CONFIRMADA): ReturnResponse.lateness
     {lateToleranceMinutes, lateMinutes, isLate, basis} en GET /returns y GET /returns/{id}
     (solo informativo: no hay cargo por retraso definido en los documentos).
@@ -787,6 +793,38 @@ components:
           type: string
           enum: [RECEIVED, NOW]
           description: RECEIVED = contra la recepción real (definitivo); NOW = aún no recibido (parcial, crece con el reloj)
+    ReturnLatenessCharge:
+      type: object
+      description: >
+        Cargo SUGERIDO por retraso (Hoja de Políticas VR-GA-PA-VS.04). Solo informativo; el cobro es manual
+        (ajustes de garantía / cargo de paralización). La tolerancia de 30 min exactos (30:00) no es retraso (tier NONE).
+      required: [tier, basis, informational, timeChargePercent, guaranteePenaltyPercent, dailyRate, guaranteeAmount, currency, suggestedTimeCharge, suggestedGuaranteePenalty, noticeAndPrepaymentVerified, severeBreach, severeBreachThresholdHours]
+      properties:
+        tier:
+          type: string
+          enum: [NONE, EXTRA_31_120, EXTRA_121_300, EXTRA_OVER_300]
+          description: NONE = dentro de tolerancia; EXTRA_31_120 = 31-120 min; EXTRA_121_300 = 121 min a 5 h; EXTRA_OVER_300 = más de 5 h
+        basis: { type: string, enum: [RECEIVED, NOW] }
+        informational: { type: boolean, enum: [true] }
+        timeChargePercent: { type: integer, description: '0 / 25 / 50 / 100 (% de la tarifa diaria)' }
+        guaranteePenaltyPercent: { type: integer, description: '0 / 20 / 30 / 50 (% de la garantía)' }
+        dailyRate: { type: string, nullable: true, pattern: '^\\d+\\.\\d{2}$', description: dailyRate vigente del vehículo (misma fuente que el cargo de paralización) }
+        guaranteeAmount: { type: string, nullable: true, pattern: '^\\d+\\.\\d{2}$', description: Garantía del alquiler; null si no tiene (p. ej. con conductor de la empresa) }
+        currency: { type: string, nullable: true }
+        suggestedTimeCharge: { type: string, nullable: true, pattern: '^\\d+\\.\\d{2}$', description: timeChargePercent x tarifa diaria; null si NONE o sin tarifa }
+        suggestedGuaranteePenalty:
+          type: string
+          nullable: true
+          pattern: '^\\d+\\.\\d{2}$'
+          description: >
+            guaranteePenaltyPercent x garantía, aplicable "si no avisó / no pagó antes". null si NONE, sin garantía o si
+            noticeAndPrepaymentVerified es true.
+        noticeAndPrepaymentVerified:
+          type: boolean
+          nullable: true
+          description: true = ampliación AUTORIZADA y pagada que cubre el tiempo; false = ninguna cubre; null = no determinable, lo confirma el operador
+        severeBreach: { type: boolean, description: 'Retraso > 12 h: incumplimiento grave (retener garantía / resolver contrato es decisión de Gerencia)' }
+        severeBreachThresholdHours: { type: integer, example: 12 }
     ReturnAlerts:
       type: object
       required: [warrantyRelease, immobilization]
@@ -1237,6 +1275,13 @@ components:
             Informativo: no dispara cargos (los documentos no definen cargo por retraso).
           allOf:
             - $ref: '#/components/schemas/ReturnLateness'
+        latenessCharge:
+          nullable: true
+          description: >
+            DEC-DEV-LATE-CHARGE-001: cargo SUGERIDO por retraso según la Hoja de Políticas VR-GA-PA-VS.04. Solo en GET /returns/{id}
+            y GET /returns. null si no aplica (CANCELADA sin recepción). No cobra ni bloquea.
+          allOf:
+            - $ref: '#/components/schemas/ReturnLatenessCharge'
         scheduledAt: { type: string, format: date-time }
         receivedAt: { type: string, format: date-time, nullable: true }
         inspectedAt: { type: string, format: date-time, nullable: true }
