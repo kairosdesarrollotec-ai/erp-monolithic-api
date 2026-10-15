@@ -45,6 +45,8 @@ export interface AlertSubject {
   status: ReturnStatus;
   receivedAt: Date | null;
   vehicleDailyRate: number | null;
+  /** false = sin garantia (conductor de la empresa): no hay garantia que liberar en 24 h. */
+  depositRequired?: boolean;
   damages?: ReadonlyArray<{ origin: DamageOrigin }>;
   immobilizationCharges?: ReadonlyArray<{ daysCharged: number }>;
 }
@@ -55,6 +57,8 @@ export interface AlertSubject {
  */
 export function computeWarrantyReleaseAlert(subject: AlertSubject, now: Date): WarrantyReleaseAlert | null {
   if (subject.status !== 'SIN_DANOS' || !subject.receivedAt) return null;
+  // DEC-ALQ-COMPANY-DRIVER-004: sin garantia no hay plazo de liberacion (N/A).
+  if (subject.depositRequired === false) return null;
   const deadlineAt = new Date(subject.receivedAt.getTime() + WARRANTY_RELEASE_WINDOW_HOURS * HOUR_MS);
   const hoursRemaining = (deadlineAt.getTime() - now.getTime()) / HOUR_MS;
   if (hoursRemaining <= 0) return { level: 'OVERDUE', deadlineAt, hoursRemaining };
