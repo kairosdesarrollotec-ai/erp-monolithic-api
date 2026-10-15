@@ -131,3 +131,19 @@ export function computeDepositBreakdown(
     currency,
   };
 }
+
+/**
+ * DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa NO hay garantia (Ficha AS-IS 5-ago: se omite el proceso de
+ * garantia; la responsabilidad recae en el conductor). Si el alquiler viene de una reserva con credito pagado, ese
+ * credito no tiene garantia a la cual aplicarse: va completo como saldo a favor (`reservationCreditExcess`) sin
+ * reembolso ni calculo automatico (pregunta abierta a Finanzas, igual que DEC-ALQ-RESCREDIT-002).
+ */
+export interface NoDepositBreakdown {
+  reservationCreditExcess: string;
+  currency: string | null;
+}
+
+export function computeNoDepositBreakdown(credit: ReservationCreditResolution): NoDepositBreakdown {
+  if (!credit.applicable) return { reservationCreditExcess: '0.00', currency: null };
+  return { reservationCreditExcess: fromCents(toCents(credit.amount)), currency: credit.currency };
+}

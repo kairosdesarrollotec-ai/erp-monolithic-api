@@ -75,6 +75,9 @@ export class PrismaRentalNotaryContractPersistence {
         signedAt: new Date(),
         signatureData: input.signatureData ?? null,
         contractVariant: input.contractVariant ?? null,
+        depositRequired: input.depositRequired,
+        // Sin garantia el credito de reserva no tiene a que aplicarse: se guarda aqui como saldo a favor.
+        reservationCreditExcess: new Prisma.Decimal(input.depositRequired ? '0' : input.reservationCreditExcess),
       },
       update: {
         templateId: input.templateId ?? undefined,
@@ -83,8 +86,14 @@ export class PrismaRentalNotaryContractPersistence {
         signedAt: new Date(),
         signatureData: input.signatureData ?? null,
         contractVariant: input.contractVariant ?? null,
+        depositRequired: input.depositRequired,
+        // Sin garantia el credito de reserva no tiene a que aplicarse: se guarda aqui como saldo a favor.
+        reservationCreditExcess: new Prisma.Decimal(input.depositRequired ? '0' : input.reservationCreditExcess),
       },
     });
+
+    // DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa no se crea garantia.
+    if (!input.depositRequired) return;
 
     await client.rentalDeposit.upsert({
       where: { rentalId: input.rentalId },

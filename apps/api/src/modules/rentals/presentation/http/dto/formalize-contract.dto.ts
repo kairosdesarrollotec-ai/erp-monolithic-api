@@ -8,11 +8,17 @@ export class FormalizeContractDto {
   @IsString()
   documentRef!: string;
 
+  /**
+   * Garantia. OBLIGATORIA salvo con conductor de la empresa (`withCompanyDriver=true`): ahi NO se exige ni se cobra
+   * (DEC-ALQ-COMPANY-DRIVER-004) y enviarla > 0 responde 422 DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER.
+   */
+  @ValidateIf((o: FormalizeContractDto) => !(o.withCompanyDriver === true || o.withDriver === true))
   @IsNumberString()
-  depositAmount!: string;
+  depositAmount?: string;
 
+  @ValidateIf((o: FormalizeContractDto) => !(o.withCompanyDriver === true || o.withDriver === true))
   @IsIn(['PEN', 'USD'])
-  depositCurrency!: string;
+  depositCurrency?: string;
 
   /**
    * BR-DOC-003: titular natural/juridica. Junto con `withCompanyDriver` elige la

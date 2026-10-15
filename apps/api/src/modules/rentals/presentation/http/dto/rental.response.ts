@@ -7,6 +7,8 @@ export interface RentalPartyResponse {
   id: string;
   customerId: string;
   role: RentalPartyRole;
+  /** DEC-ALQ-OWN-DRIVER-005: adenda firmada del conductor autorizado (solo DRIVER de persona juridica). */
+  addendumDocumentRef: string | null;
   createdAt: string;
 }
 
@@ -28,6 +30,10 @@ export interface RentalContractResponse {
   signedAt: string | null;
   /** BR-DOC-003: combinacion con la que se eligio la plantilla (null en contratos previos). */
   contractVariant: string | null;
+  /** DEC-ALQ-COMPANY-DRIVER-004: false = con conductor de la empresa, sin garantia. */
+  depositRequired: boolean;
+  /** Credito de reserva sin garantia a la cual aplicarse (saldo a favor; "0.00" si no aplica). */
+  reservationCreditExcess: string;
   createdAt: string;
 }
 
@@ -103,7 +109,12 @@ export interface RentalResponse {
   parties?: RentalPartyResponse[];
   notaryEvaluation?: NotaryEvaluationResponse | null;
   contract?: RentalContractResponse | null;
+  /** Null con conductor de la empresa (DEC-ALQ-COMPANY-DRIVER-004): no hay garantia. */
   deposit?: RentalDepositResponse | null;
+  /** false = el alquiler es con conductor de la empresa: no se exige ni cobra garantia (N/A en Devolucion). true por defecto. */
+  depositRequired?: boolean;
+  /** Saldo a favor del credito de reserva, con o sin garantia ("0.00" si no hay). Sin reembolso automatico (pendiente Finanzas). */
+  reservationCreditExcess?: string;
   /** Presente solo en GET /rentals/{id}; null = alquiler sin reserva de origen. */
   reservationCredit?: ReservationCreditResponse | null;
   /** Solo en GET /rentals/{id}: ampliaciones, la mas reciente primero. */

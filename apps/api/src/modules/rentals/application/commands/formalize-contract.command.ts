@@ -8,8 +8,9 @@ export class FormalizeContractCommand {
     public readonly branchId: string,
     public readonly expectedVersion: number,
     public readonly documentRef: string,
-    public readonly depositAmount: string,
-    public readonly depositCurrency: string,
+    /** Obligatorios salvo con conductor de la empresa (sin garantia, DEC-ALQ-COMPANY-DRIVER-004). */
+    public readonly depositAmount: string | undefined,
+    public readonly depositCurrency: string | undefined,
     public readonly signatureData?: string,
     /** BR-DOC-003: combinacion titular x conductor; si se omite se usa la plantilla generica. */
     public readonly contractVariant?: ContractVariant,

@@ -7,6 +7,7 @@ import { CreateRentalFromReservationHandler } from './application/commands/creat
 import { ValidateDocumentsHandler } from './application/commands/validate-documents.handler';
 import { RegisterAlcoholTestHandler } from './application/commands/register-alcohol-test.handler';
 import { EvaluateNotaryHandler } from './application/commands/evaluate-notary.handler';
+import { RegisterAuthorizedDriverHandler } from './application/commands/register-authorized-driver.handler';
 import { ApproveNotaryExceptionHandler } from './application/commands/approve-notary-exception.handler';
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
@@ -56,6 +57,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     RegisterAlcoholTestHandler,
     EvaluateNotaryHandler,
     ApproveNotaryExceptionHandler,
+    RegisterAuthorizedDriverHandler,
     FormalizeContractHandler,
     CompleteDeliveryHandler,
     RequestEvidenceUploadSessionHandler,
