@@ -1002,6 +1002,8 @@ model RentalParty {
   rentalId   String   @map("rental_id")
   customerId String   @map("customer_id")
   role       String   // 'SIGNER' | 'DRIVER' | 'RESPONSIBLE'
+  /// DEC-ALQ-OWN-DRIVER-005: DRIVER de persona juridica -> referencia de la adenda firmada (conductor autorizado).
+  addendumDocumentRef String? @map("addendum_document_ref") @db.VarChar(200)
   createdAt  DateTime @default(now()) @map("created_at")
 
   rental   Rental   @relation(fields: [rentalId], references: [id], onDelete: Cascade)
@@ -1040,6 +1042,12 @@ model RentalContract {
   /// BR-DOC-003: combinacion (titular natural/juridica x con/sin conductor)
   /// con la que se eligio la plantilla. NULL = contratos anteriores a la seleccion.
   contractVariant String? @map("contract_variant") @db.VarChar(40)
+  /// DEC-ALQ-COMPANY-DRIVER-004: false cuando el cliente pidio conductor de la empresa (no hay garantia ni fila
+  /// en rental_deposits). Default true = contratos anteriores / con garantia.
+  depositRequired Boolean @default(true) @map("deposit_required")
+  /// DEC-ALQ-COMPANY-DRIVER-004: credito de reserva sin garantia a la cual aplicarse (saldo a favor, sin reembolso
+  /// automatico). Si hay garantia el excedente vive en rental_deposits.reservation_credit_excess.
+  reservationCreditExcess Decimal @default(0) @map("reservation_credit_excess") @db.Decimal(12, 2)
   createdAt     DateTime  @default(now()) @map("created_at")
 
   rental      Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
@@ -1380,6 +1388,8 @@ enum IncidentType {
   TRAFFIC_FINE_OR_INTERVENTION
   TOWING
   OTHER
+  /// DEC-ALQ-UNAUTH-DRIVER-003: otra persona conduce sin estar autorizada; decide Gerencia caso por caso.
+  UNAUTHORIZED_DRIVER
 }
 
 

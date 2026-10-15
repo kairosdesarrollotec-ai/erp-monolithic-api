@@ -146,6 +146,8 @@ export interface ReturnResponse {
   customerId: string;
   vehiclePlate: string | null;
   customerName: string | null;
+  /** false = alquiler con conductor de la empresa: sin garantia; liberacion/devolucion de garantia N/A (sin alerta de 24 h). */
+  depositRequired: boolean;
   status: ReturnStatus;
   custodyHolder: CustodyHolder;
   customerPresent: boolean;

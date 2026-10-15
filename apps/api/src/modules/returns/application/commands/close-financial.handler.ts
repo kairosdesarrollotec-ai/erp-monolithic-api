@@ -9,6 +9,7 @@ import { ReturnOpenIncidentsPort } from '../ports/return-open-incidents.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import {
   ActiveIncidentsBlockCloseError,
+  ReturnNoDepositToSettleError,
   ReturnNotFoundError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
@@ -73,6 +74,11 @@ export class CloseFinancialHandler {
 
       const rental = await this.rentals.findById(current.rentalId, scope, tx);
       const deposit = rental?.deposit ?? null;
+      // DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa no hay garantia -> cierre financiero sin liberacion (N/A).
+      const depositApplicable = rental?.contract?.depositRequired !== false;
+      if (!depositApplicable && (refundAmount > 0 || retainedAmount > 0)) {
+        throw new ReturnNoDepositToSettleError();
+      }
       const immobilizationTotal = roundMoney(
         (current.immobilizationCharges ?? []).reduce((acc, c) => acc + c.totalAmount, 0),
       );
@@ -123,6 +129,7 @@ export class CloseFinancialHandler {
             refundAmount,
             retainedAmount,
             immobilizationTotal,
+            depositApplicable,
             depositStatus: plan?.status,
             depositAdjusted: depositApplied,
             fuelPenaltyReference: updated.fuelLevelAtReturn ? calculateFuelPenalty(updated.fuelLevelAtReturn) : undefined,
@@ -142,6 +149,7 @@ export class CloseFinancialHandler {
             concept: 'DEPOSIT_SETTLEMENT',
             refundAmount,
             retainedAmount,
+            depositApplicable,
             depositStatus: plan?.status ?? null,
             organizationId: context.organizationId,
             operatingCompanyId: context.companyId,

@@ -149,8 +149,8 @@ describe('FormalizeContractHandler', () => {
       'branch-1',
       4,
       'doc-ref-001',
-      overrides.depositAmount ?? '500.00',
-      overrides.depositCurrency ?? 'PEN',
+      overrides.depositAmount ?? (overrides.contractVariant?.withCompanyDriver ? undefined : '500.00'),
+      overrides.depositCurrency ?? (overrides.contractVariant?.withCompanyDriver ? undefined : 'PEN'),
       undefined,
       overrides.contractVariant,
     );
@@ -454,6 +454,82 @@ describe('FormalizeContractHandler', () => {
       await deps.handler.execute(command({ depositAmount: '1000.00' }));
 
       expect(deps.rentals.findReservationCreditSource).toHaveBeenCalledWith('res-1', fakeTx);
+    });
+  });
+
+  describe('DEC-ALQ-COMPANY-DRIVER-004 - con conductor de la empresa no hay garantia', () => {
+    const withDriver = { holderType: 'NATURAL', withCompanyDriver: true } as const;
+
+    it('no exige ni cobra garantia: depositRequired=false, sin monto, y no publica PagoRegistrado', async () => {
+      const deps = buildDeps({ activeByType: { RENTAL_CONTRACT_NATURAL_DRIVER: template('RENTAL_CONTRACT_NATURAL_DRIVER', 'tpl-nat-drv') } });
+
+      const result = await deps.handler.execute(command({ contractVariant: withDriver }));
+
+      expect(result.status).toBe('PENDING_DELIVERY');
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          depositRequired: false,
+          depositAmount: '0.00',
+          reservationCreditAmount: '0.00',
+          reservationCreditExcess: '0.00',
+          contractVariant: 'NATURAL_WITH_DRIVER',
+        }),
+        fakeTx,
+      );
+      expect(deps.outboxRepository.publish.mock.calls.map((c) => c[0].eventType)).toEqual(['ContratoFirmado.v1']);
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({ depositRequired: false, depositCurrency: null, amountCollected: '0.00' }),
+        }),
+        fakeTx,
+      );
+    });
+
+    it('enviar garantia > 0 con conductor de la empresa → 422 DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER', async () => {
+      const deps = buildDeps();
+
+      await expect(
+        deps.handler.execute(command({ contractVariant: withDriver, depositAmount: '500.00', depositCurrency: 'PEN' })),
+      ).rejects.toMatchObject({ code: 'DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER', httpStatus: 422 });
+      expect(deps.rentals.formalizeContract).not.toHaveBeenCalled();
+    });
+
+    it('reserva con credito pagado: TODO el credito queda como saldo a favor (sin reembolso automatico)', async () => {
+      const deps = buildDeps({
+        rental: reservationRental,
+        reservation: reservationSource({ amount: '300.00' }),
+        activeByType: { RENTAL_CONTRACT_LEGAL_DRIVER: template('RENTAL_CONTRACT_LEGAL_DRIVER', 'tpl-legal-drv') },
+      });
+
+      await deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withCompanyDriver: true } }));
+
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          depositRequired: false,
+          depositAmount: '0.00',
+          reservationCreditAmount: '0.00',
+          reservationCreditExcess: '300.00',
+          currency: 'PEN',
+        }),
+        fakeTx,
+      );
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ changes: expect.objectContaining({ reservationCreditExcess: '300.00', reservationCreditApplied: true }) }),
+        fakeTx,
+      );
+    });
+
+    it('sin conductor de la empresa la garantia sigue siendo obligatoria (400 INVALID_DEPOSIT_AMOUNT)', async () => {
+      const deps = buildDeps();
+
+      await expect(
+        deps.handler.execute(
+          new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, 'doc', undefined, undefined, undefined, {
+            holderType: 'NATURAL',
+            withCompanyDriver: false,
+          }),
+        ),
+      ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_DEPOSIT_AMOUNT' }) });
     });
   });
 });

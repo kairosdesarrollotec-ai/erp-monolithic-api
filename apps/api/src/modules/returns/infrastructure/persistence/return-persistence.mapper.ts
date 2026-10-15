@@ -17,6 +17,8 @@ export const RETURN_INCLUDE = {
   damages: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   immobilizationCharges: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   reminder: true,
+  /** DEC-ALQ-COMPANY-DRIVER-004: si el alquiler es con conductor de la empresa no hay garantia que liberar/devolver. */
+  rental: { select: { contract: { select: { depositRequired: true } } } },
 } satisfies Prisma.RentalReturnInclude;
 
 export type ReturnWithRelations = Prisma.RentalReturnGetPayload<{ include: typeof RETURN_INCLUDE }>;
@@ -119,6 +121,7 @@ export function toReturnRecord(row: ReturnWithRelations): ReturnRecord {
     responsibilitySignatureData: row.responsibilitySignatureData,
     responsibilitySignedAt: row.responsibilitySignedAt,
     vehicleDailyRate: decimalToNumber(row.vehicle.dailyRate),
+    depositRequired: row.rental?.contract?.depositRequired ?? true,
     scheduledAt: row.scheduledAt,
     receivedAt: row.receivedAt,
     inspectedAt: row.inspectedAt,

@@ -88,3 +88,15 @@ describe('Alerta de inmovilización > 24 h sin cobro (BR-DEV-011)', () => {
     });
   });
 });
+
+describe('DEC-ALQ-COMPANY-DRIVER-004 - sin garantia no hay alerta de liberacion', () => {
+  it('depositRequired=false (conductor de la empresa): sin alerta aunque pasen 48 h', () => {
+    expect(computeWarrantyReleaseAlert(subject({ depositRequired: false }), at(48))).toBeNull();
+    expect(computeReturnAlerts(subject({ depositRequired: false }), at(48)).warrantyRelease).toBeNull();
+  });
+
+  it('depositRequired=true o ausente conserva la alerta', () => {
+    expect(computeWarrantyReleaseAlert(subject({ depositRequired: true }), at(48))).toMatchObject({ level: 'OVERDUE' });
+    expect(computeWarrantyReleaseAlert(subject(), at(48))).toMatchObject({ level: 'OVERDUE' });
+  });
+});

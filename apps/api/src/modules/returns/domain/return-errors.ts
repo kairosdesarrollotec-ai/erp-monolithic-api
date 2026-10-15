@@ -239,3 +239,12 @@ export class InvalidReturnReminderResultError extends DomainUnprocessableError {
     super(detail);
   }
 }
+
+/** DEC-ALQ-COMPANY-DRIVER-004: alquiler con conductor de la empresa = sin garantia; no hay nada que reembolsar ni retener. */
+export class ReturnNoDepositToSettleError extends DomainUnprocessableError {
+  readonly code = 'RETURN_NO_DEPOSIT_TO_SETTLE';
+
+  constructor() {
+    super('El alquiler es con conductor de la empresa: no tiene garantia, por lo que no hay reembolso ni retencion. Use 0 en refundAmount y retainedAmount.');
+  }
+}

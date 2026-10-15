@@ -7,7 +7,7 @@ import { IncidentDetailRecord, IncidentRepositoryPort } from '../ports/incident-
 import { IncidentLinksPort } from '../ports/incident-links.port';
 import { IncidentAccessService } from '../services/incident-access.service';
 import { IncidentRentalNotFoundError, IncidentReturnNotFoundError } from '../../domain/incident-errors';
-import { requireText } from '../../domain/incident-rules';
+import { assertSeverityAllowedForType, requireText } from '../../domain/incident-rules';
 import { CreateIncidentCommand } from './create-incident.command';
 
 /**
@@ -30,6 +30,7 @@ export class CreateIncidentHandler {
 
   async execute(command: CreateIncidentCommand): Promise<IncidentDetailRecord> {
     const { context, scope } = await this.access.authorize(command, 'CREATE');
+    assertSeverityAllowedForType(command.type, command.severity);
     const description = requireText(command.description, 'description');
     const suggestion = command.suggestion?.trim() ? command.suggestion.trim() : undefined;
     const now = this.clock.now();

@@ -72,3 +72,16 @@ export const CONTRACT_VARIANT_LABELS: Readonly<Record<string, string>> = {
 export function contractVariantLabel(variant: ContractVariant): string {
   return CONTRACT_VARIANT_LABELS[`${variant.holderType}:${variant.withCompanyDriver}`];
 }
+
+/** Tipo de titular codificado en `contract_variant` (`NATURAL_*` / `LEGAL_*`); null si no hay contrato con variante. */
+export function holderTypeFromContractVariant(code: string | null | undefined): HolderType | null {
+  if (!code) return null;
+  if (code.startsWith('NATURAL_')) return 'NATURAL';
+  if (code.startsWith('LEGAL_')) return 'LEGAL';
+  return null;
+}
+
+/** DEC-ALQ-COMPANY-DRIVER-004: la variante codificada corresponde a "con conductor de la empresa". */
+export function isCompanyDriverVariantCode(code: string | null | undefined): boolean {
+  return !!code && code.endsWith('_WITH_DRIVER');
+}

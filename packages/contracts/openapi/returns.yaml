@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.3.0
+  version: 1.4.0
   description: >
+    1.4.0 — DEC-ALQ-COMPANY-DRIVER-004: alquiler CON CONDUCTOR DE LA EMPRESA = sin garantía.
+    ReturnResponse.depositRequired (false = N/A liberación/devolución de garantía): el expediente
+    no emite la alerta WARRANTY_RELEASE de 24 h y close-financial solo admite refundAmount =
+    retainedAmount = 0 (si no, 422 RETURN_NO_DEPOSIT_TO_SETTLE). Sin otros cambios.
+
     1.3.0 — BR-DEV-003/004 (tolerancia de 30 min CONFIRMADA): ReturnResponse.lateness
     {lateToleranceMinutes, lateMinutes, isLate, basis} en GET /returns y GET /returns/{id}
     (solo informativo: no hay cargo por retraso definido en los documentos).
@@ -549,7 +554,7 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: Existen incidencias abiertas (INCIDENT_STILL_OPEN, TDD §11.4) o la liquidación no cuadra con la garantía / no cubre los cargos de paralización (INVALID_FINANCIAL_SETTLEMENT)
+          description: Existen incidencias abiertas (INCIDENT_STILL_OPEN, TDD §11.4) o la liquidación no cuadra con la garantía / no cubre los cargos de paralización (INVALID_FINANCIAL_SETTLEMENT), o el alquiler no tiene garantía (conductor de la empresa) y se envían montos > 0 (RETURN_NO_DEPOSIT_TO_SETTLE)
         '428':
           description: Falta header If-Match
         '500':
@@ -1191,6 +1196,7 @@ components:
         - alcoholEscalation
         - responsibilityDocument
         - reminder
+        - depositRequired
       properties:
         id: { type: string, format: uuid }
         organizationId: { type: string, format: uuid }
@@ -1201,6 +1207,9 @@ components:
         customerId: { type: string, format: uuid }
         vehiclePlate: { type: string, nullable: true }
         customerName: { type: string, nullable: true }
+        depositRequired:
+          type: boolean
+          description: false = alquiler con conductor de la empresa, sin garantía (liberación/devolución N/A, sin alerta de 24 h). true por defecto.
         status: { $ref: '#/components/schemas/ReturnStatus' }
         custodyHolder: { $ref: '#/components/schemas/CustodyHolder' }
         customerPresent: { type: boolean }

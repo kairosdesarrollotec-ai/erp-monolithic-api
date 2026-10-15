@@ -28,6 +28,7 @@ export function toRentalPartyRecord(p: {
   rentalId: string;
   customerId: string;
   role: string;
+  addendumDocumentRef?: string | null;
   createdAt: Date;
 }): RentalPartyRecord {
   return {
@@ -35,6 +36,7 @@ export function toRentalPartyRecord(p: {
     rentalId: p.rentalId,
     customerId: p.customerId,
     role: p.role as RentalPartyRole,
+    addendumDocumentRef: p.addendumDocumentRef ?? null,
     createdAt: p.createdAt,
   };
 }
@@ -70,6 +72,8 @@ export function toRentalContractRecord(row: {
   status: string;
   signedAt: Date | null;
   contractVariant?: string | null;
+  depositRequired?: boolean;
+  reservationCreditExcess?: Prisma.Decimal | string;
   createdAt: Date;
 } | null): RentalContractRecord | null {
   if (!row) return null;
@@ -81,6 +85,8 @@ export function toRentalContractRecord(row: {
     status: row.status,
     signedAt: row.signedAt,
     contractVariant: row.contractVariant ?? null,
+    depositRequired: row.depositRequired ?? true,
+    reservationCreditExcess: row.reservationCreditExcess != null ? Number(row.reservationCreditExcess.toString()).toFixed(2) : '0.00',
     createdAt: row.createdAt,
   };
 }

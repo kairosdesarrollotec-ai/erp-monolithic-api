@@ -35,6 +35,7 @@ describe('ReportExtensionBreachHandler', () => {
     updatedAt: new Date(),
     updatedBy: 'uid-user',
     version: 5,
+    deposit: { id: 'dep-1', rentalId: 'rent-1', originalAmount: '500.00', currency: 'PEN', status: 'HELD', createdAt: new Date() },
   };
 
   const fakeExtension: RentalExtensionRecord = {
@@ -106,6 +107,19 @@ describe('ReportExtensionBreachHandler', () => {
       deps.outboxRepository,
     );
   }
+
+  it('DEC-ALQ-COMPANY-DRIVER-004: sin garantia (conductor de la empresa) la falta grave no retiene nada pero sigue marcando', async () => {
+    const deps = buildDeps();
+    deps.rentals.findById.mockResolvedValue({ ...fakeRental, deposit: null });
+    const handler = buildHandler(deps);
+
+    await handler.execute(new ReportExtensionBreachCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 5));
+
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ changes: expect.objectContaining({ depositFullyRetained: false, customerStatus: 'ROJO' }) }),
+      fakeTx,
+    );
+  });
 
   it('registra la falta grave: BREACH, retencion total de garantia y cliente rojo', async () => {
     const deps = buildDeps();

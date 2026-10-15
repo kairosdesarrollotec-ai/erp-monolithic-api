@@ -17,6 +17,8 @@ export interface RentalPartyRecord {
   rentalId: string;
   customerId: string;
   role: RentalPartyRole;
+  /** DEC-ALQ-OWN-DRIVER-005: adenda firmada del conductor autorizado (DRIVER de persona juridica). */
+  addendumDocumentRef?: string | null;
   createdAt: Date;
 }
 
@@ -40,6 +42,10 @@ export interface RentalContractRecord {
   signedAt: Date | null;
   /** BR-DOC-003: combinacion con la que se eligio la plantilla (null en contratos previos). */
   contractVariant?: string | null;
+  /** DEC-ALQ-COMPANY-DRIVER-004: false = con conductor de la empresa, sin garantia (no hay fila de deposit). Default true. */
+  depositRequired?: boolean;
+  /** DEC-ALQ-COMPANY-DRIVER-004: credito de reserva sin garantia (saldo a favor). "0.00" si no aplica. */
+  reservationCreditExcess?: string;
   createdAt: Date;
 }
 
@@ -144,13 +150,24 @@ export interface ApproveNotaryExceptionInput {
   updatedBy: string;
 }
 
+export interface AddAuthorizedDriverInput {
+  rentalId: string;
+  scope: RentalScope;
+  expectedVersion: number;
+  customerId: string;
+  addendumDocumentRef: string;
+  updatedBy: string;
+}
+
 export interface FormalizeContractInput {
   rentalId: string;
   scope: RentalScope;
   expectedVersion: number;
   templateId?: string;
   documentRef: string;
-  /** Garantia TOTAL (reserva trasladada + diferencia cobrada). */
+  /** DEC-ALQ-COMPANY-DRIVER-004: false = sin garantia (conductor de la empresa): no se crea fila de deposit. */
+  depositRequired: boolean;
+  /** Garantia TOTAL (reserva trasladada + diferencia cobrada). "0.00" si depositRequired=false. */
   depositAmount: string;
   currency: string;
   /** P0-03 (a): monto de la reserva trasladado a la garantia ("0.00" si no aplica). */
@@ -348,6 +365,8 @@ export abstract class RentalRepositoryPort {
   abstract saveAlcoholTest(input: RegisterAlcoholTestInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract saveNotaryEvaluation(input: SaveNotaryEvaluationInput, tx?: Prisma.TransactionClient): Promise<void>;
   abstract approveNotaryException(input: ApproveNotaryExceptionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
+  /** DEC-ALQ-OWN-DRIVER-005: agrega la party DRIVER (conductor autorizado de persona juridica) con su adenda. */
+  abstract addAuthorizedDriver(input: AddAuthorizedDriverInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract formalizeContract(input: FormalizeContractInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract completeDelivery(input: CompleteDeliveryInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract findPendingExtensionByRentalId(

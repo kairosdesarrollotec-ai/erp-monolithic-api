@@ -103,6 +103,8 @@ export interface ReturnRecord {
   responsibilitySignedAt: Date | null;
   /** dailyRate vigente del vehículo del alquiler (TDD §9.3); null si el vehículo no tiene tarifa. */
   vehicleDailyRate: number | null;
+  /** DEC-ALQ-COMPANY-DRIVER-004: false = alquiler con conductor de la empresa, sin garantia (liberacion/devolucion N/A). Default true. */
+  depositRequired?: boolean;
   scheduledAt: Date;
   receivedAt: Date | null;
   inspectedAt: Date | null;

@@ -1,4 +1,5 @@
 import {
+  DomainBadRequestError,
   DomainConflictError,
   DomainForbiddenError,
   DomainNotFoundError,
@@ -143,5 +144,75 @@ export class RentalInquiryNotFoundError extends DomainNotFoundError {
 
   constructor() {
     super('La consulta indicada no existe en esta empresa.');
+  }
+}
+
+/** DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa no se exige ni cobra garantia. */
+export class DepositNotApplicableWithCompanyDriverError extends DomainUnprocessableError {
+  readonly code = 'DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER';
+
+  constructor() {
+    super(
+      'Con conductor de la empresa no se exige ni se cobra garantia (la responsabilidad recae en el conductor). ' +
+        'Omita depositAmount/depositCurrency.',
+    );
+  }
+}
+
+/** DEC-ALQ-OWN-DRIVER-005: persona NATURAL con conductor propio distinto del titular no esta permitido. */
+export class NaturalPersonOwnDriverNotAllowedError extends DomainUnprocessableError {
+  readonly code = 'NATURAL_PERSON_OWN_DRIVER_NOT_ALLOWED';
+
+  constructor() {
+    super(
+      'Una persona natural no puede alquilar con conductor propio distinto del titular: conduce quien alquila ' +
+        'o se solicita el conductor de la empresa. Solo la persona juridica puede autorizar un conductor propio (con adenda).',
+    );
+  }
+}
+
+/** DEC-ALQ-OWN-DRIVER-005: el tipo de titular (natural/juridica) no se pudo determinar. */
+export class RentalHolderTypeRequiredError extends DomainUnprocessableError {
+  readonly code = 'HOLDER_TYPE_REQUIRED';
+
+  constructor() {
+    super('Indique holderType (NATURAL o LEGAL): el alquiler aun no tiene contrato formalizado con tipo de titular.');
+  }
+}
+
+export class RentalHolderTypeMismatchError extends DomainUnprocessableError {
+  readonly code = 'HOLDER_TYPE_MISMATCH';
+
+  constructor(contractHolderType: string) {
+    super(`holderType no coincide con el del contrato formalizado (${contractHolderType}).`);
+  }
+}
+
+/** DEC-ALQ-OWN-DRIVER-005: el conductor autorizado de persona juridica exige la adenda firmada. */
+export class AuthorizedDriverAddendumRequiredError extends DomainBadRequestError {
+  readonly code = 'ADDENDUM_DOCUMENT_REQUIRED';
+
+  constructor() {
+    super('El conductor autorizado de una persona juridica firma una adenda: indique addendumDocumentRef.');
+  }
+}
+
+export class RentalDriverAlreadyRegisteredError extends DomainConflictError {
+  readonly code = 'RENTAL_DRIVER_ALREADY_REGISTERED';
+
+  constructor() {
+    super('El cliente ya esta registrado como conductor autorizado de este alquiler.');
+  }
+}
+
+/** El conductor autorizado solo se registra antes de la entrega (despues seria un conductor no aprobado: incidencia). */
+export class RentalDriverRegistrationClosedError extends DomainConflictError {
+  readonly code = 'RENTAL_DRIVER_REGISTRATION_CLOSED';
+
+  constructor(status: string) {
+    super(
+      `No se puede registrar un conductor autorizado con el alquiler en estado ${status}. Si otra persona condujo sin ` +
+        'autorizacion, registre una incidencia UNAUTHORIZED_DRIVER.',
+    );
   }
 }

@@ -180,6 +180,7 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     customerId: record.customerId,
     vehiclePlate: record.vehiclePlate,
     customerName: record.customerName,
+    depositRequired: record.depositRequired ?? true,
     status: record.status,
     custodyHolder: record.custodyHolder,
     customerPresent: record.customerPresent,

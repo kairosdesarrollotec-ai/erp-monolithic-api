@@ -150,4 +150,38 @@ describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
       await expect(handler.execute(cmd(500, 0))).rejects.toThrow(ReturnStateConflictError);
     },
   );
+
+  describe('DEC-ALQ-COMPANY-DRIVER-004 - alquiler con conductor de la empresa (sin garantia)', () => {
+    function buildNoDeposit() {
+      const built = build({}, false);
+      built.deps.rentals.findById.mockResolvedValue(
+        buildRentalRecord({
+          status: 'RETURN_IN_PROGRESS',
+          deposit: null,
+          contract: { id: 'c1', rentalId: 'rent-1', templateId: null, documentRef: 'd', status: 'SIGNED', signedAt: null, depositRequired: false, createdAt: new Date() },
+        }),
+      );
+      return built;
+    }
+
+    it('cierra el financiero con 0/0: sin liquidacion de garantia (N/A) y lo deja en auditoria y evento', async () => {
+      const { deps, handler } = buildNoDeposit();
+
+      const result = await handler.execute(cmd(0, 0));
+
+      expect(result.status).toBe('CIERRE_FINANCIERO');
+      expect(deps.settlement.settleDeposit).not.toHaveBeenCalled();
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ changes: expect.objectContaining({ depositApplicable: false, depositAdjusted: false }) }),
+        fakeTx,
+      );
+    });
+
+    it.each([[500, 0], [0, 100]])('montos > 0 (%s/%s) -> 422 RETURN_NO_DEPOSIT_TO_SETTLE', async (refund, retained) => {
+      const { deps, handler } = buildNoDeposit();
+
+      await expect(handler.execute(cmd(refund, retained))).rejects.toMatchObject({ code: 'RETURN_NO_DEPOSIT_TO_SETTLE', httpStatus: 422 });
+      expect(deps.returns.update).not.toHaveBeenCalled();
+    });
+  });
 });
