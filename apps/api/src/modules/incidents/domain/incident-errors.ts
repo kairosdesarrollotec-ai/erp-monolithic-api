@@ -1,6 +1,7 @@
 import {
   DomainConflictError,
   DomainError,
+  DomainForbiddenError,
   DomainNotFoundError,
   DomainUnprocessableError,
 } from '../../../common/domain/domain-errors';
@@ -39,6 +40,24 @@ export class IncidentDirectResolveNotAllowedError extends DomainUnprocessableErr
     super(
       `Una incidencia de severidad ${severity} no admite resolucion directa; abre el detalle y usa "Cerrar incidencia" (INC-01/INC-02).`,
     );
+  }
+}
+
+/** DEC-ALQ-UNAUTH-DRIVER-003: el tipo admite solo ciertas severidades (conductor no autorizado = GRAVE). */
+export class IncidentSeverityNotAllowedForTypeError extends DomainUnprocessableError {
+  readonly code = 'INCIDENT_SEVERITY_NOT_ALLOWED_FOR_TYPE';
+
+  constructor(type: string, severity: string, allowed: readonly string[]) {
+    super(`Una incidencia de tipo ${type} no admite severidad ${severity}; use ${allowed.join(' / ')}.`);
+  }
+}
+
+/** DEC-ALQ-UNAUTH-DRIVER-003: la decision sobre esta incidencia la toma Gerencia caso por caso. */
+export class IncidentManagementDecisionRequiredError extends DomainForbiddenError {
+  readonly code = 'MANAGEMENT_DECISION_REQUIRED';
+
+  constructor(type: string) {
+    super(`La decision sobre una incidencia de tipo ${type} (resolver, cerrar o derivar a via legal) la toma solo Gerencia, caso por caso.`);
   }
 }
 

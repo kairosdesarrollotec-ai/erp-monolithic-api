@@ -7,7 +7,7 @@ import { IncidentDetailRecord, IncidentRepositoryPort } from '../ports/incident-
 import type { IncidentAccess } from './incident-access.service';
 import type { IncidentActionKind, IncidentStatus } from '../../domain/incident-catalog';
 import { IncidentNotFoundError } from '../../domain/incident-errors';
-import { assertIncidentOpen } from '../../domain/incident-rules';
+import { assertIncidentOpen, assertManagementDecisionAllowed } from '../../domain/incident-rules';
 
 export interface IncidentTransitionParams {
   id: string;
@@ -54,6 +54,7 @@ export class IncidentTransitionService {
         throw new IncidentNotFoundError(params.id);
       }
       assertIncidentOpen(current.status);
+      assertManagementDecisionAllowed(current.type, params.kind, context.roleKey);
       params.guard?.(current);
 
       const { incident: updated, action } = await this.incidents.appendAction(
