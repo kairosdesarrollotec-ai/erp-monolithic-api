@@ -17,10 +17,13 @@ export const RETURN_INCLUDE = {
   damages: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   immobilizationCharges: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   reminder: true,
-  /** DEC-ALQ-COMPANY-DRIVER-004: si el alquiler es con conductor de la empresa no hay garantia que liberar/devolver. */
-  rental: { select: { contract: { select: { depositRequired: true } } } },
+  /**
+   * DEC-ALQ-COMPANY-DRIVER-004: `contract.depositRequired` (false = con conductor de la empresa, sin garantia
+   * que liberar/devolver). DEC-DEV-LATE-CHARGE-001: garantia y ampliaciones para el cargo sugerido por retraso.
+   */
   rental: {
     select: {
+      contract: { select: { depositRequired: true } },
       deposit: { select: { originalAmount: true, currency: true } },
       extensions: { select: { status: true, requestedEndAt: true, paymentId: true } },
     },
