@@ -1,3 +1,9 @@
+# SUPERSEDED — DEV-04 SYNC_CONFLICT
+
+> **Estado: SUPERSEDED (2026-10-15).** Decisión del usuario: el conflicto de sincronización de DEV-04 usa **el mismo mecanismo que la entrega de Alquiler (ENTREGA-04)**; **no habrá contrato backend nuevo** para Devolución. Ver DEC-DEV-SYNC-CONFLICT-001 en `docs/decision-log.md`. El texto siguiente se conserva solo como histórico y NO debe implementarse.
+
+---
+
 # Propuesta de contrato — DEV-04 SYNC_CONFLICT (checklist de recepción offline)
 
 Estado: PROPUESTA (no implementada, `returns.yaml` sin cambios por esto). Fecha: 2026-10-15.

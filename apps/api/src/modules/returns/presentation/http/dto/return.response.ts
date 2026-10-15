@@ -136,6 +136,22 @@ export interface ReturnLatenessResponse {
   basis: 'RECEIVED' | 'NOW';
 }
 
+export interface ReturnLatenessChargeResponse {
+  tier: 'NONE' | 'EXTRA_31_120' | 'EXTRA_121_300' | 'EXTRA_OVER_300';
+  basis: 'RECEIVED' | 'NOW';
+  informational: true;
+  timeChargePercent: number;
+  guaranteePenaltyPercent: number;
+  dailyRate: string | null;
+  guaranteeAmount: string | null;
+  currency: string | null;
+  suggestedTimeCharge: string | null;
+  suggestedGuaranteePenalty: string | null;
+  noticeAndPrepaymentVerified: boolean | null;
+  severeBreach: boolean;
+  severeBreachThresholdHours: number;
+}
+
 export interface ReturnResponse {
   id: string;
   organizationId: string;
@@ -163,6 +179,8 @@ export interface ReturnResponse {
   alerts?: ReturnAlertsResponse;
   /** BR-DEV-003: retraso con tolerancia de 30 min. Solo en GET /returns/{id} y GET /returns. */
   lateness?: ReturnLatenessResponse | null;
+  /** DEC-DEV-LATE-CHARGE-001: cargo sugerido por retraso (informativo). Solo en GET /returns/{id} y GET /returns. */
+  latenessCharge?: ReturnLatenessChargeResponse | null;
   scheduledAt: string;
   receivedAt: string | null;
   inspectedAt: string | null;
