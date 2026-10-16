@@ -13,6 +13,7 @@ import { FormalizeContractHandler } from './application/commands/formalize-contr
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
 import { RequestEvidenceUploadSessionHandler } from './application/commands/request-evidence-upload-session.handler';
 import { RecordEvidenceHandler } from './application/commands/record-evidence.handler';
+import { DeleteEvidenceHandler } from './application/commands/delete-evidence.handler';
 import { ListRentalEvidenceHandler } from './application/queries/list-rental-evidence.handler';
 import { RequestExtensionHandler } from './application/commands/request-extension.handler';
 import { AuthorizeExtensionHandler } from './application/commands/authorize-extension.handler';
@@ -62,6 +63,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     CompleteDeliveryHandler,
     RequestEvidenceUploadSessionHandler,
     RecordEvidenceHandler,
+    DeleteEvidenceHandler,
     ListRentalEvidenceHandler,
     RequestExtensionHandler,
     AuthorizeExtensionHandler,

@@ -215,7 +215,8 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
       ? await this.notificationTemplates.getCurrent(organizationId, event.eventType)
       : null;
 
-    const result = projectNotificationEvent(event, template?.body ?? null);
+    const vehicleLabel = await this.resolveVehicleLabel(event);
+    const result = projectNotificationEvent(event, template?.body ?? null, { vehicleLabel });
     if (result.action === 'CREATE') {
       await this.notifications.create(result.item);
 
@@ -240,6 +241,28 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
           );
         }
       }
+    }
+  }
+
+  /**
+   * Nombre legible del vehiculo para el texto de la notificacion
+   * ("Hyundai Hilux - ABC-123"). Si no se encuentra o falla la consulta,
+   * devuelve undefined y la notificacion usa el ID como respaldo: nunca
+   * debe bloquear la proyeccion del evento.
+   */
+  private async resolveVehicleLabel(event: { eventType: string; payload: unknown }): Promise<string | undefined> {
+    if (event.eventType !== 'ReservationCreated') return undefined;
+    const vehicleId = (event.payload as { vehicleId?: string }).vehicleId;
+    if (!vehicleId) return undefined;
+    try {
+      const vehicle = await this.prisma.vehicle.findUnique({
+        where: { id: vehicleId },
+        select: { brand: true, model: true, plate: true },
+      });
+      return vehicle ? `${vehicle.brand} ${vehicle.model} - ${vehicle.plate}` : undefined;
+    } catch (error) {
+      this.logger.warn(`No se pudo resolver el vehiculo ${vehicleId} para la notificacion: ${(error as Error).message}`);
+      return undefined;
     }
   }
 }

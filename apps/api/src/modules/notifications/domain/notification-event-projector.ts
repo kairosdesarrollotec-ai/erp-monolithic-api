@@ -128,13 +128,15 @@ const FALLBACK_TEMPLATES: Record<string, string> = {
 export function projectNotificationEvent(
   event: OutboxEventLike,
   templateBody: string | null,
+  context: { vehicleLabel?: string } = {},
 ): NotificationProjectionResult {
   switch (event.eventType) {
     case 'ReservationCreated': {
       const payload = event.payload as ReservationCreatedPayload;
       const body = templateBody ?? FALLBACK_TEMPLATES.ReservationCreated;
       const title = renderNotificationTemplate(body, {
-        vehiculo: payload.vehicleId,
+        // Marca, modelo y placa cuando se pudo resolver; el ID es solo respaldo.
+        vehiculo: context.vehicleLabel ?? payload.vehicleId,
         fecha: formatLimaDMY(payload.startAt instanceof Date ? payload.startAt : parseBusinessInstant(String(payload.startAt))),
       });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.createdBy, title);

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.5.0
+  version: 1.6.0
   description: >
     1.4.0 — DEC-ALQ-COMPANY-DRIVER-004: alquiler CON CONDUCTOR DE LA EMPRESA = sin garantía.
     ReturnResponse.depositRequired (false = N/A liberación/devolución de garantía): el expediente
@@ -690,6 +690,34 @@ paths:
           description: No autorizado para el contexto o rol insuficiente
         '404':
           description: Devolución no encontrada en la empresa/sede
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/evidence/{evidenceId}:
+    delete:
+      operationId: deleteReturnEvidence
+      summary: Eliminar una evidencia de recepción registrada por error (DEV-04)
+      description: >
+        Solo en los estados que admiten evidencia (RECEPCION_PROVISIONAL, INSPECCION o
+        CON_DANOS) y con la misma acción de matriz que subirla (UPLOAD_EVIDENCE).
+        Se elimina el registro; el archivo del bucket no se toca.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: evidenceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204':
+          description: Evidencia eliminada
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución o evidencia no encontradas en la empresa/sede (RETURN_NOT_FOUND / RETURN_EVIDENCE_NOT_FOUND)
+        '409':
+          description: La devolución no está en un estado que admita evidencia
         '500':
           description: Error interno del servidor
 

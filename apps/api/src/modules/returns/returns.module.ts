@@ -19,6 +19,7 @@ import { CloseFinancialHandler } from './application/commands/close-financial.ha
 import { CloseReturnHandler } from './application/commands/close-return.handler';
 import { RequestReturnEvidenceUploadSessionHandler } from './application/commands/request-return-evidence-upload-session.handler';
 import { RecordReturnEvidenceHandler } from './application/commands/record-return-evidence.handler';
+import { DeleteReturnEvidenceHandler } from './application/commands/delete-return-evidence.handler';
 import { GetReturnHandler } from './application/queries/get-return.handler';
 import { GetCosmeticTariffHandler } from './application/queries/get-cosmetic-tariff.handler';
 import { ListReturnsHandler } from './application/queries/list-returns.handler';
@@ -72,6 +73,7 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     CloseReturnHandler,
     RequestReturnEvidenceUploadSessionHandler,
     RecordReturnEvidenceHandler,
+    DeleteReturnEvidenceHandler,
     GetReturnHandler,
     GetCosmeticTariffHandler,
     ListReturnsHandler,

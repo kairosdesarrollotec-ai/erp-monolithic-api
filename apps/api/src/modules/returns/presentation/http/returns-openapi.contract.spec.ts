@@ -522,7 +522,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expectMapperMatchesSchema('ReturnAlertItem', alert);
   });
 
-  it('contrato 1.5.0', () => {
-    expect(spec.info.version).toBe('1.5.0');
+  it('contrato 1.6.0', () => {
+    expect(spec.info.version).toBe('1.6.0');
   });
 });

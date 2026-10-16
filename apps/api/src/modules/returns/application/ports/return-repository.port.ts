@@ -230,6 +230,8 @@ export abstract class ReturnRepositoryPort {
   abstract addImmobilizationCharge(input: AddImmobilizationChargeInput, tx?: Prisma.TransactionClient): Promise<ImmobilizationChargeRecord>;
   abstract addEvidence(input: AddEvidenceInput, tx?: Prisma.TransactionClient): Promise<ReturnEvidenceRecord>;
   abstract listEvidences(returnId: string, scope: ReturnScope): Promise<ReturnEvidenceRecord[]>;
+  /** Elimina una evidencia de la devolucion dentro del scope; devuelve false si no existia. */
+  abstract deleteEvidence(returnId: string, evidenceId: string, scope: ReturnScope): Promise<boolean>;
   abstract countEvidenceByType(
     returnId: string,
     scope: ReturnScope,

@@ -16,6 +16,14 @@ export class ReturnNotFoundError extends DomainNotFoundError {
   }
 }
 
+export class ReturnEvidenceNotFoundError extends DomainNotFoundError {
+  readonly code = 'RETURN_EVIDENCE_NOT_FOUND';
+
+  constructor(id?: string) {
+    super(id ? `Evidencia ${id} no encontrada.` : 'Evidencia no encontrada.');
+  }
+}
+
 export class ReturnVersionConflictError extends DomainPreconditionError {
   readonly code = 'RETURN_VERSION_CONFLICT';
 

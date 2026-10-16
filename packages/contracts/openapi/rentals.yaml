@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.6.0
+  version: 1.7.0
   description: >
     1.6.0 — sesión 2026-10-15 (2): conductor y garantía.
     (a) DEC-ALQ-COMPANY-DRIVER-004: con `withCompanyDriver=true` NO hay garantía (Ficha AS-IS 5-ago:
@@ -545,6 +545,32 @@ paths:
           description: No autorizado para el contexto o rol insuficiente
         '404':
           description: Alquiler no encontrado
+
+  /rentals/{id}/evidence/{evidenceId}:
+    delete:
+      operationId: deleteRentalEvidence
+      summary: Elimina una evidencia (foto/video) de entrega registrada por error
+      description: >
+        Solo mientras el alquiler esté en PENDING_DELIVERY; una vez completada la
+        entrega la evidencia no se puede alterar. Misma acción de matriz que subirla
+        (RENTAL.UPLOAD_EVIDENCE). Se elimina el registro; el archivo del bucket no se toca.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: evidenceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204':
+          description: Evidencia eliminada
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler o evidencia no encontrados
+        '409':
+          description: Estado incompatible (debe estar en PENDING_DELIVERY)
 
   /rentals/{id}/documents/upload-url:
     post:

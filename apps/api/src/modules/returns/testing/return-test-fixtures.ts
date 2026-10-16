@@ -257,6 +257,7 @@ export function buildDeps(
     addImmobilizationCharge: jest.fn(),
     addEvidence: jest.fn(),
     listEvidences: jest.fn(),
+    deleteEvidence: jest.fn(),
     countEvidenceByType: jest.fn(),
   };
 
