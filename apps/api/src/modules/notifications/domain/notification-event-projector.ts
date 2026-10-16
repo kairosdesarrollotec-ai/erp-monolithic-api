@@ -85,7 +85,7 @@ interface ReservationCreatedPayload {
   operatingCompanyId: string;
   branchId: string;
   vehicleId: string;
-  startAt: string | Date;
+  startAt: string;
   createdBy: string;
 }
 
@@ -137,7 +137,7 @@ export function projectNotificationEvent(
       const title = renderNotificationTemplate(body, {
         // Marca, modelo y placa cuando se pudo resolver; el ID es solo respaldo.
         vehiculo: context.vehicleLabel ?? payload.vehicleId,
-        fecha: formatLimaDMY(payload.startAt instanceof Date ? payload.startAt : parseBusinessInstant(String(payload.startAt))),
+        fecha: formatLimaDMY(parseBusinessInstant(String(payload.startAt))),
       });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.createdBy, title);
     }

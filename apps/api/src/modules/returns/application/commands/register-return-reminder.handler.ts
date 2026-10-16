@@ -53,15 +53,15 @@ export class RegisterReturnReminderHandler {
       throw new InvalidReturnReminderResultError('Un recordatorio FALLIDO requiere una nota con el motivo (no contestó, número inválido, etc.).');
     }
 
-    const existing = await this.returns.findById(command.id, scope);
-    if (!existing) {
-      throw new ReturnNotFoundError(command.id);
-    }
-    if (existing.status === 'CANCELADA') {
-      throw new ReturnStateConflictError('registrar el recordatorio de', existing.status);
-    }
-
     return this.transactionManager.run(async (tx) => {
+      const existing = await this.returns.findById(command.id, scope, tx);
+      if (!existing) {
+        throw new ReturnNotFoundError(command.id);
+      }
+      if (existing.status === 'CANCELADA') {
+        throw new ReturnStateConflictError('registrar el recordatorio de', existing.status);
+      }
+
       const current = await this.reminders.findByReturnId(command.id, scope, tx);
       if (!current) {
         throw new ReturnReminderNotFoundError(command.id);

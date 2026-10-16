@@ -5,7 +5,7 @@ import {
   attendanceEvidenceKeyPrefix,
   type AttendanceEvidenceContentType,
 } from '../../domain/hr-administration-rules';
-import { LeaveEvidenceStorageUnavailableError } from '../../domain/hr-administration-errors';
+import { AttendanceEvidenceStorageUnavailableError } from '../../domain/hr-administration-errors';
 
 const SIGNED_URL_TTL_MS = 15 * 60 * 1000;
 
@@ -43,7 +43,7 @@ export class GcsAttendanceEvidenceService implements AttendanceEvidenceStoragePo
     contentType: AttendanceEvidenceContentType;
   }): Promise<{ uploadUrl: string; objectUrl: string; storageRef: string; expiresAt: Date }> {
     if (!this.storage || !this.bucketName) {
-      throw new LeaveEvidenceStorageUnavailableError();
+      throw new AttendanceEvidenceStorageUnavailableError();
     }
 
     const storageRef = `${attendanceEvidenceKeyPrefix(params.companyId, params.employeeId)}${crypto.randomUUID()}.${EXTENSION_BY_CONTENT_TYPE[params.contentType]}`;
