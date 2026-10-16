@@ -2,6 +2,10 @@ import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers
 import { execSync } from 'child_process';
 import { PrismaClient } from '@prisma/client';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+// En ESM (Jest con --experimental-vm-modules) __dirname no existe.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export interface TestDatabase {
   container?: StartedPostgreSqlContainer;

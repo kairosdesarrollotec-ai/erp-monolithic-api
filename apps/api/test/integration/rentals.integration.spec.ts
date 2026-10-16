@@ -164,8 +164,10 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
         customer,
         vehicle,
         'NORMAL',
-        new Date('2026-10-10T09:00:00Z'),
-        new Date('2026-10-15T09:00:00Z'),
+        // Fechas relativas a hoy: completar la entrega fija el inicio real en "ahora",
+        // que no puede quedar después del fin programado (rental_period_check).
+        new Date(Date.now() - 24 * 60 * 60 * 1000),
+        new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
       ),
     );
     expect(rental.status).toBe('DRAFT');
