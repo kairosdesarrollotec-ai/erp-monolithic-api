@@ -4,6 +4,7 @@
  * el texto y deja el recordatorio PENDING; el operador registra el resultado (SENT | FAILED + nota).
  */
 import { RETURN_LATE_TOLERANCE_MINUTES } from './return-lateness';
+import { formatLimaDateTime as _limaFormatDateTime } from '../../../common/time/lima-time';
 
 export type ReturnReminderStatus = 'PENDING' | 'SENT' | 'FAILED';
 export const RETURN_REMINDER_STATUSES: readonly ReturnReminderStatus[] = ['PENDING', 'SENT', 'FAILED'];
@@ -25,19 +26,10 @@ export const RETURN_REMINDER_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
 /** Tolerancia BR-DEV-003/004 (30 min, CONFIRMADA): misma constante que el cálculo de retraso (return-lateness.ts). */
 export const RETURN_REMINDER_TOLERANCE_MINUTES = RETURN_LATE_TOLERANCE_MINUTES;
 
-/** DEC-TZ-BUSINESS-001: zona horaria de negocio America/Lima = UTC-5 fijo (sin horario de verano). */
-export const BUSINESS_TIME_ZONE = 'America/Lima';
-export const BUSINESS_UTC_OFFSET_HOURS = -5;
-
-const pad2 = (n: number): string => String(n).padStart(2, '0');
-
-/** dd/mm/yyyy y HH:mm de un instante, en hora de Lima. */
+/** dd/mm/yyyy y HH:mm de un instante, en hora de Lima (delega en lima-time.ts — DEC-TZ-LIMA-001). */
 export function formatLimaDateTime(date: Date): { date: string; time: string } {
-  const shifted = new Date(date.getTime() + BUSINESS_UTC_OFFSET_HOURS * 60 * 60 * 1000);
-  return {
-    date: `${pad2(shifted.getUTCDate())}/${pad2(shifted.getUTCMonth() + 1)}/${shifted.getUTCFullYear()}`,
-    time: `${pad2(shifted.getUTCHours())}:${pad2(shifted.getUTCMinutes())}`,
-  };
+  const [d, t] = _limaFormatDateTime(date).split(' ');
+  return { date: d, time: t };
 }
 
 /** Instante en que corresponde enviar el recordatorio. */

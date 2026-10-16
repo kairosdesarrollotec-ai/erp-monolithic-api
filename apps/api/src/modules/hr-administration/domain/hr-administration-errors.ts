@@ -338,6 +338,14 @@ export class LeaveEvidenceStorageUnavailableError extends DomainServiceUnavailab
   }
 }
 
+export class AttendanceEvidenceStorageUnavailableError extends DomainServiceUnavailableError {
+  readonly code = 'ATTENDANCE_EVIDENCE_STORAGE_UNAVAILABLE';
+
+  constructor() {
+    super('Almacenamiento de evidencia de asistencia no configurado (variables de entorno GCS faltantes).');
+  }
+}
+
 export class TrainingAttendeesInvalidError extends DomainUnprocessableError {
   readonly code = 'TRAINING_ATTENDEES_INVALID';
 

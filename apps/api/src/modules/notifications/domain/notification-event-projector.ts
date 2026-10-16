@@ -85,7 +85,7 @@ interface ReservationCreatedPayload {
   operatingCompanyId: string;
   branchId: string;
   vehicleId: string;
-  startAt: string | Date;
+  startAt: string;
   createdBy: string;
 }
 
@@ -135,7 +135,7 @@ export function projectNotificationEvent(
       const body = templateBody ?? FALLBACK_TEMPLATES.ReservationCreated;
       const title = renderNotificationTemplate(body, {
         vehiculo: payload.vehicleId,
-        fecha: formatLimaDMY(payload.startAt instanceof Date ? payload.startAt : parseBusinessInstant(String(payload.startAt))),
+        fecha: formatLimaDMY(parseBusinessInstant(String(payload.startAt))),
       });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.createdBy, title);
     }
