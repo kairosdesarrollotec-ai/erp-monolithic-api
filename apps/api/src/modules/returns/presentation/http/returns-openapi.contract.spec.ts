@@ -117,7 +117,7 @@ function dtoFields(dto: new () => unknown): { all: string[]; required: string[] 
   return { all, required: all.filter((p) => !optional.has(p)).sort() };
 }
 
-const HTTP: Record<number, string> = { [RequestMethod.GET]: 'get', [RequestMethod.POST]: 'post' };
+const HTTP: Record<number, string> = { [RequestMethod.GET]: 'get', [RequestMethod.POST]: 'post', [RequestMethod.DELETE]: 'delete' };
 
 function routesOf(controller: new (...args: any[]) => unknown, basePath: string) {
   const proto = controller.prototype as any;
@@ -126,7 +126,7 @@ function routesOf(controller: new (...args: any[]) => unknown, basePath: string)
     .map((name) => {
       const handler = proto[name];
       const sub = Reflect.getMetadata(PATH_METADATA, handler) as string;
-      const openApiPath = (basePath + (sub === '/' ? '' : `/${sub}`)).replace(/:id/g, '{id}');
+      const openApiPath = (basePath + (sub === '/' ? '' : `/${sub}`)).replace(/:(\w+)/g, '{$1}');
       const method = HTTP[Reflect.getMetadata(METHOD_METADATA, handler)];
       const httpCode = Reflect.getMetadata(HTTP_CODE_METADATA, handler) ?? (method === 'post' ? 201 : 200);
       const interceptors = (Reflect.getMetadata(INTERCEPTORS_METADATA, handler) ?? []) as unknown[];
@@ -144,13 +144,13 @@ function controllerRoutes() {
 describe('Contrato OpenAPI returns.yaml vs backend', () => {
   const routes = controllerRoutes();
 
-  it('cada ruta del controller existe en OpenAPI y viceversa (19 operaciones)', () => {
+  it('cada ruta del controller existe en OpenAPI y viceversa (20 operaciones)', () => {
     const fromController = routes.map((r) => `${r.method} ${r.openApiPath}`).sort();
     const fromSpec = Object.entries(spec.paths)
       .flatMap(([p, ops]: [string, any]) => Object.keys(ops).map((m) => `${m} ${p}`))
       .sort();
     expect(fromController).toEqual(fromSpec);
-    expect(fromSpec).toHaveLength(19);
+    expect(fromSpec).toHaveLength(20);
   });
 
   it('el código de exito declarado en OpenAPI es el que devuelve NestJS', () => {
