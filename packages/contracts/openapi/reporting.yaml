@@ -1,8 +1,20 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP — Reporting API
-  version: 0.2.0
+  version: 0.3.0
   description: >
+    0.3.0 — Filtros de rango de fechas `dateFrom`/`dateTo` (REP-01, BR-REP-005,
+    DEC-TZ-LIMA-001). Ambos son `YYYY-MM-DD` (día de calendario de America/Lima) y el
+    rango es INCLUSIVO en sus dos extremos: `dateFrom` = 00:00:00.000 Lima de ese día y
+    `dateTo` = 23:59:59.999 Lima de ese día (el día `dateTo` se incluye completo). Un
+    date-time con offset/Z se respeta tal cual. El máximo es 90 días calendario de Lima
+    entre `dateFrom` y `dateTo` (mismo día = 0; `dateFrom`+90 días es aceptado, +91 no).
+    Errores 400 con cuerpo `{statusCode, code, detail}`: INVALID_DATE (fecha ilegible o
+    inexistente, p. ej. 2026-02-30), INVALID_DATE_RANGE (dateFrom posterior a dateTo) y
+    RANGE_EXCEEDS_MAX (más de 90 días). En /reporting/operational ambos son opcionales:
+    sin `dateTo` = hoy (Lima); sin `dateFrom` = el día de `dateTo`. Las respuestas
+    devuelven `dateFrom`/`dateTo` como fechas de Lima.
+
     0.2.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
     sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
     inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
@@ -42,12 +54,16 @@ paths:
           in: query
           required: false
           schema: { type: string, format: date, example: '2026-10-01' }
-          description: Inicio del período (ISO 8601 date). Máx. 90 días antes de dateTo (BR-REP-005).
+          description: >
+            Inicio del período, inclusivo (YYYY-MM-DD = 00:00 America/Lima). Máx. 90 días antes
+            de dateTo (BR-REP-005). Por defecto, el día de dateTo.
         - name: dateTo
           in: query
           required: false
           schema: { type: string, format: date, example: '2026-10-11' }
-          description: Fin del período (ISO 8601 date). Por defecto hoy.
+          description: >
+            Fin del período, inclusivo (YYYY-MM-DD = 23:59:59.999 America/Lima: el día completo).
+            Por defecto hoy (Lima).
       responses:
         '200':
           description: KPIs operativos del período
@@ -55,7 +71,12 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OperationalKpisResponse' }
         '400':
-          description: Parámetros inválidos o rango supera 90 días (RANGE_EXCEEDS_MAX)
+          description: >
+            Parámetros inválidos. code: INVALID_DATE, INVALID_DATE_RANGE o
+            RANGE_EXCEEDS_MAX (rango supera 90 días, BR-REP-005).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportingError' }
         '401': { description: Token ausente o inválido }
         '403': { description: Permiso REPORT.READ_OPERATIONAL requerido }
         '500': { description: Error interno del servidor }
@@ -78,11 +99,14 @@ paths:
           in: query
           required: true
           schema: { type: string, format: date, example: '2026-10-01' }
+          description: Inicio del período, inclusivo (YYYY-MM-DD = 00:00 America/Lima).
         - name: dateTo
           in: query
           required: true
           schema: { type: string, format: date, example: '2026-10-11' }
-          description: Máx. 90 días desde dateFrom.
+          description: >
+            Fin del período, inclusivo (YYYY-MM-DD = 23:59:59.999 America/Lima: el día completo).
+            Máx. 90 días desde dateFrom.
       responses:
         '200':
           description: KPIs financieros del período
@@ -90,7 +114,12 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/FinancialKpisResponse' }
         '400':
-          description: Parámetros inválidos o rango supera 90 días (RANGE_EXCEEDS_MAX)
+          description: >
+            Parámetros inválidos. code: INVALID_DATE, INVALID_DATE_RANGE o
+            RANGE_EXCEEDS_MAX (rango supera 90 días, BR-REP-005).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportingError' }
         '401': { description: Token ausente o inválido }
         '403': { description: Permiso REPORT.READ_FINANCIAL requerido }
         '500': { description: Error interno del servidor }
@@ -112,10 +141,14 @@ paths:
           in: query
           required: true
           schema: { type: string, format: date, example: '2026-10-01' }
+          description: Inicio del período, inclusivo (YYYY-MM-DD = 00:00 America/Lima).
         - name: dateTo
           in: query
           required: true
           schema: { type: string, format: date, example: '2026-10-11' }
+          description: >
+            Fin del período, inclusivo (YYYY-MM-DD = 23:59:59.999 America/Lima: el día completo).
+            Máx. 90 días desde dateFrom.
         - name: type
           in: query
           required: false
@@ -137,7 +170,12 @@ paths:
                 type: string
                 example: 'attachment; filename="reporte-2026-10-01_2026-10-11.csv"'
         '400':
-          description: Parámetros inválidos o rango supera 90 días (RANGE_EXCEEDS_MAX)
+          description: >
+            Parámetros inválidos. code: INVALID_DATE, INVALID_DATE_RANGE o
+            RANGE_EXCEEDS_MAX (rango supera 90 días, BR-REP-005).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportingError' }
         '401': { description: Token ausente o inválido }
         '403': { description: Permiso REPORT.EXPORT requerido }
         '500': { description: Error interno del servidor }
@@ -150,6 +188,16 @@ components:
       bearerFormat: Firebase ID Token
 
   schemas:
+    ReportingError:
+      type: object
+      required: [statusCode, code, detail]
+      properties:
+        statusCode: { type: integer, example: 400 }
+        code:
+          type: string
+          enum: [INVALID_DATE, INVALID_DATE_RANGE, RANGE_EXCEEDS_MAX]
+        detail: { type: string }
+
     OperationalKpisResponse:
       type: object
       required: [companyId, dateFrom, dateTo, kpis, generatedAt]

@@ -4,6 +4,8 @@ import {
   IncidentInvalidTextError,
   IncidentManagementDecisionRequiredError,
   IncidentSeverityNotAllowedForTypeError,
+  IncidentDecisionOutcomeRequiredError,
+  IncidentDecisionOutcomeNotApplicableError,
 } from './incident-errors';
 import {
   INCIDENT_SEVERITIES_BY_TYPE,
@@ -12,6 +14,7 @@ import {
   type IncidentSeverity,
   type IncidentStatus,
   type IncidentType,
+  type ManagementDecisionOutcome,
 } from './incident-catalog';
 
 /** Solo ABIERTA admite agregar acciones, resolver, cerrar o derivar (CERRADA y VIA_LEGAL son terminales). */
@@ -65,4 +68,25 @@ export function assertManagementDecisionAllowed(type: IncidentType, kind: Incide
   if (MANAGEMENT_DECISION_INCIDENT_TYPES.includes(type) && DECISION_ACTION_KINDS.has(kind) && roleKey !== 'GERENCIA') {
     throw new IncidentManagementDecisionRequiredError(type);
   }
+}
+
+/**
+ * DEC-ALQ-UNAUTH-DRIVER-003: para los tipos de decision de Gerencia el resultado estructurado es obligatorio (422
+ * MANAGEMENT_DECISION_OUTCOME_REQUIRED); para el resto no aplica (422 MANAGEMENT_DECISION_OUTCOME_NOT_APPLICABLE).
+ */
+export function assertDecisionOutcomeForType(type: IncidentType, outcome: ManagementDecisionOutcome | undefined): void {
+  const managed = MANAGEMENT_DECISION_INCIDENT_TYPES.includes(type);
+  if (managed && !outcome) {
+    throw new IncidentDecisionOutcomeRequiredError(type);
+  }
+  if (!managed && outcome) {
+    throw new IncidentDecisionOutcomeNotApplicableError(type);
+  }
+}
+
+/** Texto legible del resultado de la decision (queda como encabezado de la entrada append-only del historial). */
+export function describeDecisionOutcome(outcome: ManagementDecisionOutcome): string {
+  const guarantee = outcome.retainGuarantee ? 'se retiene la garantia' : 'no se retiene la garantia';
+  const contract = outcome.terminateContract ? 'se resuelve el contrato' : 'se mantiene el contrato';
+  return `Decision de Gerencia: ${guarantee}; ${contract}.`;
 }

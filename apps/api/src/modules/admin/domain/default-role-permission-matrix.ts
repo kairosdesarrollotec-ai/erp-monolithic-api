@@ -9,6 +9,7 @@ import { assertAdminRoleAllowed, AdminAction } from '../application/policies/adm
 import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application/policies/return-role-policy';
 import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../../fleet/application/policies/fleet-role.policy';
 import { assertCustomerWrite, assertCustomerRead } from '../../customers/application/policies/customer-role.policy';
+import { isPaymentRoleAllowed, type PaymentAction } from '../../payments/application/policies/payment-role-policy';
 import { assertTemplateRoleAllowed, type TemplateAction } from '../../templates/application/policies/template-role-policy';
 import { PERMISSION_ACTION_CATALOG, type PermissionModule } from './permission-action-catalog';
 import { PLATFORM_ADMIN_KEY } from './system-roles';
@@ -73,6 +74,11 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       assertTemplateRoleAllowed(role, action as TemplateAction);
     } else if (module === 'HR_ADMINISTRATION') {
       assertHrAdministrationRoleAllowed(role, action as HrAdministrationAction);
+    } else if (module === 'PAYMENT') {
+      return isPaymentRoleAllowed(role, action as PaymentAction);
+    } else if (module === 'REPORT') {
+      // Sin policy estatica ni regla documentada por rol (REP-01 solo dice "segun permiso"): v0 = denegado; se otorga desde ADM-02.
+      return false;
     } else {
       assertAdminRoleAllowed(role, action as AdminAction);
     }

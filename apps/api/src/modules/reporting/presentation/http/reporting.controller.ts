@@ -10,7 +10,7 @@ import { ExportReportQuery } from '../../application/queries/export-report.query
 import { OperationalKpisQueryDto, FinancialKpisQueryDto, ExportQueryDto } from './dto/reporting-query.dto';
 import type { OperationalKpisResult } from './dto/operational-kpis.response';
 import type { FinancialKpisResult } from './dto/financial-kpis.response';
-import { limaTodayString, parseBusinessInstant } from '../../../../common/time/lima-time';
+import { resolveReportPeriod } from '../../application/queries/reporting.utils';
 
 /**
  * Reportes (REP-01) — módulo de solo lectura.
@@ -41,10 +41,8 @@ export class ReportingController {
     @Req() req: AuthenticatedRequest,
     @Query() query: OperationalKpisQueryDto,
   ): Promise<OperationalKpisResult> {
-    // DEC-TZ-LIMA-001: date-only = dia de America/Lima.
-    const today = limaTodayString();
-    const dateFrom = parseBusinessInstant(query.dateFrom ?? today);
-    const dateTo = parseBusinessInstant(query.dateTo ?? today);
+    // DEC-TZ-LIMA-001: dateFrom = 00:00 Lima; dateTo date-only = fin del día Lima (inclusivo).
+    const { dateFrom, dateTo } = resolveReportPeriod(query);
 
     return this.getOperationalKpis.execute(
       new GetOperationalKpisQuery(
@@ -67,13 +65,14 @@ export class ReportingController {
     @Req() req: AuthenticatedRequest,
     @Query() query: FinancialKpisQueryDto,
   ): Promise<FinancialKpisResult> {
+    const { dateFrom, dateTo } = resolveReportPeriod(query);
     return this.getFinancialKpis.execute(
       new GetFinancialKpisQuery(
         req.firebaseUid!,
         query.companyId,
         query.branchId,
-        parseBusinessInstant(query.dateFrom),
-        parseBusinessInstant(query.dateTo),
+        dateFrom,
+        dateTo,
       ),
     );
   }
@@ -92,13 +91,14 @@ export class ReportingController {
   ): Promise<void> {
     const exportType: 'operational' | 'financial' | 'combined' = query.type ?? 'combined';
 
+    const { dateFrom, dateTo } = resolveReportPeriod(query);
     const result = await this.exportReport.execute(
       new ExportReportQuery(
         req.firebaseUid!,
         query.companyId,
         query.branchId,
-        parseBusinessInstant(query.dateFrom),
-        parseBusinessInstant(query.dateTo),
+        dateFrom,
+        dateTo,
         exportType,
       ),
     );

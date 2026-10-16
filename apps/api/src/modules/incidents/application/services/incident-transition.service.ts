@@ -5,9 +5,14 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { IncidentDetailRecord, IncidentRepositoryPort } from '../ports/incident-repository.port';
 import type { IncidentAccess } from './incident-access.service';
-import type { IncidentActionKind, IncidentStatus } from '../../domain/incident-catalog';
+import type { IncidentActionKind, IncidentStatus, ManagementDecisionOutcome } from '../../domain/incident-catalog';
 import { IncidentNotFoundError } from '../../domain/incident-errors';
-import { assertIncidentOpen, assertManagementDecisionAllowed } from '../../domain/incident-rules';
+import {
+  assertDecisionOutcomeForType,
+  assertIncidentOpen,
+  assertManagementDecisionAllowed,
+  describeDecisionOutcome,
+} from '../../domain/incident-rules';
 
 export interface IncidentTransitionParams {
   id: string;
@@ -23,6 +28,10 @@ export interface IncidentTransitionParams {
   resolutionSummary?: string;
   /** Regla extra de dominio sobre la incidencia ya cargada (p. ej. resolucion directa solo LEVE). */
   guard?: (current: IncidentDetailRecord) => void;
+  /** Resultado estructurado de la decision de Gerencia (obligatorio solo para UNAUTHORIZED_DRIVER en close/refer-legal). */
+  decision?: ManagementDecisionOutcome;
+  /** true en close/refer-legal: ahi se valida el resultado segun el tipo. Add-action/resolve no lo reciben. */
+  validateDecision?: boolean;
   auditAction: string;
   auditChanges: Record<string, unknown>;
   eventType: string;
@@ -56,6 +65,11 @@ export class IncidentTransitionService {
       assertIncidentOpen(current.status);
       assertManagementDecisionAllowed(current.type, params.kind, context.roleKey);
       params.guard?.(current);
+      if (params.validateDecision) {
+        assertDecisionOutcomeForType(current.type, params.decision);
+      }
+      const decision = params.validateDecision ? params.decision : undefined;
+      const description = decision ? `${describeDecisionOutcome(decision)}\n${params.description}` : params.description;
 
       const { incident: updated, action } = await this.incidents.appendAction(
         {
@@ -63,7 +77,7 @@ export class IncidentTransitionService {
           scope,
           expectedVersion: params.expectedVersion,
           kind: params.kind,
-          description: params.description,
+          description,
           authorUserId: params.firebaseUid,
           now,
           nextStatus: params.nextStatus,
@@ -79,7 +93,7 @@ export class IncidentTransitionService {
           actorUserId: params.firebaseUid,
           incidentId: updated.id,
           action: params.auditAction,
-          changes: { actionId: action.id, ...params.auditChanges },
+          changes: { actionId: action.id, ...params.auditChanges, ...(decision ? { decision } : {}) },
         },
         tx,
       );
@@ -103,6 +117,7 @@ export class IncidentTransitionService {
             organizationId: context.organizationId,
             operatingCompanyId: context.companyId,
             branchId: context.branchId,
+            ...(decision ? { decision } : {}),
           },
         },
         tx,

@@ -24,6 +24,8 @@ export class ReferIncidentToLegalHandler {
       kind: 'REFERRED_LEGAL',
       description: reason,
       nextStatus: 'VIA_LEGAL',
+      decision: command.decision,
+      validateDecision: true,
       auditAction: 'INCIDENT_REFERRED_LEGAL',
       auditChanges: { reason },
       eventType: 'IncidentReferredToLegal.v1',

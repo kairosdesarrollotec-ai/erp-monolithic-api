@@ -86,3 +86,21 @@ export class IncidentInvalidTextError extends DomainError {
     super(`El campo ${field} es obligatorio y no puede estar vacio.`);
   }
 }
+
+/** DEC-ALQ-UNAUTH-DRIVER-003: la decision de Gerencia debe indicar su resultado estructurado (garantia / contrato). */
+export class IncidentDecisionOutcomeRequiredError extends DomainUnprocessableError {
+  readonly code = 'MANAGEMENT_DECISION_OUTCOME_REQUIRED';
+
+  constructor(type: string) {
+    super(`La decision sobre una incidencia de tipo ${type} debe indicar si se retiene la garantia y si se resuelve el contrato.`);
+  }
+}
+
+/** El resultado estructurado solo aplica a los tipos cuya decision es de Gerencia. */
+export class IncidentDecisionOutcomeNotApplicableError extends DomainUnprocessableError {
+  readonly code = 'MANAGEMENT_DECISION_OUTCOME_NOT_APPLICABLE';
+
+  constructor(type: string) {
+    super(`Las incidencias de tipo ${type} no registran un resultado estructurado de decision de Gerencia.`);
+  }
+}
