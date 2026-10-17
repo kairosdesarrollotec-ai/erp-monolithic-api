@@ -130,24 +130,27 @@ export class PrismaRentalExtensionPersistence {
       },
     });
 
-    const deposit = await client.rentalDeposit.findUniqueOrThrow({
+    // DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa no hay garantia (sin fila): no hay nada que retener.
+    const deposit = await client.rentalDeposit.findUnique({
       where: { rentalId: input.rentalId },
     });
 
-    await client.rentalDepositAdjustment.create({
-      data: {
-        depositId: deposit.id,
-        type: 'FULL_RETENTION',
-        amount: deposit.originalAmount,
-        reason: input.legalEvaluationNote,
-        authorizedBy: input.updatedBy,
-      },
-    });
+    if (deposit) {
+      await client.rentalDepositAdjustment.create({
+        data: {
+          depositId: deposit.id,
+          type: 'FULL_RETENTION',
+          amount: deposit.originalAmount,
+          reason: input.legalEvaluationNote,
+          authorizedBy: input.updatedBy,
+        },
+      });
 
-    await client.rentalDeposit.update({
-      where: { id: deposit.id },
-      data: { status: 'RETAINED' },
-    });
+      await client.rentalDeposit.update({
+        where: { id: deposit.id },
+        data: { status: 'RETAINED' },
+      });
+    }
 
     // Reutiliza el campo Customer.status ("NORMAL" | "AMBAR" | "ROJO"; ROJO es el estado terminal del semáforo, BR-DEV-008)
     await client.customer.update({

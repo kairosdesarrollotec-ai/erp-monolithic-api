@@ -70,22 +70,17 @@ export function resolveReservationCredit(source: ReservationCreditSource | null)
 export interface DepositBreakdown {
   /** Garantia total del alquiler (lo que queda retenido). */
   totalAmount: string;
-  /** Monto de la reserva trasladado a la garantia. */
+  /** Parte del monto de la reserva que cubre la garantia (<= totalAmount). */
   reservationCreditAmount: string;
+  /**
+   * DEC-ALQ-RESCREDIT-002: excedente del monto de la reserva sobre la garantia
+   * ("0.00" si no hay). Saldo a favor del cliente solo visible: sin reembolso
+   * ni calculo automatico (pregunta abierta a Finanzas).
+   */
+  reservationCreditExcess: string;
   /** Diferencia que se cobra al formalizar. */
   amountToCollect: string;
   currency: string;
-}
-
-export class ReservationCreditExceedsDepositError extends DomainUnprocessableError {
-  readonly code = 'RESERVATION_CREDIT_EXCEEDS_DEPOSIT';
-
-  constructor(credit: string, total: string, currency: string) {
-    super(
-      `El monto pagado en la reserva (${currency} ${credit}) supera la garantia indicada (${currency} ${total}). ` +
-        'Revise el monto de garantia: el excedente no se devuelve ni se traslada automaticamente.',
-    );
-  }
 }
 
 export class ReservationCreditCurrencyMismatchError extends DomainUnprocessableError {
@@ -100,9 +95,10 @@ export class ReservationCreditCurrencyMismatchError extends DomainUnprocessableE
 }
 
 /**
- * Calcula el desglose de la garantia. Lanza si el traslado es inconsistente
- * (moneda distinta o monto de reserva mayor que la garantia): nunca se
- * ignora ni se recorta en silencio un monto ya cobrado al cliente.
+ * Calcula el desglose de la garantia. Lanza si la moneda difiere. Si el monto
+ * de la reserva supera la garantia NO es error: se aplica hasta cubrirla y el
+ * excedente se informa en `reservationCreditExcess` (nunca se pierde en
+ * silencio).
  */
 export function computeDepositBreakdown(
   totalAmount: string,
@@ -114,6 +110,7 @@ export function computeDepositBreakdown(
     return {
       totalAmount: fromCents(totalCents),
       reservationCreditAmount: '0.00',
+      reservationCreditExcess: '0.00',
       amountToCollect: fromCents(totalCents),
       currency,
     };
@@ -122,13 +119,31 @@ export function computeDepositBreakdown(
     throw new ReservationCreditCurrencyMismatchError(credit.currency ?? '?', currency);
   }
   const creditCents = toCents(credit.amount);
-  if (creditCents > totalCents) {
-    throw new ReservationCreditExceedsDepositError(credit.amount, fromCents(totalCents), currency);
-  }
+  // El monto de la reserva es un acuerdo con el cliente: puede superar la
+  // garantia (y los S/ 300 vigentes). Se aplica hasta cubrirla y el resto
+  // queda como excedente visible, sin error.
+  const appliedCents = Math.min(creditCents, totalCents);
   return {
     totalAmount: fromCents(totalCents),
-    reservationCreditAmount: fromCents(creditCents),
-    amountToCollect: fromCents(totalCents - creditCents),
+    reservationCreditAmount: fromCents(appliedCents),
+    reservationCreditExcess: fromCents(creditCents - appliedCents),
+    amountToCollect: fromCents(totalCents - appliedCents),
     currency,
   };
+}
+
+/**
+ * DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa NO hay garantia (Ficha AS-IS 5-ago: se omite el proceso de
+ * garantia; la responsabilidad recae en el conductor). Si el alquiler viene de una reserva con credito pagado, ese
+ * credito no tiene garantia a la cual aplicarse: va completo como saldo a favor (`reservationCreditExcess`) sin
+ * reembolso ni calculo automatico (pregunta abierta a Finanzas, igual que DEC-ALQ-RESCREDIT-002).
+ */
+export interface NoDepositBreakdown {
+  reservationCreditExcess: string;
+  currency: string | null;
+}
+
+export function computeNoDepositBreakdown(credit: ReservationCreditResolution): NoDepositBreakdown {
+  if (!credit.applicable) return { reservationCreditExcess: '0.00', currency: null };
+  return { reservationCreditExcess: fromCents(toCents(credit.amount)), currency: credit.currency };
 }

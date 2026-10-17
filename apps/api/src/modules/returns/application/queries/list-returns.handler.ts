@@ -1,22 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { ClockPort, SystemClock } from '../../../../common/application/ports/clock.port';
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnAccessService } from '../services/return-access.service';
+import { computeReturnAlerts } from '../../domain/return-alerts';
+import { computeReturnLateness, computeReturnLatenessCharge } from '../../domain/return-lateness';
+import { chargeFor } from './return-late-charge';
 import { ListReturnsQuery } from './list-returns.query';
 
 @Injectable()
 export class ListReturnsHandler {
+  private readonly clock: ClockPort;
+
   constructor(
     private readonly access: ReturnAccessService,
     private readonly returns: ReturnRepositoryPort,
-  ) {}
+    @Optional() clock?: ClockPort,
+  ) {
+    this.clock = clock ?? new SystemClock();
+  }
 
   async execute(query: ListReturnsQuery): Promise<ReturnRecord[]> {
     const { scope } = await this.access.authorize(query, 'READ');
-    return this.returns.list({
+    const rows = await this.returns.list({
       ...scope,
       status: query.status,
       limit: query.limit,
       cursor: query.cursor,
     });
+    const now = this.clock.now();
+    return rows.map((row) => ({ ...row, alerts: computeReturnAlerts(row, now),
+      lateness: computeReturnLateness(row, now),
+      latenessCharge: chargeFor(row, now),
+    }));
   }
 }

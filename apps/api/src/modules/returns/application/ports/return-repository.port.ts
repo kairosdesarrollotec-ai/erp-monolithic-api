@@ -9,6 +9,9 @@ import {
   AlcoholEscalationDecision,
   ReturnEvidenceType,
 } from '../../domain/return-status';
+import type { ReturnReminderStatus } from '../../domain/return-reminder';
+import type { ReturnAlerts } from '../../domain/return-alerts';
+import type { LatenessExtensionInfo, ReturnLateness, ReturnLatenessCharge } from '../../domain/return-lateness';
 
 export interface ReturnScope {
   organizationId: string;
@@ -51,6 +54,24 @@ export interface ReturnEvidenceRecord {
   uploadedAt: Date;
 }
 
+/** DEV-01 / BR-DEV-004: recordatorio previo 3 h antes de la hora pactada (envío manual-asistido). */
+export interface ReturnReminderRecord {
+  id: string;
+  organizationId: string;
+  operatingCompanyId: string;
+  branchId: string;
+  returnId: string;
+  status: ReturnReminderStatus;
+  dueAt: Date;
+  messageText: string;
+  generatedAt: Date;
+  sentAt: Date | null;
+  sentBy: string | null;
+  resultNote: string | null;
+  attempts: number;
+  version: number;
+}
+
 export interface ReturnRecord {
   id: string;
   organizationId: string;
@@ -82,6 +103,12 @@ export interface ReturnRecord {
   responsibilitySignedAt: Date | null;
   /** dailyRate vigente del vehículo del alquiler (TDD §9.3); null si el vehículo no tiene tarifa. */
   vehicleDailyRate: number | null;
+  /** DEC-ALQ-COMPANY-DRIVER-004: false = alquiler con conductor de la empresa, sin garantia (liberacion/devolucion N/A). Default true. */
+  depositRequired?: boolean;
+  /** Garantía del alquiler (null = sin garantía, p. ej. con conductor de la empresa). Solo para el cargo sugerido por retraso. */
+  rentalDeposit?: { originalAmount: number; currency: string } | null;
+  /** Ampliaciones del alquiler (para verificar aviso/pago previo del retraso). */
+  rentalExtensions?: LatenessExtensionInfo[];
   scheduledAt: Date;
   receivedAt: Date | null;
   inspectedAt: Date | null;
@@ -96,6 +123,14 @@ export interface ReturnRecord {
   damages?: ReturnDamageRecord[];
   immobilizationCharges?: ImmobilizationChargeRecord[];
   evidences?: ReturnEvidenceRecord[];
+  /** Recordatorio previo (null = aún no generado). Lo carga el repositorio junto con el agregado. */
+  reminder?: ReturnReminderRecord | null;
+  /** Alertas calculadas con el reloj (garantía 24 h / inmovilización > 24 h); solo las pueblan las consultas. */
+  alerts?: ReturnAlerts;
+  /** Retraso frente a la hora pactada con tolerancia de 30 min (BR-DEV-003); solo lo pueblan las consultas. null = no aplica. */
+  lateness?: ReturnLateness | null;
+  /** DEC-DEV-LATE-CHARGE-001: cargo SUGERIDO por retraso (informativo, cobro manual); solo lo pueblan las consultas. */
+  latenessCharge?: ReturnLatenessCharge | null;
 }
 
 export interface CreateReturnInput {
@@ -195,6 +230,8 @@ export abstract class ReturnRepositoryPort {
   abstract addImmobilizationCharge(input: AddImmobilizationChargeInput, tx?: Prisma.TransactionClient): Promise<ImmobilizationChargeRecord>;
   abstract addEvidence(input: AddEvidenceInput, tx?: Prisma.TransactionClient): Promise<ReturnEvidenceRecord>;
   abstract listEvidences(returnId: string, scope: ReturnScope): Promise<ReturnEvidenceRecord[]>;
+  /** Elimina una evidencia de la devolucion dentro del scope; devuelve false si no existia. */
+  abstract deleteEvidence(returnId: string, evidenceId: string, scope: ReturnScope): Promise<boolean>;
   abstract countEvidenceByType(
     returnId: string,
     scope: ReturnScope,

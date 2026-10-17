@@ -7,11 +7,13 @@ import { CreateRentalFromReservationHandler } from './application/commands/creat
 import { ValidateDocumentsHandler } from './application/commands/validate-documents.handler';
 import { RegisterAlcoholTestHandler } from './application/commands/register-alcohol-test.handler';
 import { EvaluateNotaryHandler } from './application/commands/evaluate-notary.handler';
+import { RegisterAuthorizedDriverHandler } from './application/commands/register-authorized-driver.handler';
 import { ApproveNotaryExceptionHandler } from './application/commands/approve-notary-exception.handler';
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
 import { RequestEvidenceUploadSessionHandler } from './application/commands/request-evidence-upload-session.handler';
 import { RecordEvidenceHandler } from './application/commands/record-evidence.handler';
+import { DeleteEvidenceHandler } from './application/commands/delete-evidence.handler';
 import { ListRentalEvidenceHandler } from './application/queries/list-rental-evidence.handler';
 import { RequestExtensionHandler } from './application/commands/request-extension.handler';
 import { AuthorizeExtensionHandler } from './application/commands/authorize-extension.handler';
@@ -56,10 +58,12 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     RegisterAlcoholTestHandler,
     EvaluateNotaryHandler,
     ApproveNotaryExceptionHandler,
+    RegisterAuthorizedDriverHandler,
     FormalizeContractHandler,
     CompleteDeliveryHandler,
     RequestEvidenceUploadSessionHandler,
     RecordEvidenceHandler,
+    DeleteEvidenceHandler,
     ListRentalEvidenceHandler,
     RequestExtensionHandler,
     AuthorizeExtensionHandler,

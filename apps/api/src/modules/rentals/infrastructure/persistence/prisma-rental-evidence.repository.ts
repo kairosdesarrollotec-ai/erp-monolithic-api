@@ -79,6 +79,18 @@ export class PrismaRentalEvidenceRepository implements RentalEvidenceRepositoryP
     return { photos, videos };
   }
 
+  async delete(rentalId: string, evidenceId: string, scope: RentalScope): Promise<boolean> {
+    const result = await this.prisma.rentalEvidence.deleteMany({
+      where: {
+        id: evidenceId,
+        rentalId,
+        organizationId: scope.organizationId,
+        operatingCompanyId: scope.operatingCompanyId,
+      },
+    });
+    return result.count > 0;
+  }
+
   async list(rentalId: string, scope: RentalScope): Promise<RentalEvidenceRecord[]> {
     const rows = await this.prisma.rentalEvidence.findMany({
       where: {

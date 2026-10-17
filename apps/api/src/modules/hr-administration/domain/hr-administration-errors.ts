@@ -205,6 +205,49 @@ export class InvalidAttendanceRecordError extends DomainUnprocessableError {
   }
 }
 
+/** DEC-ADP-ATT-EVIDENCE-001: evidencia fotografica de asistencia mal formada (422). */
+export class InvalidAttendanceEvidenceError extends DomainUnprocessableError {
+  readonly code = 'INVALID_ATTENDANCE_EVIDENCE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class AttendanceEvidenceRequiredError extends DomainUnprocessableError {
+  readonly code = 'ATTENDANCE_EVIDENCE_REQUIRED';
+
+  constructor() {
+    super(
+      'La asistencia requiere la foto de evidencia (reloj + hora + rostro). Súbela con la URL firmada y envía evidence con su storageRef.',
+    );
+  }
+}
+
+export class EmployeeEmailRequiredError extends DomainUnprocessableError {
+  readonly code = 'EMPLOYEE_EMAIL_REQUIRED';
+
+  constructor() {
+    super('El colaborador no tiene correo registrado: el vínculo con su cuenta de usuario se hace por correo.');
+  }
+}
+
+export class UserAccountNotFoundError extends DomainNotFoundError {
+  readonly code = 'USER_ACCOUNT_NOT_FOUND';
+
+  constructor(email: string) {
+    super(`No existe una cuenta de usuario con el correo ${email}.`);
+  }
+}
+
+export class EmployeeAccountAlreadyLinkedError extends DomainConflictError {
+  readonly code = 'EMPLOYEE_ACCOUNT_ALREADY_LINKED';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
 export class InvalidPayrollMonthError extends DomainBadRequestError {
   readonly code = 'INVALID_PAYROLL_MONTH';
 
@@ -292,6 +335,14 @@ export class LeaveEvidenceStorageUnavailableError extends DomainServiceUnavailab
 
   constructor() {
     super('Almacenamiento de evidencia no configurado (variables de entorno GCS faltantes).');
+  }
+}
+
+export class AttendanceEvidenceStorageUnavailableError extends DomainServiceUnavailableError {
+  readonly code = 'ATTENDANCE_EVIDENCE_STORAGE_UNAVAILABLE';
+
+  constructor() {
+    super('Almacenamiento de evidencia de asistencia no configurado (variables de entorno GCS faltantes).');
   }
 }
 

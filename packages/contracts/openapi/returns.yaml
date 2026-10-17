@@ -1,8 +1,32 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.1.0
+  version: 1.6.0
   description: >
+    1.4.0 — DEC-ALQ-COMPANY-DRIVER-004: alquiler CON CONDUCTOR DE LA EMPRESA = sin garantía.
+    ReturnResponse.depositRequired (false = N/A liberación/devolución de garantía): el expediente
+    no emite la alerta WARRANTY_RELEASE de 24 h y close-financial solo admite refundAmount =
+    retainedAmount = 0 (si no, 422 RETURN_NO_DEPOSIT_TO_SETTLE). Sin otros cambios.
+    1.5.0 — DEC-DEV-LATE-CHARGE-001 (Hoja de Políticas VR-GA-PA-VS.04, 26.03.2026, CONFIRMADA): ReturnResponse.latenessCharge,
+    cargo SUGERIDO por retraso en GET /returns y GET /returns/{id} (informativo: NO cobra ni bloquea; el cobro sigue manual).
+    Tramos: 31-120 min = 25% del día (penalidad sobre garantía 20%), 121-300 min = 50% (30%), >300 min = día completo (50%);
+    >12 h no autorizado = severeBreach. Montos como string decimal. Tarifa = dailyRate vigente del vehículo; garantía =
+    garantía del alquiler (null si no hay, p. ej. con conductor de la empresa).
+
+    1.3.0 — BR-DEV-003/004 (tolerancia de 30 min CONFIRMADA): ReturnResponse.lateness
+    {lateToleranceMinutes, lateMinutes, isLate, basis} en GET /returns y GET /returns/{id}
+    (solo informativo: no hay cargo por retraso definido en los documentos).
+    Recordatorio: "si el cliente no contesta, SOLO se registra" (register-reminder FAILED + nota;
+    sin escalamiento ni reintentos automáticos). DUE_SOON a 4 h del límite de garantía CONFIRMADO.
+
+    1.2.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
+    sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
+    inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
+    o reporte se interpreta como 00:00 America/Lima (= 05:00Z); los date-time
+    con offset/Z se respetan tal cual. Los textos de notificaciones/documentos
+    muestran fecha y hora de Lima. Los campos `format: date` de calendario
+    puro (p. ej. travelStartDate) no cambian.
+
     Contrato del módulo Devolución (DEV-01 a DEV-10, BDD-04-devolucion.md, SDD-04-devolucion.md, TDD-04-devolucion.md).
     Implementa el ciclo de vida completo de devolución: programación, recepción provisional con custodia preventiva (DR-DEV-003),
     prueba de alcolímetro de salida con tolerancia cero (BR-DEV-005), checklist de inspección con evidencia fotográfica (BR-DEV-009, TR-08),
@@ -11,6 +35,11 @@ info:
     Versión 1.1.0: resolución provisional de Gerencia ante alcolímetro desfavorable (PROP-014), semáforo de riesgo del cliente
     NORMAL/AMBAR/ROJO (BR-DEV-007/008), documento de responsabilidad firmado en la inspección (PROP-015), tarifa de paralización
     tomada del vehículo y catálogo del tarifario estético.
+    Versión 1.2.0: recordatorio previo 3 h antes de la hora pactada con envío MANUAL-ASISTIDO por WhatsApp (BR-DEV-004, DAT-DEV-001,
+    DEC-DEV-REMINDER-001): campo `reminder` en el expediente, bandeja GET /returns/reminders y comando register-reminder; alertas
+    operativas de garantía por liberar a las 24 h (BR-DEV-001) e inmovilización > 24 h sin cobro (BR-DEV-011): campo opcional `alerts`
+    y GET /returns/alerts (solo alertan: no ejecutan reembolso ni cobro). Zona horaria de negocio America/Lima (UTC-5) para los textos.
+    close libera el compromiso RENTAL del vehículo (DEC-DEV-COMMITMENT-001). Los errores siguen la forma { statusCode, code, detail }.
 
 paths:
   /returns:
@@ -100,6 +129,71 @@ paths:
           description: Alquiler no encontrado en la empresa/sede
         '409':
           description: El alquiler no está en estado ACTIVE o RETURN_IN_PROGRESS (RENTAL_NOT_RETURNABLE), o su devolución ya avanzó más allá de PROGRAMADA (RENTAL_ALREADY_HAS_ACTIVE_RETURN)
+        '500':
+          description: Error interno del servidor
+
+  /returns/reminders:
+    get:
+      operationId: listReturnReminders
+      summary: Bandeja de recordatorios de devolución pendientes de envío o fallidos (DEV-01 / BR-DEV-004)
+      description: >
+        Un scheduler genera, para cada devolución PROGRAMADA cuya hora pactada cae dentro de las próximas 3 h, un recordatorio en
+        estado PENDING con el texto ya redactado (hora en America/Lima). El envío por WhatsApp es MANUAL-ASISTIDO: el operador copia
+        `reminder.text`, lo envía y registra el resultado con register-reminder. Sin `status` devuelve PENDING + FAILED, ordenados por
+        `dueAt` ascendente (el más urgente primero). Solo lectura; no requiere If-Match.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/ReturnReminderStatus' } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Recordatorios de la sede
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReturnReminderInboxItem' }
+        '400':
+          description: Parámetros inválidos o limit fuera de rango
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '500':
+          description: Error interno del servidor
+
+  /returns/alerts:
+    get:
+      operationId: listReturnAlerts
+      summary: Alertas operativas de devolución - garantía por liberar (24 h) e inmovilización > 24 h (DEV-07 / DEV-08)
+      description: >
+        Calculadas con el reloj en cada consulta (sin estado propio). WARRANTY_RELEASE: devolución SIN_DANOS sin cierre financiero a la
+        que le faltan 4 h o menos (DUE_SOON) o ya venció (OVERDUE) el plazo MÁXIMO de 24 h naturales desde la recepción (BR-DEV-001);
+        un daño suspende ese plazo. IMMOBILIZATION: más de 24 h naturales desde la recepción con daño TÉCNICO y días de paralización
+        aún sin cobrar (BR-DEV-011). SOLO ALERTAN: el reembolso y el cobro siguen siendo manuales (close-financial / charge-immobilization).
+        Sin `type` devuelve ambos tipos. Solo lectura; no requiere If-Match.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: type, in: query, required: false, schema: { $ref: '#/components/schemas/ReturnAlertType' } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }
+      responses:
+        '200':
+          description: Alertas vigentes de la sede
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReturnAlertItem' }
+        '400':
+          description: Parámetros inválidos o limit fuera de rango
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
         '500':
           description: Error interno del servidor
 
@@ -386,6 +480,51 @@ paths:
         '500':
           description: Error interno del servidor
 
+  /returns/{id}/commands/register-reminder:
+    post:
+      operationId: registerReturnReminder
+      summary: Registrar el resultado del envío manual del recordatorio de devolución (DEV-01 / BR-DEV-004 / DAT-DEV-001)
+      description: >
+        El sistema NO envía el WhatsApp (la integración no existe): el operador lo envía a mano y aquí registra la hora y el resultado
+        (SENT | FAILED + nota; la nota es obligatoria si FAILED). `If-Match` lleva la versión del RECORDATORIO (`reminder.version` /
+        `reminder.etag`), no la del expediente, y el comando no modifica la versión del expediente. Un recordatorio FAILED admite un nuevo
+        registro MANUAL del operador; uno SENT es definitivo (409 RETURN_REMINDER_ALREADY_SENT). Acción de matriz: RETURN.CREATE.
+        Regla CONFIRMADA: si el cliente no contesta, SOLO se registra (FAILED + nota con el motivo): el sistema no escala, no notifica a
+        terceros ni reintenta el envío automáticamente. La tolerancia de 30 min (BR-DEV-003/004) solo se informa en el texto del recordatorio.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterReturnReminderRequest' }
+      responses:
+        '200':
+          description: Recordatorio actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnReminderResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada (RETURN_NOT_FOUND) o aún sin recordatorio generado (RETURN_REMINDER_NOT_FOUND)
+        '409':
+          description: El recordatorio ya fue registrado como enviado (RETURN_REMINDER_ALREADY_SENT) o la devolución está CANCELADA (RETURN_STATE_CONFLICT)
+        '412':
+          description: Versión del recordatorio no coincide (If-Match, RETURN_REMINDER_VERSION_CONFLICT)
+        '422':
+          description: FAILED sin nota o hora de envío en el futuro (INVALID_RETURN_REMINDER_RESULT)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
   /returns/{id}/commands/close-financial:
     post:
       operationId: closeFinancial
@@ -420,7 +559,7 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: Existen incidencias abiertas (INCIDENT_STILL_OPEN, TDD §11.4) o la liquidación no cuadra con la garantía / no cubre los cargos de paralización (INVALID_FINANCIAL_SETTLEMENT)
+          description: Existen incidencias abiertas (INCIDENT_STILL_OPEN, TDD §11.4) o la liquidación no cuadra con la garantía / no cubre los cargos de paralización (INVALID_FINANCIAL_SETTLEMENT), o el alquiler no tiene garantía (conductor de la empresa) y se envían montos > 0 (RETURN_NO_DEPOSIT_TO_SETTLE)
         '428':
           description: Falta header If-Match
         '500':
@@ -430,6 +569,9 @@ paths:
     post:
       operationId: closeReturn
       summary: Firma final de acta y cierre formal de la devolución (DEV-09 / DEV-10 / DR-DEV-001)
+      description: >
+        Además de cerrar el expediente, pasar el alquiler a CLOSED y actualizar la flota, libera el compromiso RENTAL del vehículo
+        (`vehicle_commitments` -> RELEASED) en la misma transacción, también en devolución anticipada (DEC-DEV-COMMITMENT-001).
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -551,6 +693,34 @@ paths:
         '500':
           description: Error interno del servidor
 
+  /returns/{id}/evidence/{evidenceId}:
+    delete:
+      operationId: deleteReturnEvidence
+      summary: Eliminar una evidencia de recepción registrada por error (DEV-04)
+      description: >
+        Solo en los estados que admiten evidencia (RECEPCION_PROVISIONAL, INSPECCION o
+        CON_DANOS) y con la misma acción de matriz que subirla (UPLOAD_EVIDENCE).
+        Se elimina el registro; el archivo del bucket no se toca.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: evidenceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204':
+          description: Evidencia eliminada
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución o evidencia no encontradas en la empresa/sede (RETURN_NOT_FOUND / RETURN_EVIDENCE_NOT_FOUND)
+        '409':
+          description: La devolución no está en un estado que admita evidencia
+        '500':
+          description: Error interno del servidor
+
 components:
   securitySchemes:
     bearerAuth:
@@ -559,7 +729,170 @@ components:
       bearerFormat: 'Firebase ID token'
       description: 'ID token de Firebase Authentication, enviado como "Authorization: Bearer <idToken>"'
 
+  parameters:
+    returnId: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    companyId: { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+    branchId: { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+
   schemas:
+    ReturnReminderStatus:
+      type: string
+      description: PENDING = generado por el sistema, pendiente de envío manual; SENT / FAILED = resultado registrado por el operador
+      enum: [PENDING, SENT, FAILED]
+
+    ReturnReminderResult:
+      type: string
+      enum: [SENT, FAILED]
+
+    ReturnAlertType:
+      type: string
+      enum: [WARRANTY_RELEASE, IMMOBILIZATION]
+
+    RegisterReturnReminderRequest:
+      type: object
+      required: [companyId, branchId, result]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        result: { $ref: '#/components/schemas/ReturnReminderResult' }
+        sentAt:
+          type: string
+          format: date-time
+          description: Hora real del envío; si se omite, el servidor usa la hora actual. No puede estar en el futuro (tolerancia 5 min).
+        note:
+          type: string
+          maxLength: 500
+          description: Obligatoria cuando result = FAILED (motivo).
+
+    ReturnReminderResponse:
+      type: object
+      required: [id, status, dueAt, text, generatedAt, sentAt, sentBy, note, attempts, version, etag]
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ReturnReminderStatus' }
+        dueAt: { type: string, format: date-time, description: Hora pactada menos 3 h }
+        text: { type: string, description: Mensaje redactado por el sistema (hora en America/Lima), listo para copiar y enviar por WhatsApp }
+        generatedAt: { type: string, format: date-time }
+        sentAt: { type: string, format: date-time, nullable: true }
+        sentBy: { type: string, nullable: true, description: Firebase UID del operador que registró el resultado }
+        note: { type: string, nullable: true }
+        attempts: { type: integer, description: Cantidad de resultados registrados }
+        version: { type: integer, description: Valor para If-Match de register-reminder }
+        etag: { type: string }
+
+    ReturnReminderInboxItem:
+      type: object
+      required: [returnId, rentalId, returnStatus, scheduledAt, vehiclePlate, customerName, customerPhone, reminder]
+      properties:
+        returnId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        returnStatus: { $ref: '#/components/schemas/ReturnStatus' }
+        scheduledAt: { type: string, format: date-time }
+        vehiclePlate: { type: string, nullable: true }
+        customerName: { type: string, nullable: true }
+        customerPhone: { type: string, nullable: true, description: Teléfono del cliente para el envío manual }
+        reminder: { $ref: '#/components/schemas/ReturnReminderResponse' }
+
+    WarrantyReleaseAlert:
+      type: object
+      required: [level, deadlineAt, hoursRemaining]
+      properties:
+        level:
+          type: string
+          enum: [DUE_SOON, OVERDUE]
+          description: DUE_SOON faltan 4 h o menos para el límite de 24 h; OVERDUE ya venció
+        deadlineAt: { type: string, format: date-time, description: Recepción + 24 h naturales }
+        hoursRemaining: { type: number, description: Horas restantes (negativo si venció) }
+
+    ImmobilizationAlert:
+      type: object
+      required: [since, hoursElapsed, pendingDays, dailyRate, suggestedAmount]
+      properties:
+        since: { type: string, format: date-time, description: Recepción del vehículo (inicio del reloj) }
+        hoursElapsed: { type: number }
+        pendingDays: { type: integer, description: Días de paralización que el reloj justifica y aún no se cobraron }
+        dailyRate: { type: number, nullable: true, description: dailyRate vigente del vehículo }
+        suggestedAmount: { type: number, nullable: true, description: pendingDays x dailyRate (sugerencia; el cobro es manual) }
+
+    ReturnLateness:
+      type: object
+      required: [lateToleranceMinutes, lateMinutes, isLate, basis]
+      properties:
+        lateToleranceMinutes: { type: integer, example: 30 }
+        lateMinutes: { type: integer, minimum: 0, description: Minutos enteros pasados de la hora pactada (0 si no hay retraso bruto) }
+        isLate: { type: boolean, description: true solo si el retraso supera estrictamente la tolerancia }
+        basis:
+          type: string
+          enum: [RECEIVED, NOW]
+          description: RECEIVED = contra la recepción real (definitivo); NOW = aún no recibido (parcial, crece con el reloj)
+    ReturnLatenessCharge:
+      type: object
+      description: >
+        Cargo SUGERIDO por retraso (Hoja de Políticas VR-GA-PA-VS.04). Solo informativo; el cobro es manual
+        (ajustes de garantía / cargo de paralización). La tolerancia de 30 min exactos (30:00) no es retraso (tier NONE).
+      required: [tier, basis, informational, timeChargePercent, guaranteePenaltyPercent, dailyRate, guaranteeAmount, currency, suggestedTimeCharge, suggestedGuaranteePenalty, noticeAndPrepaymentVerified, severeBreach, severeBreachThresholdHours]
+      properties:
+        tier:
+          type: string
+          enum: [NONE, EXTRA_31_120, EXTRA_121_300, EXTRA_OVER_300]
+          description: NONE = dentro de tolerancia; EXTRA_31_120 = 31-120 min; EXTRA_121_300 = 121 min a 5 h; EXTRA_OVER_300 = más de 5 h
+        basis: { type: string, enum: [RECEIVED, NOW] }
+        informational: { type: boolean, enum: [true] }
+        timeChargePercent: { type: integer, description: '0 / 25 / 50 / 100 (% de la tarifa diaria)' }
+        guaranteePenaltyPercent: { type: integer, description: '0 / 20 / 30 / 50 (% de la garantía)' }
+        dailyRate: { type: string, nullable: true, pattern: '^\\d+\\.\\d{2}$', description: dailyRate vigente del vehículo (misma fuente que el cargo de paralización) }
+        guaranteeAmount: { type: string, nullable: true, pattern: '^\\d+\\.\\d{2}$', description: Garantía del alquiler; null si no tiene (p. ej. con conductor de la empresa) }
+        currency: { type: string, nullable: true }
+        suggestedTimeCharge: { type: string, nullable: true, pattern: '^\\d+\\.\\d{2}$', description: timeChargePercent x tarifa diaria; null si NONE o sin tarifa }
+        suggestedGuaranteePenalty:
+          type: string
+          nullable: true
+          pattern: '^\\d+\\.\\d{2}$'
+          description: >
+            guaranteePenaltyPercent x garantía, aplicable "si no avisó / no pagó antes". null si NONE, sin garantía o si
+            noticeAndPrepaymentVerified es true.
+        noticeAndPrepaymentVerified:
+          type: boolean
+          nullable: true
+          description: true = ampliación AUTORIZADA y pagada que cubre el tiempo; false = ninguna cubre; null = no determinable, lo confirma el operador
+        severeBreach: { type: boolean, description: 'Retraso > 12 h: incumplimiento grave (retener garantía / resolver contrato es decisión de Gerencia)' }
+        severeBreachThresholdHours: { type: integer, example: 12 }
+    ReturnAlerts:
+      type: object
+      required: [warrantyRelease, immobilization]
+      properties:
+        warrantyRelease:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/WarrantyReleaseAlert'
+        immobilization:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/ImmobilizationAlert'
+
+    ReturnAlertItem:
+      type: object
+      required: [type, returnId, rentalId, returnStatus, returnVersion, vehiclePlate, customerName, receivedAt, warrantyRelease, immobilization]
+      properties:
+        type: { $ref: '#/components/schemas/ReturnAlertType' }
+        returnId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        returnStatus: { $ref: '#/components/schemas/ReturnStatus' }
+        returnVersion: { type: integer }
+        vehiclePlate: { type: string, nullable: true }
+        customerName: { type: string, nullable: true }
+        receivedAt: { type: string, format: date-time }
+        warrantyRelease:
+          nullable: true
+          description: Presente cuando type = WARRANTY_RELEASE
+          allOf:
+            - $ref: '#/components/schemas/WarrantyReleaseAlert'
+        immobilization:
+          nullable: true
+          description: Presente cuando type = IMMOBILIZATION
+          allOf:
+            - $ref: '#/components/schemas/ImmobilizationAlert'
+
     ResponsibilityTemplateResponse:
       type: object
       required: [type, name, content, version]
@@ -927,6 +1260,8 @@ components:
         - immobilizationCharges
         - alcoholEscalation
         - responsibilityDocument
+        - reminder
+        - depositRequired
       properties:
         id: { type: string, format: uuid }
         organizationId: { type: string, format: uuid }
@@ -937,6 +1272,9 @@ components:
         customerId: { type: string, format: uuid }
         vehiclePlate: { type: string, nullable: true }
         customerName: { type: string, nullable: true }
+        depositRequired:
+          type: boolean
+          description: false = alquiler con conductor de la empresa, sin garantía (liberación/devolución N/A, sin alerta de 24 h). true por defecto.
         status: { $ref: '#/components/schemas/ReturnStatus' }
         custodyHolder: { $ref: '#/components/schemas/CustodyHolder' }
         customerPresent: { type: boolean }
@@ -954,6 +1292,32 @@ components:
           description: Documento de responsabilidad firmado en la inspección (null antes de completarla); sin signatureData
           allOf:
             - $ref: '#/components/schemas/ResponsibilityDocumentResponse'
+        reminder:
+          nullable: true
+          description: Recordatorio previo 3 h antes de la hora pactada (null mientras no se haya generado; BR-DEV-004)
+          allOf:
+            - $ref: '#/components/schemas/ReturnReminderResponse'
+        alerts:
+          description: >
+            Alertas operativas calculadas con el reloj. Solo en GET /returns/{id} y GET /returns; las respuestas de comandos
+            la omiten. warrantyRelease = garantía por liberar a las 24 h; immobilization = más de 24 h sin cobrar (solo alertan).
+          allOf:
+            - $ref: '#/components/schemas/ReturnAlerts'
+        lateness:
+          nullable: true
+          description: >
+            BR-DEV-003 (CONFIRMADO): tolerancia de devolución sin sanción de 30 min sobre scheduledAt. Solo en GET /returns/{id}
+            y GET /returns; las respuestas de comandos la omiten. null si no aplica (CANCELADA sin recepción).
+            Informativo: no dispara cargos (los documentos no definen cargo por retraso).
+          allOf:
+            - $ref: '#/components/schemas/ReturnLateness'
+        latenessCharge:
+          nullable: true
+          description: >
+            DEC-DEV-LATE-CHARGE-001: cargo SUGERIDO por retraso según la Hoja de Políticas VR-GA-PA-VS.04. Solo en GET /returns/{id}
+            y GET /returns. null si no aplica (CANCELADA sin recepción). No cobra ni bloquea.
+          allOf:
+            - $ref: '#/components/schemas/ReturnLatenessCharge'
         scheduledAt: { type: string, format: date-time }
         receivedAt: { type: string, format: date-time, nullable: true }
         inspectedAt: { type: string, format: date-time, nullable: true }

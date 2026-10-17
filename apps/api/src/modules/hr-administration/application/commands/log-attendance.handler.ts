@@ -9,13 +9,21 @@ import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import {
   AttendanceAlreadyLoggedError,
   EmployeeNotFoundError,
+  InvalidAttendanceEvidenceError,
   EmployeeTerminatedError,
+  AttendanceEvidenceRequiredError,
 } from '../../domain/hr-administration-errors';
-import { resolveAttendanceRecord } from '../../domain/hr-administration-rules';
-import { LogAttendanceCommand } from './log-attendance.command';
+import {
+  ATTENDANCE_STATUSES_REQUIRING_EVIDENCE,
+  attendanceEvidenceKeyPrefix,
+  resolveAttendanceRecord,
+} from '../../domain/hr-administration-rules';
+import { LogAttendanceCommand, ATTENDANCE_EVIDENCE_KINDS } from './log-attendance.command';
 
 export interface LogAttendanceResult {
   record: AttendanceRecord;
+  /** true si el registro no trae evidencia (solo historicos y faltas; los registros nuevos de presencia la exigen, DEC-ADP-ATT-EVIDENCE-002). */
+  evidenceMissing: boolean;
   /** Memo de advertencia generado automáticamente por reiteración de faltas injustificadas en el mes (ADP-P03). */
   memo: HrMemo | null;
 }
@@ -50,6 +58,8 @@ export class LogAttendanceHandler {
       'LOG_ATTENDANCE',
     );
 
+    const evidence = this.resolveEvidence(command, found.operatingCompanyId);
+
     return this.transactionManager.run(async (tx) => {
       const employee = await this.employees.findById(command.employeeId, tx);
       if (!employee) {
@@ -82,6 +92,7 @@ export class LogAttendanceHandler {
           deductionAmount: resolved.deductionAmount,
           notes: command.notes?.trim() || null,
           createdById: command.firebaseUid,
+          evidence,
         },
         tx,
       );
@@ -99,6 +110,8 @@ export class LogAttendanceHandler {
             status: created.status,
             minutesLate: created.minutesLate,
             deductionAmount: Number(created.deductionAmount),
+            evidenceKind: created.evidenceKind,
+            evidenceMissing: !created.evidenceKind,
           },
         },
         tx,
@@ -117,7 +130,51 @@ export class LogAttendanceHandler {
             )
           : null;
 
-      return { record: created, memo };
+      return { record: created, memo, evidenceMissing: !created.evidenceKind };
     });
+  }
+
+  /**
+   * DEC-ADP-ATT-EVIDENCE-002: la evidencia fotografica es OBLIGATORIA en marcaciones de presencia (PRESENTE/TARDANZA)
+   * y se registra quien la corroboro. Si trae `storageRef`, debe ser un objeto subido con la URL firmada de ESTE
+   * colaborador (prefijo de empresa/colaborador). Las faltas y permisos no tienen foto posible: evidencia opcional.
+   */
+  private resolveEvidence(command: LogAttendanceCommand, companyId: string) {
+    const ev = command.evidence;
+    if (!ev) {
+      if (ATTENDANCE_STATUSES_REQUIRING_EVIDENCE.includes(command.status)) {
+        throw new AttendanceEvidenceRequiredError();
+      }
+      return null;
+    }
+    if (!(ATTENDANCE_EVIDENCE_KINDS as readonly string[]).includes(ev.kind)) {
+      throw new InvalidAttendanceEvidenceError(`Tipo de evidencia no admitido (${ev.kind}).`);
+    }
+    const storageRef = ev.storageRef?.trim() || null;
+    const url = ev.url?.trim() || null;
+    if (!storageRef && !url) {
+      throw new InvalidAttendanceEvidenceError('La evidencia requiere storageRef o url de la foto.');
+    }
+    if (storageRef && !storageRef.startsWith(attendanceEvidenceKeyPrefix(companyId, command.employeeId))) {
+      throw new InvalidAttendanceEvidenceError(
+        'storageRef no corresponde a una foto subida para este colaborador (usa la URL firmada de asistencia).',
+      );
+    }
+    if (Number.isNaN(ev.capturedAtLocal.getTime())) {
+      throw new InvalidAttendanceEvidenceError('capturedAtLocal no es una fecha y hora valida.');
+    }
+    const now = new Date();
+    if (ev.capturedAtLocal.getTime() > now.getTime() + 5 * 60 * 1000) {
+      throw new InvalidAttendanceEvidenceError('capturedAtLocal no puede estar en el futuro.');
+    }
+    return {
+      kind: ev.kind,
+      storageRef,
+      url,
+      capturedAt: ev.capturedAtLocal,
+      note: ev.note?.trim() || null,
+      corroboratedById: command.firebaseUid,
+      corroboratedAt: now,
+    };
   }
 }

@@ -5,6 +5,8 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import { CandidateAlreadyEmployeeError, DuplicateEmployeeDocumentError } from '../../domain/hr-administration-errors';
+import { EmployeeAccountLinkService } from '../services/employee-account-link.service';
+import { normalizeEmail } from '../../domain/hr-administration-rules';
 import { CreateEmployeeCommand } from './create-employee.command';
 
 function isUniqueViolation(error: unknown): { target: string } | null {
@@ -24,6 +26,7 @@ export class CreateEmployeeHandler {
     private readonly employees: EmployeeRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly accountLinker?: EmployeeAccountLinkService,
   ) {}
 
   async execute(command: CreateEmployeeCommand): Promise<Employee> {
@@ -39,7 +42,7 @@ export class CreateEmployeeHandler {
     const documentNumber = command.documentNumber.trim();
 
     try {
-      return await this.transactionManager.run(async (tx) => {
+      const created = await this.transactionManager.run(async (tx) => {
         const existing = await this.employees.findByCompanyAndDocument(scope.operatingCompanyId, documentNumber, tx);
         if (existing) {
           throw new DuplicateEmployeeDocumentError(documentNumber);
@@ -54,7 +57,7 @@ export class CreateEmployeeHandler {
             documentType: command.documentType,
             documentNumber,
             fullName: command.fullName.trim(),
-            email: command.email?.trim() || null,
+            email: normalizeEmail(command.email),
             phone: command.phone?.trim() || null,
             areaId: command.areaId.trim(),
             areaName: command.areaName.trim(),
@@ -85,6 +88,8 @@ export class CreateEmployeeHandler {
 
         return created;
       });
+      // DEC-ADP-LINK-EMAIL-001: si ya existe una cuenta con ese correo, la ficha queda vinculada (best-effort).
+      return this.accountLinker ? await this.accountLinker.tryLink(created) : created;
     } catch (error) {
       const violation = isUniqueViolation(error);
       if (violation) {

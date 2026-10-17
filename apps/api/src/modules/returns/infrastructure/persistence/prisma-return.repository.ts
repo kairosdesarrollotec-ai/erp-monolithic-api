@@ -192,6 +192,10 @@ export class PrismaReturnRepository implements ReturnRepositoryPort {
     return this.evidencePersistence.add(input, tx);
   }
 
+  deleteEvidence(returnId: string, evidenceId: string, scope: ReturnScope): Promise<boolean> {
+    return this.evidencePersistence.delete(returnId, evidenceId, scope);
+  }
+
   listEvidences(returnId: string, scope: ReturnScope): Promise<ReturnEvidenceRecord[]> {
     return this.evidencePersistence.list(returnId, scope);
   }

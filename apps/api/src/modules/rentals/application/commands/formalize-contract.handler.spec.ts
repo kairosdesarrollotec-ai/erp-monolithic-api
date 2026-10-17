@@ -12,7 +12,6 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import { RentalStateConflictError } from '../../domain/rental-errors';
 import {
   ReservationCreditCurrencyMismatchError,
-  ReservationCreditExceedsDepositError,
   ReservationCreditSource,
 } from '../../domain/reservation-credit';
 import { testRole } from '../../../users/testing/role-fixtures';
@@ -150,8 +149,8 @@ describe('FormalizeContractHandler', () => {
       'branch-1',
       4,
       'doc-ref-001',
-      overrides.depositAmount ?? '500.00',
-      overrides.depositCurrency ?? 'PEN',
+      overrides.depositAmount ?? (overrides.contractVariant?.withCompanyDriver ? undefined : '500.00'),
+      overrides.depositCurrency ?? (overrides.contractVariant?.withCompanyDriver ? undefined : 'PEN'),
       undefined,
       overrides.contractVariant,
     );
@@ -224,7 +223,7 @@ describe('FormalizeContractHandler', () => {
         },
       });
 
-      await deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withDriver: true } }));
+      await deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withCompanyDriver: true } }));
 
       expect(deps.templateRepository.findActive).toHaveBeenCalledWith('comp-1', 'RENTAL_CONTRACT_LEGAL_DRIVER', 'org-1');
       expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
@@ -249,18 +248,18 @@ describe('FormalizeContractHandler', () => {
         RENTAL_CONTRACT_NATURAL_DRIVER: template('RENTAL_CONTRACT_NATURAL_DRIVER', 'tpl-nat-drv'),
       };
       const a = buildDeps({ activeByType });
-      await a.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withDriver: false } }));
+      await a.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withCompanyDriver: false } }));
       expect(a.rentals.formalizeContract).toHaveBeenCalledWith(expect.objectContaining({ templateId: 'tpl-nat' }), fakeTx);
 
       const b = buildDeps({ activeByType });
-      await b.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withDriver: true } }));
+      await b.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withCompanyDriver: true } }));
       expect(b.rentals.formalizeContract).toHaveBeenCalledWith(expect.objectContaining({ templateId: 'tpl-nat-drv' }), fakeTx);
     });
 
     it('si la empresa aun no cargo la plantilla de la combinacion, usa la generica y lo audita', async () => {
       const deps = buildDeps();
 
-      await deps.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withDriver: false } }));
+      await deps.handler.execute(command({ contractVariant: { holderType: 'NATURAL', withCompanyDriver: false } }));
 
       expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
         expect.objectContaining({ templateId: 'tpl-active', contractVariant: 'NATURAL_NO_DRIVER' }),
@@ -276,7 +275,7 @@ describe('FormalizeContractHandler', () => {
       const deps = buildDeps({ activeByType: {} });
 
       await expect(
-        deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withDriver: false } })),
+        deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withCompanyDriver: false } })),
       ).rejects.toMatchObject({
         response: expect.objectContaining({
           code: 'NO_ACTIVE_CONTRACT_TEMPLATE',
@@ -406,14 +405,23 @@ describe('FormalizeContractHandler', () => {
       );
     });
 
-    it('monto de reserva mayor que la garantia → 422 RESERVATION_CREDIT_EXCEEDS_DEPOSIT, no se persiste nada', async () => {
+    it('monto de reserva mayor que la garantia → NO error: aplica hasta cubrirla y registra el excedente (DEC-ALQ-RESCREDIT-002)', async () => {
       const deps = buildDeps({ rental: reservationRental, reservation: reservationSource({ amount: '600.00' }) });
 
-      await expect(deps.handler.execute(command({ depositAmount: '500.00' }))).rejects.toThrow(
-        ReservationCreditExceedsDepositError,
+      await deps.handler.execute(command({ depositAmount: '500.00' }));
+
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          depositAmount: '500.00',
+          reservationCreditAmount: '500.00',
+          reservationCreditExcess: '100.00',
+        }),
+        fakeTx,
       );
-      expect(deps.rentals.formalizeContract).not.toHaveBeenCalled();
-      expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+      const payment = deps.outboxRepository.publish.mock.calls.find((c) => c[0].eventType === 'PagoRegistrado.v1');
+      expect(payment![0].payload).toEqual(
+        expect.objectContaining({ amountCollected: '0.00', reservationCreditExcess: '100.00' }),
+      );
     });
 
     it('moneda de la garantia distinta de la de la reserva → RESERVATION_CREDIT_CURRENCY_MISMATCH', async () => {
@@ -446,6 +454,82 @@ describe('FormalizeContractHandler', () => {
       await deps.handler.execute(command({ depositAmount: '1000.00' }));
 
       expect(deps.rentals.findReservationCreditSource).toHaveBeenCalledWith('res-1', fakeTx);
+    });
+  });
+
+  describe('DEC-ALQ-COMPANY-DRIVER-004 - con conductor de la empresa no hay garantia', () => {
+    const withDriver = { holderType: 'NATURAL', withCompanyDriver: true } as const;
+
+    it('no exige ni cobra garantia: depositRequired=false, sin monto, y no publica PagoRegistrado', async () => {
+      const deps = buildDeps({ activeByType: { RENTAL_CONTRACT_NATURAL_DRIVER: template('RENTAL_CONTRACT_NATURAL_DRIVER', 'tpl-nat-drv') } });
+
+      const result = await deps.handler.execute(command({ contractVariant: withDriver }));
+
+      expect(result.status).toBe('PENDING_DELIVERY');
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          depositRequired: false,
+          depositAmount: '0.00',
+          reservationCreditAmount: '0.00',
+          reservationCreditExcess: '0.00',
+          contractVariant: 'NATURAL_WITH_DRIVER',
+        }),
+        fakeTx,
+      );
+      expect(deps.outboxRepository.publish.mock.calls.map((c) => c[0].eventType)).toEqual(['ContratoFirmado.v1']);
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({ depositRequired: false, depositCurrency: null, amountCollected: '0.00' }),
+        }),
+        fakeTx,
+      );
+    });
+
+    it('enviar garantia > 0 con conductor de la empresa → 422 DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER', async () => {
+      const deps = buildDeps();
+
+      await expect(
+        deps.handler.execute(command({ contractVariant: withDriver, depositAmount: '500.00', depositCurrency: 'PEN' })),
+      ).rejects.toMatchObject({ code: 'DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER', httpStatus: 422 });
+      expect(deps.rentals.formalizeContract).not.toHaveBeenCalled();
+    });
+
+    it('reserva con credito pagado: TODO el credito queda como saldo a favor (sin reembolso automatico)', async () => {
+      const deps = buildDeps({
+        rental: reservationRental,
+        reservation: reservationSource({ amount: '300.00' }),
+        activeByType: { RENTAL_CONTRACT_LEGAL_DRIVER: template('RENTAL_CONTRACT_LEGAL_DRIVER', 'tpl-legal-drv') },
+      });
+
+      await deps.handler.execute(command({ contractVariant: { holderType: 'LEGAL', withCompanyDriver: true } }));
+
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          depositRequired: false,
+          depositAmount: '0.00',
+          reservationCreditAmount: '0.00',
+          reservationCreditExcess: '300.00',
+          currency: 'PEN',
+        }),
+        fakeTx,
+      );
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ changes: expect.objectContaining({ reservationCreditExcess: '300.00', reservationCreditApplied: true }) }),
+        fakeTx,
+      );
+    });
+
+    it('sin conductor de la empresa la garantia sigue siendo obligatoria (400 INVALID_DEPOSIT_AMOUNT)', async () => {
+      const deps = buildDeps();
+
+      await expect(
+        deps.handler.execute(
+          new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, 'doc', undefined, undefined, undefined, {
+            holderType: 'NATURAL',
+            withCompanyDriver: false,
+          }),
+        ),
+      ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_DEPOSIT_AMOUNT' }) });
     });
   });
 });

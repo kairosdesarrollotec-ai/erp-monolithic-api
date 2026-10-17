@@ -11,6 +11,7 @@ import {
   SaveNotaryEvaluationInput,
   ApproveNotaryExceptionInput,
   FormalizeContractInput,
+  AddAuthorizedDriverInput,
   CompleteDeliveryInput,
   RentalExtensionRecord,
   RequestExtensionInput,
@@ -366,6 +367,22 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
     return this.rentalNotaryContractPersistence.saveNotaryEvaluation(input, tx);
+  }
+
+  async addAuthorizedDriver(
+    input: AddAuthorizedDriverInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord> {
+    const client = tx ?? this.prisma;
+    await client.rentalParty.create({
+      data: {
+        rentalId: input.rentalId,
+        customerId: input.customerId,
+        role: 'DRIVER',
+        addendumDocumentRef: input.addendumDocumentRef,
+      },
+    });
+    return this.bumpVersion(input.rentalId, input.scope, input.expectedVersion, { updatedBy: input.updatedBy }, tx);
   }
 
   async approveNotaryException(

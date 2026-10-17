@@ -80,7 +80,7 @@ function dtoFields(dto: new () => unknown): { all: string[]; required: string[] 
   return { all, required: all.filter((p) => !optional.has(p)).sort() };
 }
 
-const HTTP: Record<number, string> = { [RequestMethod.GET]: 'get', [RequestMethod.POST]: 'post' };
+const HTTP: Record<number, string> = { [RequestMethod.GET]: 'get', [RequestMethod.POST]: 'post', [RequestMethod.DELETE]: 'delete' };
 
 function routesOf(controller: new (...args: any[]) => unknown, basePath: string) {
   const proto = controller.prototype as any;
@@ -90,7 +90,7 @@ function routesOf(controller: new (...args: any[]) => unknown, basePath: string)
       const handler = proto[name];
       const sub = Reflect.getMetadata(PATH_METADATA, handler) as string;
       const openApiPath = (basePath + (sub === '/' ? '' : `/${sub}`))
-        .replace(/:id/g, '{id}')
+        .replace(/:(\w+)/g, '{$1}')
         .replace(/:reservationId/g, '{reservationId}');
       const method = HTTP[Reflect.getMetadata(METHOD_METADATA, handler)];
       const httpCode = Reflect.getMetadata(HTTP_CODE_METADATA, handler) ?? (method === 'post' ? 201 : 200);
@@ -249,10 +249,10 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     expect(queryParams).toEqual(dtoFields(GetContractTemplateQueryDto as new () => unknown).all);
   });
 
-  it('formalize-contract: holderType y withDriver son opcionales y su enum coincide con el dominio', () => {
+  it('formalize-contract: holderType y withCompanyDriver son opcionales y su enum coincide con el dominio', () => {
     const contract = flatten(spec.components.schemas.FormalizeContractRequest);
     expect(contract.required).not.toContain('holderType');
-    expect(contract.required).not.toContain('withDriver');
+    expect(contract.required).not.toContain('withCompanyDriver');
     expect([...spec.components.schemas.ContractHolderType.enum].sort()).toEqual([...HOLDER_TYPES].sort());
   });
 

@@ -1,4 +1,5 @@
 import { renderNotificationTemplate } from '../../notification-templates/domain/notification-template-renderer';
+import { formatLimaDMY, parseBusinessInstant } from '../../../common/time/lima-time';
 
 export interface OutboxEventLike {
   id: string;
@@ -84,7 +85,7 @@ interface ReservationCreatedPayload {
   operatingCompanyId: string;
   branchId: string;
   vehicleId: string;
-  startAt: string | Date;
+  startAt: string;
   createdBy: string;
 }
 
@@ -127,14 +128,16 @@ const FALLBACK_TEMPLATES: Record<string, string> = {
 export function projectNotificationEvent(
   event: OutboxEventLike,
   templateBody: string | null,
+  context: { vehicleLabel?: string } = {},
 ): NotificationProjectionResult {
   switch (event.eventType) {
     case 'ReservationCreated': {
       const payload = event.payload as ReservationCreatedPayload;
       const body = templateBody ?? FALLBACK_TEMPLATES.ReservationCreated;
       const title = renderNotificationTemplate(body, {
-        vehiculo: payload.vehicleId,
-        fecha: new Date(payload.startAt).toLocaleDateString('es-PE'),
+        // Marca, modelo y placa cuando se pudo resolver; el ID es solo respaldo.
+        vehiculo: context.vehicleLabel ?? payload.vehicleId,
+        fecha: formatLimaDMY(parseBusinessInstant(String(payload.startAt))),
       });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.createdBy, title);
     }
@@ -175,7 +178,7 @@ export function projectNotificationEvent(
       const payload = event.payload as PersonalIncorporadoPayload;
       const body = templateBody ?? FALLBACK_TEMPLATES['PersonalIncorporado.v1'];
       const title = renderNotificationTemplate(body, {
-        fecha: new Date(payload.startDate).toLocaleDateString('es-PE'),
+        fecha: formatLimaDMY(parseBusinessInstant(String(payload.startDate))),
       });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.actorUserId, title, '/personal');
     }

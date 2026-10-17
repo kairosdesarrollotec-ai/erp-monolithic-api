@@ -1,8 +1,22 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.7.0
+  version: 0.8.1
   description: >
+    0.8.1 — DEC-RES-CANCEL-001 — Razones de cancelación: enum CERRADO. cancel acepta solo
+    CUSTOMER_REQUESTED_CHANGE (cambio de fecha/hora/vehículo, el monto se pierde) y NO_SHOW
+    (solo Gerencia, el monto se pierde); cualquier otro valor responde 400. La cancelación
+    por venta del vehículo no pasa por cancel: es resolve-sale REJECT (motivo interno
+    VEHICLE_SOLD_REFUND, con reembolso). Sin cambios de forma en el contrato.
+
+    0.8.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
+    sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
+    inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
+    o reporte se interpreta como 00:00 America/Lima (= 05:00Z); los date-time
+    con offset/Z se respetan tal cual. Los textos de notificaciones/documentos
+    muestran fecha y hora de Lima. Los campos `format: date` de calendario
+    puro (p. ej. travelStartDate) no cambian.
+
     Contrato del modulo Reserva (HU-27, TDD-RES-001.md seccion 11).
     Primer corte: crear, registrar pago/documentos, confirmar (bloqueo
     atomico), cancelar por cambio solicitado, y las consultas de bandeja

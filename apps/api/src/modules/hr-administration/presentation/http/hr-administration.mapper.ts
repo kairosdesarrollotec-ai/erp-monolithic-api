@@ -28,6 +28,7 @@ import type {
   TrainingResponse,
   VacationRequestResponse,
 } from './dto/hr-administration.response';
+import { toLimaLocalDateTimeString } from '../../../../common/time/lima-time';
 
 const iso = (d: Date | null | undefined): string | null => (d ? d.toISOString() : null);
 const dateOnly = (d: Date): string => d.toISOString().slice(0, 10);
@@ -57,6 +58,7 @@ export function toEmployeeResponse(e: Employee): EmployeeResponse {
     fieldTripLateCount: e.fieldTripLateCount,
     isFieldTripObserved: e.isFieldTripObserved,
     baseSalary: e.baseSalary === null || e.baseSalary === undefined ? null : Number(e.baseSalary),
+    accountLinked: !!e.firebaseUid,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
   };
@@ -135,6 +137,19 @@ export function toAttendanceRecordResponse(
     notes: r.notes,
     justification: r.justification,
     reclassifiedAt: iso(r.reclassifiedAt),
+    evidence:
+      r.evidenceKind && r.evidenceCapturedAt
+        ? {
+            kind: r.evidenceKind,
+            storageRef: r.evidenceStorageRef,
+            url: r.evidenceUrl,
+            capturedAtLocal: toLimaLocalDateTimeString(r.evidenceCapturedAt),
+            note: r.evidenceNote,
+            corroboratedBy: r.evidenceCorroboratedById,
+            corroboratedAt: iso(r.evidenceCorroboratedAt),
+          }
+        : null,
+    evidenceMissing: !r.evidenceKind,
     memo: memo ? toHrMemoResponse(memo) : null,
     createdAt: r.createdAt.toISOString(),
   };

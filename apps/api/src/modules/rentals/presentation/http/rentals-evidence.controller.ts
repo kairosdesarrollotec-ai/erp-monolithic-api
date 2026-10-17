@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -20,6 +21,8 @@ import { RequestEvidenceUploadSessionHandler } from '../../application/commands/
 import { RequestEvidenceUploadSessionCommand } from '../../application/commands/request-evidence-upload-session.command';
 import { RecordEvidenceHandler } from '../../application/commands/record-evidence.handler';
 import { RecordEvidenceCommand } from '../../application/commands/record-evidence.command';
+import { DeleteEvidenceHandler } from '../../application/commands/delete-evidence.handler';
+import { DeleteEvidenceCommand } from '../../application/commands/delete-evidence.command';
 import { ListRentalEvidenceHandler } from '../../application/queries/list-rental-evidence.handler';
 import { ListRentalEvidenceQuery } from '../../application/queries/list-rental-evidence.query';
 import { RequestEvidenceUploadSessionDto } from './dto/request-evidence-upload-session.dto';
@@ -34,6 +37,7 @@ export class RentalsEvidenceController {
     private readonly requestEvidenceUploadSession: RequestEvidenceUploadSessionHandler,
     private readonly recordEvidence: RecordEvidenceHandler,
     private readonly listRentalEvidence: ListRentalEvidenceHandler,
+    private readonly deleteEvidenceHandler: DeleteEvidenceHandler,
   ) {}
 
   @Post(':id/evidence/upload-url')
@@ -99,5 +103,19 @@ export class RentalsEvidenceController {
       uploadedBy: record.uploadedBy,
       uploadedAt: record.uploadedAt.toISOString(),
     }));
+  }
+
+  @Delete(':id/evidence/:evidenceId')
+  @HttpCode(204)
+  async deleteEvidence(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('evidenceId', ParseUUIDPipe) evidenceId: string,
+    @Query('companyId', ParseUUIDPipe) companyId: string,
+    @Query('branchId', ParseUUIDPipe) branchId: string,
+  ): Promise<void> {
+    await this.deleteEvidenceHandler.execute(
+      new DeleteEvidenceCommand(id, evidenceId, req.firebaseUid!, companyId, branchId),
+    );
   }
 }

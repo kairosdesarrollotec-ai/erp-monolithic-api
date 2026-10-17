@@ -1,3 +1,4 @@
+import { LIMA_UTC_OFFSET_HOURS } from '../../../common/time/lima-time';
 import {
   AttendanceNotReclassifiableError,
   DeductionsBeforeMonthEndError,
@@ -370,7 +371,6 @@ export function resolveAttendanceRecord(input: {
 }
 
 const PAYROLL_MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
-const LIMA_UTC_OFFSET_HOURS = -5;
 
 export function parsePayrollMonth(month: string): { year: number; month: number } {
   const match = PAYROLL_MONTH_PATTERN.exec(month);
@@ -439,4 +439,25 @@ export function assertTerminationRules(input: {
       throw new TerminationNotesRequiredError();
     }
   }
+}
+
+/** DEC-ADP-ATT-EVIDENCE-002: foto de asistencia subida por el propio colaborador (URL firmada GCS, patrón de Flota/permisos). */
+export const ATTENDANCE_EVIDENCE_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export type AttendanceEvidenceContentType = (typeof ATTENDANCE_EVIDENCE_CONTENT_TYPES)[number];
+export const MAX_ATTENDANCE_EVIDENCE_BYTES = 12 * 1024 * 1024;
+
+/**
+ * La evidencia es obligatoria para marcaciones de presencia (la foto de reloj+hora+rostro corrobora que la persona
+ * estuvo). Una falta no tiene foto posible: FALTA_* y PERMISO quedan exentas (suposición, ver decision-log).
+ */
+export const ATTENDANCE_STATUSES_REQUIRING_EVIDENCE: readonly string[] = ['PRESENTE', 'TARDANZA'];
+
+export function attendanceEvidenceKeyPrefix(companyId: string, employeeId: string): string {
+  return `companies/${companyId}/employees/${employeeId}/attendance/`;
+}
+
+/** Normaliza un correo para comparar/vincular: sin espacios y en minúsculas. */
+export function normalizeEmail(email: string | null | undefined): string | null {
+  const normalized = email?.trim().toLowerCase();
+  return normalized ? normalized : null;
 }

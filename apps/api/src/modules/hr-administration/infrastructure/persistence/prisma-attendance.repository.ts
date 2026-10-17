@@ -44,6 +44,17 @@ export class PrismaAttendanceRepository implements AttendanceRepositoryPort {
         deductionAmount: data.deductionAmount ?? 0,
         notes: data.notes ?? null,
         createdById: data.createdById,
+        ...(data.evidence
+          ? {
+              evidenceKind: data.evidence.kind,
+              evidenceStorageRef: data.evidence.storageRef,
+              evidenceUrl: data.evidence.url,
+              evidenceCapturedAt: data.evidence.capturedAt,
+              evidenceNote: data.evidence.note,
+              evidenceCorroboratedById: data.evidence.corroboratedById,
+              evidenceCorroboratedAt: data.evidence.corroboratedAt,
+            }
+          : {}),
       },
     });
   }

@@ -120,6 +120,7 @@ function attendanceRecord(over: Partial<AttendanceRecord> = {}): AttendanceRecor
     checkInTime: null, checkOutTime: null, status: 'TARDANZA', minutesLate: 15,
     deductionAmount: new Prisma.Decimal(50), isDeductionApplied: false,
     payrollMonth: null, deductionAppliedAt: null, notes: null, justification: null, reclassifiedAt: null, reclassifiedById: null,
+    evidenceKind: null, evidenceStorageRef: null, evidenceUrl: null, evidenceCapturedAt: null, evidenceNote: null, evidenceCorroboratedById: null, evidenceCorroboratedAt: null,
     createdById: UID, createdAt: new Date(), updatedAt: new Date(),
     ...over,
   };

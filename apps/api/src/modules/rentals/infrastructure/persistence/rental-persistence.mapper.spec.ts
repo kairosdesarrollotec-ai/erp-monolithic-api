@@ -18,8 +18,22 @@ describe('RentalPersistenceMapper', () => {
       rentalId: 'rental-1',
       customerId: 'cust-1',
       role: 'SIGNER',
+      addendumDocumentRef: null,
       createdAt: now,
     });
+  });
+
+  it('DEC-ALQ-OWN-DRIVER-005: la party DRIVER conserva la referencia de la adenda', () => {
+    const now = new Date();
+    const mapped = toRentalPartyRecord({ id: 'p2', rentalId: 'r1', customerId: 'c2', role: 'DRIVER', addendumDocumentRef: 'adenda-77', createdAt: now });
+    expect(mapped.addendumDocumentRef).toBe('adenda-77');
+  });
+
+  it('DEC-ALQ-COMPANY-DRIVER-004: el contrato por defecto exige garantia y sin saldo a favor', () => {
+    const now = new Date();
+    const base = { id: 'c', rentalId: 'r', templateId: null, documentRef: 'd', status: 'SIGNED', signedAt: now, createdAt: now };
+    expect(toRentalContractRecord(base)).toMatchObject({ depositRequired: true, reservationCreditExcess: '0.00' });
+    expect(toRentalContractRecord({ ...base, depositRequired: false, reservationCreditExcess: '300' as any })).toMatchObject({ depositRequired: false, reservationCreditExcess: '300.00' });
   });
 
   it('correctly maps notary evaluation record', () => {

@@ -7,6 +7,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { isTerminalReservationStatus, ReservationStatus } from '../../domain/reservation-status';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
+import { assertReservationCancelReason } from '../../domain/reservation-cancel-reason';
 import { CancelReservationCommand } from './cancel-reservation.command';
 
 /**
@@ -65,6 +66,8 @@ export class CancelReservationHandler {
   ) {}
 
   async execute(command: CancelReservationCommand): Promise<ReservationRecord> {
+    // DEC-RES-CANCEL-001: enum cerrado tambien fuera del DTO.
+    assertReservationCancelReason(command.reason);
     const context = await this.workContext.authorize({
       firebaseUid: command.firebaseUid,
       companyId: command.companyId,

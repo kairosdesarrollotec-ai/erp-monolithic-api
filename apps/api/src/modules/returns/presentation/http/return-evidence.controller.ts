@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -20,6 +21,8 @@ import { RequestReturnEvidenceUploadSessionHandler } from '../../application/com
 import { RequestReturnEvidenceUploadSessionCommand } from '../../application/commands/request-return-evidence-upload-session.command';
 import { RecordReturnEvidenceHandler } from '../../application/commands/record-return-evidence.handler';
 import { RecordReturnEvidenceCommand } from '../../application/commands/record-return-evidence.command';
+import { DeleteReturnEvidenceHandler } from '../../application/commands/delete-return-evidence.handler';
+import { DeleteReturnEvidenceCommand } from '../../application/commands/delete-return-evidence.command';
 import { ListReturnEvidenceHandler } from '../../application/queries/list-return-evidence.handler';
 import { ListReturnEvidenceQuery } from '../../application/queries/list-return-evidence.query';
 import { RequestReturnEvidenceUploadSessionDto } from './dto/request-return-evidence-upload-session.dto';
@@ -35,6 +38,7 @@ export class ReturnEvidenceController {
     private readonly requestUploadSession: RequestReturnEvidenceUploadSessionHandler,
     private readonly recordEvidence: RecordReturnEvidenceHandler,
     private readonly listEvidence: ListReturnEvidenceHandler,
+    private readonly deleteEvidenceHandler: DeleteReturnEvidenceHandler,
   ) {}
 
   @Post('upload-url')
@@ -89,5 +93,19 @@ export class ReturnEvidenceController {
       new ListReturnEvidenceQuery(id, req.firebaseUid!, companyId, branchId),
     );
     return records.map(toReturnEvidenceResponse);
+  }
+
+  @Delete(':evidenceId')
+  @HttpCode(204)
+  async remove(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('evidenceId', ParseUUIDPipe) evidenceId: string,
+    @Query('companyId', ParseUUIDPipe) companyId: string,
+    @Query('branchId', ParseUUIDPipe) branchId: string,
+  ): Promise<void> {
+    await this.deleteEvidenceHandler.execute(
+      new DeleteReturnEvidenceCommand(id, evidenceId, req.firebaseUid!, companyId, branchId),
+    );
   }
 }

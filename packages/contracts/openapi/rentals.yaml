@@ -1,8 +1,41 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.3.0
+  version: 1.7.0
   description: >
+    1.6.0 — sesión 2026-10-15 (2): conductor y garantía.
+    (a) DEC-ALQ-COMPANY-DRIVER-004: con `withCompanyDriver=true` NO hay garantía (Ficha AS-IS 5-ago:
+    se omite el proceso de garantía; la responsabilidad recae en el conductor). formalize-contract
+    deja `depositAmount`/`depositCurrency` opcionales (enviarlos > 0 con conductor de la empresa:
+    422 DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER); no se crea fila de garantía: RentalResponse
+    trae `deposit: null`, `depositRequired: false` y `contract.depositRequired: false`. Si venía de
+    una reserva con crédito pagado, todo el crédito queda como saldo a favor en
+    `reservationCreditExcess` (rental y contract; sin reembolso automático; pendiente Finanzas).
+    (b) DEC-ALQ-OWN-DRIVER-005: nuevo POST /rentals/{id}/commands/register-authorized-driver
+    (conductor propio autorizado de PERSONA JURÍDICA con su adenda; persona NATURAL: 422
+    NATURAL_PERSON_OWN_DRIVER_NOT_ALLOWED). RentalPartyResponse.addendumDocumentRef.
+    (c) El conductor no autorizado se registra como incidencia UNAUTHORIZED_DRIVER (incidents.yaml 0.2.0).
+
+    1.5.0 — DEC-ALQ-DRIVER-001 / DEC-ALQ-RESCREDIT-002 (sesión 2026-10-15).
+    (a) `withDriver` se renombra a `withCompanyDriver` (servicio de conductor que la EMPRESA
+    ofrece al cliente, BR-DOC-003); `withDriver` se conserva como alias DEPRECADO (si llegan
+    ambos con valores distintos: 400 CONTRACT_VARIANT_DRIVER_CONFLICT). NO es el "conductor
+    distinto del titular" de BR-ALQ-015 (otra persona que maneja un alquiler ya hecho sin
+    aprobación previa), que no elige plantilla. La respuesta de contract-template trae
+    `variant.withCompanyDriver` y el alias `variant.withDriver`. (b) formalize-contract YA NO
+    responde 422 RESERVATION_CREDIT_EXCEEDS_DEPOSIT: si el monto de la reserva supera la
+    garantía, `deposit.reservationCreditAmount` = garantía (cubierta), `amountCollected` = 0.00
+    y el sobrante queda en el campo nuevo `deposit.reservationCreditExcess` (saldo a favor
+    visible; sin reembolso ni cálculo automático; pendiente de Finanzas).
+
+    1.4.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
+    sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
+    inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
+    o reporte se interpreta como 00:00 America/Lima (= 05:00Z); los date-time
+    con offset/Z se respetan tal cual. Los textos de notificaciones/documentos
+    muestran fecha y hora de Lima. Los campos `format: date` de calendario
+    puro (p. ej. travelStartDate) no cambian.
+
     Contrato del módulo Alquiler (ALQ-01 a ALQ-11, TDD-03-alquiler.md).
     Implementa el ciclo de vida completo de alquiler: creación directa y desde reserva confirmada (RES-05),
     validación documental (BR-CON-004), prueba de alcolímetro de tolerancia cero (BR-ALQ-005),
@@ -290,7 +323,8 @@ paths:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: holderType, in: query, required: false, schema: { $ref: '#/components/schemas/ContractHolderType' } }
-        - { name: withDriver, in: query, required: false, description: 'Obligatorio si se envía holderType.', schema: { type: string, enum: ['true', 'false'] } }
+        - { name: withCompanyDriver, in: query, required: false, description: 'true si el cliente pide que la empresa le ofrezca un conductor (BR-DOC-003). Obligatorio si se envía holderType (o su alias deprecado withDriver).', schema: { type: string, enum: ['true', 'false'] } }
+        - { name: withDriver, in: query, required: false, deprecated: true, description: 'DEPRECADO: alias de withCompanyDriver.', schema: { type: string, enum: ['true', 'false'] } }
       responses:
         '200':
           description: Plantilla resuelta (o null si no hay vigente)
@@ -306,6 +340,42 @@ paths:
         '404':
           description: Alquiler no encontrado en la empresa y sede
 
+  /rentals/{id}/commands/register-authorized-driver:
+    post:
+      operationId: registerAuthorizedDriver
+      summary: Registrar conductor propio autorizado de persona jurídica con su adenda (DEC-ALQ-OWN-DRIVER-005, BR-ALQ-015)
+      description: >
+        Solo PERSONA JURÍDICA: la empresa asume la responsabilidad y el conductor firma una adenda aparte
+        (`addendumDocumentRef`). Persona NATURAL con conductor propio distinto del titular NO está permitido
+        (conduce quien alquila, o se pide el conductor de la empresa): 422 NATURAL_PERSON_OWN_DRIVER_NOT_ALLOWED.
+        El tipo de titular se toma del contrato formalizado; si aún no hay contrato, enviar `holderType`.
+        Estados admitidos: VALIDATION, NOTARY_EVALUATION, CONTRACTING, PENDING_DELIVERY. Incrementa la versión del alquiler (If-Match).
+        Permiso: RENTAL.FORMALIZE_CONTRACT.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterAuthorizedDriverRequest' }
+      responses:
+        '200':
+          description: Conductor autorizado registrado; el alquiler trae la nueva party con role DRIVER y `addendumDocumentRef`
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400': { description: ADDENDUM_DOCUMENT_REQUIRED o datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin permiso o contexto no autorizado }
+        '404': { description: Alquiler no encontrado }
+        '409': { description: RENTAL_DRIVER_ALREADY_REGISTERED o RENTAL_DRIVER_REGISTRATION_CLOSED (estado posterior a la entrega) }
+        '422': { description: NATURAL_PERSON_OWN_DRIVER_NOT_ALLOWED, HOLDER_TYPE_REQUIRED, HOLDER_TYPE_MISMATCH o DRIVER_CUSTOMER_NOT_FOUND }
+        '412': { description: Versión no coincide (If-Match) }
+        '428': { description: Falta header If-Match }
+        '500': { description: Error interno }
+
   /rentals/{id}/commands/formalize-contract:
     post:
       operationId: formalizeContract
@@ -318,7 +388,7 @@ paths:
         `deposit.amountCollected`. En alquiler directo no hay traslado. El traslado
         solo aplica si la reserva sigue CONFIRMED/CONVERTED con el pago validado;
         una reserva cancelada (incluye no-show) no traslada nada. La plantilla se
-        elige por `holderType` + `withDriver` (BR-DOC-003).
+        elige por `holderType` + `withCompanyDriver` (BR-DOC-003). Si el monto de la reserva supera la garantía, se aplica hasta cubrirla y el sobrante se informa en `deposit.reservationCreditExcess`.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -345,7 +415,7 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: RESERVATION_CREDIT_EXCEEDS_DEPOSIT (el monto de la reserva supera la garantía) o RESERVATION_CREDIT_CURRENCY_MISMATCH (moneda distinta)
+          description: DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER (se envió garantía con conductor de la empresa). RESERVATION_CREDIT_CURRENCY_MISMATCH (moneda distinta). Un monto de reserva mayor que la garantía ya NO es error (queda en deposit.reservationCreditExcess).
         '428':
           description: Falta header If-Match
 
@@ -475,6 +545,32 @@ paths:
           description: No autorizado para el contexto o rol insuficiente
         '404':
           description: Alquiler no encontrado
+
+  /rentals/{id}/evidence/{evidenceId}:
+    delete:
+      operationId: deleteRentalEvidence
+      summary: Elimina una evidencia (foto/video) de entrega registrada por error
+      description: >
+        Solo mientras el alquiler esté en PENDING_DELIVERY; una vez completada la
+        entrega la evidencia no se puede alterar. Misma acción de matriz que subirla
+        (RENTAL.UPLOAD_EVIDENCE). Se elimina el registro; el archivo del bucket no se toca.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: evidenceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204':
+          description: Evidencia eliminada
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Alquiler o evidencia no encontrados
+        '409':
+          description: Estado incompatible (debe estar en PENDING_DELIVERY)
 
   /rentals/{id}/documents/upload-url:
     post:
@@ -776,23 +872,40 @@ components:
         branchId: { type: string, format: uuid }
         justification: { type: string, minLength: 10 }
 
+    RegisterAuthorizedDriverRequest:
+      type: object
+      required: [companyId, branchId, driverCustomerId, addendumDocumentRef]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        driverCustomerId: { type: string, format: uuid, description: Cliente (persona) que conducirá. }
+        addendumDocumentRef: { type: string, minLength: 1, maxLength: 200, description: Referencia de la adenda firmada por el conductor autorizado. }
+        holderType: { $ref: '#/components/schemas/ContractHolderType' }
+
     FormalizeContractRequest:
       type: object
-      required: [companyId, branchId, documentRef, depositAmount, depositCurrency]
+      required: [companyId, branchId, documentRef]
+      description: >
+        `depositAmount` y `depositCurrency` son obligatorios SALVO con conductor de la empresa
+        (`withCompanyDriver=true`), donde no hay garantía y se omiten (DEC-ALQ-COMPANY-DRIVER-004).
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         documentRef: { type: string }
         depositAmount:
           type: string
-          description: Garantía TOTAL del vehículo (incluye el monto de reserva que se traslada, si lo hay).
-        depositCurrency: { type: string, enum: [PEN, USD] }
+          description: Garantía TOTAL del vehículo (incluye el monto de reserva que se traslada, si lo hay). Omitir con conductor de la empresa.
+        depositCurrency: { type: string, enum: [PEN, USD], description: Omitir con conductor de la empresa. }
         holderType: { $ref: '#/components/schemas/ContractHolderType' }
-        withDriver:
+        withCompanyDriver:
           type: boolean
           description: >
-            BR-DOC-003. El vehículo lo maneja un conductor distinto del titular (conductor de la
-            empresa o conductor propio autorizado). Obligatorio si se envía holderType.
+            BR-DOC-003. El cliente pide que la empresa le OFREZCA un conductor (servicio). No es el
+            conductor distinto del titular de BR-ALQ-015. Obligatorio si se envía holderType.
+        withDriver:
+          type: boolean
+          deprecated: true
+          description: DEPRECADO (DEC-ALQ-DRIVER-001). Alias de withCompanyDriver; si ambos difieren, 400 CONTRACT_VARIANT_DRIVER_CONFLICT.
         signatureData:
           type: string
           nullable: true
@@ -920,6 +1033,10 @@ components:
         id: { type: string, format: uuid }
         customerId: { type: string, format: uuid }
         role: { $ref: '#/components/schemas/RentalPartyRole' }
+        addendumDocumentRef:
+          type: string
+          nullable: true
+          description: Adenda firmada del conductor autorizado (DRIVER de persona jurídica, DEC-ALQ-OWN-DRIVER-005). Null en el resto.
         createdAt: { type: string, format: date-time }
 
     NotaryEvaluationResponse:
@@ -947,6 +1064,8 @@ components:
           type: string
           nullable: true
           description: Combinación con la que se eligió la plantilla (p. ej. NATURAL_NO_DRIVER). Null en contratos anteriores.
+        depositRequired: { type: boolean, description: false = con conductor de la empresa, sin garantía (DEC-ALQ-COMPANY-DRIVER-004). }
+        reservationCreditExcess: { type: string, description: Crédito de reserva sin garantía a la cual aplicarse (saldo a favor; "0.00" si no aplica). }
         createdAt: { type: string, format: date-time }
 
     ContractHolderType:
@@ -962,10 +1081,11 @@ components:
         variant:
           type: object
           nullable: true
-          required: [holderType, withDriver]
+          required: [holderType, withCompanyDriver, withDriver]
           properties:
             holderType: { $ref: '#/components/schemas/ContractHolderType' }
-            withDriver: { type: boolean }
+            withCompanyDriver: { type: boolean, description: 'La empresa ofrece conductor al cliente (BR-DOC-003).' }
+            withDriver: { type: boolean, deprecated: true, description: 'Alias deprecado de withCompanyDriver (mismo valor).' }
         requestedType:
           type: string
           description: Tipo de plantilla buscado primero (RENTAL_CONTRACT_NATURAL, ..._NATURAL_DRIVER, ..._LEGAL, ..._LEGAL_DRIVER o RENTAL_CONTRACT).
@@ -985,7 +1105,7 @@ components:
 
     RentalDepositResponse:
       type: object
-      required: [id, originalAmount, currency, status, reservationCreditAmount, amountCollected, createdAt]
+      required: [id, originalAmount, currency, status, reservationCreditAmount, reservationCreditExcess, amountCollected, createdAt]
       properties:
         id: { type: string, format: uuid }
         originalAmount:
@@ -996,6 +1116,11 @@ components:
         reservationCreditAmount:
           type: string
           description: P0-03 (a) - parte de la garantía ya pagada como reserva. "0.00" en alquiler directo.
+        reservationCreditExcess:
+          type: string
+          description: >
+            DEC-ALQ-RESCREDIT-002 - excedente del monto de la reserva sobre la garantía ("0.00" si no hay).
+            Saldo a favor solo informativo: sin reembolso ni cálculo automático (pregunta abierta a Finanzas).
         amountCollected:
           type: string
           description: Diferencia cobrada al formalizar = originalAmount - reservationCreditAmount.
@@ -1105,6 +1230,13 @@ components:
         deposit:
           allOf: [{ $ref: '#/components/schemas/RentalDepositResponse' }]
           nullable: true
+          description: Null si aún no se formalizó o si el alquiler es con conductor de la empresa (ver depositRequired).
+        depositRequired:
+          type: boolean
+          description: false = alquiler con conductor de la empresa; no se exige ni cobra garantía (Devolución la trata como N/A). true por defecto.
+        reservationCreditExcess:
+          type: string
+          description: Saldo a favor del crédito de reserva ("0.00" si no hay). Con garantía = deposit.reservationCreditExcess; con conductor de la empresa = todo el crédito pagado. Sin reembolso automático (pendiente Finanzas).
         reservationCredit:
           allOf: [{ $ref: '#/components/schemas/ReservationCreditResponse' }]
           nullable: true

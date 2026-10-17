@@ -6,8 +6,8 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { RentalStateConflictError } from '../../domain/rental-errors';
-import { computeDepositBreakdown, resolveReservationCredit } from '../../domain/reservation-credit';
+import { DepositNotApplicableWithCompanyDriverError, RentalStateConflictError } from '../../domain/rental-errors';
+import { computeDepositBreakdown, computeNoDepositBreakdown, resolveReservationCredit } from '../../domain/reservation-credit';
 import { contractVariantCode, contractVariantLabel } from '../../domain/contract-variant';
 import { FormalizeContractCommand } from './formalize-contract.command';
 
@@ -29,10 +29,21 @@ export class FormalizeContractHandler {
   ) {}
 
   async execute(command: FormalizeContractCommand): Promise<RentalRecord> {
-    if (!command.depositAmount || Number(command.depositAmount) <= 0) {
+    // DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa se OMITE la garantia (Ficha AS-IS 5-ago, BR-DOC-003).
+    const depositRequired = command.contractVariant?.withCompanyDriver !== true;
+    if (!depositRequired) {
+      if (command.depositAmount && Number(command.depositAmount) > 0) {
+        throw new DepositNotApplicableWithCompanyDriverError();
+      }
+    } else if (!command.depositAmount || Number(command.depositAmount) <= 0) {
       throw new BadRequestException({
         code: 'INVALID_DEPOSIT_AMOUNT',
         detail: 'El monto de garantía debe ser mayor a cero.',
+      });
+    } else if (!command.depositCurrency) {
+      throw new BadRequestException({
+        code: 'INVALID_DEPOSIT_CURRENCY',
+        detail: 'La moneda de la garantía es obligatoria.',
       });
     }
 
@@ -90,7 +101,15 @@ export class FormalizeContractHandler {
         ? await this.rentals.findReservationCreditSource(current.reservationId, tx)
         : null;
       const credit = resolveReservationCredit(creditSource);
-      const breakdown = computeDepositBreakdown(command.depositAmount, command.depositCurrency, credit);
+      const breakdown = depositRequired
+        ? computeDepositBreakdown(command.depositAmount as string, command.depositCurrency as string, credit)
+        : {
+            totalAmount: '0.00',
+            reservationCreditAmount: '0.00',
+            reservationCreditExcess: computeNoDepositBreakdown(credit).reservationCreditExcess,
+            amountToCollect: '0.00',
+            currency: credit.currency ?? command.depositCurrency ?? 'PEN',
+          };
 
       const updated = await this.rentals.formalizeContract(
         {
@@ -99,9 +118,11 @@ export class FormalizeContractHandler {
           expectedVersion: command.expectedVersion,
           templateId,
           documentRef: command.documentRef,
+          depositRequired,
           depositAmount: breakdown.totalAmount,
-          currency: command.depositCurrency,
+          currency: breakdown.currency,
           reservationCreditAmount: breakdown.reservationCreditAmount,
+          reservationCreditExcess: breakdown.reservationCreditExcess,
           contractVariant,
           updatedBy: command.firebaseUid,
           signatureData: command.signatureData,
@@ -120,12 +141,14 @@ export class FormalizeContractHandler {
             contractVariant: contractVariant ?? null,
             templateFallbackUsed: resolved.fallbackUsed,
             documentRef: command.documentRef,
+            depositRequired,
             depositAmount: breakdown.totalAmount,
-            depositCurrency: command.depositCurrency,
+            depositCurrency: depositRequired ? breakdown.currency : null,
             reservationId: current.reservationId,
             reservationCreditApplied: credit.applicable,
             reservationCreditReason: credit.reason,
             reservationCreditAmount: breakdown.reservationCreditAmount,
+            reservationCreditExcess: breakdown.reservationCreditExcess,
             amountCollected: breakdown.amountToCollect,
             newStatus: 'PENDING_DELIVERY',
           },
@@ -147,7 +170,8 @@ export class FormalizeContractHandler {
         tx,
       );
 
-      await this.outboxRepository.publish(
+      // Sin garantia no hay pago de garantia que registrar (el saldo a favor viaja en la auditoria y en el contrato).
+      if (depositRequired) await this.outboxRepository.publish(
         {
           aggregateType: 'rental',
           aggregateId: updated.id,
@@ -155,8 +179,9 @@ export class FormalizeContractHandler {
           payload: {
             rentalId: updated.id,
             depositAmount: breakdown.totalAmount,
-            currency: command.depositCurrency,
+            currency: breakdown.currency,
             reservationCreditAmount: breakdown.reservationCreditAmount,
+            reservationCreditExcess: breakdown.reservationCreditExcess,
             amountCollected: breakdown.amountToCollect,
             type: 'SECURITY_DEPOSIT',
           },

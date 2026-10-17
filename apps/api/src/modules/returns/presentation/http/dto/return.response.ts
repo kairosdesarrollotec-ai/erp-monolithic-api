@@ -1,3 +1,4 @@
+import { ReturnReminderStatus } from '../../../domain/return-reminder';
 import { CustomerRiskStatus } from '../../../domain/customer-risk-status';
 import {
   AlcoholEscalationDecision,
@@ -41,6 +42,67 @@ export interface ImmobilizationChargeResponse {
   returnEtag?: string;
 }
 
+/** BR-DEV-004 / DAT-DEV-001: recordatorio previo (envío manual-asistido por WhatsApp). */
+export interface ReturnReminderResponse {
+  id: string;
+  status: ReturnReminderStatus;
+  /** Hora pactada - 3 h. */
+  dueAt: string;
+  /** Texto generado por el sistema, listo para copiar/pegar en WhatsApp. */
+  text: string;
+  generatedAt: string;
+  sentAt: string | null;
+  sentBy: string | null;
+  note: string | null;
+  attempts: number;
+  /** Versión del recordatorio = valor de If-Match de register-reminder. */
+  version: number;
+  etag: string;
+}
+
+export interface ReturnReminderInboxItemResponse {
+  returnId: string;
+  rentalId: string;
+  returnStatus: ReturnStatus;
+  scheduledAt: string;
+  vehiclePlate: string | null;
+  customerName: string | null;
+  customerPhone: string | null;
+  reminder: ReturnReminderResponse;
+}
+
+export interface WarrantyReleaseAlertResponse {
+  level: 'DUE_SOON' | 'OVERDUE';
+  deadlineAt: string;
+  hoursRemaining: number;
+}
+
+export interface ImmobilizationAlertResponse {
+  since: string;
+  hoursElapsed: number;
+  pendingDays: number;
+  dailyRate: number | null;
+  suggestedAmount: number | null;
+}
+
+export interface ReturnAlertsResponse {
+  warrantyRelease: WarrantyReleaseAlertResponse | null;
+  immobilization: ImmobilizationAlertResponse | null;
+}
+
+export interface ReturnAlertItemResponse {
+  type: 'WARRANTY_RELEASE' | 'IMMOBILIZATION';
+  returnId: string;
+  rentalId: string;
+  returnStatus: ReturnStatus;
+  returnVersion: number;
+  vehiclePlate: string | null;
+  customerName: string | null;
+  receivedAt: string;
+  warrantyRelease: WarrantyReleaseAlertResponse | null;
+  immobilization: ImmobilizationAlertResponse | null;
+}
+
 export interface AlcoholEscalationResponse {
   decision: AlcoholEscalationDecision;
   markCustomerRed: boolean;
@@ -67,6 +129,29 @@ export interface CosmeticTariffResponse {
   items: CosmeticTariffItemResponse[];
 }
 
+export interface ReturnLatenessResponse {
+  lateToleranceMinutes: number;
+  lateMinutes: number;
+  isLate: boolean;
+  basis: 'RECEIVED' | 'NOW';
+}
+
+export interface ReturnLatenessChargeResponse {
+  tier: 'NONE' | 'EXTRA_31_120' | 'EXTRA_121_300' | 'EXTRA_OVER_300';
+  basis: 'RECEIVED' | 'NOW';
+  informational: true;
+  timeChargePercent: number;
+  guaranteePenaltyPercent: number;
+  dailyRate: string | null;
+  guaranteeAmount: string | null;
+  currency: string | null;
+  suggestedTimeCharge: string | null;
+  suggestedGuaranteePenalty: string | null;
+  noticeAndPrepaymentVerified: boolean | null;
+  severeBreach: boolean;
+  severeBreachThresholdHours: number;
+}
+
 export interface ReturnResponse {
   id: string;
   organizationId: string;
@@ -77,6 +162,8 @@ export interface ReturnResponse {
   customerId: string;
   vehiclePlate: string | null;
   customerName: string | null;
+  /** false = alquiler con conductor de la empresa: sin garantia; liberacion/devolucion de garantia N/A (sin alerta de 24 h). */
+  depositRequired: boolean;
   status: ReturnStatus;
   custodyHolder: CustodyHolder;
   customerPresent: boolean;
@@ -86,6 +173,14 @@ export interface ReturnResponse {
   alcoholTestNotes: string | null;
   alcoholEscalation: AlcoholEscalationResponse | null;
   responsibilityDocument: ResponsibilityDocumentResponse | null;
+  /** Recordatorio previo 3 h antes de la hora pactada (null = aún no generado). */
+  reminder: ReturnReminderResponse | null;
+  /** Alertas operativas; solo en GET detalle y bandeja (las respuestas de comandos las omiten). */
+  alerts?: ReturnAlertsResponse;
+  /** BR-DEV-003: retraso con tolerancia de 30 min. Solo en GET /returns/{id} y GET /returns. */
+  lateness?: ReturnLatenessResponse | null;
+  /** DEC-DEV-LATE-CHARGE-001: cargo sugerido por retraso (informativo). Solo en GET /returns/{id} y GET /returns. */
+  latenessCharge?: ReturnLatenessChargeResponse | null;
   scheduledAt: string;
   receivedAt: string | null;
   inspectedAt: string | null;

@@ -34,6 +34,35 @@ describe('projectNotificationEvent', () => {
     });
   });
 
+  it('ReservationCreated: muestra marca, modelo y placa del vehiculo en vez del ID', () => {
+    const result = projectNotificationEvent(
+      {
+        id: 'evt-label',
+        aggregateId: 'res-9',
+        eventType: 'ReservationCreated',
+        payload: {
+          organizationId: 'org-1',
+          operatingCompanyId: 'company-1',
+          branchId: 'branch-1',
+          vehicleId: 'c0fe12f7-d67d-4965-8ced-6609f4b5f0ad',
+          startAt: '2026-10-16T00:00:00Z',
+          createdBy: 'uid-agente',
+        },
+      },
+      null,
+      { vehicleLabel: 'Hyundai Hilux - ABC-123' },
+    );
+
+    expect(result).toEqual({
+      action: 'CREATE',
+      item: expect.objectContaining({
+        title: expect.stringContaining('Hyundai Hilux - ABC-123'),
+        deepLink: '/reservas/res-9',
+      }),
+    });
+    expect((result as { item: { title: string } }).item.title).not.toContain('c0fe12f7');
+  });
+
   it('ReservationCreated: sin plantilla guardada, usa el texto generico de respaldo', () => {
     const result = projectNotificationEvent(
       {

@@ -34,6 +34,7 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
       id: p.id,
       customerId: p.customerId,
       role: p.role,
+      addendumDocumentRef: p.addendumDocumentRef ?? null,
       createdAt: p.createdAt.toISOString(),
     })),
     notaryEvaluation: record.notaryEvaluation
@@ -55,6 +56,8 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           status: record.contract.status,
           signedAt: record.contract.signedAt ? record.contract.signedAt.toISOString() : null,
           contractVariant: record.contract.contractVariant ?? null,
+          depositRequired: record.contract.depositRequired ?? true,
+          reservationCreditExcess: record.contract.reservationCreditExcess ?? '0.00',
           createdAt: record.contract.createdAt.toISOString(),
         }
       : null,
@@ -65,12 +68,15 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           currency: record.deposit.currency,
           status: record.deposit.status,
           reservationCreditAmount: record.deposit.reservationCreditAmount ?? '0.00',
+          reservationCreditExcess: record.deposit.reservationCreditExcess ?? '0.00',
           amountCollected: fromCents(
             toCents(record.deposit.originalAmount) - toCents(record.deposit.reservationCreditAmount ?? '0'),
           ),
           createdAt: record.deposit.createdAt.toISOString(),
         }
       : null,
+    depositRequired: record.contract?.depositRequired ?? true,
+    reservationCreditExcess: record.deposit?.reservationCreditExcess ?? record.contract?.reservationCreditExcess ?? '0.00',
     ...(record.reservationCredit !== undefined ? { reservationCredit: record.reservationCredit } : {}),
     ...(record.extensions
       ? {

@@ -108,7 +108,7 @@ export class ReportExtensionBreachHandler {
             newExtensionStatus: 'BREACH',
             customerId: current.customerId,
             customerStatus: 'ROJO',
-            depositFullyRetained: true,
+            depositFullyRetained: current.deposit != null,
             legalEvaluationNote,
           },
         },

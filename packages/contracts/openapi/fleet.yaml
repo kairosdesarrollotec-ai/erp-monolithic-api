@@ -1,8 +1,16 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.3.0
+  version: 0.4.0
   description: >
+    0.4.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
+    sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
+    inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
+    o reporte se interpreta como 00:00 America/Lima (= 05:00Z); los date-time
+    con offset/Z se respetan tal cual. Los textos de notificaciones/documentos
+    muestran fecha y hora de Lima. Los campos `format: date` de calendario
+    puro (p. ej. travelStartDate) no cambian.
+
     Contrato del módulo Flota. Expone el CRUD de vehículos para las empresas
     del Grupo KAIROS: registrar (POST /fleet/vehicles), listar con filtros
     (GET /fleet/vehicles), obtener detalle (GET /fleet/vehicles/{id}),
@@ -212,7 +220,7 @@ paths:
             examples: ['2026-10-20', '2026-10-20T08:00:00.000Z']
           description: >
             Inicio (inclusivo) de la ventana de disponibilidad. ISO 8601 date o
-            date-time (una fecha sin hora = 00:00 UTC). Debe enviarse junto con
+            date-time (una fecha sin hora = 00:00 America/Lima, DEC-TZ-LIMA-001). Debe enviarse junto con
             availableTo; si falta uno de los dos, 400 INVALID_AVAILABILITY_WINDOW.
         - name: availableTo
           in: query

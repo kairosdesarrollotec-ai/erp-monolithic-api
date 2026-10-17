@@ -6,6 +6,7 @@ import {
   VehicleEligibility,
   VehicleEligibilityQuery,
 } from '../../application/ports/fleet-availability.port';
+import { calendarDateToLimaStart } from '../../../../common/time/lima-time';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -66,7 +67,9 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
       };
     }
 
-    const windowStart = query.startsAt ?? new Date();
+    // `startsAt` = Inquiry.travelStartDate (@db.Date, medianoche UTC del dia calendario):
+    // la ventana arranca a las 00:00 de ese dia en America/Lima (DEC-TZ-LIMA-001).
+    const windowStart = query.startsAt ? calendarDateToLimaStart(query.startsAt) : new Date();
     const windowEnd = new Date(windowStart.getTime() + query.estimatedDays * MS_PER_DAY);
 
     const conflict = await findFirstVehicleConflict(this.prisma, query.vehicleId, windowStart, windowEnd);

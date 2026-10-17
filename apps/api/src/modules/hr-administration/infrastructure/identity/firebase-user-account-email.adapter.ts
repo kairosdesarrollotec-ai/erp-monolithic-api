@@ -15,4 +15,14 @@ export class FirebaseUserAccountEmailAdapter implements UserAccountEmailPort {
       return null;
     }
   }
+
+  async findUidByEmail(email: string): Promise<string | null> {
+    try {
+      initFirebaseAdmin();
+      const user = await getAuth().getUserByEmail(email.trim().toLowerCase());
+      return user.uid;
+    } catch {
+      return null;
+    }
+  }
 }

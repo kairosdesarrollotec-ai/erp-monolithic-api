@@ -20,6 +20,8 @@ import { LogAttendanceCommand } from '../../application/commands/log-attendance.
 import { LogAttendanceHandler } from '../../application/commands/log-attendance.handler';
 import { ApplyMonthDeductionsCommand } from '../../application/commands/apply-month-deductions.command';
 import { ApplyMonthDeductionsHandler } from '../../application/commands/apply-month-deductions.handler';
+import { RequestAttendanceEvidenceUploadSessionCommand } from '../../application/commands/request-attendance-evidence-upload-session.command';
+import { RequestAttendanceEvidenceUploadSessionHandler } from '../../application/commands/request-attendance-evidence-upload-session.handler';
 import { ReclassifyAttendanceCommand } from '../../application/commands/reclassify-attendance.command';
 import { ReclassifyAttendanceHandler } from '../../application/commands/reclassify-attendance.handler';
 import { GetEmployeeAttendanceQuery } from '../../application/queries/get-employee-attendance.query';
@@ -30,10 +32,13 @@ import { LogAttendanceDto } from './dto/log-attendance.dto';
 import { GetEmployeeAttendanceQueryDto } from './dto/get-employee-attendance-query.dto';
 import { AttendanceSummaryQueryDto } from './dto/attendance-summary-query.dto';
 import { ApplyDeductionsDto } from './dto/apply-deductions.dto';
+import { RequestAttendanceEvidenceUploadSessionDto } from './dto/request-attendance-evidence-upload-session.dto';
 import { ReclassifyAttendanceDto } from './dto/reclassify-attendance.dto';
+import { parseLimaLocalDateTime } from '../../../../common/time/lima-time';
 import { parseDateOnly } from './dto/hr-date';
 import type {
   ApplyDeductionsResponse,
+  AttendanceEvidenceUploadSessionResponse,
   AttendanceRecordResponse,
   MonthlyAttendanceSummaryResponse,
 } from './dto/hr-administration.response';
@@ -52,6 +57,7 @@ export class AttendanceController {
     private readonly reclassifyAttendance: ReclassifyAttendanceHandler,
     private readonly getEmployeeAttendance: GetEmployeeAttendanceHandler,
     private readonly getAttendanceSummary: GetAttendanceSummaryHandler,
+    private readonly requestEvidenceUpload: RequestAttendanceEvidenceUploadSessionHandler,
   ) {}
 
   @Post('employees/:id/attendance')
@@ -73,9 +79,42 @@ export class AttendanceController {
         dto.checkInTime ? new Date(dto.checkInTime) : null,
         dto.checkOutTime ? new Date(dto.checkOutTime) : null,
         dto.notes,
+        dto.evidence
+          ? {
+              kind: dto.evidence.kind,
+              storageRef: dto.evidence.storageRef,
+              url: dto.evidence.url,
+              capturedAtLocal: parseLimaLocalDateTime(dto.evidence.capturedAtLocal),
+              note: dto.evidence.note,
+            }
+          : null,
       ),
     );
     return toAttendanceRecordResponse(record, undefined, memo);
+  }
+
+  /**
+   * DEC-ADP-ATT-EVIDENCE-002: paso 1 de la foto de asistencia — URL firmada de subida directa a GCS. La puede pedir el
+   * propio colaborador (ficha vinculada a su cuenta por correo) o quien tenga LOG_ATTENDANCE. Paso 2: `log-attendance`
+   * con `evidence.storageRef` = `storageRef` devuelto.
+   */
+  @Post('employees/:id/attendance/evidence/upload-url')
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(IdempotencyInterceptor)
+  async requestEvidenceUploadUrl(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RequestAttendanceEvidenceUploadSessionDto,
+  ): Promise<AttendanceEvidenceUploadSessionResponse> {
+    const session = await this.requestEvidenceUpload.execute(
+      new RequestAttendanceEvidenceUploadSessionCommand(req.firebaseUid!, id, dto.contentType, dto.contentLength),
+    );
+    return {
+      uploadUrl: session.uploadUrl,
+      objectUrl: session.objectUrl,
+      storageRef: session.storageRef,
+      expiresAt: session.expiresAt.toISOString(),
+    };
   }
 
   @Patch('attendance/:id/reclassify')

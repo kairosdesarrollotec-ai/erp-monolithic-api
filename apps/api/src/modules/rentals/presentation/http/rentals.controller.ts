@@ -33,6 +33,9 @@ import { RegisterAlcoholTestHandler } from '../../application/commands/register-
 import { RegisterAlcoholTestCommand } from '../../application/commands/register-alcohol-test.command';
 import { EvaluateNotaryHandler } from '../../application/commands/evaluate-notary.handler';
 import { EvaluateNotaryCommand } from '../../application/commands/evaluate-notary.command';
+import { RegisterAuthorizedDriverHandler } from '../../application/commands/register-authorized-driver.handler';
+import { RegisterAuthorizedDriverCommand } from '../../application/commands/register-authorized-driver.command';
+import { RegisterAuthorizedDriverDto } from './dto/register-authorized-driver.dto';
 import { ApproveNotaryExceptionHandler } from '../../application/commands/approve-notary-exception.handler';
 import { ApproveNotaryExceptionCommand } from '../../application/commands/approve-notary-exception.command';
 import { FormalizeContractHandler } from '../../application/commands/formalize-contract.handler';
@@ -60,6 +63,8 @@ import { ContractTemplateSelectionResponse } from './dto/contract-template-selec
 import { RentalResponse } from './dto/rental.response';
 import { toRentalResponse } from './rental.mapper';
 import { RENTAL_LIST_MAX_LIMIT } from '../../domain/rental-pagination';
+import { resolveWithCompanyDriver } from '../../domain/contract-variant';
+import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
 @Controller('rentals')
 @UseGuards(FirebaseAuthGuard)
@@ -71,6 +76,7 @@ export class RentalsController {
     private readonly registerAlcoholTest: RegisterAlcoholTestHandler,
     private readonly evaluateNotary: EvaluateNotaryHandler,
     private readonly approveNotaryException: ApproveNotaryExceptionHandler,
+    private readonly registerAuthorizedDriver: RegisterAuthorizedDriverHandler,
     private readonly formalizeContract: FormalizeContractHandler,
     private readonly completeDelivery: CompleteDeliveryHandler,
     private readonly getRental: GetRentalHandler,
@@ -92,8 +98,8 @@ export class RentalsController {
         dto.customerId,
         dto.vehicleId,
         dto.planCode,
-        dto.startAt ? new Date(dto.startAt) : undefined,
-        dto.expectedEndAt ? new Date(dto.expectedEndAt) : undefined,
+        dto.startAt ? parseBusinessInstant(dto.startAt) : undefined,
+        dto.expectedEndAt ? parseBusinessInstant(dto.expectedEndAt) : undefined,
         dto.inquiryId,
       ),
     );
@@ -177,14 +183,23 @@ export class RentalsController {
     @Query() query: GetContractTemplateQueryDto,
   ): Promise<ContractTemplateSelectionResponse> {
     const variant = query.holderType
-      ? { holderType: query.holderType, withDriver: query.withDriver === 'true' }
+      ? {
+          holderType: query.holderType,
+          withCompanyDriver:
+            resolveWithCompanyDriver({
+              withCompanyDriver: query.withCompanyDriver === undefined ? undefined : query.withCompanyDriver === 'true',
+              withDriver: query.withDriver === undefined ? undefined : query.withDriver === 'true',
+            }) === true,
+        }
       : undefined;
     const selection = await this.getContractTemplate.execute(
       new GetContractTemplateQuery(id, req.firebaseUid!, query.companyId, query.branchId, variant),
     );
     return {
       rentalId: selection.rentalId,
-      variant: selection.variant,
+      variant: selection.variant
+        ? { ...selection.variant, withDriver: selection.variant.withCompanyDriver }
+        : null,
       requestedType: selection.requestedType,
       fallbackUsed: selection.fallbackUsed,
       template: selection.template
@@ -294,6 +309,31 @@ export class RentalsController {
     return toRentalResponse(updated);
   }
 
+  /** DEC-ALQ-OWN-DRIVER-005: conductor propio autorizado (persona juridica) con su adenda. */
+  @Post(':id/commands/register-authorized-driver')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async registerAuthorizedDriverCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RegisterAuthorizedDriverDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<RentalResponse> {
+    const updated = await this.registerAuthorizedDriver.execute(
+      new RegisterAuthorizedDriverCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.driverCustomerId,
+        dto.addendumDocumentRef,
+        dto.holderType,
+      ),
+    );
+    return toRentalResponse(updated);
+  }
+
   @Post(':id/commands/formalize-contract')
   @HttpCode(200)
   @UseGuards(RecentAuthGuard)
@@ -316,7 +356,9 @@ export class RentalsController {
         dto.depositAmount,
         dto.depositCurrency,
         dto.signatureData,
-        dto.holderType ? { holderType: dto.holderType, withDriver: dto.withDriver === true } : undefined,
+        dto.holderType
+          ? { holderType: dto.holderType, withCompanyDriver: resolveWithCompanyDriver(dto) === true }
+          : undefined,
       ),
     );
     return toRentalResponse(updated);

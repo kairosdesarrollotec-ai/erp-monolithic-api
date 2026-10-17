@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { formatLimaDMY } from '../time/lima-time';
 import { TERMINAL_RESERVATION_STATUSES } from '../../modules/reservations/domain/reservation-status';
 
 /** Origen del conflicto de disponibilidad de un vehiculo. */
@@ -93,9 +94,7 @@ export async function findFirstVehicleConflict(
   return map.get(vehicleId) ?? null;
 }
 
-/** dd/mm/yyyy (UTC, consistente con campos @db.Date y timestamps almacenados en UTC). */
+/** dd/mm/yyyy en calendario de America/Lima (DEC-TZ-LIMA-001). */
 export function formatDateDMY(date: Date): string {
-  const dd = String(date.getUTCDate()).padStart(2, '0');
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-  return `${dd}/${mm}/${date.getUTCFullYear()}`;
+  return formatLimaDMY(date);
 }

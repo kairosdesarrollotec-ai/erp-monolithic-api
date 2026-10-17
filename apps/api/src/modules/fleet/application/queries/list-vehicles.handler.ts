@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { parseBusinessInstant } from '../../../../common/time/lima-time';
 import { ListVehiclesQuery } from './list-vehicles.query';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { FleetAccessService } from '../services/fleet-access.service';
@@ -6,7 +7,7 @@ import { FleetVehicleWithAvailability } from '../../domain/vehicle';
 
 /**
  * availableFrom/availableTo: ambos o ninguno, ISO 8601 (date o date-time),
- * from < to. Una fecha sin hora se interpreta como 00:00 UTC; el fin es
+ * from < to. Una fecha sin hora (YYYY-MM-DD) se interpreta como 00:00 America/Lima (DEC-TZ-LIMA-001); el fin es
  * exclusivo ([from, to)).
  */
 export function parseAvailabilityWindow(
@@ -20,8 +21,8 @@ export function parseAvailabilityWindow(
       detail: 'Debes enviar availableFrom y availableTo juntos para consultar disponibilidad por fechas.',
     });
   }
-  const from = new Date(availableFrom);
-  const to = new Date(availableTo);
+  const from = parseBusinessInstant(availableFrom);
+  const to = parseBusinessInstant(availableTo);
   if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
     throw new BadRequestException({
       code: 'INVALID_AVAILABILITY_WINDOW',
