@@ -19,7 +19,10 @@ export async function createTestDatabase(): Promise<TestDatabase> {
 
   const databaseUrl = container.getConnectionUri();
 
-  const schemaPath = path.resolve(__dirname, '../../prisma/schema.prisma');
+  // Los scripts de workspace se ejecutan desde apps/api; asi evitamos
+  // __dirname (ausente en Jest ESM) e import.meta (no habilitado por el
+  // tsconfig de compilacion principal).
+  const schemaPath = path.resolve(process.cwd(), 'prisma/schema.prisma');
   execSync(`npx prisma migrate deploy --schema="${schemaPath}"`, {
     env: {
       ...process.env,

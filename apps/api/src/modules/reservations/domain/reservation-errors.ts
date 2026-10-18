@@ -1,4 +1,5 @@
 import {
+  DomainBadRequestError,
   DomainConflictError,
   DomainForbiddenError,
   DomainPreconditionError,
@@ -7,6 +8,17 @@ import {
 } from '../../../common/domain/domain-errors';
 import { formatLimaDMY } from '../../../common/time/lima-time';
 import { ReservationStatus } from './reservation-status';
+
+export class InvalidReservationCancelReasonError extends DomainBadRequestError {
+  readonly code = 'INVALID_CANCEL_REASON';
+
+  constructor(allowedReasons: readonly string[]) {
+    super(
+      `Motivo de cancelacion no permitido. Use ${allowedReasons.join(' o ')}; ` +
+        'la venta del vehiculo se resuelve con resolve-sale.',
+    );
+  }
+}
 
 /** TDD-RES-001.md seccion 12/11.4 - REQUIREMENTS_INCOMPLETE (422). */
 export class RequirementsIncompleteError extends DomainUnprocessableError {
