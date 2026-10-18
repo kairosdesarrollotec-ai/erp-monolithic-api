@@ -255,7 +255,7 @@ describe('CancelReservationHandler', () => {
 
         await expect(
           handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, reason as any)),
-        ).rejects.toMatchObject({ response: { code: 'INVALID_CANCEL_REASON' } });
+        ).rejects.toMatchObject({ code: 'INVALID_CANCEL_REASON', httpStatus: 400 });
         expect(reservations.cancel).not.toHaveBeenCalled();
       },
     );

@@ -45,6 +45,6 @@ describe('resolveWithCompanyDriver (DEC-ALQ-DRIVER-001)', () => {
     } catch (e) {
       err = e;
     }
-    expect(err?.getResponse?.()).toEqual(expect.objectContaining({ code: 'CONTRACT_VARIANT_DRIVER_CONFLICT' }));
+    expect(err).toMatchObject({ code: 'CONTRACT_VARIANT_DRIVER_CONFLICT', httpStatus: 400 });
   });
 });

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { InvalidReservationCancelReasonError } from './reservation-errors';
 
 /**
  * DEC-RES-CANCEL-001 (Gerencia, 2026-10-15): una reserva solo se cancela por
@@ -21,12 +21,6 @@ export function isReservationCancelReason(value: unknown): value is ReservationC
 /** Defensa en profundidad para llamadas que no pasan por el DTO. */
 export function assertReservationCancelReason(value: unknown): asserts value is ReservationCancelReason {
   if (!isReservationCancelReason(value)) {
-    throw new BadRequestException({
-      statusCode: 400,
-      code: 'INVALID_CANCEL_REASON',
-      detail:
-        `Motivo de cancelacion no permitido. Use ${RESERVATION_CANCEL_REASONS.join(' o ')}; ` +
-        'la venta del vehiculo se resuelve con resolve-sale.',
-    });
+    throw new InvalidReservationCancelReasonError(RESERVATION_CANCEL_REASONS);
   }
 }
