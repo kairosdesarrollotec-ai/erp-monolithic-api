@@ -10,6 +10,8 @@ Cada entrada: `ID | Fecha | Fuentes en conflicto | Decision | Aprobado por | Alc
 |---|---|---|---|---|
 | DOC-BASELINE-001 | 2026-10-18 | Se aprueban como **versión base oficial** los BDD, SDD, TDD y la especificación UX/UI vigentes. Su contenido es fuente de verdad para implementación, pruebas y aceptación; todo cambio posterior se registra como mejora, decisión o nueva versión. | Usuario, instrucción explícita en sesión 2026-10-18 | Fuentes vigentes, manifiestos y trazabilidad de backend. |
 
+| DOC-CONTRACT-001 | 2026-10-18 | Los contratos OpenAPI de `packages/contracts/openapi/` constituyen el **CDD oficial**. No se mantiene un documento CDD separado: sus schemas, operaciones, payloads y errores son la autoridad contractual entre frontend y backend. | Usuario, instrucción explícita en sesión 2026-10-18 | Controladores backend, clientes generados frontend, pruebas de contrato y trazabilidad API. |
+
 ## Reclutamiento — ciclo de vida de vacante PAUSADA (2026-10-13)
 
 | ID | Fecha | Decisión | Estado | Alcance afectado |
