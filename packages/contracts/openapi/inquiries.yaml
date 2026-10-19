@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Inquiries API
-  version: 0.6.0
+  version: 0.6.1
   description: >
     0.6.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
     sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
@@ -202,7 +202,7 @@ paths:
             application/problem+json:
               schema: { $ref: '#/components/schemas/Problem' }
         '412': { description: INQUIRY_VERSION_CONFLICT }
-        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE - la consulta no esta COTIZADA' }
+        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE - la consulta no esta COTIZADA; RESERVATION_EXCEEDS_GUARANTEE - el monto de la reserva (politica ADM-03) supera la garantia del vehiculo cotizado (F-01)' }
         '428': { description: IF_MATCH_REQUIRED }
         '503': { $ref: '#/components/responses/QuotingNotProductionReady' }
   /inquiries/{id}/commands/convert-to-rental:

@@ -8,6 +8,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReservationStateConflictError } from '../../domain/reservation-errors';
+import { assertReservationWithinGuarantee } from '../../domain/reservation-guarantee';
 import { ChangeReservationVehicleCommand } from './change-reservation-vehicle.command';
 
 /**
@@ -21,6 +22,8 @@ import { ChangeReservationVehicleCommand } from './change-reservation-vehicle.co
  * - El vehiculo nuevo se valida con el mismo guard que la alternativa de venta
  *   (empresa, distinto, sede, AVAILABLE, libre segun la regla compartida de
  *   solape): 422 ALTERNATIVE_VEHICLE_INVALID / 409 VEHICLE_NOT_AVAILABLE.
+ * - F-01: el monto de la reserva debe caber en la garantia del vehiculo nuevo
+ *   (422 RESERVATION_EXCEEDS_GUARANTEE si la excede).
  * - Se conserva `payment_validated_at`; se limpia `documents_completed_at`
  *   (contrato/documentos refieren al vehiculo). Pendiente de Fiorella.
  *
@@ -72,6 +75,11 @@ export class ChangeReservationVehicleHandler {
         }
 
         await this.vehicleGuard.assertUsable(current, command.vehicleId, tx);
+
+        // F-01: el monto ya fijado en la reserva debe caber en la garantia del
+        // vehiculo nuevo (si Flota la tiene definida).
+        const newVehicle = await this.reservations.findVehicleById(command.vehicleId);
+        assertReservationWithinGuarantee(current.requiredPaymentAmount, newVehicle?.depositMinimum);
 
         const changed = await this.saleResolutions.changeVehicle(
           { ...scope, id: command.id, expectedVersion: command.expectedVersion, vehicleId: command.vehicleId },

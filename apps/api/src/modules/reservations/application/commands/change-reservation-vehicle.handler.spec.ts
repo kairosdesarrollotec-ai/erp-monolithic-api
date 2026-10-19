@@ -10,7 +10,7 @@ import { assertReservationRoleAllowed } from '../policies/reservation-role-polic
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { ReservationStateConflictError, ReservationVersionConflictError, VehicleNotAvailableError } from '../../domain/reservation-errors';
+import { ReservationExceedsGuaranteeError, ReservationStateConflictError, ReservationVersionConflictError, VehicleNotAvailableError } from '../../domain/reservation-errors';
 import { AlternativeVehicleInvalidError } from '../../domain/reservation-sale-resolution';
 import { roleKeyOfTestRoleId, testRole } from '../../../users/testing/role-fixtures';
 
@@ -30,8 +30,11 @@ function buildRecord(overrides: Partial<ReservationRecord> = {}): ReservationRec
 const SCOPE = { organizationId: 'org-1', operatingCompanyId: 'company-1', branchId: 'branch-1' };
 const FAKE_TX = { __fakeTx: true } as any;
 
-function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
-  const reservations = { findById: jest.fn().mockResolvedValue(existing) } as unknown as jest.Mocked<ReservationRepositoryPort>;
+function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE', newVehicleDepositMinimum: number | null = 500) {
+  const reservations = {
+    findById: jest.fn().mockResolvedValue(existing),
+    findVehicleById: jest.fn().mockResolvedValue({ id: 'veh-2', depositMinimum: newVehicleDepositMinimum }),
+  } as unknown as jest.Mocked<ReservationRepositoryPort>;
   const saleResolutions = {
     changeVehicle: jest.fn().mockImplementation(async () => ({ ...existing, vehicleId: 'veh-2', documentsCompletedAt: null, version: 3 })),
   } as unknown as jest.Mocked<ReservationSaleResolutionRepositoryPort>;
@@ -94,6 +97,20 @@ describe('ChangeReservationVehicleHandler (RES-06, DEC-RES-CHANGE-VEHICLE-001)',
       expect(deps.saleResolutions.changeVehicle).not.toHaveBeenCalled();
     },
   );
+
+  it('F-01: 422 RESERVATION_EXCEEDS_GUARANTEE si el monto de la reserva (300) supera la garantia del vehiculo nuevo; no escribe ni audita', async () => {
+    const deps = buildDeps(buildRecord(), 'FRONT_OFFICE', 250);
+    await expect(deps.handler.execute(cmd())).rejects.toBeInstanceOf(ReservationExceedsGuaranteeError);
+    expect(deps.saleResolutions.changeVehicle).not.toHaveBeenCalled();
+    expect(deps.audit.recordReservationEvent).not.toHaveBeenCalled();
+    expect(deps.outbox.publish).not.toHaveBeenCalled();
+  });
+
+  it('F-01: acepta el cambio si el vehiculo nuevo no tiene garantia definida (null)', async () => {
+    const deps = buildDeps(buildRecord(), 'FRONT_OFFICE', null);
+    const result = await deps.handler.execute(cmd());
+    expect(result.vehicleId).toBe('veh-2');
+  });
 
   it('409 VEHICLE_NOT_AVAILABLE si el vehiculo esta ocupado en la ventana; no escribe ni audita', async () => {
     const deps = buildDeps(buildRecord());

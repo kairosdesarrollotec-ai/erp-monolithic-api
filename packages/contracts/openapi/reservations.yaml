@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.8.2
+  version: 0.8.3
   description: >
     0.8.2 — Regla de negocio (Fiorella, 16-oct-2026): "la reserva nunca superará la garantía".
     confirm responde 422 RESERVATION_EXCEEDS_GUARANTEE si requiredPaymentAmount supera la garantía
@@ -333,7 +333,7 @@ paths:
         '404': { description: Reserva no encontrada en el scope del usuario }
         '409': { description: 'RESERVATION_STATE_CONFLICT (no esta en DRAFT) o VEHICLE_NOT_AVAILABLE (el vehiculo esta ocupado, el detail indica las fechas)' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
-        '422': { description: 'ALTERNATIVE_VEHICLE_INVALID - el mismo vehiculo, de otra empresa/sede o no esta AVAILABLE' }
+        '422': { description: 'ALTERNATIVE_VEHICLE_INVALID - el mismo vehiculo, de otra empresa/sede o no esta AVAILABLE; RESERVATION_EXCEEDS_GUARANTEE - el monto de la reserva supera la garantia del vehiculo nuevo (F-01)' }
         '428': { description: IF_MATCH_REQUIRED }
   /reservations/{id}/documents/upload-url:
     post:
