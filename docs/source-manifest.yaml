@@ -14,7 +14,7 @@ sources:
     APROBADO v1.1 — rectificación SOURCE_CONFLICT: incorpora bandeja in-app
     (GET /notifications, POST /notifications/read-all, BR-NOT-008..010,
     SC-NOT-007..009). Elimina "fuera del MVP" de la bandeja in-app.
-  sha256: unknown
+  sha256: 3be4ed0bc6a9d7f66c6d8836059adb6fbe71aa18e2d669215f9b94e7570a5b7f
   authority: business
   supersedes: null
   notes: >
@@ -31,7 +31,7 @@ sources:
     APROBADO v1.1 — rectificación SOURCE_CONFLICT: incorpora capa presentation/
     (NotificationsController, GetMyNotificationsHandler, MarkAllNotificationsReadHandler),
     NotificationReadModelPort y contrato notifications.yaml v0.1.0.
-  sha256: unknown
+  sha256: 6eb700f9409974fdf9afcdf4b5efdf92b1b9ea225e38fd8e85b27bf172f9bce3
   authority: functional
   supersedes: SDD-KAIROS-MVP-002-NOT-V1.0
   notes: >
@@ -48,7 +48,7 @@ sources:
   estado_original: >
     APROBADO v1.1 — rectificación SOURCE_CONFLICT: documenta TDD-NOT-ADR-006 (capa HTTP),
     actualiza estructura de módulo con presentation/ y persistence/, y amplía cobertura de tests.
-  sha256: unknown
+  sha256: 68339337624f2f558002e66a51c4e6b6a51160c36a83ab1d54db3d9bf356e9fd
   authority: technical
   supersedes: TDD-KAIROS-MVP-002-NOT-V1.0
   notes: >
@@ -62,7 +62,7 @@ sources:
   date: '2026-10-01'
   status: approved
   estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
-  sha256: unknown
+  sha256: 4c8490959b6ebf23ab5a548e58c658283394b86be5fffd95859cf8743d3eb339
   authority: business
   supersedes: null
   notes: >
@@ -76,7 +76,7 @@ sources:
   date: '2026-10-01'
   status: approved
   estado_original: APROBADO — documento inicial generado 2026-10-01, cierra BRECHA-FLOTA-01
-  sha256: unknown
+  sha256: 48d4939feb81781f7c46aec029b22aef6b9ec4bfe90b9e5b591c53487e9cbb27
   authority: functional
   supersedes: null
   notes: >
@@ -90,7 +90,7 @@ sources:
   date: '2026-10-03'
   status: approved
   estado_original: APROBADO v1.1 — Bug 8: campo depositMinimum en Vehicle, fleet.yaml v0.3.0
-  sha256: unknown
+  sha256: 7441285dd8e8ca5d7b49afc75ca6efeec16b776bf8ba5f37f8c4bff555d91644
   authority: technical
   supersedes: TDD-KAIROS-MVP-002-FLT-V1.0
   notes: >
@@ -111,7 +111,7 @@ sources:
   date: '2026-10-01'
   status: active
   estado_original: Módulo TR-07 mergeado a main el 2026-10-01 (rama feature/bloque-2-tr-07-notificaciones-externas)
-  sha256: unknown
+  sha256: 298d35b0f6998e363ceedf5bba90de21bc17267ac622411327084a896a5521fa
   authority: technical
   supersedes: null
   notes: >
@@ -123,10 +123,10 @@ sources:
   module: Transversal
   version: '1.18'
   date: unknown
-  status: draft_pending_review
+  status: approved
   estado_original: Candidato para revisión funcional — ver `BDD-KAIROS-EXECUTIVE-SUMMARY.md` para el estado
     global
-  sha256: 4ebcdc8f970e1afdfd4bc748aba7b0d7ec4bfdcdeb1ec4b9d902a41ef572afc7
+  sha256: e6903ac049087030ed6b13670192240c16c63036ed6843472b083691bedc4f77
   authority: business
   supersedes: null
 - id: BDD-KAIROS-MVP-002-CON
@@ -135,9 +135,9 @@ sources:
   module: Consulta
   version: '1.8'
   date: unknown
-  status: pending_review
+  status: approved
   estado_original: unknown
-  sha256: deed5c50c341495338b6dbc9218f8d5835bfd37568a01757a15f9dd08e4cc41d
+  sha256: 700d540b0b9b6b71b69bf62879d1f093c4e718e5a6805938eeb5d2f70d74467c
   authority: business
   supersedes: null
 - id: BDD-KAIROS-MVP-002-RES
@@ -148,7 +148,7 @@ sources:
   date: unknown
   status: approved
   estado_original: approved — DEC-RES-BDD-SDD-APPROVED-2026-10-13
-  sha256: c225d6d59b2793926418b692f001e867d00fd33e1ff2c05e59ed7d8cda7106ad
+  sha256: 1e2a15165dc73c58db66b53028e9fa59afb75400020fe7219466925c857a61d1
   authority: business
   supersedes: null
 - id: BDD-KAIROS-MVP-002-ALQ
@@ -166,7 +166,7 @@ sources:
     ciclo completo: contrato, entrega, documentos GCS, extensiones y cierre.
   approved_at: '2026-10-13'
   approved_by: Russbel/usuario sesión implementación
-  sha256: f3ddf5388e14784739711ffd65e65c70ce388dc5fa508e8ac93ec246ec59f837
+  sha256: 4cb2cf929cc3244d685ac5b01d7d8652b80bffc360a2bce8b0a50e41f2d80fe8
   authority: business
   supersedes: null
 - id: BDD-KAIROS-MVP-002-DEV
@@ -179,7 +179,7 @@ sources:
   estado_original: approved
   approved_at: '2026-10-06'
   approved_by: Russbel/usuario sesión implementación
-  sha256: 0804f3000bb130f744320ed3ca97e2d3af751c3599c1f9b465929faf6a0de454
+  sha256: 21c34bc12717cba73c57be93fd8775b220e80ad06c6f2cc7b69c1cc9e8b69b9a
   authority: business
   supersedes: null
 - id: BDD-KAIROS-MVP-002-REC
@@ -196,6 +196,6 @@ sources:
     / feature/cierre-huecos-20261012). Cubre REC-01 a REC-08 + ciclo de vida PAUSADA.
   approved_at: '2026-10-13'
   approved_by: Russbel/usuario sesión implementación
-  sha256: dee619a0164bb298a151a73499d46239c1f19de4b80383acf6277fa92ae86c0d
+  sha256: 7f07198de5eb3b717fe8ff44c844fa6dc6149ff9a1c9dea1f813fca2d1b62a8d
   authority: business
   supersedes: null
