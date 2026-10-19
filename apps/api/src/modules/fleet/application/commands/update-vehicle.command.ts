@@ -11,6 +11,8 @@ export class UpdateVehicleCommand {
     public readonly category?: string,
     public readonly dailyRate?: number,
     public readonly depositMinimum?: number,
+    public readonly passengerCapacity?: number,
+    public readonly fuelPrice?: number,
     public readonly photoUrl?: string,
     public readonly assignedBranchId?: string,
   ) {}

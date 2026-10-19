@@ -53,9 +53,22 @@ export class UpdateVehicleDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
-  @Min(0)
+  @IsNumber({}, { message: 'depositMinimum (garantia) debe ser un numero' })
+  @Min(0, { message: 'depositMinimum (garantia) debe ser mayor o igual a 0' })
   depositMinimum?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'passengerCapacity debe ser un entero' })
+  @Min(1, { message: 'passengerCapacity debe ser al menos 1' })
+  @Max(60, { message: 'passengerCapacity no puede superar 60' })
+  passengerCapacity?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'fuelPrice (precio del combustible) debe ser un numero' })
+  @Min(0, { message: 'fuelPrice (precio del combustible) debe ser mayor o igual a 0' })
+  fuelPrice?: number;
 
   @IsOptional()
   @IsUrl({ protocols: ['https'], require_tld: true })

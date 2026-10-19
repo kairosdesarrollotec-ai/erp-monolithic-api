@@ -39,6 +39,8 @@ export class CreateVehicleHandler {
       status: command.status ?? 'AVAILABLE',
       dailyRate: command.dailyRate,
       depositMinimum: command.depositMinimum,
+      passengerCapacity: command.passengerCapacity,
+      fuelPrice: command.fuelPrice,
       photoUrl: command.photoUrl?.trim() || null,
     });
   }

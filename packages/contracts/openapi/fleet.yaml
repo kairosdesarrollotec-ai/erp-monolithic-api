@@ -1,8 +1,17 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.4.0
+  version: 0.5.0
   description: >
+    0.5.0 — F-05 / G-05 (Fiorella, 2026-10-16): la garantía, la capacidad de
+    pasajeros y el precio del combustible se registran al dar de alta el
+    vehículo. CreateVehicleRequest.depositMinimum (>= 0), passengerCapacity
+    (entero 1..60) y fuelPrice (>= 0, PEN por unidad) pasan a OBLIGATORIOS;
+    UpdateVehicleRequest los acepta opcionales con las mismas validaciones;
+    VehicleResponse expone passengerCapacity y fuelPrice (null en vehículos
+    anteriores a 0.5.0). passengerCapacity es el máximo de acompañantes de un
+    alquiler; fuelPrice es insumo de la multa por combustible (aún no se calcula).
+
     0.4.0 — DEC-TZ-LIMA-001 — Zona horaria de negocio America/Lima (UTC-5,
     sin DST): toda fecha date-only (YYYY-MM-DD) enviada a esta API como
     inicio/fin/ventana de viaje, disponibilidad, reserva, alquiler, devolución
@@ -487,6 +496,9 @@ components:
         - plate
         - brand
         - model
+        - depositMinimum
+        - passengerCapacity
+        - fuelPrice
       properties:
         companyId:
           type: string
@@ -532,8 +544,16 @@ components:
         depositMinimum:
           type: number
           minimum: 0
-          nullable: true
-          description: Monto mínimo de garantía para este vehículo (PEN). Si se omite no se configura mínimo.
+          description: Monto mínimo de garantía para este vehículo (PEN). Obligatorio en el alta (F-05).
+        passengerCapacity:
+          type: integer
+          minimum: 1
+          maximum: 60
+          description: Cantidad de pasajeros que admite el vehículo; es el máximo de acompañantes de un alquiler (G-05). Obligatorio en el alta.
+        fuelPrice:
+          type: number
+          minimum: 0
+          description: Precio del combustible por unidad para este vehículo (PEN). Insumo de la multa por combustible (aún no calculada). Obligatorio en el alta (F-05).
         photoUrl:
           type: string
           format: uri
@@ -587,6 +607,15 @@ components:
           minimum: 0
           nullable: true
           description: Monto mínimo de garantía (PEN). Si se omite, el valor existente no cambia.
+        passengerCapacity:
+          type: integer
+          minimum: 1
+          maximum: 60
+          description: Capacidad de pasajeros (1..60). Si se omite, el valor existente no cambia.
+        fuelPrice:
+          type: number
+          minimum: 0
+          description: Precio del combustible por unidad (PEN). Si se omite, el valor existente no cambia.
         photoUrl:
           type: string
           format: uri
@@ -666,6 +695,14 @@ components:
           type: number
           nullable: true
           description: Monto mínimo de garantía configurado para este vehículo (PEN).
+        passengerCapacity:
+          type: integer
+          nullable: true
+          description: Pasajeros que admite el vehículo (1..60). null en vehículos anteriores a 0.5.0 (sin tope de acompañantes).
+        fuelPrice:
+          type: number
+          nullable: true
+          description: Precio del combustible por unidad (PEN). null en vehículos anteriores a 0.5.0.
         photoUrl:
           type: string
           nullable: true

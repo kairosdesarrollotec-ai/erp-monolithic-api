@@ -51,6 +51,8 @@ export class UpdateVehicleHandler {
       category: command.category?.trim() || existing.category,
       dailyRate: command.dailyRate,
       depositMinimum: command.depositMinimum,
+      passengerCapacity: command.passengerCapacity,
+      fuelPrice: command.fuelPrice,
       photoUrl: command.photoUrl?.trim() || null,
     });
   }

@@ -24,12 +24,14 @@ describe('CreateVehicleHandler', () => {
       '  xyz-789  ',
       ' Hyundai ',
       ' Tucson ',
+      500,
+      5,
+      4.5,
       2023,
       ' Negro ',
       ' SUV ',
       'AVAILABLE',
       190,
-      undefined,
       'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
     );
 
@@ -53,6 +55,9 @@ describe('CreateVehicleHandler', () => {
       category: 'SUV',
       status: 'AVAILABLE',
       dailyRate: 190,
+      depositMinimum: 500,
+      passengerCapacity: 5,
+      fuelPrice: 4.5,
       photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
     });
     expect(result.plate).toBe('XYZ-789');
@@ -73,6 +78,9 @@ describe('CreateVehicleHandler', () => {
       'xyz-789',
       'Nissan',
       'Frontier',
+      300,
+      5,
+      4,
     );
 
     await expect(handler.execute(command)).rejects.toThrow(VehiclePlateAlreadyExistsError);
@@ -84,7 +92,7 @@ describe('CreateVehicleHandler', () => {
     const { access } = buildFleetAccessService('FRONT_OFFICE');
     const handler = new CreateVehicleHandler(repository, access);
 
-    const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'AAA-000', 'Kia', 'Sportage');
+    const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'AAA-000', 'Kia', 'Sportage', 300, 5, 4);
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);
     expect(repository.create).not.toHaveBeenCalled();
@@ -97,8 +105,8 @@ describe('CreateVehicleHandler', () => {
     const handler = new CreateVehicleHandler(repository, access);
 
     const command = new CreateVehicleCommand(
-      'uid-1', COMPANY, BRANCH, 'BBB-111', 'Nissan', 'Frontier',
-      undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'branch-other',
+      'uid-1', COMPANY, BRANCH, 'BBB-111', 'Nissan', 'Frontier', 300, 5, 4,
+      undefined, undefined, undefined, undefined, undefined, undefined, 'branch-other',
     );
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);

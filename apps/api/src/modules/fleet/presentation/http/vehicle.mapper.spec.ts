@@ -38,6 +38,8 @@ describe('toVehicleResponse', () => {
       dailyRate: 250,
       photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/hilux.jpg',
       depositMinimum: null,
+      passengerCapacity: null,
+      fuelPrice: null,
       createdAt: '2026-09-28T10:00:00.000Z',
       updatedAt: '2026-09-28T10:00:00.000Z',
     });

@@ -28,7 +28,9 @@ describe('UpdateVehicleHandler', () => {
       ' Negro ',
       ' SUV ',
       190,
-      undefined,
+      600,
+      7,
+      5.2,
       'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
     );
 
@@ -54,6 +56,9 @@ describe('UpdateVehicleHandler', () => {
         color: 'Negro',
         category: 'SUV',
         dailyRate: 190,
+        depositMinimum: 600,
+        passengerCapacity: 7,
+        fuelPrice: 5.2,
         photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
       },
     );

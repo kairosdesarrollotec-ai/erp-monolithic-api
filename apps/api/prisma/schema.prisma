@@ -519,6 +519,10 @@ model Vehicle {
   status             String   @default("AVAILABLE") // AVAILABLE | RENTED | MAINTENANCE | OUT_OF_SERVICE
   dailyRate          Decimal? @map("daily_rate") @db.Decimal(10, 2)
   depositMinimum     Decimal? @map("deposit_minimum") @db.Decimal(10, 2)
+  /// Cantidad de pasajeros que admite el vehiculo (1..60). Tope de acompanantes de un alquiler (G-05, Fiorella 2026-10-16). NULL = sin tope.
+  passengerCapacity  Int?     @map("passenger_capacity")
+  /// Precio del combustible por unidad para este vehiculo (PEN). Insumo de la multa por combustible, que AUN NO se calcula (F-05).
+  fuelPrice          Decimal? @map("fuel_price") @db.Decimal(10, 2)
   photoUrl           String?  @map("photo_url")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
