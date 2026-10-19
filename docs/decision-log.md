@@ -4,6 +4,12 @@ Registro de decisiones explicitas aprobadas que resuelven contradicciones o auto
 
 Cada entrada: `ID | Fecha | Fuentes en conflicto | Decision | Aprobado por | Alcance afectado`.
 
+## Aprobación de baseline documental — 2026-10-18
+
+| ID | Fecha | Decisión | Aprobado por | Alcance afectado |
+|---|---|---|---|---|
+| DOC-BASELINE-001 | 2026-10-18 | Se aprueban como **versión base oficial** los BDD, SDD, TDD y la especificación UX/UI vigentes. Su contenido es fuente de verdad para implementación, pruebas y aceptación; todo cambio posterior se registra como mejora, decisión o nueva versión. | Usuario, instrucción explícita en sesión 2026-10-18 | Fuentes vigentes, manifiestos y trazabilidad de backend. |
+
 ## Reclutamiento — ciclo de vida de vacante PAUSADA (2026-10-13)
 
 | ID | Fecha | Decisión | Estado | Alcance afectado |

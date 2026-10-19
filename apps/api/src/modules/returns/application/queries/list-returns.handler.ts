@@ -3,7 +3,7 @@ import { ClockPort, SystemClock } from '../../../../common/application/ports/clo
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import { computeReturnAlerts } from '../../domain/return-alerts';
-import { computeReturnLateness, computeReturnLatenessCharge } from '../../domain/return-lateness';
+import { computeReturnLateness } from '../../domain/return-lateness';
 import { chargeFor } from './return-late-charge';
 import { ListReturnsQuery } from './list-returns.query';
 
