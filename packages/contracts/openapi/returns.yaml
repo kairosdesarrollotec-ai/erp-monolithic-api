@@ -5,7 +5,7 @@ info:
   description: >
     1.7.0 — Respuestas de negocio de Fiorella (2026-10-16). (1) DEV-03: alcolímetro DESFAVORABLE = check "no cumple el rango" +
     FOTO de la prueba OBLIGATORIA (evidencia PHOTO con zona ALCOHOL_TEST subida antes con upload-url/evidence); sin foto ->
-    422 ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni otros campos; RECHAZADO no exige foto. (2) Retraso pasada la tolerancia
+    422 ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni otros campos; RECHAZADO tambien exige la foto (evidencia por si acaso). (2) Retraso pasada la tolerancia
     de 30 min: SÍ hay cargo, MANUAL por ahora: POST register-late-charge (monto digitado por usuario autorizado, sin cálculo
     automático; auditado y evento CargoRetrasoRegistrado.v1) y ReturnResponse.manualLateCharge. (3) "Día completo" = 100% de la
     tarifa diaria (tramo > 300 min de latenessCharge).
@@ -289,7 +289,7 @@ paths:
       description: >
         DESFAVORABLE = check "no cumple el rango del alcoholímetro" + foto de la prueba OBLIGATORIA: antes de registrar, subir la
         foto como evidencia PHOTO con zona ALCOHOL_TEST (upload-url -> PUT -> POST evidence). Sin foto -> 422
-        ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni más campos. RECHAZADO no exige foto.
+        ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni más campos. RECHAZADO tambien exige la foto (evidencia por si acaso).
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -316,7 +316,7 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: Resultado DESFAVORABLE sin la foto de la prueba (evidencia PHOTO con zona ALCOHOL_TEST) -> ALCOHOL_TEST_PHOTO_REQUIRED
+          description: Resultado DESFAVORABLE o RECHAZADO sin la foto de la prueba (evidencia PHOTO con zona ALCOHOL_TEST) -> ALCOHOL_TEST_PHOTO_REQUIRED
         '428':
           description: Falta header If-Match
         '500':

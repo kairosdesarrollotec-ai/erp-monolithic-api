@@ -131,14 +131,25 @@ describe('RegisterReturnAlcoholTestHandler (DEV-04 / BR-DEV-005 / DR-DEV-003)', 
     );
   });
 
-  it('RECHAZADO (se negó a la prueba) no exige foto', async () => {
+  it('RECHAZADO sin foto de la prueba -> 422 ALCOHOL_TEST_PHOTO_REQUIRED (evidencia por si acaso)', async () => {
     const { deps, handler } = build();
     deps.returns.listEvidences.mockResolvedValue([]);
+    await expect(
+      handler.execute(new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'RECHAZADO')),
+    ).rejects.toThrow(AlcoholTestPhotoRequiredError);
+    expect(deps.returns.update).not.toHaveBeenCalled();
+  });
+
+  it('RECHAZADO con foto la vincula a la auditoría', async () => {
+    const { deps, handler } = build();
     const result = await handler.execute(
       new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'RECHAZADO'),
     );
     expect(result.alcoholTestResult).toBe('RECHAZADO');
-    expect(deps.returns.listEvidences).not.toHaveBeenCalled();
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ changes: expect.objectContaining({ alcoholPhotoEvidenceId: 'ev-alc' }) }),
+      fakeTx,
+    );
   });
 
   it.each(['PROGRAMADA', 'INSPECCION', 'CERRADA'] as const)('estado %s -> ReturnStateConflictError', async (status) => {
