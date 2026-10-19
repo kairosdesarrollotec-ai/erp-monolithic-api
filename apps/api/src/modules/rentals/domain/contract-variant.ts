@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { ContractVariantDriverConflictError } from './rental-errors';
 
 /**
  * BR-DOC-003 (Fiorella, 24-ago-2026): los contratos siguen UNA sola plantilla
@@ -42,14 +42,7 @@ export function resolveWithCompanyDriver(input: {
   const a = input.withCompanyDriver ?? undefined;
   const b = input.withDriver ?? undefined;
   if (a !== undefined && b !== undefined && a !== b) {
-    throw new BadRequestException({
-      statusCode: 400,
-      code: 'CONTRACT_VARIANT_DRIVER_CONFLICT',
-      detail:
-        'withCompanyDriver (servicio de conductor ofrecido por la empresa) y el alias deprecado withDriver ' +
-        'se enviaron con valores distintos. Envie solo withCompanyDriver; no lo confunda con el conductor ' +
-        'distinto del titular (BR-ALQ-015).',
-    });
+    throw new ContractVariantDriverConflictError();
   }
   return a ?? b;
 }

@@ -156,6 +156,10 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       outbox,
       new RentalCreationGuard(rentalRepo, new SystemClock()),
     );
+    // Periodo relativo para que la constraint rental_period_check siga siendo
+    // valida independientemente de la fecha en que se ejecute la integracion.
+    const startAt = new Date();
+    const expectedEndAt = new Date(startAt.getTime() + 5 * 24 * 60 * 60 * 1000);
     const rental = await createHandler.execute(
       new CreateRentalCommand(
         UID,
@@ -164,10 +168,8 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
         customer,
         vehicle,
         'NORMAL',
-        // Fechas relativas a hoy: completar la entrega fija el inicio real en "ahora",
-        // que no puede quedar después del fin programado (rental_period_check).
-        new Date(Date.now() - 24 * 60 * 60 * 1000),
-        new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+        startAt,
+        expectedEndAt,
       ),
     );
     expect(rental.status).toBe('DRAFT');

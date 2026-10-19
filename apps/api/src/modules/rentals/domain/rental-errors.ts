@@ -16,6 +16,18 @@ export class RentalVersionConflictError extends DomainPreconditionError {
   }
 }
 
+export class ContractVariantDriverConflictError extends DomainBadRequestError {
+  readonly code = 'CONTRACT_VARIANT_DRIVER_CONFLICT';
+
+  constructor() {
+    super(
+      'withCompanyDriver (servicio de conductor ofrecido por la empresa) y el alias deprecado withDriver ' +
+        'se enviaron con valores distintos. Envie solo withCompanyDriver; no lo confunda con el conductor ' +
+        'distinto del titular (BR-ALQ-015).',
+    );
+  }
+}
+
 export class RentalStateConflictError extends DomainConflictError {
   readonly code = 'RENTAL_STATE_CONFLICT';
 
