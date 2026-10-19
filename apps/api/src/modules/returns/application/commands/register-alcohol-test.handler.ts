@@ -4,7 +4,8 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnAccessService } from '../services/return-access.service';
-import { ReturnNotFoundError, ReturnStateConflictError } from '../../domain/return-errors';
+import { AlcoholTestPhotoRequiredError, ReturnNotFoundError, ReturnStateConflictError } from '../../domain/return-errors';
+import { RETURN_ALCOHOL_TEST_EVIDENCE_ZONE } from '../../domain/return-evidence-requirements';
 import { assertCanTransitionReturn } from '../../domain/return-status';
 import { RegisterReturnAlcoholTestCommand } from './register-alcohol-test.command';
 
@@ -13,6 +14,9 @@ import { RegisterReturnAlcoholTestCommand } from './register-alcohol-test.comman
  * FAVORABLE -> INSPECCION. DESFAVORABLE/RECHAZADO -> el expediente PERMANECE en RECEPCION_PROVISIONAL, el
  * vehículo sigue en custodia preventiva de VeloxRent y se escala a Gerencia (evento EscaladoAGerencia.v1). El
  * comando no falla en ese caso: el resultado queda registrado (200).
+ * Fiorella 2026-10-16: DESFAVORABLE = check "no cumple rango" + FOTO de la prueba obligatoria (evidencia PHOTO con zona
+ * ALCOHOL_TEST subida antes); sin foto -> 422 ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni otros campos.
+ * RECHAZADO (se negó a la prueba) no tiene prueba que fotografiar: no exige foto.
  */
 @Injectable()
 export class RegisterReturnAlcoholTestHandler {
@@ -48,6 +52,15 @@ export class RegisterReturnAlcoholTestHandler {
       if (passing) {
         assertCanTransitionReturn(current.status, 'INSPECCION');
       }
+      let alcoholPhotoEvidenceId: string | undefined;
+      if (command.result === 'DESFAVORABLE') {
+        const evidences = await this.returns.listEvidences(command.id, scope);
+        const photo = evidences.find((e) => e.type === 'PHOTO' && e.zone === RETURN_ALCOHOL_TEST_EVIDENCE_ZONE);
+        if (!photo) {
+          throw new AlcoholTestPhotoRequiredError();
+        }
+        alcoholPhotoEvidenceId = photo.id;
+      }
 
       const updated = await this.returns.update(
         {
@@ -73,6 +86,7 @@ export class RegisterReturnAlcoholTestHandler {
             returnId: updated.id,
             result: command.result,
             notes: command.notes,
+            alcoholPhotoEvidenceId,
             newStatus: updated.status,
             escalatedTo: passing ? undefined : 'GERENCIA',
           },
@@ -88,6 +102,7 @@ export class RegisterReturnAlcoholTestHandler {
             returnId: updated.id,
             rentalId: updated.rentalId,
             result: command.result,
+            alcoholPhotoEvidenceId: alcoholPhotoEvidenceId ?? null,
             status: updated.status,
             escalatedTo: passing ? null : 'GERENCIA',
             organizationId: context.organizationId,

@@ -81,6 +81,17 @@ export function holderTypeFromContractVariant(code: string | null | undefined): 
   return null;
 }
 
+/**
+ * Respuesta de Fiorella (16-oct-2026): el tipo de titular se deduce del tipo de documento
+ * (RUC -> persona juridica, DNI -> persona natural). Otros tipos (CE, pasaporte...) no determinan nada.
+ */
+export function holderTypeFromDocumentType(documentType: string | null | undefined): HolderType | null {
+  const t = documentType?.trim().toUpperCase();
+  if (t === 'RUC') return 'LEGAL';
+  if (t === 'DNI') return 'NATURAL';
+  return null;
+}
+
 /** DEC-ALQ-COMPANY-DRIVER-004: la variante codificada corresponde a "con conductor de la empresa". */
 export function isCompanyDriverVariantCode(code: string | null | undefined): boolean {
   return !!code && code.endsWith('_WITH_DRIVER');

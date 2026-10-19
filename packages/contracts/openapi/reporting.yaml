@@ -1,17 +1,17 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP — Reporting API
-  version: 0.3.0
+  version: 0.4.0
   description: >
     0.3.0 — Filtros de rango de fechas `dateFrom`/`dateTo` (REP-01, BR-REP-005,
     DEC-TZ-LIMA-001). Ambos son `YYYY-MM-DD` (día de calendario de America/Lima) y el
     rango es INCLUSIVO en sus dos extremos: `dateFrom` = 00:00:00.000 Lima de ese día y
     `dateTo` = 23:59:59.999 Lima de ese día (el día `dateTo` se incluye completo). Un
-    date-time con offset/Z se respeta tal cual. El máximo es 90 días calendario de Lima
-    entre `dateFrom` y `dateTo` (mismo día = 0; `dateFrom`+90 días es aceptado, +91 no).
+    date-time con offset/Z se respeta tal cual. El máximo es 90 días calendario INCLUSIVOS
+    de Lima (`dateTo - dateFrom <= 89`; mismo día = 1 día; `dateFrom`+89 días es aceptado, +90 no).
     Errores 400 con cuerpo `{statusCode, code, detail}`: INVALID_DATE (fecha ilegible o
     inexistente, p. ej. 2026-02-30), INVALID_DATE_RANGE (dateFrom posterior a dateTo) y
-    RANGE_EXCEEDS_MAX (más de 90 días). En /reporting/operational ambos son opcionales:
+    RANGE_EXCEEDS_MAX (más de 90 días calendario inclusivos). En /reporting/operational ambos son opcionales:
     sin `dateTo` = hoy (Lima); sin `dateFrom` = el día de `dateTo`. Las respuestas
     devuelven `dateFrom`/`dateTo` como fechas de Lima.
 
@@ -55,8 +55,8 @@ paths:
           required: false
           schema: { type: string, format: date, example: '2026-10-01' }
           description: >
-            Inicio del período, inclusivo (YYYY-MM-DD = 00:00 America/Lima). Máx. 90 días antes
-            de dateTo (BR-REP-005). Por defecto, el día de dateTo.
+            Inicio del período, inclusivo (YYYY-MM-DD = 00:00 America/Lima). Máx. 90 días calendario inclusivos
+            (dateTo - dateFrom <= 89) (BR-REP-005). Por defecto, el día de dateTo.
         - name: dateTo
           in: query
           required: false
@@ -106,7 +106,7 @@ paths:
           schema: { type: string, format: date, example: '2026-10-11' }
           description: >
             Fin del período, inclusivo (YYYY-MM-DD = 23:59:59.999 America/Lima: el día completo).
-            Máx. 90 días desde dateFrom.
+            Máx. 90 días calendario inclusivos desde dateFrom (dateTo - dateFrom <= 89).
       responses:
         '200':
           description: KPIs financieros del período
@@ -148,7 +148,7 @@ paths:
           schema: { type: string, format: date, example: '2026-10-11' }
           description: >
             Fin del período, inclusivo (YYYY-MM-DD = 23:59:59.999 America/Lima: el día completo).
-            Máx. 90 días desde dateFrom.
+            Máx. 90 días calendario inclusivos desde dateFrom (dateTo - dateFrom <= 89).
         - name: type
           in: query
           required: false

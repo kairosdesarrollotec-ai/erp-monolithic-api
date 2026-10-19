@@ -17,6 +17,8 @@ import { ValidateDocumentsDto } from './dto/validate-documents.dto';
 import { RegisterAlcoholTestDto } from './dto/register-alcohol-test.dto';
 import { CommandScopeDto } from './dto/command-scope.dto';
 import { ApproveNotaryExceptionDto } from './dto/approve-notary-exception.dto';
+import { RegisterAuthorizedDriverDto } from './dto/register-authorized-driver.dto';
+import { RegisterCompanionDto } from './dto/register-companion.dto';
 import { FormalizeContractDto } from './dto/formalize-contract.dto';
 import { GetContractTemplateQueryDto } from './dto/get-contract-template-query.dto';
 import { CompleteDeliveryDto } from './dto/complete-delivery.dto';
@@ -199,6 +201,8 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     ['RegisterAlcoholTestRequest', RegisterAlcoholTestDto],
     ['EvaluateNotaryRequest', CommandScopeDto],
     ['ApproveNotaryExceptionRequest', ApproveNotaryExceptionDto],
+    ['RegisterAuthorizedDriverRequest', RegisterAuthorizedDriverDto],
+    ['RegisterCompanionRequest', RegisterCompanionDto],
     ['FormalizeContractRequest', FormalizeContractDto],
     ['CompleteDeliveryRequest', CompleteDeliveryDto],
     ['RequestExtensionRequest', RequestExtensionDto],
@@ -303,6 +307,11 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     const out = toRentalResponse(record);
     const creditContract = flatten(spec.components.schemas.ReservationCreditResponse);
     expect(Object.keys(out.reservationCredit!).sort()).toEqual(Object.keys(creditContract.properties).sort());
+    const chargeOut = toRentalResponse(
+      buildRentalRecord({ companyDriverCharge: { configured: true, dailyRate: '80.00', currency: 'PEN', days: 2, total: '160.00' } }),
+    );
+    const chargeContract = flatten(spec.components.schemas.CompanyDriverChargeResponse);
+    expect(Object.keys(chargeOut.companyDriverCharge!).sort()).toEqual(Object.keys(chargeContract.properties).sort());
     const extContract = flatten(spec.components.schemas.RentalExtensionResponse);
     expect(Object.keys(out.extensions![0]).sort()).toEqual(Object.keys(extContract.properties).sort());
     const reqContract = flatten(spec.components.schemas.ExtensionRequirements);

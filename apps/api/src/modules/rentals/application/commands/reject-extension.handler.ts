@@ -13,14 +13,12 @@ import { RejectExtensionCommand } from './reject-extension.command';
  * TDD-ALQ-001.md seccion 8 / 9.4.
  * Transiciona Rental de EXTENSION_PENDING de vuelta a ACTIVE, sin extender el plazo.
  *
- * NOTA (decision-log: PENDIENTE-UC-ALQ-006b): este handler cubre el rechazo
- * "simple" (p.ej. el vehiculo no esta disponible, o la solicitud no procede).
- * El caso de BR-ALQ-013 (incumplimiento grave: el cliente no cumple los 4
- * requisitos y retiene el vehiculo vencido el plazo) requiere ademas:
- * (1) marcar la extension como BREACH en vez de REJECTED,
- * (2) retener el 100% de la garantia (RentalDepositAdjustment tipo FULL_RETENTION),
- * (3) evaluar/disparar el proceso penal, y (4) marcar al cliente como "rojo".
- * Ese flujo esta formalmente diferido — ver decision-log PENDIENTE-UC-ALQ-006b.
+ * NOTA (UC-ALQ-006b): este handler cubre el rechazo "simple" (p.ej. el vehiculo no esta
+ * disponible, o la solicitud no procede). El incumplimiento grave de BR-ALQ-013 (el cliente no
+ * cumple los 4 requisitos y retiene el vehiculo) NO pasa por aqui: lo implementa
+ * ReportExtensionBreachHandler (extension BREACH, retencion total de garantia, cliente rojo,
+ * constancia para evaluacion legal). Sigue diferido solo el caso compuesto "rechazo + devolucion
+ * simultanea del vehiculo": requiere un estado nuevo de Rental sin fuente BDD/SDD aprobada.
  */
 @Injectable()
 export class RejectExtensionHandler {

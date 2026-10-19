@@ -35,6 +35,11 @@ import {
   AuthenticatedRequest,
   FirebaseAuthGuard,
 } from '../../../users/infrastructure/auth/firebase-auth.guard';
+import {
+  CRITICAL_OPERATION_MFA_MAX_AGE_SECONDS,
+  RecentAuth,
+  RecentAuthGuard,
+} from '../../../users/infrastructure/auth/recent-auth.guard';
 import { GetOrganizationUsersDto } from './dto/get-organization-users.dto';
 import { GetOrganizationCompaniesDto } from './dto/get-organization-companies.dto';
 import { OrganizationCompaniesResponse } from './dto/organization-companies.response';
@@ -187,7 +192,10 @@ export class AdminController {
     );
   }
 
+  // ADM-02 punto 10 / SEC-F4: guardar cambios de permisos requiere MFA de los ultimos 5 min.
   @Post('permissions')
+  @UseGuards(RecentAuthGuard)
+  @RecentAuth(CRITICAL_OPERATION_MFA_MAX_AGE_SECONDS)
   async savePermissions(@Req() req: AuthenticatedRequest, @Body() dto: SaveRolePermissionMatrixDto) {
     return this.saveRolePermissionMatrix.execute(
       new SaveRolePermissionMatrixCommand(

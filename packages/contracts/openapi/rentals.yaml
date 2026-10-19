@@ -1,8 +1,24 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.7.0
+  version: 1.9.0
   description: >
+    1.9.0 — respuestas de negocio de Fiorella (16-oct-2026) sobre el acompañante.
+    (a) register-companion EXIGE registrar también al conductor real (`driverCustomerId`, party DRIVER; el
+    firmante/acompañante queda RESPONSIBLE) y los checks `companionLicenseVerified`/`driverLicenseVerified`
+    (la licencia NO se guarda: ni número ni vencimiento; 422 LICENSE_VERIFICATION_REQUIRED si no están en true).
+    Nuevos 422: COMPANION_DRIVER_MUST_DIFFER, DRIVER_CUSTOMER_NOT_FOUND, COMPANION_PASSENGER_CAPACITY_EXCEEDED
+    (el límite = capacidad de pasajeros del vehículo; Flota aún no tiene el campo, TODO sin validar).
+    (b) `addendumDocumentRef` del acompañante sigue opcional: su autorización es la del firmante.
+    (c) El tipo de titular se deduce del tipo de documento del titular (RUC → LEGAL, DNI → NATURAL);
+    `holderType` queda como respaldo. (d) GET /rentals/{id} agrega `companyDriverCharge` (tarifa diaria ×
+    días del alquiler con conductor de la empresa; vista no persistida; `configured=false` mientras no
+    exista la tarifa). BREAKING en el request de register-companion (endpoint de 1.8.0 aún sin consumidores en producción).
+
+    1.8.0 — DEC-ALQ-COMPANION-006: nuevo POST /rentals/{id}/commands/register-companion (acompañante
+    autorizado de PERSONA NATURAL; firma como responsable, party role RESPONSIBLE; motivo obligatorio en
+    auditoría/evento; no habilita a conducir). Aditivo, sin cambios en operaciones existentes.
+
     1.6.0 — sesión 2026-10-15 (2): conductor y garantía.
     (a) DEC-ALQ-COMPANY-DRIVER-004: con `withCompanyDriver=true` NO hay garantía (Ficha AS-IS 5-ago:
     se omite el proceso de garantía; la responsabilidad recae en el conductor). formalize-contract
@@ -373,6 +389,47 @@ paths:
         '409': { description: RENTAL_DRIVER_ALREADY_REGISTERED o RENTAL_DRIVER_REGISTRATION_CLOSED (estado posterior a la entrega) }
         '422': { description: NATURAL_PERSON_OWN_DRIVER_NOT_ALLOWED, HOLDER_TYPE_REQUIRED, HOLDER_TYPE_MISMATCH o DRIVER_CUSTOMER_NOT_FOUND }
         '412': { description: Versión no coincide (If-Match) }
+        '428': { description: Falta header If-Match }
+        '500': { description: Error interno }
+
+  /rentals/{id}/commands/register-companion:
+    post:
+      operationId: registerCompanion
+      summary: Registrar acompañante autorizado de persona natural como responsable del contrato (DEC-ALQ-COMPANION-006, BR-ALQ-015)
+      description: >
+        Excepción de conductor (BDD ALQ-P03; Ficha AS-IS): si el titular persona NATURAL no puede firmar (p. ej. su
+        brevete extranjero no es válido), un acompañante con licencia vigente firma como RESPONSABLE del contrato.
+        Se registra como party con role RESPONSIBLE y se EXIGE registrar también al conductor real (`driverCustomerId`,
+        party DRIVER); el responsable legal es quien firma. La licencia no se guarda: solo los checks
+        `companionLicenseVerified` y `driverLicenseVerified`. NO habilita al acompañante a conducir: el conductor propio distinto del titular
+        sigue sin permitirse en persona natural (register-authorized-driver responde 422 NATURAL_PERSON_OWN_DRIVER_NOT_ALLOWED).
+        En persona JURÍDICA no aplica (422 COMPANION_NOT_APPLICABLE_FOR_LEGAL_HOLDER): ahí se usa register-authorized-driver.
+        `reason` es obligatorio y queda en auditoría y en el evento AcompananteAutorizadoRegistrado.v1 (no se persiste en columna).
+        El tipo de titular se toma del contrato formalizado o, si no hay, del tipo de documento del titular (RUC → LEGAL, DNI → NATURAL); `holderType` es solo respaldo.
+        Estados admitidos: VALIDATION, NOTARY_EVALUATION, CONTRACTING, PENDING_DELIVERY. Incrementa la versión (If-Match).
+        Permiso: RENTAL.FORMALIZE_CONTRACT.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterCompanionRequest' }
+      responses:
+        '200':
+          description: Acompañante registrado; el alquiler trae la nueva party con role RESPONSIBLE
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400': { description: COMPANION_REASON_REQUIRED o datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin permiso o contexto no autorizado }
+        '404': { description: Alquiler no encontrado }
+        '409': { description: RENTAL_DRIVER_ALREADY_REGISTERED (el cliente ya es interviniente) o RENTAL_DRIVER_REGISTRATION_CLOSED (estado posterior a la entrega) }
+        '412': { description: Versión no coincide (If-Match) }
+        '422': { description: 'COMPANION_NOT_APPLICABLE_FOR_LEGAL_HOLDER, HOLDER_TYPE_REQUIRED, HOLDER_TYPE_MISMATCH, COMPANION_CUSTOMER_NOT_FOUND, DRIVER_CUSTOMER_NOT_FOUND, LICENSE_VERIFICATION_REQUIRED, COMPANION_DRIVER_MUST_DIFFER o COMPANION_PASSENGER_CAPACITY_EXCEEDED' }
         '428': { description: Falta header If-Match }
         '500': { description: Error interno }
 
@@ -882,6 +939,20 @@ components:
         addendumDocumentRef: { type: string, minLength: 1, maxLength: 200, description: Referencia de la adenda firmada por el conductor autorizado. }
         holderType: { $ref: '#/components/schemas/ContractHolderType' }
 
+    RegisterCompanionRequest:
+      type: object
+      required: [companyId, branchId, companionCustomerId, driverCustomerId, companionLicenseVerified, driverLicenseVerified, reason]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        companionCustomerId: { type: string, format: uuid, description: Cliente (persona) con licencia vigente que firma como responsable. }
+        driverCustomerId: { type: string, format: uuid, description: Conductor real del alquiler (party DRIVER); distinto del acompañante. }
+        companionLicenseVerified: { type: boolean, description: Check del checklist "licencia vigente verificada" del acompañante (debe ser true; la licencia no se guarda). }
+        driverLicenseVerified: { type: boolean, description: Check del checklist "licencia vigente verificada" del conductor real (debe ser true; la licencia no se guarda). }
+        reason: { type: string, minLength: 10, maxLength: 500, description: Motivo por el que el titular no puede firmar. }
+        addendumDocumentRef: { type: string, minLength: 1, maxLength: 200, description: Referencia documental opcional (la autorización del acompañante es la del firmante; no se exige documento aparte). }
+        holderType: { $ref: '#/components/schemas/ContractHolderType' }
+
     FormalizeContractRequest:
       type: object
       required: [companyId, branchId, documentRef]
@@ -1126,6 +1197,19 @@ components:
           description: Diferencia cobrada al formalizar = originalAmount - reservationCreditAmount.
         createdAt: { type: string, format: date-time }
 
+    CompanyDriverChargeResponse:
+      type: object
+      required: [configured, dailyRate, currency, days, total]
+      description: >
+        Servicio de conductor de la empresa: TARIFA DIARIA × días del alquiler, sin garantía (Fiorella, 16-oct-2026).
+        Vista calculada; la tarifa es un parámetro del sistema (COMPANY_DRIVER_DAILY_RATE) aún sin definir por negocio.
+      properties:
+        configured: { type: boolean, description: false = la tarifa diaria aún no está configurada (importes en "0.00"). }
+        dailyRate: { type: string }
+        currency: { type: string, enum: [PEN, USD] }
+        days: { type: integer, minimum: 0 }
+        total: { type: string }
+
     ReservationCreditResponse:
       type: object
       required: [applicable, reason, reservationId, amount, currency]
@@ -1241,6 +1325,10 @@ components:
           allOf: [{ $ref: '#/components/schemas/ReservationCreditResponse' }]
           nullable: true
           description: Solo en GET /rentals/{id}. Null = alquiler sin reserva de origen.
+        companyDriverCharge:
+          allOf: [{ $ref: '#/components/schemas/CompanyDriverChargeResponse' }]
+          nullable: true
+          description: Solo en GET /rentals/{id}. Cargo del servicio de conductor de la empresa (tarifa diaria × días); null si el alquiler no es con conductor de la empresa. No se persiste.
         extensions:
           type: array
           description: Solo en GET /rentals/{id}. Ampliaciones, la más reciente primero.

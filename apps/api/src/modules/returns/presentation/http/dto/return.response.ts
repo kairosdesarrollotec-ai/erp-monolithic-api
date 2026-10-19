@@ -111,6 +111,14 @@ export interface AlcoholEscalationResponse {
   decidedAt: string;
 }
 
+/** DEC-DEV-LATE-CHARGE-002: cargo por retraso registrado MANUALMENTE (monto digitado, sin cálculo automático). */
+export interface ManualLateChargeResponse {
+  amount: number;
+  notes: string | null;
+  registeredById: string;
+  registeredAt: string;
+}
+
 /** Nunca incluye signatureData (dato sensible de firma). */
 export interface ResponsibilityDocumentResponse {
   signerName: string;
@@ -172,6 +180,8 @@ export interface ReturnResponse {
   alcoholTestResult: AlcoholTestResult | null;
   alcoholTestNotes: string | null;
   alcoholEscalation: AlcoholEscalationResponse | null;
+  /** Cargo por retraso manual (null = sin registrar). */
+  manualLateCharge: ManualLateChargeResponse | null;
   responsibilityDocument: ResponsibilityDocumentResponse | null;
   /** Recordatorio previo 3 h antes de la hora pactada (null = aún no generado). */
   reminder: ReturnReminderResponse | null;

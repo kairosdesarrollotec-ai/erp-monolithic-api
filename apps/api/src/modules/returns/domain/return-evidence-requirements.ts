@@ -11,6 +11,9 @@ export const REQUIRED_RETURN_VIDEOS = 3;
 export const MAX_RETURN_EVIDENCE_BYTES = 52_428_800;
 export const MAX_RETURN_PHOTO_BYTES = 12 * 1024 * 1024;
 
+/** Zona fija de la foto de la prueba de alcolímetro desfavorable (evidencia PHOTO de la devolución). */
+export const RETURN_ALCOHOL_TEST_EVIDENCE_ZONE = 'ALCOHOL_TEST';
+
 /** Estados en los que el vehículo está en custodia y se puede adjuntar evidencia del checklist/daños. */
 export const RETURN_EVIDENCE_ALLOWED_STATUSES: ReadonlySet<ReturnStatus> = new Set<ReturnStatus>([
   'RECEPCION_PROVISIONAL',

@@ -36,6 +36,9 @@ import { EvaluateNotaryCommand } from '../../application/commands/evaluate-notar
 import { RegisterAuthorizedDriverHandler } from '../../application/commands/register-authorized-driver.handler';
 import { RegisterAuthorizedDriverCommand } from '../../application/commands/register-authorized-driver.command';
 import { RegisterAuthorizedDriverDto } from './dto/register-authorized-driver.dto';
+import { RegisterCompanionHandler } from '../../application/commands/register-companion.handler';
+import { RegisterCompanionCommand } from '../../application/commands/register-companion.command';
+import { RegisterCompanionDto } from './dto/register-companion.dto';
 import { ApproveNotaryExceptionHandler } from '../../application/commands/approve-notary-exception.handler';
 import { ApproveNotaryExceptionCommand } from '../../application/commands/approve-notary-exception.command';
 import { FormalizeContractHandler } from '../../application/commands/formalize-contract.handler';
@@ -77,6 +80,7 @@ export class RentalsController {
     private readonly evaluateNotary: EvaluateNotaryHandler,
     private readonly approveNotaryException: ApproveNotaryExceptionHandler,
     private readonly registerAuthorizedDriver: RegisterAuthorizedDriverHandler,
+    private readonly registerCompanion: RegisterCompanionHandler,
     private readonly formalizeContract: FormalizeContractHandler,
     private readonly completeDelivery: CompleteDeliveryHandler,
     private readonly getRental: GetRentalHandler,
@@ -327,6 +331,35 @@ export class RentalsController {
         dto.branchId,
         parseVersionIfMatch(ifMatch),
         dto.driverCustomerId,
+        dto.addendumDocumentRef,
+        dto.holderType,
+      ),
+    );
+    return toRentalResponse(updated);
+  }
+
+  /** DEC-ALQ-COMPANION-006: acompanante autorizado (persona natural) que firma como responsable. */
+  @Post(':id/commands/register-companion')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async registerCompanionCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RegisterCompanionDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<RentalResponse> {
+    const updated = await this.registerCompanion.execute(
+      new RegisterCompanionCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.companionCustomerId,
+        dto.driverCustomerId,
+        dto.companionLicenseVerified,
+        dto.driverLicenseVerified,
+        dto.reason,
         dto.addendumDocumentRef,
         dto.holderType,
       ),

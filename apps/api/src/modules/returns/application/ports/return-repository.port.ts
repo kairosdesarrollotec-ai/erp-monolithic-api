@@ -101,6 +101,11 @@ export interface ReturnRecord {
   responsibilitySignerRelation: string | null;
   responsibilitySignatureData: string | null;
   responsibilitySignedAt: Date | null;
+  /** DEC-DEV-LATE-CHARGE-002: cargo por retraso MANUAL (último registro); null/ausente = sin registrar. */
+  lateChargeAmount?: number | null;
+  lateChargeNotes?: string | null;
+  lateChargeRegisteredById?: string | null;
+  lateChargeRegisteredAt?: Date | null;
   /** dailyRate vigente del vehículo del alquiler (TDD §9.3); null si el vehículo no tiene tarifa. */
   vehicleDailyRate: number | null;
   /** DEC-ALQ-COMPANY-DRIVER-004: false = alquiler con conductor de la empresa, sin garantia (liberacion/devolucion N/A). Default true. */
@@ -172,6 +177,10 @@ export interface UpdateReturnInput {
   responsibilitySignerRelation?: string;
   responsibilitySignatureData?: string;
   responsibilitySignedAt?: Date;
+  lateChargeAmount?: number;
+  lateChargeNotes?: string;
+  lateChargeRegisteredById?: string;
+  lateChargeRegisteredAt?: Date;
   receivedAt?: Date;
   inspectedAt?: Date;
   closedAt?: Date;

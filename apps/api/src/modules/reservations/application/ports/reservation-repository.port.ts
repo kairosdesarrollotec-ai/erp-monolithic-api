@@ -53,6 +53,8 @@ export interface ReservationCustomerRecord {
 export interface ReservationVehicleRecord {
   id: string;
   operatingCompanyId: string;
+  /** Garantia del vehiculo (Flota, `deposit_minimum`); null/ausente = no definida. */
+  depositMinimum?: number | null;
 }
 
 /**

@@ -154,9 +154,9 @@ describe('GetOperationalKpisHandler (REP-01 / BDD-REP-001)', () => {
       ).rejects.toMatchObject({ code: 'INVALID_DATE_RANGE', httpStatus: 400 });
     });
 
-    it('acepta rango de exactamente 90 dias sin lanzar error', () => {
+    it('acepta rango de exactamente 90 dias inclusivos sin lanzar error', () => {
       const dateFrom = new Date('2026-01-01');
-      const dateTo = new Date('2026-04-01'); // 90 dias exactos
+      const dateTo = new Date('2026-03-31'); // 90 dias calendario inclusivos
 
       // validateDateRange es la funcion pura que el handler delega — se prueba directamente
       expect(() => validateDateRange(dateFrom, dateTo)).not.toThrow();

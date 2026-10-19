@@ -15,6 +15,7 @@ import { ResolveAlcoholEscalationHandler } from './application/commands/resolve-
 import { CompleteInspectionHandler } from './application/commands/complete-inspection.handler';
 import { AssessDamageHandler } from './application/commands/assess-damage.handler';
 import { ChargeImmobilizationHandler } from './application/commands/charge-immobilization.handler';
+import { RegisterReturnLateChargeHandler } from './application/commands/register-late-charge.handler';
 import { CloseFinancialHandler } from './application/commands/close-financial.handler';
 import { CloseReturnHandler } from './application/commands/close-return.handler';
 import { RequestReturnEvidenceUploadSessionHandler } from './application/commands/request-return-evidence-upload-session.handler';
@@ -69,6 +70,7 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     CompleteInspectionHandler,
     AssessDamageHandler,
     ChargeImmobilizationHandler,
+    RegisterReturnLateChargeHandler,
     CloseFinancialHandler,
     CloseReturnHandler,
     RequestReturnEvidenceUploadSessionHandler,

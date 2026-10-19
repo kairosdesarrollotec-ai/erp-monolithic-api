@@ -3,6 +3,7 @@ import { ReservationRecord } from '../ports/reservation-repository.port';
 import { ReservationRepositoryPort } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { ReservationExceedsGuaranteeError } from '../../domain/reservation-errors';
 import { CreateReservationCommand } from './create-reservation.command';
 
 /**
@@ -16,6 +17,8 @@ import { CreateReservationCommand } from './create-reservation.command';
  * - Rol RESERVATION.CREATE via matriz.
  * - Cliente pertenece a la empresa del contexto.
  * - Vehículo pertenece a la empresa del contexto y está disponible en el intervalo.
+ * - El monto de la reserva no supera la garantia del vehiculo (si Flota la tiene definida):
+ *   422 RESERVATION_EXCEEDS_GUARANTEE ("la reserva nunca superara la garantia", 16-oct-2026).
  * - Si inquiryId presente, pertenece a la empresa del contexto.
  */
 @Injectable()
@@ -52,6 +55,14 @@ export class CreateReservationHandler {
         code: 'VEHICLE_NOT_FOUND',
         detail: 'El vehículo indicado no existe en esta empresa.',
       });
+    }
+
+    if (vehicle.depositMinimum != null) {
+      const amountCents = Math.round(Number(command.requiredPaymentAmount) * 100);
+      const guaranteeCents = Math.round(Number(vehicle.depositMinimum) * 100);
+      if (amountCents > guaranteeCents) {
+        throw new ReservationExceedsGuaranteeError(command.requiredPaymentAmount, (guaranteeCents / 100).toFixed(2));
+      }
     }
 
     const available = await this.reservations.isVehicleAvailable(command.vehicleId, command.startAt, command.endAt);

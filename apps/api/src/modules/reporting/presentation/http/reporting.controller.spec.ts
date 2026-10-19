@@ -1,7 +1,7 @@
 import { ReportingController } from './reporting.controller';
 
 /**
- * Filtros dateFrom/dateTo en el controlador (reporting 0.3.0, DEC-TZ-LIMA-001):
+ * Filtros dateFrom/dateTo en el controlador (reporting 0.4.0, DEC-TZ-LIMA-001):
  * date-only → dateFrom 00:00 Lima, dateTo fin del día Lima (inclusivo).
  */
 function build() {

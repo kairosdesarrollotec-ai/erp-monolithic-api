@@ -5,7 +5,11 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { RequirementsIncompleteError, ReservationStateConflictError } from '../../domain/reservation-errors';
+import {
+  RequirementsIncompleteError,
+  ReservationExceedsGuaranteeError,
+  ReservationStateConflictError,
+} from '../../domain/reservation-errors';
 import { ConfirmReservationCommand } from './confirm-reservation.command';
 
 /**
@@ -73,6 +77,7 @@ export class ConfirmReservationHandler {
       throw new ReservationStateConflictError('confirmar', existing.status);
     }
     this.assertRequirementsComplete(existing.paymentValidatedAt, existing.documentsCompletedAt);
+    await this.assertWithinVehicleGuarantee(existing);
 
     return this.transactionManager.run(
       async (tx) => {
@@ -121,6 +126,21 @@ export class ConfirmReservationHandler {
       },
       { isolationLevel: 'Serializable' },
     );
+  }
+
+  /**
+   * Validacion defensiva (Fiorella, 16-oct-2026: "la reserva nunca superara la garantia"):
+   * la creacion real vive en Consultas (convert-to-reservation), asi que se vuelve a comprobar
+   * al confirmar contra `Vehicle.depositMinimum` (Flota). Sin garantia definida no se valida.
+   */
+  private async assertWithinVehicleGuarantee(reservation: ReservationRecord): Promise<void> {
+    const vehicle = await this.reservations.findVehicleById(reservation.vehicleId);
+    if (vehicle?.depositMinimum == null) return;
+    const amountCents = Math.round(Number(reservation.requiredPaymentAmount) * 100);
+    const guaranteeCents = Math.round(Number(vehicle.depositMinimum) * 100);
+    if (amountCents > guaranteeCents) {
+      throw new ReservationExceedsGuaranteeError(reservation.requiredPaymentAmount, (guaranteeCents / 100).toFixed(2));
+    }
   }
 
   private assertRequirementsComplete(paymentValidatedAt: Date | null, documentsCompletedAt: Date | null): void {

@@ -59,6 +59,42 @@ export class EmployeeAccountLinkService {
     }
   }
 
+  /**
+   * Re-vinculación por cambio de correo (Fiorella, 16-oct-2026): si la ficha YA estaba vinculada y su correo cambia, la
+   * ficha pasa a la cuenta del correo nuevo. Se resuelve ANTES de la transacción (llamada al proveedor de identidad).
+   * Devuelve `undefined` si no hay nada que hacer (sin vínculo previo o correo sin cambio efectivo) o la cuenta destino
+   * (uid) / `null` si no existe cuenta con el correo nuevo (la ficha queda SIN vincular y se audita).
+   */
+  async planRelinkOnEmailChange(employee: Employee, newEmail: string | null): Promise<string | null | undefined> {
+    if (!employee.firebaseUid) return undefined;
+    const target = normalizeEmail(newEmail);
+    if (target === normalizeEmail(employee.email)) return undefined;
+    if (!target) return null;
+    return (await this.accounts.findUidByEmail(target)) ?? null;
+  }
+
+  /**
+   * Aplica el plan dentro de la transacción. 409 (revierte toda la edición) si la cuenta destino ya está vinculada a
+   * otro colaborador de la empresa. Devuelve la ficha resultante y la acción de auditoría a registrar (o null).
+   */
+  async applyRelink(
+    employee: Employee,
+    targetUid: string | null,
+    tx: Prisma.TransactionClient,
+  ): Promise<{ employee: Employee; action: 'EMPLOYEE_ACCOUNT_RELINKED' | 'EMPLOYEE_ACCOUNT_UNLINKED' } | null> {
+    if (targetUid === employee.firebaseUid) return null;
+    if (targetUid) {
+      const owner = await this.employees.findByFirebaseUid(employee.operatingCompanyId, targetUid, tx);
+      if (owner && owner.id !== employee.id) {
+        throw new EmployeeAccountAlreadyLinkedError(
+          `El correo nuevo ya está vinculado a otro colaborador de la empresa (${owner.fullName}); no se puede re-vincular esta ficha.`,
+        );
+      }
+    }
+    const updated = await this.employees.setFirebaseUid(employee.id, targetUid, tx);
+    return { employee: updated, action: targetUid ? 'EMPLOYEE_ACCOUNT_RELINKED' : 'EMPLOYEE_ACCOUNT_UNLINKED' };
+  }
+
   /** Vinculación oportunista al crear/editar: nunca falla ni bloquea; si hay conflicto o no hay cuenta, no hace nada. */
   async tryLink(employee: Employee): Promise<Employee> {
     if (employee.firebaseUid || employee.status === 'TERMINADO' || !normalizeEmail(employee.email)) return employee;

@@ -197,6 +197,26 @@ export class AuthorizedDriverAddendumRequiredError extends DomainBadRequestError
   }
 }
 
+/** BDD ALQ-P03 / Ficha AS-IS (excepcion de conductor): el acompanante autorizado es una excepcion de persona NATURAL. */
+export class CompanionNotApplicableForLegalHolderError extends DomainUnprocessableError {
+  readonly code = 'COMPANION_NOT_APPLICABLE_FOR_LEGAL_HOLDER';
+
+  constructor() {
+    super(
+      'El acompanante autorizado aplica a persona natural. En persona juridica el conductor propio se registra ' +
+        'como conductor autorizado con su adenda (register-authorized-driver).',
+    );
+  }
+}
+
+export class CompanionReasonRequiredError extends DomainBadRequestError {
+  readonly code = 'COMPANION_REASON_REQUIRED';
+
+  constructor() {
+    super('Indique el motivo por el que el titular no puede firmar (p. ej. licencia no vigente en Peru).');
+  }
+}
+
 export class RentalDriverAlreadyRegisteredError extends DomainConflictError {
   readonly code = 'RENTAL_DRIVER_ALREADY_REGISTERED';
 
@@ -214,5 +234,36 @@ export class RentalDriverRegistrationClosedError extends DomainConflictError {
       `No se puede registrar un conductor autorizado con el alquiler en estado ${status}. Si otra persona condujo sin ` +
         'autorizacion, registre una incidencia UNAUTHORIZED_DRIVER.',
     );
+  }
+}
+
+/** Respuesta de Fiorella 16-oct-2026: la licencia no se guarda, solo se exige el check "licencia vigente verificada". */
+export class LicenseVerificationRequiredError extends DomainUnprocessableError {
+  readonly code = 'LICENSE_VERIFICATION_REQUIRED';
+
+  constructor(who: 'COMPANION' | 'DRIVER') {
+    super(
+      who === 'COMPANION'
+        ? 'Confirme que verifico la licencia vigente del acompanante (companionLicenseVerified).'
+        : 'Confirme que verifico la licencia vigente del conductor real (driverLicenseVerified).',
+    );
+  }
+}
+
+/** Con acompanante firmante hay que registrar tambien al conductor real (parte DRIVER). */
+export class CompanionDriverMustDifferError extends DomainUnprocessableError {
+  readonly code = 'COMPANION_DRIVER_MUST_DIFFER';
+
+  constructor() {
+    super('El acompanante firma como responsable y no conduce: indique como conductor real a otra persona.');
+  }
+}
+
+/** Maximo de acompanantes = capacidad de pasajeros del vehiculo (campo de Flota). */
+export class CompanionPassengerCapacityExceededError extends DomainUnprocessableError {
+  readonly code = 'COMPANION_PASSENGER_CAPACITY_EXCEEDED';
+
+  constructor(capacity: number) {
+    super(`El vehiculo admite como maximo ${capacity} acompanante(s) (capacidad de pasajeros).`);
   }
 }

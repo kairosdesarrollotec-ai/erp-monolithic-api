@@ -111,6 +111,7 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     operatingCompanyId: string;
     fullName: string;
     documentNumber: string;
+    documentType?: string;
     status: string;
     isBiometricVerified?: boolean;
   } | null> {
@@ -123,6 +124,7 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
         operatingCompanyId: true,
         fullName: true,
         documentNumber: true,
+        documentType: true,
         status: true,
       },
     });
@@ -378,7 +380,7 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
       data: {
         rentalId: input.rentalId,
         customerId: input.customerId,
-        role: 'DRIVER',
+        role: input.role ?? 'DRIVER',
         addendumDocumentRef: input.addendumDocumentRef,
       },
     });

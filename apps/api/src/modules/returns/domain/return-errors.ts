@@ -256,3 +256,23 @@ export class ReturnNoDepositToSettleError extends DomainUnprocessableError {
     super('El alquiler es con conductor de la empresa: no tiene garantia, por lo que no hay reembolso ni retencion. Use 0 en refundAmount y retainedAmount.');
   }
 }
+
+/** Fiorella 2026-10-16 (DEV-03): alcoholímetro desfavorable = check "no cumple rango" + foto de la prueba OBLIGATORIA. */
+export class AlcoholTestPhotoRequiredError extends DomainUnprocessableError {
+  readonly code = 'ALCOHOL_TEST_PHOTO_REQUIRED';
+
+  constructor() {
+    super(
+      'Un alcolímetro desfavorable (no cumple el rango) exige la foto de la prueba como evidencia (zona ALCOHOL_TEST). Súbela antes de registrar el resultado.',
+    );
+  }
+}
+
+/** DEC-DEV-LATE-CHARGE-002: el cargo manual por retraso solo procede si la devolución superó la tolerancia. */
+export class InvalidLateChargeError extends DomainUnprocessableError {
+  readonly code = 'INVALID_LATE_CHARGE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}

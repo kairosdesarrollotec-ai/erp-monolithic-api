@@ -27,6 +27,8 @@ import { LinkEmployeeAccountCommand } from './link-employee-account.command';
 import { LinkEmployeeAccountHandler } from './link-employee-account.handler';
 import { CreateEmployeeCommand } from './create-employee.command';
 import { CreateEmployeeHandler } from './create-employee.handler';
+import { UpdateEmployeeCommand } from './update-employee.command';
+import { UpdateEmployeeHandler } from './update-employee.handler';
 
 const UID = 'uid-1';
 type Role = 'RRHH' | 'CAMPO' | 'forbidden';
@@ -34,7 +36,7 @@ type Role = 'RRHH' | 'CAMPO' | 'forbidden';
 function employeesMock() {
   return {
     findById: jest.fn(), findByCompanyAndDocument: jest.fn(), create: jest.fn(), update: jest.fn(),
-    findByFirebaseUid: jest.fn(), findActiveByEmail: jest.fn(), linkFirebaseUid: jest.fn(),
+    findByFirebaseUid: jest.fn(), findActiveByEmail: jest.fn(), linkFirebaseUid: jest.fn(), setFirebaseUid: jest.fn(),
   } as unknown as jest.Mocked<EmployeeRepositoryPort>;
 }
 
@@ -206,5 +208,56 @@ describe('vínculo usuario-ficha por correo (DEC-ADP-LINK-EMAIL-001)', () => {
     );
     expect(b.employees.create).toHaveBeenCalledWith(expect.objectContaining({ email: 'ana@kairos.pe' }), b.tm.tx);
     expect(result.firebaseUid).toBe('uid-ana');
+  });
+  describe('UpdateEmployee: correo cambiado en ficha vinculada -> re-vinculación', () => {
+    function setup(existing = buildEmployee({ email: 'ana@kairos.pe', firebaseUid: 'uid-ana' })) {
+      const b = build();
+      const access = new HrAdministrationAccessService(buildWorkContext('RRHH'), buildMatrixAuth());
+      const handler = new UpdateEmployeeHandler(access, b.employees, b.tm, b.audit, b.linker);
+      b.employees.findById.mockResolvedValue(existing);
+      b.employees.update.mockImplementation(async (_id, data) => ({ ...existing, ...(data as object) }) as never);
+      b.employees.setFirebaseUid.mockImplementation(async (_id, uid) => ({ ...existing, email: 'nuevo@kairos.pe', firebaseUid: uid }) as never);
+      return { b, handler };
+    }
+    const run = (h: UpdateEmployeeHandler) => h.execute(new UpdateEmployeeCommand(UID, 'emp-1', { email: ' NUEVO@Kairos.pe ' }));
+
+    it('re-vincula a la cuenta del correo nuevo y audita EMPLOYEE_ACCOUNT_RELINKED', async () => {
+      const { b, handler } = setup();
+      b.accounts.findUidByEmail.mockResolvedValue('uid-nuevo');
+      b.employees.findByFirebaseUid.mockResolvedValue(null);
+      const r = await run(handler);
+      expect(b.employees.setFirebaseUid).toHaveBeenCalledWith('emp-1', 'uid-nuevo', b.tm.tx);
+      expect(r.firebaseUid).toBe('uid-nuevo');
+      expect(b.audit.recordHrAdministrationEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'EMPLOYEE_ACCOUNT_RELINKED' }), b.tm.tx,
+      );
+    });
+
+    it('sin cuenta para el correo nuevo: queda sin vincular y se audita EMPLOYEE_ACCOUNT_UNLINKED', async () => {
+      const { b, handler } = setup();
+      b.accounts.findUidByEmail.mockResolvedValue(null);
+      const r = await run(handler);
+      expect(b.employees.setFirebaseUid).toHaveBeenCalledWith('emp-1', null, b.tm.tx);
+      expect(r.firebaseUid).toBeNull();
+      expect(b.audit.recordHrAdministrationEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'EMPLOYEE_ACCOUNT_UNLINKED' }), b.tm.tx,
+      );
+    });
+
+    it('409 si la cuenta del correo nuevo ya pertenece a otro colaborador (no se aplica nada)', async () => {
+      const { b, handler } = setup();
+      b.accounts.findUidByEmail.mockResolvedValue('uid-otro');
+      b.employees.findByFirebaseUid.mockResolvedValue(buildEmployee({ id: 'emp-2', firebaseUid: 'uid-otro' }));
+      await expect(run(handler)).rejects.toBeInstanceOf(EmployeeAccountAlreadyLinkedError);
+      expect(b.employees.setFirebaseUid).not.toHaveBeenCalled();
+    });
+
+    it('correo sin cambio efectivo o ficha no vinculada: no toca el vínculo', async () => {
+      const { b, handler } = setup();
+      await handler.execute(new UpdateEmployeeCommand(UID, 'emp-1', { email: ' ANA@kairos.pe' }));
+      await handler.execute(new UpdateEmployeeCommand(UID, 'emp-1', { jobTitle: 'Jefe' }));
+      expect(b.employees.setFirebaseUid).not.toHaveBeenCalled();
+      expect(b.accounts.findUidByEmail).not.toHaveBeenCalled();
+    });
   });
 });

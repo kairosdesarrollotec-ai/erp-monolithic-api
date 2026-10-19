@@ -47,7 +47,7 @@ describe('GetFinancialKpisHandler — período', () => {
   it('rechaza más de 90 días con RANGE_EXCEEDS_MAX sin consultar la base', async () => {
     const { prisma, workContext, matrixAuth } = mocks();
     const handler = new GetFinancialKpisHandler(workContext as any, matrixAuth as any, prisma as any);
-    const { dateFrom, dateTo } = resolveReportPeriod({ dateFrom: '2026-01-01', dateTo: '2026-04-02' });
+    const { dateFrom, dateTo } = resolveReportPeriod({ dateFrom: '2026-01-01', dateTo: '2026-04-01' });
     await expect(handler.execute(new GetFinancialKpisQuery('uid', 'c1', 'b1', dateFrom, dateTo))).rejects.toMatchObject({
       code: 'RANGE_EXCEEDS_MAX',
       httpStatus: 400,

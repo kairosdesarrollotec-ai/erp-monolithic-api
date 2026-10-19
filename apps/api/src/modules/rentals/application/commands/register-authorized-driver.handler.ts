@@ -10,10 +10,8 @@ import {
   NaturalPersonOwnDriverNotAllowedError,
   RentalDriverAlreadyRegisteredError,
   RentalDriverRegistrationClosedError,
-  RentalHolderTypeMismatchError,
-  RentalHolderTypeRequiredError,
 } from '../../domain/rental-errors';
-import { holderTypeFromContractVariant, type HolderType } from '../../domain/contract-variant';
+import { resolveRentalHolderType } from '../../domain/holder-type-resolution';
 import { RegisterAuthorizedDriverCommand } from './register-authorized-driver.command';
 
 /** Estados previos a la entrega en que aun se define quien maneja (ALQ-P03). */
@@ -70,7 +68,12 @@ export class RegisterAuthorizedDriverHandler {
         throw new RentalDriverRegistrationClosedError(rental.status);
       }
 
-      const holderType = this.resolveHolderType(rental.contract?.contractVariant ?? null, command.holderType);
+      const titular = await this.rentals.findCustomerById(rental.customerId, tx);
+      const holderType = resolveRentalHolderType({
+        contractVariant: rental.contract?.contractVariant ?? null,
+        titularDocumentType: titular?.documentType,
+        requested: command.holderType,
+      });
       if (holderType === 'NATURAL') {
         throw new NaturalPersonOwnDriverNotAllowedError();
       }
@@ -125,15 +128,5 @@ export class RegisterAuthorizedDriverHandler {
       );
       return updated;
     });
-  }
-
-  private resolveHolderType(contractVariant: string | null, requested: HolderType | undefined): HolderType {
-    const fromContract = holderTypeFromContractVariant(contractVariant);
-    if (fromContract && requested && fromContract !== requested) {
-      throw new RentalHolderTypeMismatchError(fromContract);
-    }
-    const resolved = fromContract ?? requested;
-    if (!resolved) throw new RentalHolderTypeRequiredError();
-    return resolved;
   }
 }

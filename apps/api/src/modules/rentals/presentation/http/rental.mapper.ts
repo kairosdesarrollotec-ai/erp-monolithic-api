@@ -78,6 +78,7 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
     depositRequired: record.contract?.depositRequired ?? true,
     reservationCreditExcess: record.deposit?.reservationCreditExcess ?? record.contract?.reservationCreditExcess ?? '0.00',
     ...(record.reservationCredit !== undefined ? { reservationCredit: record.reservationCredit } : {}),
+    ...(record.companyDriverCharge !== undefined ? { companyDriverCharge: record.companyDriverCharge } : {}),
     ...(record.extensions
       ? {
           extensions: record.extensions.map((e) => ({

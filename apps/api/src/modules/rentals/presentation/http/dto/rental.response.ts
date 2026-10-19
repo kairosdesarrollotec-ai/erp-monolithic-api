@@ -61,6 +61,16 @@ export interface ReservationCreditResponse {
   currency: string | null;
 }
 
+/** Servicio de conductor de la empresa: tarifa diaria x dias (vista; solo GET detalle; no se persiste). */
+export interface CompanyDriverChargeResponse {
+  /** false = la tarifa diaria aun no esta configurada (total en "0.00"). */
+  configured: boolean;
+  dailyRate: string;
+  currency: string;
+  days: number;
+  total: string;
+}
+
 /** BR-ALQ-012/013: estado de los 4 requisitos de una ampliacion. */
 export interface ExtensionRequirementsResponse {
   noticeGiven: boolean | null;
@@ -117,6 +127,8 @@ export interface RentalResponse {
   reservationCreditExcess?: string;
   /** Presente solo en GET /rentals/{id}; null = alquiler sin reserva de origen. */
   reservationCredit?: ReservationCreditResponse | null;
+  /** Solo en GET /rentals/{id}: cargo del conductor de la empresa; null si el alquiler es sin conductor de la empresa. */
+  companyDriverCharge?: CompanyDriverChargeResponse | null;
   /** Solo en GET /rentals/{id}: ampliaciones, la mas reciente primero. */
   extensions?: RentalExtensionResponse[];
 }

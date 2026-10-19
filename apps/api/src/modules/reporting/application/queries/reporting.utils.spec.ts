@@ -1,7 +1,7 @@
 import { resolveReportPeriod, validateDateRange } from './reporting.utils';
 
 /**
- * Filtros dateFrom/dateTo de Reportes (reporting 0.3.0, DEC-TZ-LIMA-001, BR-REP-005).
+ * Filtros dateFrom/dateTo de Reportes (reporting 0.4.0, DEC-TZ-LIMA-001, BR-REP-005).
  * Lima = UTC-5 fijo: 00:00 Lima = 05:00Z; 23:59:59.999 Lima = 04:59:59.999Z del día siguiente.
  */
 describe('resolveReportPeriod', () => {
@@ -80,21 +80,21 @@ describe('validateDateRange (BR-REP-005)', () => {
     expect(() => validateDateRange(dateFrom, dateTo)).not.toThrow();
   });
 
-  it('acepta exactamente 90 días entre dateFrom y dateTo (límite)', () => {
-    const { dateFrom, dateTo } = period('2026-01-01', '2026-04-01'); // 90 días
+  it('acepta exactamente 90 días calendario inclusivos (dateTo - dateFrom = 89, límite)', () => {
+    const { dateFrom, dateTo } = period('2026-01-01', '2026-03-31'); // 90 días inclusivos
     expect(() => validateDateRange(dateFrom, dateTo)).not.toThrow();
   });
 
-  it('rechaza 91 días con RANGE_EXCEEDS_MAX 400', () => {
-    const { dateFrom, dateTo } = period('2026-01-01', '2026-04-02'); // 91 días
+  it('rechaza 91 días inclusivos (diferencia 90) con RANGE_EXCEEDS_MAX 400', () => {
+    const { dateFrom, dateTo } = period('2026-01-01', '2026-04-01'); // 91 días inclusivos
     expect(() => validateDateRange(dateFrom, dateTo)).toThrow(
       expect.objectContaining({ code: 'RANGE_EXCEEDS_MAX', httpStatus: 400 }),
     );
   });
 
   it('el límite se mide en días calendario de Lima, no en horas (dateTo con fin de día no suma un día)', () => {
-    const { dateFrom, dateTo } = period('2026-07-01', '2026-09-29'); // 90 días; dateTo-dateFrom = 90d 23h59m
-    expect(dateTo.getTime() - dateFrom.getTime()).toBeGreaterThan(90 * 24 * 3600 * 1000);
+    const { dateFrom, dateTo } = period('2026-07-01', '2026-09-28'); // 90 días inclusivos; dateTo-dateFrom = 89d 23h59m
+    expect(dateTo.getTime() - dateFrom.getTime()).toBeGreaterThan(89 * 24 * 3600 * 1000);
     expect(() => validateDateRange(dateFrom, dateTo)).not.toThrow();
   });
 

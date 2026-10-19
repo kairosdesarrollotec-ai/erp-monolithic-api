@@ -1258,6 +1258,12 @@ model RentalReturn {
   responsibilitySignerRelation String?                    @map("responsibility_signer_relation")
   responsibilitySignatureData  String?                    @map("responsibility_signature_data")
   responsibilitySignedAt       DateTime?                  @map("responsibility_signed_at")
+  /// DEC-DEV-LATE-CHARGE-002 (Fiorella 2026-10-16): cargo por retraso MANUAL (monto digitado por usuario autorizado,
+  /// sin calculo automatico). El ultimo registro queda en la fila; cada registro se audita (RETURN_LATE_CHARGE_REGISTERED).
+  lateChargeAmount         Decimal?           @map("late_charge_amount") @db.Decimal(12, 2)
+  lateChargeNotes          String?            @map("late_charge_notes")
+  lateChargeRegisteredById String?            @map("late_charge_registered_by_id")
+  lateChargeRegisteredAt   DateTime?          @map("late_charge_registered_at")
   scheduledAt           DateTime           @map("scheduled_at")
   receivedAt            DateTime?          @map("received_at")
   inspectedAt           DateTime?          @map("inspected_at")

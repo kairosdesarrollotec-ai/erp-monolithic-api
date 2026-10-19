@@ -17,7 +17,7 @@ import {
 } from '../../application/queries/reporting.utils';
 
 /**
- * packages/contracts/openapi/reporting.yaml (0.3.0) vs backend: rutas/métodos, filtros
+ * packages/contracts/openapi/reporting.yaml (0.4.0) vs backend: rutas/métodos, filtros
  * dateFrom/dateTo (obligatoriedad y formato), códigos de error 400 y límite de 90 días.
  */
 const SPEC_PATH = path.resolve(__dirname, '../../../../../../../packages/contracts/openapi/reporting.yaml');
@@ -53,8 +53,8 @@ const OPERATIONS: Array<{ path: string; opId: string; dto: new () => unknown; da
 ];
 
 describe('reporting.yaml vs ReportingController', () => {
-  it('declara la versión 0.3.0 e inclusividad de dateFrom/dateTo en Lima', () => {
-    expect(spec.info.version).toBe('0.3.0');
+  it('declara la versión 0.4.0 e inclusividad de dateFrom/dateTo en Lima', () => {
+    expect(spec.info.version).toBe('0.4.0');
     expect(spec.info.description).toContain('INCLUSIVO');
     expect(spec.info.description).toContain('America/Lima');
   });
@@ -107,5 +107,6 @@ describe('reporting.yaml vs ReportingController', () => {
   it('el contrato menciona el límite de 90 días que aplica el backend', () => {
     expect(MAX_RANGE_DAYS).toBe(90);
     expect(spec.info.description).toContain('90 días');
+    expect(spec.info.description).toContain('inclusivos');
   });
 });

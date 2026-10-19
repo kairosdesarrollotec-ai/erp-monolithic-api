@@ -57,6 +57,28 @@ describe('GetRentalHandler', () => {
     return { rentals, workContext, matrixAuth };
   }
 
+  it('con conductor de la empresa expone la tarifa diaria x dias (configurable; sin tarifa -> configured=false)', async () => {
+    const deps = buildDeps();
+    const start = new Date('2026-10-01T10:00:00Z');
+    (deps.rentals.findById as jest.Mock).mockResolvedValue({
+      ...fakeRental,
+      startAt: start,
+      expectedEndAt: new Date('2026-10-04T10:00:00Z'),
+      contract: { contractVariant: 'NATURAL_WITH_DRIVER' },
+    });
+    const handler = new GetRentalHandler(deps.rentals, deps.workContext, deps.matrixAuth);
+    const q = new GetRentalQuery('rent-600', 'uid-1', 'comp-1', 'branch-1');
+    const prev = process.env.COMPANY_DRIVER_DAILY_RATE;
+    try {
+      delete process.env.COMPANY_DRIVER_DAILY_RATE;
+      expect((await handler.execute(q)).companyDriverCharge).toMatchObject({ configured: false, days: 3, total: '0.00' });
+      process.env.COMPANY_DRIVER_DAILY_RATE = '80';
+      expect((await handler.execute(q)).companyDriverCharge).toEqual({ configured: true, dailyRate: '80.00', currency: 'PEN', days: 3, total: '240.00' });
+    } finally {
+      if (prev === undefined) delete process.env.COMPANY_DRIVER_DAILY_RATE; else process.env.COMPANY_DRIVER_DAILY_RATE = prev;
+    }
+  });
+
   it('alquiler existe en empresa/sede → retorna RentalRecord', async () => {
     const deps = buildDeps();
     const handler = new GetRentalHandler(deps.rentals, deps.workContext, deps.matrixAuth);
@@ -64,7 +86,7 @@ describe('GetRentalHandler', () => {
     const result = await handler.execute(new GetRentalQuery('rent-600', 'uid-1', 'comp-1', 'branch-1'));
 
     // Alquiler directo: sin reserva de origen no hay credito que mostrar.
-    expect(result).toEqual({ ...fakeRental, reservationCredit: null, extensions: [] });
+    expect(result).toEqual({ ...fakeRental, reservationCredit: null, extensions: [], companyDriverCharge: null });
     expect(deps.rentals.findReservationCreditSource).not.toHaveBeenCalled();
     expect(deps.rentals.findById).toHaveBeenCalledWith(
       'rent-600',

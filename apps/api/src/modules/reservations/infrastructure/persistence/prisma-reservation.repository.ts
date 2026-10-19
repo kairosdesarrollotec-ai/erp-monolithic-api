@@ -42,10 +42,16 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
   }
 
   async findVehicleById(id: string): Promise<ReservationVehicleRecord | null> {
-    return this.prisma.vehicle.findUnique({
+    const row = await this.prisma.vehicle.findUnique({
       where: { id },
-      select: { id: true, operatingCompanyId: true },
+      select: { id: true, operatingCompanyId: true, depositMinimum: true },
     });
+    if (!row) return null;
+    return {
+      id: row.id,
+      operatingCompanyId: row.operatingCompanyId,
+      depositMinimum: row.depositMinimum != null ? Number(row.depositMinimum) : null,
+    };
   }
 
   /**

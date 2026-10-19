@@ -54,6 +54,10 @@ describe('ReturnPersistenceMapper', () => {
       alcoholEscalationNotes: null,
       alcoholEscalationDecidedById: null,
       alcoholEscalationDecidedAt: null,
+      lateChargeAmount: null,
+      lateChargeNotes: null,
+      lateChargeRegisteredById: null,
+      lateChargeRegisteredAt: null,
       responsibilitySignerName: null,
       responsibilitySignerIsHolder: null,
       responsibilitySignerRelation: null,
@@ -183,6 +187,24 @@ describe('ReturnPersistenceMapper', () => {
       responsibilitySignerRelation: 'Hermana',
       responsibilitySignatureData: 'data:image/png;base64,AAAA',
       responsibilitySignedAt: now,
+    });
+  });
+
+  it('toReturnRecord copia el cargo por retraso manual (Decimal -> number) o null', () => {
+    expect(toReturnRecord(buildRow()).lateChargeAmount).toBeNull();
+    const record = toReturnRecord(
+      buildRow({
+        lateChargeAmount: new Prisma.Decimal('45.50'),
+        lateChargeNotes: 'sin aviso',
+        lateChargeRegisteredById: 'uid-7',
+        lateChargeRegisteredAt: now,
+      }),
+    );
+    expect(record).toMatchObject({
+      lateChargeAmount: 45.5,
+      lateChargeNotes: 'sin aviso',
+      lateChargeRegisteredById: 'uid-7',
+      lateChargeRegisteredAt: now,
     });
   });
 });

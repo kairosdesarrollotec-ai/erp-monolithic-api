@@ -2,12 +2,25 @@ import { ForbiddenException } from '@nestjs/common';
 import { RegisterReturnAlcoholTestHandler } from './register-alcohol-test.handler';
 import { RegisterReturnAlcoholTestCommand } from './register-alcohol-test.command';
 import {
+  AlcoholTestPhotoRequiredError,
   ReturnNotFoundError,
   ReturnStateConflictError,
   ReturnVersionConflictError,
 } from '../../domain/return-errors';
 import { ReturnStatus } from '../../domain/return-status';
 import { applyUpdate, buildDeps, buildReturnRecord, fakeTx } from '../../testing/return-test-fixtures';
+
+const ALCOHOL_PHOTO = {
+  id: 'ev-alc',
+  organizationId: 'org-1',
+  operatingCompanyId: 'comp-1',
+  returnId: 'ret-1',
+  type: 'PHOTO' as const,
+  zone: 'ALCOHOL_TEST',
+  objectUrl: 'https://storage.googleapis.com/b/companies/comp-1/returns/ret-1/alcohol.jpg',
+  uploadedBy: 'uid-1',
+  uploadedAt: new Date('2026-10-05T11:00:00.000Z'),
+};
 
 describe('RegisterReturnAlcoholTestHandler (DEV-04 / BR-DEV-005 / DR-DEV-003)', () => {
   function build(status: ReturnStatus = 'RECEPCION_PROVISIONAL') {
@@ -18,6 +31,7 @@ describe('RegisterReturnAlcoholTestHandler (DEV-04 / BR-DEV-005 / DR-DEV-003)', 
     deps.returns.update.mockImplementation(async (input) =>
       applyUpdate(buildReturnRecord({ status, custodyHolder: 'VELOXRENT', version: input.expectedVersion }), input),
     );
+    deps.returns.listEvidences.mockResolvedValue([ALCOHOL_PHOTO]);
     const handler = new RegisterReturnAlcoholTestHandler(
       deps.access,
       deps.returns,
@@ -80,6 +94,52 @@ describe('RegisterReturnAlcoholTestHandler (DEV-04 / BR-DEV-005 / DR-DEV-003)', 
       );
     },
   );
+
+  it('DESFAVORABLE sin foto de la prueba (zona ALCOHOL_TEST) -> 422 ALCOHOL_TEST_PHOTO_REQUIRED y no escala', async () => {
+    const { deps, handler } = build();
+    deps.returns.listEvidences.mockResolvedValue([]);
+    const promise = handler.execute(
+      new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'DESFAVORABLE'),
+    );
+    await expect(promise).rejects.toThrow(AlcoholTestPhotoRequiredError);
+    await expect(promise).rejects.toMatchObject({ code: 'ALCOHOL_TEST_PHOTO_REQUIRED' });
+    expect(deps.returns.update).not.toHaveBeenCalled();
+    expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+  });
+
+  it('DESFAVORABLE ignora evidencias de otra zona o tipo VIDEO', async () => {
+    const { deps, handler } = build();
+    deps.returns.listEvidences.mockResolvedValue([
+      { ...ALCOHOL_PHOTO, zone: 'CAPOT' },
+      { ...ALCOHOL_PHOTO, id: 'ev-video', type: 'VIDEO' },
+    ]);
+    await expect(
+      handler.execute(new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'DESFAVORABLE')),
+    ).rejects.toThrow(AlcoholTestPhotoRequiredError);
+  });
+
+  it('DESFAVORABLE con foto registra la evidencia en auditoría y evento (sin campos de hora)', async () => {
+    const { deps, handler } = build();
+    await handler.execute(new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'DESFAVORABLE'));
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ changes: expect.objectContaining({ alcoholPhotoEvidenceId: 'ev-alc' }) }),
+      fakeTx,
+    );
+    expect(deps.outboxRepository.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ payload: expect.objectContaining({ alcoholPhotoEvidenceId: 'ev-alc' }) }),
+      fakeTx,
+    );
+  });
+
+  it('RECHAZADO (se negó a la prueba) no exige foto', async () => {
+    const { deps, handler } = build();
+    deps.returns.listEvidences.mockResolvedValue([]);
+    const result = await handler.execute(
+      new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'RECHAZADO'),
+    );
+    expect(result.alcoholTestResult).toBe('RECHAZADO');
+    expect(deps.returns.listEvidences).not.toHaveBeenCalled();
+  });
 
   it.each(['PROGRAMADA', 'INSPECCION', 'CERRADA'] as const)('estado %s -> ReturnStateConflictError', async (status) => {
     const { deps, handler } = build(status);

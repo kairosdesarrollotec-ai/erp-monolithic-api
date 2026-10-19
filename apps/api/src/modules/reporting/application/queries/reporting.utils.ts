@@ -22,7 +22,7 @@ export class ReportInvalidDateRangeError extends DomainBadRequestError {
   readonly code = 'INVALID_DATE_RANGE';
 }
 
-/** Rango mayor a 90 días calendario (BR-REP-005). */
+/** Rango mayor a 90 días calendario inclusivos (BR-REP-005; dateTo - dateFrom <= 89). */
 export class ReportRangeExceedsMaxError extends DomainBadRequestError {
   readonly code = 'RANGE_EXCEEDS_MAX';
 }
@@ -35,9 +35,10 @@ function limaCalendarDaysBetween(from: Date, to: Date): number {
 }
 
 /**
- * BR-REP-005: el rango de fechas máximo para reportes financieros y exportación es 90 días calendario.
+ * BR-REP-005: el rango máximo para reportes financieros y exportación es 90 días calendario INCLUSIVOS
+ * (confirmado por negocio 16-oct-2026): `dateTo - dateFrom <= 89` días.
  * El rango se mide en días calendario de America/Lima (DEC-TZ-LIMA-001): `dateFrom` y `dateTo` del
- * mismo día = 0 días; `dateTo` = `dateFrom` + 90 días es el máximo aceptado.
+ * mismo día = 0 días (1 día); `dateTo` = `dateFrom` + 89 días (90 días inclusivos) es el máximo aceptado.
  * Errores (400, `{statusCode, code, detail}`): INVALID_DATE, INVALID_DATE_RANGE, RANGE_EXCEEDS_MAX.
  */
 export function validateDateRange(from: Date, to: Date): void {
@@ -47,9 +48,9 @@ export function validateDateRange(from: Date, to: Date): void {
   if (to.getTime() < from.getTime()) {
     throw new ReportInvalidDateRangeError('dateFrom debe ser anterior o igual a dateTo.');
   }
-  if (limaCalendarDaysBetween(from, to) > MAX_RANGE_DAYS) {
+  if (limaCalendarDaysBetween(from, to) + 1 > MAX_RANGE_DAYS) {
     throw new ReportRangeExceedsMaxError(
-      `El rango de fechas no puede superar ${MAX_RANGE_DAYS} días calendario (BR-REP-005).`,
+      `El rango de fechas no puede superar ${MAX_RANGE_DAYS} días calendario inclusivos (BR-REP-005).`,
     );
   }
 }
@@ -68,7 +69,7 @@ export interface ReportPeriod {
 
 /**
  * Convierte los filtros `dateFrom`/`dateTo` del contrato HTTP en un período de instantes
- * (DEC-TZ-LIMA-001, reporting 0.3.0):
+ * (DEC-TZ-LIMA-001, reporting 0.4.0):
  *  - `YYYY-MM-DD` en `dateFrom` = 00:00:00.000 America/Lima de ese día (inclusive).
  *  - `YYYY-MM-DD` en `dateTo` = 23:59:59.999 America/Lima de ese día: el día `dateTo` se incluye completo.
  *  - Un date-time con offset/Z se respeta tal cual.
