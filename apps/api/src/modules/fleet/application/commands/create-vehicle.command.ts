@@ -8,9 +8,8 @@ export class CreateVehicleCommand {
     public readonly plate: string,
     public readonly brand: string,
     public readonly model: string,
-    public readonly depositMinimum: number,
-    public readonly passengerCapacity: number,
-    public readonly fuelPrice: number,
+    /** Obligatoria en el alta: null/undefined => 400 PASSENGER_CAPACITY_REQUIRED (DEC-FLT-CAP-001). */
+    public readonly passengerCapacity: number | null | undefined,
     public readonly year?: number,
     public readonly color?: string,
     public readonly category?: string,
@@ -18,5 +17,7 @@ export class CreateVehicleCommand {
     public readonly dailyRate?: number,
     public readonly photoUrl?: string,
     public readonly assignedBranchId?: string,
+    public readonly depositMinimum?: number,
+    public readonly fuelPrice?: number,
   ) {}
 }

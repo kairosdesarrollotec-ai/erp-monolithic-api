@@ -2,8 +2,9 @@ import { CompanionPassengerCapacityExceededError } from './rental-errors';
 
 /**
  * Respuesta de Fiorella (16-oct-2026): maximo de acompanantes = capacidad de pasajeros del vehiculo.
- * TODO(DEC-ALQ-CAPACITY-009): `vehicles` aun NO tiene capacidad/asientos (Flota debe agregar la columna y
- * exponerla en `RentalRecord.vehiclePassengerCapacity`). Mientras sea null/undefined el limite NO se valida.
+ * DEC-FLT-CAP-002: `Vehicle.passengerCapacity` es obligatoria al registrar un vehiculo nuevo (G-05), pero los
+ * vehiculos anteriores pueden tenerla NULL. Con capacidad null/undefined NO hay tope: el limite no se valida
+ * (comportamiento explicito y cubierto por pruebas) hasta que Flota complete el dato.
  */
 export function assertCompanionWithinCapacity(
   passengerCapacity: number | null | undefined,

@@ -16,15 +16,21 @@ const createErrors = async (o: Record<string, unknown>) =>
 const updateErrors = async (o: Record<string, unknown>) =>
   (await validate(plainToInstance(UpdateVehicleDto, o), opts)).map((e) => e.property).sort();
 
-describe('CreateVehicleDto - garantia, capacidad y precio de combustible obligatorios (F-05/G-05)', () => {
+describe('CreateVehicleDto - capacidad obligatoria en handler (DEC-FLT-CAP-001); garantia y combustible opcionales', () => {
   it('acepta el alta completa', async () => {
     expect(await createErrors(CREATE_OK)).toEqual([]);
   });
 
-  it('rechaza si faltan los tres campos', async () => {
-    const { depositMinimum, passengerCapacity, fuelPrice, ...rest } = CREATE_OK;
-    void depositMinimum; void passengerCapacity; void fuelPrice;
-    expect(await createErrors(rest)).toEqual(['depositMinimum', 'fuelPrice', 'passengerCapacity']);
+  it('acepta el alta sin garantia ni precio de combustible (siguen opcionales)', async () => {
+    const { depositMinimum, fuelPrice, ...rest } = CREATE_OK;
+    void depositMinimum; void fuelPrice;
+    expect(await createErrors(rest)).toEqual([]);
+  });
+
+  it('la ausencia de passengerCapacity la rechaza CreateVehicleHandler con 400 PASSENGER_CAPACITY_REQUIRED, no el DTO', async () => {
+    const { passengerCapacity, ...rest } = CREATE_OK;
+    void passengerCapacity;
+    expect(await createErrors(rest)).toEqual([]);
   });
 
   it('rechaza valores fuera de rango o no enteros', async () => {
@@ -44,6 +50,9 @@ describe('CreateVehicleDto - garantia, capacidad y precio de combustible obligat
 describe('UpdateVehicleDto - campos opcionales con las mismas validaciones', () => {
   it('acepta la edicion sin los campos', async () => {
     expect(await updateErrors(BASE)).toEqual([]);
+  });
+  it('deja pasar passengerCapacity null: lo rechaza UpdateVehicleHandler con PASSENGER_CAPACITY_REQUIRED', async () => {
+    expect(await updateErrors({ ...BASE, passengerCapacity: null })).toEqual([]);
   });
   it('valida cuando se envian', async () => {
     expect(await updateErrors({ ...BASE, passengerCapacity: 8, fuelPrice: 5, depositMinimum: 300 })).toEqual([]);

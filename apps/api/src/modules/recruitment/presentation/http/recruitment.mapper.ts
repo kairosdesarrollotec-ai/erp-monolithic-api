@@ -52,6 +52,8 @@ export function toCandidateResponse(record: CandidateRecord): CandidateResponse 
     documentType: record.documentType,
     documentNumber: record.documentNumber,
     stage: record.stage,
+    processState: record.processState,
+    processStateChangedAt: record.processStateChangedAt ? record.processStateChangedAt.toISOString() : null,
     decision: record.decision,
     version: record.version,
     createdAt: record.createdAt.toISOString(),

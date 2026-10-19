@@ -22,13 +22,13 @@ describe('recruitment-rules', () => {
       ).not.toThrow();
     });
 
-    it('permite transicionar de PUBLICADA a EN_NEGOCIACION o DECIDIDA', () => {
+    it('permite transicionar de PUBLICADA a EN_NEGOCIACION pero no saltar a DECIDIDA (BDD-REC §11.6)', () => {
       expect(() =>
         assertValidVacancyTransition(VacancyStatus.PUBLICADA, VacancyStatus.EN_NEGOCIACION),
       ).not.toThrow();
       expect(() =>
         assertValidVacancyTransition(VacancyStatus.PUBLICADA, VacancyStatus.DECIDIDA),
-      ).not.toThrow();
+      ).toThrow(VacancyNotTransitionableError);
     });
 
     it('lanza VacancyNotTransitionableError si se intenta transicionar desde DECIDIDA', () => {

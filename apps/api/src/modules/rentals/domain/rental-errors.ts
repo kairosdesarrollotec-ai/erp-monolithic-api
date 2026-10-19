@@ -279,3 +279,33 @@ export class CompanionPassengerCapacityExceededError extends DomainUnprocessable
     super(`El vehiculo admite como maximo ${capacity} acompanante(s) (capacidad de pasajeros).`);
   }
 }
+
+/** DEC-ALQ-DRIVERRATE-001: la tarifa diaria solo aplica a alquileres con contrato de conductor de la empresa. */
+export class CompanyDriverRateNotApplicableError extends DomainUnprocessableError {
+  readonly code = 'COMPANY_DRIVER_RATE_NOT_APPLICABLE';
+
+  constructor() {
+    super(
+      'La tarifa diaria del conductor de la empresa solo se puede digitar en un alquiler con conductor de la empresa ' +
+        '(contrato formalizado con esa variante).',
+    );
+  }
+}
+
+/** DEC-ALQ-DRIVERRATE-001: la tarifa diaria ya no se edita con el alquiler cerrado o cancelado. */
+export class CompanyDriverRateClosedError extends DomainConflictError {
+  readonly code = 'COMPANY_DRIVER_RATE_CLOSED';
+
+  constructor(status: string) {
+    super(`No se puede digitar la tarifa diaria del conductor de la empresa con el alquiler en estado ${status}.`);
+  }
+}
+
+/** DEC-ALQ-DRIVERRATE-001: monto > 0 con maximo 2 decimales. */
+export class CompanyDriverRateInvalidError extends DomainBadRequestError {
+  readonly code = 'COMPANY_DRIVER_RATE_INVALID';
+
+  constructor() {
+    super('La tarifa diaria debe ser un monto mayor que 0 con un maximo de 2 decimales (hasta 99999999.99).');
+  }
+}

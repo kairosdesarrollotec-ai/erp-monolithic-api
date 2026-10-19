@@ -11,6 +11,19 @@ import type { ReturnStatus } from './return-status';
 export const RETURN_LATE_TOLERANCE_MINUTES = 30;
 export const RETURN_LATE_TOLERANCE_MS = RETURN_LATE_TOLERANCE_MINUTES * 60 * 1000;
 
+/**
+ * Estados en los que corresponde registrar (y, por tanto, sugerir) el cargo por retraso manual: con el vehículo ya
+ * recibido y hasta antes del cierre definitivo (CERRADA / CANCELADA / PROGRAMADA no aplican). Fuente única compartida
+ * por register-late-charge y la sugerencia de return-alerts (DEC-DEVREM-003).
+ */
+export const LATE_CHARGE_REGISTRABLE_STATUSES: readonly ReturnStatus[] = [
+  'RECEPCION_PROVISIONAL',
+  'INSPECCION',
+  'SIN_DANOS',
+  'CON_DANOS',
+  'CIERRE_FINANCIERO',
+];
+
 export interface LatenessSubject {
   status: ReturnStatus;
   scheduledAt: Date;

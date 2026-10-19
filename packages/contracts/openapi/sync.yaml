@@ -1,0 +1,398 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Sync Conflicts API (TR-08 / ENTREGA-04 / DEV-04)
+  version: 1.0.0
+  description: >
+    1.0.0 — Contrato backend de conflictos de sincronizacion offline de los DOS checklists autorizados (SDD-KAIROS-TRANSVERSAL
+    17.1): ENTREGA (Alquiler, ENTREGA-04) y RECEPCION (Devolucion, DEV-04). Reglas documentadas, sin agregar ninguna:
+    SDD-KAIROS-TRANSVERSAL 17.3-17.4, PANTALLAS-V3-B-TRANSVERSAL (TR-08), PANTALLAS-V3-B-ALQUILER (bloque SYNC_CONFLICT de
+    ENTREGA-04) y Catalogo_Preguntas_Negocio_2026-10-16 (G-11).
+
+
+    Matriz por tipo de dato (SDD 17.4): disponibilidad, reserva y estado del vehiculo -> PREVALECE EL SERVIDOR (el campo se
+    descarta y se informa en `discardedFields`; sin override manual); pago -> exclusivamente online (422
+    SYNC_PAYMENT_ONLINE_ONLY); checklist -> campos distintos se combinan y el MISMO campo modificado por dos actores crea un
+    conflicto que resuelve un supervisor; evidencias -> aditivas, nunca se sobrescriben en silencio (slot ocupado con otro
+    contentHash = conflicto), y un archivo con el mismo `contentHash` o `clientCaptureId` no se duplica; datos de empleados
+    (RR.HH.) y borrados criticos (Data Owner) no se resuelven aqui (422 SYNC_RESOLVER_NOT_SUPPORTED).
+
+
+    Resolucion: KEEP_LOCAL ("Conservar la mia"), KEEP_SERVER ("Conservar del servidor"), MERGE ("Combinar", solo evidencias:
+    un campo en conflicto siempre choca, 422 SYNC_MERGE_NOT_ALLOWED). Exige confirmed=true (confirmacion explicita) y `reason`
+    (10-500 caracteres), `If-Match` con la version del conflicto; SIEMPRE se audita (audit_events SYNC_CONFLICT_RESOLVED) y
+    publica evento outbox (ConflictoSincronizacionResuelto.v1); nunca se resuelve sola. El estado SYNCED solo lo confirma
+    el servidor (`serverConfirmedAt`); mientras haya un conflicto abierto, `complete-inspection` (Devolucion) y
+    `complete-delivery` (Alquiler) responden 409 SYNC_CONFLICT_PENDING.
+
+
+    Permisos (ADM-02, sin acciones nuevas): sincronizar = RENTAL.UPLOAD_EVIDENCE / RETURN.UPLOAD_EVIDENCE; consultar =
+    RENTAL.READ / RETURN.READ; resolver (supervisor, PROVISIONAL) = RENTAL.MANAGE_CONTRACT_TEMPLATES (ENTREGA) /
+    RETURN.CLOSE (RECEPCION), cuyo set por defecto es ADMINISTRACION + GERENCIA.
+
+
+    Errores `{ statusCode, code, detail }`. Todos los POST aceptan `Idempotency-Key`. Zona horaria America/Lima (los
+    instantes viajan en ISO-8601 UTC).
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+paths:
+  /sync/checklists/{checklistType}/{sourceId}/commands/sync:
+    post:
+      operationId: syncChecklist
+      summary: Sincroniza un borrador offline contra la version del servidor (detecta conflictos)
+      description: >
+        Aplica la matriz de conflicto. Sin choque: aplica los campos nuevos, agrega la evidencia y el SERVIDOR confirma
+        SYNCED. Con choque: crea conflictos ABIERTOS (status SYNC_CONFLICT, serverConfirmedAt null) y NO sobrescribe nada.
+        Idempotente: un reintento identico no duplica conflictos ni evidencia. TTL del borrador 72 h (SYNC_DRAFT_EXPIRED).
+        `sourceId` es el id del alquiler (ENTREGA) o de la devolucion (RECEPCION).
+      parameters:
+        - { name: checklistType, in: path, required: true, schema: { $ref: '#/components/schemas/SyncChecklistType' } }
+        - { name: sourceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SyncChecklistRequest' }
+      responses:
+        '200':
+          description: Resultado de la sincronizacion (SYNCED confirmado por el servidor o SYNC_CONFLICT con los conflictos abiertos)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncChecklistResult' }
+        '400':
+          description: Payload invalido (SYNC_PAYLOAD_INVALID u otra validacion de forma)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Contexto de trabajo no autorizado o rol sin permiso (ROLE_NOT_ALLOWED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '404':
+          description: Expediente no encontrado en la empresa/sede (SYNC_SOURCE_NOT_FOUND)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '409':
+          description: >
+            Expediente ya confirmado/cerrado/cancelado (SYNC_DRAFT_REJECTED) o ya hay un conflicto abierto del mismo dato con
+            otro valor (SYNC_CONFLICT_ALREADY_OPEN)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '412':
+          description: Estado de sincronizacion modificado por otra operacion concurrente (SYNC_CONFLICT_VERSION_MISMATCH); reintentar
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '422':
+          description: >
+            Borrador vencido (SYNC_DRAFT_EXPIRED), pago offline (SYNC_PAYMENT_ONLINE_ONLY) o dato que resuelve RR.HH./Data Owner
+            (SYNC_RESOLVER_NOT_SUPPORTED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+  /sync/checklists/{checklistType}/{sourceId}:
+    get:
+      operationId: getChecklistSyncStatus
+      summary: Estado de sincronizacion del checklist confirmado por el servidor (SYNCED / SYNC_CONFLICT) y conflictos abiertos
+      description: >
+        Sin sincronizacion offline previa devuelve status SYNCED con serverConfirmedAt y stateVersion nulos. El front solo
+        habilita "Continuar" cuando status es SYNCED.
+      parameters:
+        - { name: checklistType, in: path, required: true, schema: { $ref: '#/components/schemas/SyncChecklistType' } }
+        - { name: sourceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Estado del checklist
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncChecklistStatusResponse' }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Contexto de trabajo no autorizado o rol sin permiso
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '404':
+          description: Expediente no encontrado (SYNC_SOURCE_NOT_FOUND)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+  /sync/conflicts:
+    get:
+      operationId: listSyncConflicts
+      summary: Lista de conflictos de sincronizacion (Centro de sincronizacion TR-08)
+      description: Acotada a la empresa/sede del contexto. Por defecto solo `OPEN`. Maximo 200, mas recientes primero.
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: checklistType, in: query, required: true, schema: { $ref: '#/components/schemas/SyncChecklistType' } }
+        - { name: sourceId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/SyncConflictStatus' } }
+      responses:
+        '200':
+          description: Conflictos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SyncConflict' }
+        '400':
+          description: Parametros invalidos
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Contexto de trabajo no autorizado o rol sin permiso
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+  /sync/conflicts/{conflictId}/commands/resolve:
+    post:
+      operationId: resolveSyncConflict
+      summary: Resuelve un conflicto (Conservar la mia / Conservar del servidor / Combinar) - solo supervisor
+      description: >
+        Exige rol supervisor (ver descripcion del contrato), If-Match con la version del conflicto, confirmed=true y reason.
+        Siempre auditado (SYNC_CONFLICT_RESOLVED) y con evento outbox. Si era el ultimo conflicto abierto, el servidor
+        confirma SYNCED (serverConfirmedAt). Las tomas de evidencia nunca se borran: la descartada queda ARCHIVED.
+      parameters:
+        - { name: conflictId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string }, description: 'ETag fuerte con la version del conflicto, ej. "1"' }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveSyncConflictRequest' }
+      responses:
+        '200':
+          description: Conflicto resuelto
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResolveSyncConflictResponse' }
+        '400':
+          description: Payload o If-Match invalido
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Rol sin permiso de supervisor (ROLE_NOT_ALLOWED) o contexto no autorizado
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '404':
+          description: Conflicto no encontrado en la empresa/sede (SYNC_CONFLICT_NOT_FOUND)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '409':
+          description: Conflicto ya resuelto (SYNC_CONFLICT_ALREADY_RESOLVED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '412':
+          description: Version no coincide (SYNC_CONFLICT_VERSION_MISMATCH)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '422':
+          description: >
+            Falta confirmacion explicita (SYNC_CONFIRMATION_REQUIRED), motivo (SYNC_REASON_REQUIRED) o se pidio Combinar sobre
+            un campo que choca (SYNC_MERGE_NOT_ALLOWED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '428':
+          description: Falta header If-Match
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: ID token de Firebase Authentication, enviado como "Authorization Bearer <idToken>"
+  schemas:
+    DomainErrorResponse:
+      type: object
+      required: [statusCode, code, detail]
+      properties:
+        statusCode: { type: integer }
+        code:
+          type: string
+          description: >
+            SYNC_SOURCE_NOT_FOUND, SYNC_CONFLICT_NOT_FOUND, SYNC_DRAFT_REJECTED, SYNC_DRAFT_EXPIRED, SYNC_PAYLOAD_INVALID,
+            SYNC_PAYMENT_ONLINE_ONLY, SYNC_RESOLVER_NOT_SUPPORTED, SYNC_CONFLICT_ALREADY_OPEN, SYNC_CONFLICT_ALREADY_RESOLVED,
+            SYNC_CONFLICT_VERSION_MISMATCH, SYNC_CONFIRMATION_REQUIRED, SYNC_REASON_REQUIRED, SYNC_MERGE_NOT_ALLOWED,
+            SYNC_CONFLICT_PENDING (en complete-inspection / complete-delivery), ROLE_NOT_ALLOWED
+        detail: { type: string }
+    SyncChecklistType:
+      type: string
+      enum: [ENTREGA, RECEPCION]
+    SyncChecklistStatus:
+      type: string
+      description: Estado que CONFIRMA el servidor. LOCAL_DRAFT y SYNCING son solo estados del dispositivo.
+      enum: [SYNCED, SYNC_CONFLICT]
+    SyncConflictStatus:
+      type: string
+      enum: [OPEN, RESOLVED]
+    SyncConflictKind:
+      type: string
+      enum: [FIELD, EVIDENCE]
+    SyncResolution:
+      type: string
+      enum: [KEEP_LOCAL, KEEP_SERVER, MERGE]
+    SyncFieldDataType:
+      type: string
+      description: Tipo de dato de la matriz de conflicto (SDD 17.4). Por defecto CHECKLIST.
+      enum: [CHECKLIST, AVAILABILITY, RESERVATION, VEHICLE_STATE, PAYMENT, EMPLOYEE, CRITICAL_DELETE]
+    SyncScalar:
+      description: string (max 1000) | numero | booleano | null
+      oneOf:
+        - { type: string }
+        - { type: number }
+        - { type: boolean }
+        - { type: 'null' }
+    SyncFieldInput:
+      type: object
+      required: [key, value, baseRev, editedAt]
+      properties:
+        key: { type: string, maxLength: 100, pattern: '^[A-Za-z0-9_.-]+$' }
+        dataType: { $ref: '#/components/schemas/SyncFieldDataType' }
+        value: { $ref: '#/components/schemas/SyncScalar' }
+        baseRev:
+          type: integer
+          minimum: 0
+          description: Revision del campo que el dispositivo vio por ultima vez (0 = nunca sincronizado)
+        editedAt: { type: string, format: date-time }
+    SyncEvidenceInput:
+      type: object
+      required: [clientCaptureId, zone, slot, type, contentHash, capturedAt]
+      properties:
+        clientCaptureId: { type: string, format: uuid, description: Idempotencia por captura (generado offline) }
+        zone: { type: string, maxLength: 60 }
+        slot: { type: integer, minimum: 1, maximum: 1000, description: N.o de toma dentro de la zona }
+        type: { type: string, enum: [PHOTO, VIDEO] }
+        contentHash: { type: string, pattern: '^[a-fA-F0-9]{64}$', description: SHA-256 hexadecimal del archivo }
+        sizeBytes: { type: integer, minimum: 0, maximum: 52428800 }
+        capturedAt: { type: string, format: date-time }
+        deviceId: { type: string, maxLength: 100 }
+    SyncChecklistRequest:
+      type: object
+      required: [companyId, branchId, draftCreatedAt, fields, evidence]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        deviceId: { type: string, maxLength: 100 }
+        draftCreatedAt: { type: string, format: date-time, description: Creacion del borrador en el dispositivo (TTL 72 h) }
+        fields:
+          type: array
+          maxItems: 200
+          items: { $ref: '#/components/schemas/SyncFieldInput' }
+        evidence:
+          type: array
+          maxItems: 100
+          items: { $ref: '#/components/schemas/SyncEvidenceInput' }
+    SyncFieldVersion:
+      type: object
+      required: [value, by, at]
+      properties:
+        value: { $ref: '#/components/schemas/SyncScalar' }
+        by: { type: string, description: Quien lo edito }
+        at: { type: string, format: date-time, description: Cuando }
+        deviceId: { type: [string, 'null'] }
+    SyncEvidenceVersion:
+      type: object
+      required: [clientCaptureId, zone, slot, type, contentHash, capturedBy, capturedAt, role]
+      properties:
+        clientCaptureId: { type: string }
+        zone: { type: string }
+        slot: { type: integer }
+        type: { type: string, enum: [PHOTO, VIDEO] }
+        contentHash: { type: string }
+        sizeBytes: { type: [integer, 'null'] }
+        capturedBy: { type: string }
+        capturedAt: { type: string, format: date-time }
+        deviceId: { type: [string, 'null'] }
+        role: { type: string, enum: [PRIMARY, ANNEX, ARCHIVED] }
+    SyncConflict:
+      type: object
+      required: [id, auditRef, checklistType, sourceId, rentalId, kind, key, status, canMerge, serverVersion, localVersion, resolution, reason, detectedBy, deviceId, resolvedBy, resolvedAt, version, etag, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        auditRef: { type: string, description: 'Referencia visible SYNC-ERR-XXXXXXXX' }
+        checklistType: { $ref: '#/components/schemas/SyncChecklistType' }
+        sourceId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/SyncConflictKind' }
+        key: { type: string, description: 'Campo del checklist, o "zona#slot" para una toma' }
+        status: { $ref: '#/components/schemas/SyncConflictStatus' }
+        canMerge: { type: boolean, description: '"Combinar" solo se habilita si los datos no chocan (evidencias)' }
+        serverVersion:
+          description: Columna "Version del servidor"
+          oneOf:
+            - { $ref: '#/components/schemas/SyncFieldVersion' }
+            - { $ref: '#/components/schemas/SyncEvidenceVersion' }
+        localVersion:
+          description: Columna "Tu version"
+          oneOf:
+            - { $ref: '#/components/schemas/SyncFieldVersion' }
+            - { $ref: '#/components/schemas/SyncEvidenceVersion' }
+        resolution:
+          oneOf:
+            - { $ref: '#/components/schemas/SyncResolution' }
+            - { type: 'null' }
+        reason: { type: [string, 'null'] }
+        detectedBy: { type: string }
+        deviceId: { type: [string, 'null'] }
+        resolvedBy: { type: [string, 'null'] }
+        resolvedAt: { type: [string, 'null'], format: date-time }
+        version: { type: integer }
+        etag: { type: string, description: 'Valor para If-Match, ej. "1"' }
+        createdAt: { type: string, format: date-time }
+    SyncChecklistStatusResponse:
+      type: object
+      required: [checklistType, sourceId, status, serverConfirmedAt, stateVersion, openConflicts]
+      properties:
+        checklistType: { $ref: '#/components/schemas/SyncChecklistType' }
+        sourceId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/SyncChecklistStatus' }
+        serverConfirmedAt: { type: [string, 'null'], format: date-time }
+        stateVersion: { type: [integer, 'null'] }
+        openConflicts:
+          type: array
+          items: { $ref: '#/components/schemas/SyncConflict' }
+    SyncChecklistResult:
+      allOf:
+        - $ref: '#/components/schemas/SyncChecklistStatusResponse'
+        - type: object
+          required: [appliedFields, unchangedFields, discardedFields, addedEvidence, duplicateEvidence]
+          properties:
+            appliedFields: { type: array, items: { type: string } }
+            unchangedFields: { type: array, items: { type: string } }
+            discardedFields:
+              type: array
+              description: Campos descartados porque prevalece el servidor (disponibilidad, reserva, estado del vehiculo)
+              items:
+                type: object
+                required: [key, dataType, code, detail]
+                properties:
+                  key: { type: string }
+                  dataType: { type: string }
+                  code: { type: string, enum: [SERVER_PREVAILS] }
+                  detail: { type: string }
+            addedEvidence: { type: array, items: { type: string }, description: clientCaptureId agregados }
+            duplicateEvidence:
+              type: array
+              items:
+                type: object
+                required: [clientCaptureId, reason, existingClientCaptureId]
+                properties:
+                  clientCaptureId: { type: string }
+                  reason: { type: string, enum: [SAME_CAPTURE, SAME_CONTENT_HASH] }
+                  existingClientCaptureId: { type: string }
+    ResolveSyncConflictRequest:
+      type: object
+      required: [companyId, branchId, resolution]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        resolution: { $ref: '#/components/schemas/SyncResolution' }
+        reason: { type: string, minLength: 10, maxLength: 500, description: 'Obligatorio (422 SYNC_REASON_REQUIRED si falta o es corto)' }
+        confirmed: { type: boolean, description: 'Obligatorio y true (422 SYNC_CONFIRMATION_REQUIRED): confirmacion explicita de la version que se conserva' }
+    ResolveSyncConflictResponse:
+      type: object
+      required: [conflict, checklistStatus, serverConfirmedAt, openConflicts]
+      properties:
+        conflict: { $ref: '#/components/schemas/SyncConflict' }
+        checklistStatus: { $ref: '#/components/schemas/SyncChecklistStatus' }
+        serverConfirmedAt: { type: [string, 'null'], format: date-time }
+        openConflicts: { type: integer, minimum: 0 }

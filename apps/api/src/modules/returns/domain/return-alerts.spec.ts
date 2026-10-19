@@ -1,5 +1,6 @@
 import {
   computeImmobilizationAlert,
+  computeLateChargeSuggestion,
   computeReturnAlerts,
   computeWarrantyReleaseAlert,
   AlertSubject,
@@ -98,5 +99,41 @@ describe('DEC-ALQ-COMPANY-DRIVER-004 - sin garantia no hay alerta de liberacion'
   it('depositRequired=true o ausente conserva la alerta', () => {
     expect(computeWarrantyReleaseAlert(subject({ depositRequired: true }), at(48))).toMatchObject({ level: 'OVERDUE' });
     expect(computeWarrantyReleaseAlert(subject(), at(48))).toMatchObject({ level: 'OVERDUE' });
+  });
+});
+
+describe('Sugerencia de registrar el cargo por retraso manual (F-03, DEC-DEVREM-003)', () => {
+  const SCHEDULED = new Date('2026-10-05T10:00:00.000Z');
+  const late = (minutes: number, overrides: Partial<AlertSubject> = {}): AlertSubject =>
+    subject({
+      status: 'INSPECCION',
+      scheduledAt: SCHEDULED,
+      receivedAt: new Date(SCHEDULED.getTime() + minutes * 60_000),
+      lateChargeAmount: null,
+      ...overrides,
+    });
+  const NOW = new Date('2026-10-05T14:00:00.000Z');
+
+  it('exactamente 30 min NO es retraso; 31 min sí (BR-DEV-003)', () => {
+    expect(computeLateChargeSuggestion(late(30), NOW)).toBeNull();
+    expect(computeLateChargeSuggestion(late(31), NOW)).toEqual({ lateMinutes: 31, lateToleranceMinutes: 30 });
+  });
+
+  it('no sugiere si ya se registró el cargo (se apaga sola), ni sin recepción, ni en estados no registrables', () => {
+    expect(computeLateChargeSuggestion(late(90, { lateChargeAmount: 80 }), NOW)).toBeNull();
+    expect(computeLateChargeSuggestion(late(90, { receivedAt: null }), NOW)).toBeNull();
+    expect(computeLateChargeSuggestion(late(90, { status: 'CERRADA' }), NOW)).toBeNull();
+    expect(computeLateChargeSuggestion(late(90, { status: 'PROGRAMADA' }), NOW)).toBeNull();
+    expect(computeLateChargeSuggestion(late(90, { status: 'CANCELADA' }), NOW)).toBeNull();
+  });
+
+  it('aplica en todos los estados donde register-late-charge admite el cargo', () => {
+    for (const status of ['RECEPCION_PROVISIONAL', 'INSPECCION', 'SIN_DANOS', 'CON_DANOS', 'CIERRE_FINANCIERO'] as const) {
+      expect(computeLateChargeSuggestion(late(90, { status }), NOW)).not.toBeNull();
+    }
+  });
+
+  it('es solo una sugerencia: no calcula ningún monto', () => {
+    expect(Object.keys(computeLateChargeSuggestion(late(400), NOW)!).sort()).toEqual(['lateMinutes', 'lateToleranceMinutes']);
   });
 });

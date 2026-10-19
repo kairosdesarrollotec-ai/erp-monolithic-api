@@ -141,6 +141,7 @@ export function toRentalRecord(row: RentalWithRelations): RentalRecord {
     updatedAt: row.updatedAt,
     updatedBy: row.updatedBy,
     version: row.version,
+    companyDriverDailyRate: row.companyDriverDailyRate != null ? Number(row.companyDriverDailyRate.toString()).toFixed(2) : null,
     parties: row.parties.map(toRentalPartyRecord),
     notaryEvaluation: toNotaryEvaluationRecord(row.notaryEvaluation),
     contract: toRentalContractRecord(row.contract),

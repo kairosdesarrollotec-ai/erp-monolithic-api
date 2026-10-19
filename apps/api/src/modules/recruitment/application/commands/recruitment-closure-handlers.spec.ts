@@ -91,6 +91,8 @@ function candidate(over: Partial<CandidateRecord> = {}): CandidateRecord {
     hasCv: false,
     salaryExpectation: null,
     stage: CandidateStage.CONTACTADO,
+    processState: 'EN_NEGOCIACION',
+    processStateChangedAt: null,
     decision: null,
     decisionNotes: null,
     decidedBy: null,
@@ -693,6 +695,7 @@ describe('RegisterCandidateHandler (CV ya no se referencia por codigo pegado)', 
   it('sin cvDocumentId el servidor asigna un codigo interno y el CV se sube despues', async () => {
     const s = setup();
     s.vacancies.findById.mockResolvedValue(vacancy());
+    s.vacancies.updateStatus.mockResolvedValue(vacancy({ status: VacancyStatus.EN_NEGOCIACION, version: 3 }));
     (s.candidates as unknown as { findByDocumentNumber: jest.Mock }).findByDocumentNumber = jest.fn().mockResolvedValue(null);
     (s.candidates as unknown as { create: jest.Mock }).create = jest.fn().mockResolvedValue(candidate({ stage: CandidateStage.NUEVO }));
     const handler = new RegisterCandidateHandler(s.access, s.vacancies, s.candidates, s.tm, s.audit);

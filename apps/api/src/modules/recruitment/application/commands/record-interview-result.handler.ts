@@ -5,7 +5,10 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { RecruitmentAccessService } from '../services/recruitment-access.service';
 import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { CandidateInterviewRecord, InterviewRepositoryPort } from '../ports/interview-repository.port';
+import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
 import { CandidateNotFoundError, InterviewNotFoundError } from '../../domain/recruitment-errors';
+import { CandidateProcessState, VacancyStatus } from '../../domain/recruitment-domain-types';
+import { advanceVacancyProgress, transitionCandidateProcess } from '../services/recruitment-progress';
 import { assertCandidateNotDecided } from '../../domain/recruitment-rules';
 import { RecordInterviewResultCommand } from './record-interview-result.command';
 
@@ -18,6 +21,7 @@ export class RecordInterviewResultHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly vacancies: VacancyRepositoryPort,
   ) {}
 
   async execute(command: RecordInterviewResultCommand): Promise<CandidateInterviewRecord> {
@@ -69,6 +73,38 @@ export class RecordInterviewResultHandler {
         },
         tx,
       );
+
+      // BDD-REC §11.6: "Entrevistado = entrevista realizada, en análisis". Registrar el resultado (Avanza o No avanza)
+      // marca la entrevista como realizada; NO descarta ni decide (la decisión es exclusiva de Fiorella, BR-REC-003).
+      // Con varias entrevistas, la segunda y siguientes no cambian el estado.
+      if (candidate.processState === CandidateProcessState.EN_NEGOCIACION) {
+        await transitionCandidateProcess(
+          { candidates: this.candidates, audit: this.auditRepository },
+          {
+            candidate,
+            to: CandidateProcessState.ENTREVISTADO,
+            at: evaluatedAt,
+            organizationId: context.organizationId,
+            actorUserId: command.firebaseUid,
+            trigger: 'INTERVIEW_RESULT_RECORDED',
+          },
+          tx,
+        );
+        const vacancy = await this.vacancies.findById(candidate.vacancyId, scope, tx);
+        if (vacancy) {
+          await advanceVacancyProgress(
+            { vacancies: this.vacancies, audit: this.auditRepository },
+            {
+              vacancy,
+              target: VacancyStatus.ENTREVISTADA,
+              organizationId: context.organizationId,
+              actorUserId: command.firebaseUid,
+              trigger: 'INTERVIEW_RESULT_RECORDED',
+            },
+            tx,
+          );
+        }
+      }
 
       return updated;
     });

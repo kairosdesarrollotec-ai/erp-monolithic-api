@@ -18,6 +18,12 @@ export class ListEmployeesQueryDto {
   @MaxLength(100)
   areaId?: string;
 
+  /** H-02: alias de `areaId` con el codigo del catalogo (se normaliza); si vienen ambos manda `areaCode`. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  areaCode?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(100)

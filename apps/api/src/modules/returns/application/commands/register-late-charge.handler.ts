@@ -6,19 +6,13 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import { InvalidLateChargeError, ReturnNotFoundError, ReturnStateConflictError } from '../../domain/return-errors';
-import { computeReturnLateness } from '../../domain/return-lateness';
+import { computeReturnLateness, LATE_CHARGE_REGISTRABLE_STATUSES } from '../../domain/return-lateness';
 import { roundMoney } from '../../domain/return-rules';
 import { ReturnStatus } from '../../domain/return-status';
 import { RegisterReturnLateChargeCommand } from './register-late-charge.command';
 
 /** Con el vehículo ya recibido y hasta antes del cierre definitivo (CERRADA/CANCELADA/PROGRAMADA no aplican). */
-const LATE_CHARGE_STATUSES: ReadonlySet<ReturnStatus> = new Set<ReturnStatus>([
-  'RECEPCION_PROVISIONAL',
-  'INSPECCION',
-  'SIN_DANOS',
-  'CON_DANOS',
-  'CIERRE_FINANCIERO',
-]);
+const LATE_CHARGE_STATUSES: ReadonlySet<ReturnStatus> = new Set<ReturnStatus>(LATE_CHARGE_REGISTRABLE_STATUSES);
 
 /**
  * DEC-DEV-LATE-CHARGE-002 (Fiorella, 2026-10-16) - Retraso en la devolución pasada la tolerancia (30 min): SÍ hay cargo,

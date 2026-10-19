@@ -1,8 +1,19 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.5.0
+  version: 0.6.0
   description: >
+    0.6.0 — G-05 (Russbel, 2026-10-19): la capacidad de pasajeros se pide siempre
+    al registrar un vehículo. CreateVehicleRequest.passengerCapacity sigue siendo
+    obligatoria (entero 1..60); si falta o llega null responde 400
+    PASSENGER_CAPACITY_REQUIRED (código de dominio, además de la validación de
+    rango). CreateVehicleRequest.depositMinimum (garantía) y fuelPrice (precio del
+    combustible) vuelven a ser OPCIONALES: la tarifa de combustible aún no existe y
+    se completa luego con PATCH. UpdateVehicleRequest: omitir passengerCapacity no
+    la cambia (un vehículo anterior con capacidad null sigue siendo editable);
+    enviarla en null de forma explícita responde 400 PASSENGER_CAPACITY_REQUIRED.
+    Sin migración (la columna sigue NULL por los vehículos existentes).
+
     0.5.0 — F-05 / G-05 (Fiorella, 2026-10-16): la garantía, la capacidad de
     pasajeros y el precio del combustible se registran al dar de alta el
     vehículo. CreateVehicleRequest.depositMinimum (>= 0), passengerCapacity
@@ -141,11 +152,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/VehicleResponse'
         '400':
-          description: Validación fallida (class-validator)
+          description: >
+            Validación fallida (class-validator) o PASSENGER_CAPACITY_REQUIRED
+            (passengerCapacity ausente o null en el alta).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NestErrorResponse'
+                oneOf:
+                  - $ref: '#/components/schemas/NestErrorResponse'
+                  - $ref: '#/components/schemas/KairosErrorResponse'
         '401':
           description: Token de Firebase ausente o inválido
         '403':
@@ -338,11 +353,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/VehicleResponse'
         '400':
-          description: Validación fallida (class-validator)
+          description: >
+            Validación fallida (class-validator) o PASSENGER_CAPACITY_REQUIRED
+            (passengerCapacity enviada en null).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NestErrorResponse'
+                oneOf:
+                  - $ref: '#/components/schemas/NestErrorResponse'
+                  - $ref: '#/components/schemas/KairosErrorResponse'
         '401':
           description: Token de Firebase ausente o inválido
         '403':
@@ -496,9 +515,7 @@ components:
         - plate
         - brand
         - model
-        - depositMinimum
         - passengerCapacity
-        - fuelPrice
       properties:
         companyId:
           type: string
@@ -544,16 +561,16 @@ components:
         depositMinimum:
           type: number
           minimum: 0
-          description: Monto mínimo de garantía para este vehículo (PEN). Obligatorio en el alta (F-05).
+          description: Monto mínimo de garantía para este vehículo (PEN). Opcional; se puede completar después con PATCH.
         passengerCapacity:
           type: integer
           minimum: 1
           maximum: 60
-          description: Cantidad de pasajeros que admite el vehículo; es el máximo de acompañantes de un alquiler (G-05). Obligatorio en el alta.
+          description: Cantidad de pasajeros que admite el vehículo; es el máximo de acompañantes de un alquiler (G-05). Obligatorio en el alta (G-05); si falta o es null responde 400 PASSENGER_CAPACITY_REQUIRED.
         fuelPrice:
           type: number
           minimum: 0
-          description: Precio del combustible por unidad para este vehículo (PEN). Insumo de la multa por combustible (aún no calculada). Obligatorio en el alta (F-05).
+          description: Precio del combustible por unidad para este vehículo (PEN). Insumo de la multa por combustible (aún no calculada). Opcional; se completa cuando exista la tarifa.
         photoUrl:
           type: string
           format: uri
@@ -611,7 +628,7 @@ components:
           type: integer
           minimum: 1
           maximum: 60
-          description: Capacidad de pasajeros (1..60). Si se omite, el valor existente no cambia.
+          description: Capacidad de pasajeros (1..60). Si se omite, el valor existente no cambia. No puede vaciarse (enviar null responde 400 PASSENGER_CAPACITY_REQUIRED).
         fuelPrice:
           type: number
           minimum: 0
@@ -698,7 +715,7 @@ components:
         passengerCapacity:
           type: integer
           nullable: true
-          description: Pasajeros que admite el vehículo (1..60). null en vehículos anteriores a 0.5.0 (sin tope de acompañantes).
+          description: Pasajeros que admite el vehículo (1..60). null en vehículos anteriores a 0.5.0 (sin tope de acompañantes); la UI indica «Falta registrar la capacidad» y permite completarla con PATCH.
         fuelPrice:
           type: number
           nullable: true
@@ -784,7 +801,7 @@ components:
           type: string
           description: >
             Código de error de negocio. Valores posibles en este módulo:
-            VEHICLE_NOT_FOUND, VEHICLE_PLATE_ALREADY_EXISTS,
+            VEHICLE_NOT_FOUND, VEHICLE_PLATE_ALREADY_EXISTS, PASSENGER_CAPACITY_REQUIRED,
             FLEET_WRITE_NOT_ALLOWED, FLEET_READ_NOT_ALLOWED,
             CROSS_BRANCH_NOT_ALLOWED.
           example: VEHICLE_NOT_FOUND

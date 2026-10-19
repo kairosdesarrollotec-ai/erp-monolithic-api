@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.7.0
+  version: 1.8.0
   description: >
+    1.8.0 — DEC-DEVREM-003 (sugerencia por tardanza): GET /returns/alerts admite type=LATE_CHARGE y ReturnAlertItem.lateCharge
+    {lateMinutes, lateToleranceMinutes}: devolución recibida con retraso > 30 min (BR-DEV-003) y SIN cargo por retraso registrado ->
+    el sistema SUGIERE registrarlo con register-late-charge (F-03: SIN monto; lo digita el usuario autorizado, sin cálculo
+    automático). Se apaga sola al registrar el cargo. Campo nuevo `lateCharge` (null en los otros tipos) en todos los items.
+    Sin endpoints nuevos. (La alerta de garantía de 24 h además se proyecta al tablero de Finanzas por un proceso interno
+    sobre dashboard_items: sin cambio de contrato HTTP.)
     1.7.0 — Respuestas de negocio de Fiorella (2026-10-16). (1) DEV-03: alcolímetro DESFAVORABLE = check "no cumple el rango" +
     FOTO de la prueba OBLIGATORIA (evidencia PHOTO con zona ALCOHOL_TEST subida antes con upload-url/evidence); sin foto ->
     422 ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni otros campos; RECHAZADO tambien exige la foto (evidencia por si acaso). (2) Retraso pasada la tolerancia
@@ -179,7 +185,8 @@ paths:
         que le faltan 4 h o menos (DUE_SOON) o ya venció (OVERDUE) el plazo MÁXIMO de 24 h naturales desde la recepción (BR-DEV-001);
         un daño suspende ese plazo. IMMOBILIZATION: más de 24 h naturales desde la recepción con daño TÉCNICO y días de paralización
         aún sin cobrar (BR-DEV-011). SOLO ALERTAN: el reembolso y el cobro siguen siendo manuales (close-financial / charge-immobilization).
-        Sin `type` devuelve ambos tipos. Solo lectura; no requiere If-Match.
+        LATE_CHARGE (1.8.0): recibida con retraso mayor que la tolerancia de 30 min y sin cargo por retraso registrado; SUGERENCIA de
+        registrarlo (sin monto: lo digita el usuario autorizado). Sin `type` devuelve todos los tipos. Solo lectura; no requiere If-Match.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
@@ -799,7 +806,7 @@ components:
 
     ReturnAlertType:
       type: string
-      enum: [WARRANTY_RELEASE, IMMOBILIZATION]
+      enum: [WARRANTY_RELEASE, IMMOBILIZATION, LATE_CHARGE]
 
     RegisterReturnReminderRequest:
       type: object
@@ -925,7 +932,7 @@ components:
 
     ReturnAlertItem:
       type: object
-      required: [type, returnId, rentalId, returnStatus, returnVersion, vehiclePlate, customerName, receivedAt, warrantyRelease, immobilization]
+      required: [type, returnId, rentalId, returnStatus, returnVersion, vehiclePlate, customerName, receivedAt, warrantyRelease, immobilization, lateCharge]
       properties:
         type: { $ref: '#/components/schemas/ReturnAlertType' }
         returnId: { type: string, format: uuid }
@@ -945,6 +952,18 @@ components:
           description: Presente cuando type = IMMOBILIZATION
           allOf:
             - $ref: '#/components/schemas/ImmobilizationAlert'
+        lateCharge:
+          nullable: true
+          description: Presente cuando type = LATE_CHARGE (sugerencia de registrar el cargo por retraso manual; sin monto)
+          allOf:
+            - $ref: '#/components/schemas/LateChargeSuggestion'
+
+    LateChargeSuggestion:
+      type: object
+      required: [lateMinutes, lateToleranceMinutes]
+      properties:
+        lateMinutes: { type: integer, minimum: 0, description: Minutos enteros de retraso real (recepción menos hora pactada) }
+        lateToleranceMinutes: { type: integer, example: 30, description: Tolerancia sin sanción (BR-DEV-003) }
 
     ResponsibilityTemplateResponse:
       type: object

@@ -107,7 +107,9 @@ export interface RentalRecord {
    * (requiere migracion en Flota); mientras no se complete no se valida el maximo de acompanantes.
    */
   vehiclePassengerCapacity?: number | null;
-  /** Solo en el detalle (GET) de alquileres con conductor de la empresa: tarifa diaria x dias (no se persiste). */
+  /** DEC-ALQ-DRIVERRATE-001: tarifa diaria manual del conductor de la empresa ("0.00" formato 2 decimales; null = sin valor manual). */
+  companyDriverDailyRate?: string | null;
+  /** Solo en el detalle (GET) y tras fijar la tarifa, en alquileres con conductor de la empresa: tarifa diaria x dias (no se persiste). */
   companyDriverCharge?: CompanyDriverCharge | null;
 }
 
@@ -167,6 +169,15 @@ export interface AddAuthorizedDriverInput {
   role?: 'DRIVER' | 'RESPONSIBLE';
   /** Obligatoria para DRIVER; opcional (null) para el acompanante RESPONSIBLE. */
   addendumDocumentRef: string | null;
+  updatedBy: string;
+}
+
+export interface SetCompanyDriverDailyRateInput {
+  rentalId: string;
+  scope: RentalScope;
+  expectedVersion: number;
+  /** Monto > 0 con maximo 2 decimales (ya validado). */
+  dailyRate: string;
   updatedBy: string;
 }
 
@@ -380,6 +391,8 @@ export abstract class RentalRepositoryPort {
   abstract approveNotaryException(input: ApproveNotaryExceptionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   /** DEC-ALQ-OWN-DRIVER-005: agrega la party DRIVER (conductor autorizado de persona juridica) con su adenda. */
   abstract addAuthorizedDriver(input: AddAuthorizedDriverInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
+  /** DEC-ALQ-DRIVERRATE-001: fija la tarifa diaria manual del conductor de la empresa e incrementa la version. */
+  abstract setCompanyDriverDailyRate(input: SetCompanyDriverDailyRateInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract formalizeContract(input: FormalizeContractInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract completeDelivery(input: CompleteDeliveryInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract findPendingExtensionByRentalId(

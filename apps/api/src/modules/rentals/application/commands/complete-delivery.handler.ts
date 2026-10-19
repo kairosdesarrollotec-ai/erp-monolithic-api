@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
 import { RentalEvidenceRepositoryPort } from '../ports/rental-evidence-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
@@ -10,6 +10,7 @@ import { FleetVehicleRepositoryPort } from '../../../fleet/application/ports/fle
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { RentalStateConflictError, MissingDeliveryEvidenceError } from '../../domain/rental-errors';
 import { RentalCreationGuard } from '../services/rental-creation.guard';
+import { SyncClosureGatePort } from '../../../sync-conflicts/application/ports/sync-closure-gate.port';
 import { CompleteDeliveryCommand } from './complete-delivery.command';
 
 export const REQUIRED_DELIVERY_PHOTOS = 35;
@@ -53,6 +54,11 @@ export class CompleteDeliveryHandler {
     private readonly evidenceRepository: RentalEvidenceRepositoryPort,
     private readonly creationGuard: RentalCreationGuard,
     private readonly clock: ClockPort,
+    /**
+     * TR-08 / ENTREGA-04: "Continuar" (completar entrega) solo con SYNCED confirmado por el servidor; un conflicto de
+     * sincronizacion abierto bloquea con 409 SYNC_CONFLICT_PENDING. Opcional solo para los specs previos.
+     */
+    @Optional() private readonly syncGate?: SyncClosureGatePort,
   ) {}
 
   async execute(command: CompleteDeliveryCommand): Promise<RentalRecord> {
@@ -78,6 +84,8 @@ export class CompleteDeliveryHandler {
       throw new RentalStateConflictError('completar entrega en', existing.status);
     }
 
+    await this.syncGate?.assertSynced('ENTREGA', command.id, scope);
+
     const evidenceCounts = await this.evidenceRepository.countByType(command.id, scope);
     const missingEvidence: string[] = [];
     if (evidenceCounts.photos < REQUIRED_DELIVERY_PHOTOS) {
@@ -102,6 +110,7 @@ export class CompleteDeliveryHandler {
       if (current.status !== 'PENDING_DELIVERY') {
         throw new RentalStateConflictError('completar entrega en', current.status);
       }
+      await this.syncGate?.assertSynced('ENTREGA', command.id, scope, tx);
 
       const deliveredAt = this.clock.now();
       let startAt: Date | undefined;

@@ -23,6 +23,8 @@ export interface UpdateEmployeeData {
   fullName?: string;
   email?: string | null;
   phone?: string | null;
+  /** H-02: solo entrada del comando; el handler lo resuelve a `areaId`/`areaName` y nunca llega al repositorio. */
+  areaCode?: string;
   areaId?: string;
   areaName?: string;
   jobTitle?: string;
@@ -74,7 +76,13 @@ export abstract class EmployeeRepositoryPort {
     filters: ListEmployeesFilters,
     tx?: Prisma.TransactionClient,
   ): Promise<{ items: Employee[]; total: number }>;
-  abstract update(id: string, data: UpdateEmployeeData, tx?: Prisma.TransactionClient): Promise<Employee>;
+  /** `options.expectedVersion`: actualización condicional (If-Match); si la versión ya no coincide lanza EmployeeVersionConflictError. */
+  abstract update(
+    id: string,
+    data: UpdateEmployeeData,
+    tx?: Prisma.TransactionClient,
+    options?: { expectedVersion?: number },
+  ): Promise<Employee>;
   /** Marca TERMINADO de forma condicional; lanza EmploymentAlreadyTerminatedError si ya lo estaba. */
   abstract markTerminated(id: string, data: TerminateEmployeeData, tx?: Prisma.TransactionClient): Promise<Employee>;
 }

@@ -90,8 +90,14 @@ export interface ReturnAlertsResponse {
   immobilization: ImmobilizationAlertResponse | null;
 }
 
+/** DEC-DEVREM-003: sugerencia de registrar el cargo por retraso manual (sin monto). */
+export interface LateChargeSuggestionResponse {
+  lateMinutes: number;
+  lateToleranceMinutes: number;
+}
+
 export interface ReturnAlertItemResponse {
-  type: 'WARRANTY_RELEASE' | 'IMMOBILIZATION';
+  type: 'WARRANTY_RELEASE' | 'IMMOBILIZATION' | 'LATE_CHARGE';
   returnId: string;
   rentalId: string;
   returnStatus: ReturnStatus;
@@ -101,6 +107,7 @@ export interface ReturnAlertItemResponse {
   receivedAt: string;
   warrantyRelease: WarrantyReleaseAlertResponse | null;
   immobilization: ImmobilizationAlertResponse | null;
+  lateCharge: LateChargeSuggestionResponse | null;
 }
 
 export interface AlcoholEscalationResponse {

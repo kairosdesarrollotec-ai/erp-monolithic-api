@@ -62,7 +62,7 @@ export class UpdateVehicleDto {
   @IsInt({ message: 'passengerCapacity debe ser un entero' })
   @Min(1, { message: 'passengerCapacity debe ser al menos 1' })
   @Max(60, { message: 'passengerCapacity no puede superar 60' })
-  passengerCapacity?: number;
+  passengerCapacity?: number | null;
 
   @IsOptional()
   @Type(() => Number)

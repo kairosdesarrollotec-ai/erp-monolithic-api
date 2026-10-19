@@ -1,8 +1,26 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.5.0
+  version: 0.7.0
   description: >
+    0.7.0 — H-02 / DEC-ADP-AREAS-001..003 (ADITIVO, sin romper clientes): catálogo de áreas de RR.HH. por empresa como dato
+    de referencia. Nuevo GET /hr-areas (lectura; mismos permisos HR_ADMINISTRATION.VIEW_EMPLOYEES, MANAGE_EMPLOYEES o
+    SCHEDULE_VACATION). POST /employees y PATCH /employees/{id} aceptan `areaCode` (código del catálogo; manda sobre
+    `areaId`/`areaName`; 422 HR_AREA_NOT_FOUND si no existe); el texto libre (`areaName`, `areaId`) sigue permitido por
+    compatibilidad: si coincide con un área del catálogo (sin mayúsculas ni tildes) se guarda como esa área, y si no, se guarda
+    como texto libre con `areaId` normalizado — así la capacidad de vacaciones por área (BR-ADP-002, 1 persona a la vez) no se
+    parte por diferencias de escritura. `Employee.areaId` es el `code` cuando el área es del catálogo. GET /employees y GET
+    /vacations/calendar aceptan `areaCode` como alias de `areaId`. Sin cambios de esquema en las respuestas existentes. La
+    semilla del catálogo trae solo las áreas documentadas de VeloxRent (Administración, Talento Humano, Servicios Generales,
+    Desarrollo de Tecnología, Atención al cliente, Marketing, Operaciones).
+
+    0.6.0 — DEC-ADP-EDIT-ETAG-001 / DEC-ADP-RELINK-001 (ADITIVO, sin romper clientes): PATCH /employees/{id} acepta el
+    header OPCIONAL If-Match (ETag fuerte de la versión de la ficha, ej. "3"); si no coincide responde 412
+    EMPLOYEE_VERSION_CONFLICT sin aplicar la edición (If-Match mal formado = 400 IF_MATCH_INVALID). EmployeeResponse expone
+    `version` y GET/PATCH /employees/{id} devuelven el header ETag. La respuesta del PATCH añade `accountRelink`
+    (UpdateEmployeeResponse) SOLO cuando la edición cambió el vínculo con la cuenta: action RELINKED (nueva cuenta) o
+    UNLINKED (no hay cuenta con el correo nuevo), para que el front muestre el aviso.
+
     0.5.0 — DEC-ADP-LINK-EMAIL-002: PATCH /employees/{id} con un correo distinto
     en una ficha YA vinculada la re-vincula a la cuenta del correo nuevo (audita
     EMPLOYEE_ACCOUNT_RELINKED); si no existe cuenta con ese correo la ficha queda
@@ -60,7 +78,7 @@ info:
     asignación activa).
 
     Errores: cuerpo `{ statusCode, code, detail }` (ver schema ProblemDetail). Códigos de negocio: EMPLOYEE_NOT_FOUND,
-    DUPLICATE_EMPLOYEE_DOCUMENT, CANDIDATE_ALREADY_EMPLOYEE, EMPLOYEE_TERMINATED, EMPLOYEE_STATUS_TRANSITION_NOT_ALLOWED,
+    DUPLICATE_EMPLOYEE_DOCUMENT, HR_AREA_NOT_FOUND, AREA_REQUIRED, CANDIDATE_ALREADY_EMPLOYEE, EMPLOYEE_TERMINATED, EMPLOYEE_STATUS_TRANSITION_NOT_ALLOWED,
     ATTENDANCE_ALREADY_LOGGED, INVALID_ATTENDANCE_RECORD, INVALID_PAYROLL_MONTH, DEDUCTIONS_BEFORE_MONTH_END,
     LEAVE_NOT_FOUND, LEAVE_ALREADY_RESOLVED, INVALID_LEAVE_STATUS, INVALID_DATE_RANGE, VACATION_OVERLAP,
     FIELD_TRIP_NOT_FOUND, FIELD_TRIP_NOT_PENDING, FIELD_TRIP_NOT_AUTHORIZED, FIELD_TRIP_TIMEOUT_NOT_ELAPSED,
@@ -106,6 +124,7 @@ paths:
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo; el listado se limita a esa sede }
         - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/EmployeeStatus' } }
         - { name: areaId, in: query, required: false, schema: { type: string } }
+        - { name: areaCode, in: query, required: false, schema: { type: string }, description: 'Código del catálogo de áreas (alias de areaId; se normaliza). Si vienen ambos manda areaCode.' }
         - { name: search, in: query, required: false, schema: { type: string } }
         - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
         - { name: offset, in: query, required: false, schema: { type: integer, minimum: 0, default: 0 } }
@@ -126,6 +145,24 @@ paths:
         '401': { description: Token ausente o inválido }
         '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES o contexto empresa/sede no vigente }
 
+  /hr-areas:
+    get:
+      operationId: listHrAreas
+      summary: Catálogo de áreas de RR.HH. de la empresa (dato de referencia, solo lectura)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo (el catálogo es de la empresa) }
+      responses:
+        '200':
+          description: Áreas activas de la empresa, ordenadas por sortOrder y nombre (lista vacía si la empresa aún no tiene catálogo)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HrAreaList' }
+        '400': { description: Parámetros inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: 'Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES, MANAGE_EMPLOYEES o SCHEDULE_VACATION, o contexto no vigente' }
+
   /employees/{id}:
     get:
       operationId: getEmployee
@@ -136,6 +173,8 @@ paths:
       responses:
         '200':
           description: Detalle completo del colaborador
+          headers:
+            ETag: { description: Versión de la ficha, ej. "3" (úsala en If-Match al editar), schema: { type: string } }
           content:
             application/json:
               schema: { $ref: '#/components/schemas/EmployeeDetailResponse' }
@@ -148,6 +187,11 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - name: If-Match
+          in: header
+          required: false
+          description: ETag fuerte con la versión de la ficha que el cliente leyó (ej. "3"). Opcional; si se envía y no coincide, 412 EMPLOYEE_VERSION_CONFLICT.
+          schema: { type: string, example: '"3"' }
       requestBody:
         required: true
         content:
@@ -155,15 +199,18 @@ paths:
             schema: { $ref: '#/components/schemas/UpdateEmployeeRequest' }
       responses:
         '200':
-          description: Colaborador actualizado
+          description: Colaborador actualizado (incluye `accountRelink` si cambió el vínculo con la cuenta)
+          headers:
+            ETag: { description: Versión nueva de la ficha, ej. "4", schema: { type: string } }
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/EmployeeResponse' }
-        '400': { description: Datos inválidos }
+              schema: { $ref: '#/components/schemas/UpdateEmployeeResponse' }
+        '400': { description: Datos inválidos o If-Match mal formado (IF_MATCH_INVALID) }
         '401': { description: Token ausente o inválido }
         '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES }
         '404': { description: Colaborador no encontrado }
         '409': { description: El colaborador ya está terminado (EMPLOYEE_TERMINATED) o el correo nuevo pertenece a una cuenta ya vinculada a otro colaborador (EMPLOYEE_ACCOUNT_ALREADY_LINKED) }
+        '412': { description: La ficha cambió desde que se leyó - recargar (EMPLOYEE_VERSION_CONFLICT) }
         '422': { description: Cambio de estado no permitido por edición - TERMINADO solo se registra con /terminate (EMPLOYEE_STATUS_TRANSITION_NOT_ALLOWED) }
 
   /employees/{id}/attendance:
@@ -400,6 +447,7 @@ paths:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo (el calendario es de toda la empresa) }
         - { name: areaId, in: query, required: false, schema: { type: string } }
+        - { name: areaCode, in: query, required: false, schema: { type: string }, description: 'Código del catálogo de áreas (alias de areaId; se normaliza). Si vienen ambos manda areaCode.' }
         - { name: year, in: query, required: true, schema: { type: integer, example: 2026 } }
         - { name: month, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 12 } }
       responses:
@@ -837,9 +885,27 @@ components:
       type: string
       enum: [PENDIENTE_NIVEL_1, PENDIENTE_NIVEL_2, PENDIENTE_NIVEL_3, AUTORIZADA, NO_AUTORIZADA, CERRADA_NORMAL, OBSERVADA]
 
+    HrArea:
+      type: object
+      required: [code, name, description, sortOrder]
+      properties:
+        code: { type: string, example: 'ATENCION_AL_CLIENTE', description: 'Código estable; es el valor de Employee.areaId cuando el área viene del catálogo.' }
+        name: { type: string, example: 'Atención al cliente' }
+        description: { type: string, nullable: true }
+        sortOrder: { type: integer }
+
+    HrAreaList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/HrArea' }
+
     CreateEmployeeRequest:
       type: object
-      required: [companyId, branchId, fullName, documentNumber, areaId, areaName, jobTitle, hireDate]
+      required: [companyId, branchId, fullName, documentNumber, jobTitle, hireDate]
+      description: 'Área obligatoria aunque ninguno de sus campos lo sea por separado (para no romper clientes): envía `areaCode` (catálogo) o, por compatibilidad, `areaName` (texto libre; `areaId` opcional). 400 AREA_REQUIRED (o 400 de validación) si falta ambos.'
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
@@ -849,8 +915,9 @@ components:
         fullName: { type: string, example: 'Carlos Alberto Perez' }
         email: { type: string, format: email, nullable: true }
         phone: { type: string, nullable: true }
-        areaId: { type: string, example: 'OPERACIONES' }
-        areaName: { type: string, example: 'Operaciones y Logística' }
+        areaCode: { type: string, example: 'OPERACIONES', description: 'Código del catálogo (GET /hr-areas). Manda sobre areaId/areaName; 422 HR_AREA_NOT_FOUND si no existe.' }
+        areaId: { type: string, example: 'OPERACIONES', description: 'Compatibilidad (texto libre): opcional; se normaliza. Se ignora si viene areaCode.' }
+        areaName: { type: string, example: 'Operaciones', description: 'Compatibilidad (texto libre). Si coincide con un área del catálogo se guarda como esa área.' }
         jobTitle: { type: string, example: 'Conductor / Auxiliar de Campo' }
         hireDate: { type: string, format: date }
         baseSalary: { type: number, nullable: true }
@@ -862,6 +929,7 @@ components:
         fullName: { type: string }
         email: { type: string, format: email, nullable: true }
         phone: { type: string, nullable: true }
+        areaCode: { type: string, description: 'Código del catálogo de áreas (GET /hr-areas); manda sobre areaId/areaName; 422 HR_AREA_NOT_FOUND si no existe.' }
         areaId: { type: string }
         areaName: { type: string }
         jobTitle: { type: string }
@@ -898,8 +966,31 @@ components:
         isFieldTripObserved: { type: boolean }
         baseSalary: { type: number, nullable: true }
         accountLinked: { type: boolean, description: La ficha está vinculada a una cuenta de usuario por correo (DEC-ADP-LINK-EMAIL-001) }
+        version: { type: integer, minimum: 1, description: Versión optimista de la ficha (DEC-ADP-EDIT-ETAG-001); mismo valor que el header ETag }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+
+    AccountRelinkNotice:
+      type: object
+      required: [action, reason]
+      properties:
+        action:
+          type: string
+          enum: [RELINKED, UNLINKED]
+          description: RELINKED = la ficha pasó a la cuenta del correo nuevo; UNLINKED = no existe cuenta con el correo nuevo y la ficha quedó sin vincular
+        reason: { type: string, enum: [EMAIL_CHANGED] }
+        previousEmail: { type: string, nullable: true }
+        newEmail: { type: string, nullable: true }
+
+    UpdateEmployeeResponse:
+      allOf:
+        - { $ref: '#/components/schemas/EmployeeResponse' }
+        - type: object
+          properties:
+            accountRelink:
+              description: Solo presente si la edición cambió el vínculo con la cuenta de acceso (DEC-ADP-RELINK-001)
+              allOf:
+                - { $ref: '#/components/schemas/AccountRelinkNotice' }
 
     EmployeeDetailResponse:
       allOf:

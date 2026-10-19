@@ -141,7 +141,7 @@ describe('RegisterCompanionHandler (DEC-ALQ-COMPANION-006, BR-ALQ-015)', () => {
     const full = { ...baseRental, vehiclePassengerCapacity: 1, parties: [...baseRental.parties!, { id: 'p2', rentalId: 'rent-1', customerId: 'cust-7', role: 'RESPONSIBLE', createdAt: new Date() }] } as RentalRecord;
     await expect(build(full).handler.execute(cmd())).rejects.toMatchObject({ code: 'COMPANION_PASSENGER_CAPACITY_EXCEEDED', httpStatus: 422 });
     await expect(build({ ...full, vehiclePassengerCapacity: 2 }).handler.execute(cmd())).resolves.toBeDefined();
-    await expect(build({ ...full, vehiclePassengerCapacity: null }).handler.execute(cmd())).resolves.toBeDefined(); // TODO: sin campo en Flota no se valida
+    await expect(build({ ...full, vehiclePassengerCapacity: null }).handler.execute(cmd())).resolves.toBeDefined(); // DEC-FLT-CAP-002: capacidad NULL (vehiculo anterior) = sin tope
   });
 
   it('exige el motivo (400), rechaza duplicados (409) y acompanante inexistente (422)', async () => {

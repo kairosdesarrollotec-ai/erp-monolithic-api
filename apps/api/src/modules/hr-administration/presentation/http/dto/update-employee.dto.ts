@@ -34,6 +34,13 @@ export class UpdateEmployeeDto {
   @MaxLength(50)
   phone?: string | null;
 
+  /** H-02: codigo del catalogo de areas (GET /hr-areas); manda sobre `areaId`/`areaName`. */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  areaCode?: string;
+
   @IsOptional()
   @IsString()
   @IsNotEmpty()

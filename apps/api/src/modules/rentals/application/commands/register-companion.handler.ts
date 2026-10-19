@@ -31,8 +31,8 @@ const DRIVER_REGISTRATION_STATUSES: ReadonlySet<string> = new Set([
  * licencia vigente firma como RESPONSABLE del contrato. Se registra como party rol `RESPONSIBLE`.
  * NO convierte al acompanante en conductor: se EXIGE registrar tambien al conductor real (party `DRIVER`,
  * respuesta de Fiorella 16-oct-2026); el responsable legal es quien firma. La licencia no se guarda: solo los
- * checks `companionLicenseVerified`/`driverLicenseVerified`. El maximo de acompanantes sera la capacidad de
- * pasajeros del vehiculo (TODO: Flota aun no la tiene). El motivo queda en auditoria y en el evento outbox (no hay columna para persistirlo).
+ * checks `companionLicenseVerified`/`driverLicenseVerified`. El maximo de acompanantes es la capacidad de
+ * pasajeros del vehiculo (G-05); si el vehiculo anterior no la tiene registrada (NULL) no hay tope (DEC-FLT-CAP-002). El motivo queda en auditoria y en el evento outbox (no hay columna para persistirlo).
  * Permiso: reutiliza RENTAL.FORMALIZE_CONTRACT.
  */
 @Injectable()

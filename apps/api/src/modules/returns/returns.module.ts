@@ -5,6 +5,7 @@ import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { RentalsModule } from '../rentals/rentals.module';
 import { FleetModule } from '../fleet/fleet.module';
+import { SyncConflictsModule } from '../sync-conflicts/sync-conflicts.module';
 import { ReturnsController } from './presentation/http/returns.controller';
 import { ReturnEvidenceController } from './presentation/http/return-evidence.controller';
 import { ReturnAccessService } from './application/services/return-access.service';
@@ -50,6 +51,10 @@ import { PrismaReturnReminderPersistence } from './infrastructure/persistence/pr
 import { PrismaReturnAlertPersistence } from './infrastructure/persistence/prisma-return-alert.persistence';
 import { PrismaReturnVehicleCommitmentPersistence } from './infrastructure/persistence/prisma-return-vehicle-commitment.persistence';
 import { ReturnReminderScheduler } from './infrastructure/scheduling/return-reminder.scheduler';
+import { ReturnAlertScheduler } from './infrastructure/scheduling/return-alert.scheduler';
+import { PublishReturnDashboardAlertsHandler } from './application/commands/publish-return-dashboard-alerts.handler';
+import { ReturnDashboardAlertPort } from './application/ports/return-dashboard-alert.port';
+import { PrismaReturnDashboardAlertPersistence } from './infrastructure/persistence/prisma-return-dashboard-alert.persistence';
 import { GetResponsibilityTemplateHandler } from './application/queries/get-responsibility-template.handler';
 
 /**
@@ -59,7 +64,7 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
  * DocumentTemplatesModule provee la plantilla del documento de responsabilidad (PROP-015b).
  */
 @Module({
-  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, RentalsModule, FleetModule, DocumentTemplatesModule],
+  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, RentalsModule, FleetModule, DocumentTemplatesModule, SyncConflictsModule],
   controllers: [ReturnsController, ReturnEvidenceController],
   providers: [
     ReturnAccessService,
@@ -86,6 +91,8 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     ListReturnRemindersHandler,
     ListReturnAlertsHandler,
     ReturnReminderScheduler,
+    PublishReturnDashboardAlertsHandler,
+    ReturnAlertScheduler,
     PrismaReturnDamagePersistence,
     PrismaImmobilizationChargePersistence,
     PrismaReturnEvidencePersistence,
@@ -99,6 +106,8 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     { provide: ReturnReminderRepositoryPort, useClass: PrismaReturnReminderPersistence },
     // BR-DEV-001 / BR-DEV-011: alertas de garantía 24 h e inmovilización > 24 h (solo alerta).
     { provide: ReturnAlertRepositoryPort, useClass: PrismaReturnAlertPersistence },
+    // DEC-DEVREM-002: proyección de la alerta de garantía de 24 h al tablero de Finanzas (dashboard_items).
+    { provide: ReturnDashboardAlertPort, useClass: PrismaReturnDashboardAlertPersistence },
     // DEC-DEV-COMMITMENT-001: libera el compromiso RENTAL del vehículo al cerrar la devolución.
     { provide: ReturnVehicleCommitmentPort, useClass: PrismaReturnVehicleCommitmentPersistence },
   ],

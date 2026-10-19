@@ -63,8 +63,10 @@ export interface ReservationCreditResponse {
 
 /** Servicio de conductor de la empresa: tarifa diaria x dias (vista; solo GET detalle; no se persiste). */
 export interface CompanyDriverChargeResponse {
-  /** false = la tarifa diaria aun no esta configurada (total en "0.00"). */
+  /** false = la tarifa diaria aun no esta definida (source NOT_DEFINED; total en "0.00"). */
   configured: boolean;
+  /** DEC-ALQ-DRIVERRATE-001: origen de la tarifa (valor manual del alquiler > env > no definida). */
+  source: 'MANUAL' | 'ENV' | 'NOT_DEFINED';
   dailyRate: string;
   currency: string;
   days: number;

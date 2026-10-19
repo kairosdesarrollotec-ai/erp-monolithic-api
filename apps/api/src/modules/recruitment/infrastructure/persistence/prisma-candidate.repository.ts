@@ -12,6 +12,7 @@ import {
   RecruitmentRepositoryScope,
   SetCandidateCvInput,
 } from '../../application/ports/candidate-repository.port';
+import type { CandidateProcessState } from '../../domain/recruitment-domain-types';
 import { CandidateVersionConflictError } from '../../domain/recruitment-errors';
 
 @Injectable()
@@ -41,6 +42,8 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
       hasCv: Boolean(entity.cvObjectUrl),
       salaryExpectation: entity.salaryExpectation != null ? Number(entity.salaryExpectation) : null,
       stage: entity.stage,
+      processState: entity.processState,
+      processStateChangedAt: entity.processStateChangedAt,
       decision: entity.decision,
       decisionNotes: entity.decisionNotes,
       decidedBy: entity.decidedBy,
@@ -287,6 +290,7 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
     decisionNotes: string | null,
     decidedBy: string,
     decidedAt: Date,
+    processState: CandidateProcessState,
     expectedVersion: number,
     tx?: Prisma.TransactionClient,
   ): Promise<CandidateRecord> {
@@ -302,6 +306,8 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
         decidedBy,
         decidedAt,
         stage: CandidateStage.DECISION,
+        processState,
+        processStateChangedAt: decidedAt,
         version: { increment: 1 },
       },
     });
@@ -310,6 +316,25 @@ export class PrismaCandidateRepository implements CandidateRepositoryPort {
       throw new CandidateVersionConflictError();
     }
 
+    const reloaded = await client.candidate.findUniqueOrThrow({ where: { id } });
+    return this.mapToRecord(reloaded);
+  }
+
+  async updateProcessState(
+    id: string,
+    from: CandidateProcessState,
+    to: CandidateProcessState,
+    changedAt: Date,
+    tx?: Prisma.TransactionClient,
+  ): Promise<CandidateRecord> {
+    const client = tx ?? this.prisma;
+    const updated = await client.candidate.updateMany({
+      where: { id, processState: from },
+      data: { processState: to, processStateChangedAt: changedAt },
+    });
+    if (updated.count === 0) {
+      throw new CandidateVersionConflictError();
+    }
     const reloaded = await client.candidate.findUniqueOrThrow({ where: { id } });
     return this.mapToRecord(reloaded);
   }

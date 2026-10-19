@@ -7,7 +7,9 @@ import { RecruitmentAccessService } from '../services/recruitment-access.service
 import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { OnboardingRecord, OnboardingRepositoryPort } from '../ports/onboarding-repository.port';
 import { CandidateNotFoundError, OnboardingNotFoundError, ProbationAlreadyEvaluatedError } from '../../domain/recruitment-errors';
-import { applyOnboardingFeeVisibility } from '../../domain/recruitment-rules';
+import { CandidateProcessState } from '../../domain/recruitment-domain-types';
+import { applyOnboardingFeeVisibility, assertCandidateProcessTransition } from '../../domain/recruitment-rules';
+import { transitionCandidateProcess } from '../services/recruitment-progress';
 import { EvaluateProbationCommand } from './evaluate-probation.command';
 
 @Injectable()
@@ -47,6 +49,10 @@ export class EvaluateProbationHandler {
         throw new ProbationAlreadyEvaluatedError();
       }
 
+      // BDD-REC §11.6: Periodo de prueba -> Planilla (evaluación positiva) | Terminado (negativa).
+      const targetState = command.passed ? CandidateProcessState.PLANILLA : CandidateProcessState.TERMINADO;
+      assertCandidateProcessTransition(candidate.processState, targetState);
+
       const now = this.clock.now();
       const updated = await this.onboarding.evaluateProbation(
         command.candidateId,
@@ -55,6 +61,19 @@ export class EvaluateProbationHandler {
           qualitativeEvaluation: command.qualitativeEvaluation.trim(),
           evaluatedAt: now,
           evaluatedBy: command.firebaseUid,
+        },
+        tx,
+      );
+
+      await transitionCandidateProcess(
+        { candidates: this.candidates, audit: this.auditRepository },
+        {
+          candidate,
+          to: targetState,
+          at: now,
+          organizationId: context.organizationId,
+          actorUserId: command.firebaseUid,
+          trigger: 'PROBATION_EVALUATED',
         },
         tx,
       );

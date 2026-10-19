@@ -30,6 +30,8 @@ function detail(over: Partial<CandidateDetailRecord> = {}): CandidateDetailRecor
     hasCv: false,
     salaryExpectation: 2500,
     stage: CandidateStage.ENTREVISTA,
+    processState: 'EN_NEGOCIACION',
+    processStateChangedAt: null,
     decision: null,
     decisionNotes: null,
     decidedBy: null,

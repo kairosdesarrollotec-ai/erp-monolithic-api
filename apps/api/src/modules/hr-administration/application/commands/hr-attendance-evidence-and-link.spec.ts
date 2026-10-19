@@ -4,6 +4,7 @@ import {
   EmployeeEmailRequiredError,
   EmployeeNotFoundError,
   EmployeeTerminatedError,
+  EmployeeVersionConflictError,
   InvalidAttendanceEvidenceError,
   UserAccountNotFoundError,
 } from '../../domain/hr-administration-errors';
@@ -258,6 +259,64 @@ describe('vínculo usuario-ficha por correo (DEC-ADP-LINK-EMAIL-001)', () => {
       await handler.execute(new UpdateEmployeeCommand(UID, 'emp-1', { jobTitle: 'Jefe' }));
       expect(b.employees.setFirebaseUid).not.toHaveBeenCalled();
       expect(b.accounts.findUidByEmail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('UpdateEmployee: If-Match (DEC-ADP-EDIT-ETAG-001) y aviso de re-vinculación (executeDetailed)', () => {
+    function setup(existing = buildEmployee({ email: 'ana@kairos.pe', firebaseUid: 'uid-ana', version: 3 })) {
+      const b = build();
+      const access = new HrAdministrationAccessService(buildWorkContext('RRHH'), buildMatrixAuth());
+      const handler = new UpdateEmployeeHandler(access, b.employees, b.tm, b.audit, b.linker);
+      b.employees.findById.mockResolvedValue(existing);
+      b.employees.update.mockImplementation(async (_id, data) => ({ ...existing, ...(data as object), version: existing.version + 1 }) as never);
+      b.employees.setFirebaseUid.mockImplementation(async (_id, uid) => ({ ...existing, email: 'nuevo@kairos.pe', firebaseUid: uid, version: existing.version + 1 }) as never);
+      return { b, handler };
+    }
+
+    it('412 EMPLOYEE_VERSION_CONFLICT si If-Match no coincide con la versión y no escribe nada', async () => {
+      const { b, handler } = setup();
+      const err = await handler.executeDetailed(new UpdateEmployeeCommand(UID, 'emp-1', { jobTitle: 'Jefe' }, 2)).catch((e) => e);
+      expect(err).toBeInstanceOf(EmployeeVersionConflictError);
+      expect(err.httpStatus).toBe(412);
+      expect(err.code).toBe('EMPLOYEE_VERSION_CONFLICT');
+      expect(b.employees.update).not.toHaveBeenCalled();
+    });
+
+    it('con la versión correcta aplica la edición condicional (expectedVersion llega al repositorio)', async () => {
+      const { b, handler } = setup();
+      const r = await handler.executeDetailed(new UpdateEmployeeCommand(UID, 'emp-1', { jobTitle: 'Jefe' }, 3));
+      expect(b.employees.update).toHaveBeenCalledWith('emp-1', { jobTitle: 'Jefe' }, b.tm.tx, { expectedVersion: 3 });
+      expect(r.employee.version).toBe(4);
+      expect(r.accountRelink).toBeNull();
+    });
+
+    it('sin If-Match no hay control de concurrencia (compatibilidad)', async () => {
+      const { b, handler } = setup();
+      await handler.executeDetailed(new UpdateEmployeeCommand(UID, 'emp-1', { jobTitle: 'Jefe' }));
+      expect(b.employees.update).toHaveBeenCalledWith('emp-1', { jobTitle: 'Jefe' }, b.tm.tx);
+    });
+
+    it('informa RELINKED con el correo anterior cuando el correo cambia y hay cuenta nueva', async () => {
+      const { b, handler } = setup();
+      b.accounts.findUidByEmail.mockResolvedValue('uid-nuevo');
+      b.employees.findByFirebaseUid.mockResolvedValue(null);
+      const r = await handler.executeDetailed(new UpdateEmployeeCommand(UID, 'emp-1', { email: 'nuevo@kairos.pe' }, 3));
+      expect(r.accountRelink).toBe('RELINKED');
+      expect(r.previousEmail).toBe('ana@kairos.pe');
+      expect(r.employee.firebaseUid).toBe('uid-nuevo');
+    });
+
+    it('informa UNLINKED cuando no existe cuenta con el correo nuevo', async () => {
+      const { b, handler } = setup();
+      b.accounts.findUidByEmail.mockResolvedValue(null);
+      const r = await handler.executeDetailed(new UpdateEmployeeCommand(UID, 'emp-1', { email: 'nuevo@kairos.pe' }));
+      expect(r.accountRelink).toBe('UNLINKED');
+    });
+
+    it('execute() conserva su contrato anterior (devuelve la ficha)', async () => {
+      const { handler } = setup();
+      const e = await handler.execute(new UpdateEmployeeCommand(UID, 'emp-1', { jobTitle: 'Jefe' }));
+      expect(e.jobTitle).toBe('Jefe');
     });
   });
 });

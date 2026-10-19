@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -10,9 +11,12 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import type { Response } from 'express';
+import { parseVersionIfMatch } from '../../../../common/http/etag';
 import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastructure/auth/firebase-auth.guard';
 import { RecentAuth, RecentAuthGuard } from '../../../users/infrastructure/auth/recent-auth.guard';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
@@ -37,11 +41,13 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { ListEmployeesQueryDto } from './dto/list-employees-query.dto';
 import { TerminateEmploymentDto } from './dto/terminate-employment.dto';
 import { parseDateOnly } from './dto/hr-date';
+import { areaCodeFromText } from '../../domain/hr-area-rules';
 import type {
   EmployeeDetailResponse,
   EmployeeListResponse,
   EmployeeResponse,
   EmploymentTerminationResponse,
+  UpdateEmployeeResponse,
   HrMemoResponse,
   TrainingResponse,
 } from './dto/hr-administration.response';
@@ -80,14 +86,15 @@ export class EmployeesController {
         dto.documentType ?? 'DNI',
         dto.documentNumber,
         dto.fullName,
-        dto.areaId,
-        dto.areaName,
+        dto.areaId ?? '',
+        dto.areaName ?? '',
         dto.jobTitle,
         parseDateOnly(dto.hireDate),
         dto.email,
         dto.phone,
         dto.baseSalary,
         dto.candidateId,
+        dto.areaCode,
       ),
     );
     return toEmployeeResponse(created);
@@ -104,7 +111,7 @@ export class EmployeesController {
         query.companyId,
         query.branchId,
         query.status,
-        query.areaId,
+        query.areaCode ? areaCodeFromText(query.areaCode) : query.areaId,
         query.search,
         query.limit,
         query.offset,
@@ -117,8 +124,10 @@ export class EmployeesController {
   async getDetail(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<EmployeeDetailResponse> {
     const detail = await this.getEmployeeDetail.execute(new GetEmployeeDetailQuery(req.firebaseUid!, id));
+    res.setHeader('ETag', `"${detail.employee.version}"`);
     return toEmployeeDetailResponse(detail);
   }
 
@@ -145,7 +154,9 @@ export class EmployeesController {
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateEmployeeDto,
-  ): Promise<EmployeeResponse> {
+    @Headers('if-match') ifMatch: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<UpdateEmployeeResponse> {
     const { payrollStartedAt, ...rest } = dto;
     const data: UpdateEmployeeData = {
       ...rest,
@@ -153,8 +164,19 @@ export class EmployeesController {
         ? { payrollStartedAt: payrollStartedAt === null ? null : new Date(payrollStartedAt) }
         : {}),
     };
-    const updated = await this.updateEmployee.execute(new UpdateEmployeeCommand(req.firebaseUid!, id, data));
-    return toEmployeeResponse(updated);
+    // DEC-ADP-EDIT-ETAG-001: If-Match es OPCIONAL (compatibilidad); si viene, debe ser un ETag fuerte de versión y la edición
+    // falla con 412 EMPLOYEE_VERSION_CONFLICT si la ficha cambió.
+    const expectedVersion = ifMatch === undefined || ifMatch.trim() === '' ? undefined : parseVersionIfMatch(ifMatch);
+    const { employee, accountRelink, previousEmail } = await this.updateEmployee.executeDetailed(
+      new UpdateEmployeeCommand(req.firebaseUid!, id, data, expectedVersion),
+    );
+    res.setHeader('ETag', `"${employee.version}"`);
+    return {
+      ...toEmployeeResponse(employee),
+      ...(accountRelink
+        ? { accountRelink: { action: accountRelink, reason: 'EMAIL_CHANGED' as const, previousEmail, newEmail: employee.email ?? null } }
+        : {}),
+    };
   }
 
   /** DEC-ADP-LINK-EMAIL-001: vincula la ficha con la cuenta de usuario del mismo correo (409 si ya está vinculado a otro). */

@@ -34,8 +34,35 @@ export interface EmployeeResponse {
   baseSalary: number | null;
   /** DEC-ADP-LINK-EMAIL-001: la ficha está vinculada a una cuenta de usuario (por correo). */
   accountLinked: boolean;
+  /** DEC-ADP-EDIT-ETAG-001: versión optimista; viaja también en el header ETag y se devuelve en If-Match. */
+  version: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/** DEC-ADP-RELINK-001: aviso de re-vinculación que acompaña a la respuesta de PATCH /employees/{id}. */
+export interface AccountRelinkNotice {
+  action: 'RELINKED' | 'UNLINKED';
+  reason: 'EMAIL_CHANGED';
+  previousEmail: string | null;
+  newEmail: string | null;
+}
+
+export interface UpdateEmployeeResponse extends EmployeeResponse {
+  /** Solo presente si la edición cambió el vínculo con la cuenta de acceso. */
+  accountRelink?: AccountRelinkNotice;
+}
+
+/** H-02: area del catalogo de RR.HH. de la empresa. `Employee.areaId` es el `code` cuando el area viene del catalogo. */
+export interface HrAreaResponse {
+  code: string;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+}
+
+export interface HrAreaListResponse {
+  items: HrAreaResponse[];
 }
 
 export interface EmployeeListResponse {

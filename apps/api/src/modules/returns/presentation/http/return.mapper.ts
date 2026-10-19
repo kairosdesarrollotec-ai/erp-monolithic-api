@@ -178,6 +178,7 @@ export function toReturnAlertItemResponse(item: ReturnAlertItem): ReturnAlertIte
     receivedAt: item.receivedAt.toISOString(),
     warrantyRelease: item.warrantyRelease ? toWarrantyReleaseAlertResponse(item.warrantyRelease) : null,
     immobilization: item.immobilization ? toImmobilizationAlertResponse(item.immobilization) : null,
+    lateCharge: item.lateCharge ? { lateMinutes: item.lateCharge.lateMinutes, lateToleranceMinutes: item.lateCharge.lateToleranceMinutes } : null,
   };
 }
 

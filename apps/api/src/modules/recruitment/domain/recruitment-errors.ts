@@ -192,3 +192,13 @@ export class OnboardingVersionConflictError extends DomainConflictError {
     super('La incorporación fue modificada por otra operación. Recarga los datos.');
   }
 }
+
+export class CandidateStateTransitionError extends DomainUnprocessableError {
+  readonly code = 'CANDIDATE_STATE_TRANSITION_INVALID';
+
+  constructor(currentState: string, targetState: string) {
+    super(
+      `No es posible pasar al candidato de ${currentState} a ${targetState} en el flujo de Reclutamiento y Selección (BDD-REC §11.6).`,
+    );
+  }
+}

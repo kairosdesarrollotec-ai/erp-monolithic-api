@@ -8,7 +8,7 @@ import {
   TerminateEmployeeData,
   UpdateEmployeeData,
 } from '../../application/ports/employee-repository.port';
-import { EmploymentAlreadyTerminatedError } from '../../domain/hr-administration-errors';
+import { EmployeeVersionConflictError, EmploymentAlreadyTerminatedError } from '../../domain/hr-administration-errors';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -128,10 +128,33 @@ export class PrismaEmployeeRepository implements EmployeeRepositoryPort {
     return { items, total };
   }
 
-  async update(id: string, data: UpdateEmployeeData, tx?: Prisma.TransactionClient): Promise<Employee> {
+  async update(
+    id: string,
+    data: UpdateEmployeeData,
+    tx?: Prisma.TransactionClient,
+    options?: { expectedVersion?: number },
+  ): Promise<Employee> {
     const client = tx ?? this.prisma;
+    const expectedVersion = options?.expectedVersion;
+    const where: Prisma.EmployeeWhereUniqueInput = expectedVersion === undefined ? { id } : { id, version: expectedVersion };
+    try {
+      return await this.applyUpdate(client, where, data);
+    } catch (error) {
+      // P2025: ningún registro cumple {id, version} -> la ficha cambió desde que el cliente la leyó (If-Match).
+      if (expectedVersion !== undefined && (error as { code?: string } | null)?.code === 'P2025') {
+        throw new EmployeeVersionConflictError();
+      }
+      throw error;
+    }
+  }
+
+  private applyUpdate(
+    client: Prisma.TransactionClient | PrismaService,
+    where: Prisma.EmployeeWhereUniqueInput,
+    data: UpdateEmployeeData,
+  ): Promise<Employee> {
     return client.employee.update({
-      where: { id },
+      where,
       data: {
         ...(data.branchId !== undefined ? { branchId: data.branchId } : {}),
         ...(data.fullName !== undefined ? { fullName: data.fullName } : {}),

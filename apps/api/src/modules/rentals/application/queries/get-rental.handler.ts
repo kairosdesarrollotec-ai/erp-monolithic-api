@@ -39,10 +39,12 @@ export class GetRentalHandler {
     // P0-03 (a): vista previa del traslado reserva -> garantia para ENTREGA-03.
     // Solo alquileres de origen Reserva; en alquiler directo queda en null.
     // Respuesta de Fiorella 16-oct-2026: conductor de la empresa = tarifa diaria x dias (vista, no persistida).
+    // DEC-ALQ-DRIVERRATE-001: prioridad valor manual del alquiler > env > NOT_DEFINED.
     const companyDriverCharge = isCompanyDriverVariantCode(rental.contract?.contractVariant)
       ? computeCompanyDriverCharge({
           dailyRate: process.env.COMPANY_DRIVER_DAILY_RATE,
           currency: process.env.COMPANY_DRIVER_DAILY_RATE_CURRENCY,
+          manualDailyRate: rental.companyDriverDailyRate,
           startAt: rental.startAt,
           expectedEndAt: rental.expectedEndAt,
         })

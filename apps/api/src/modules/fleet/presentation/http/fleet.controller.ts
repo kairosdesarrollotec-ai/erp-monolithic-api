@@ -85,9 +85,7 @@ export class FleetController {
         dto.plate,
         dto.brand,
         dto.model,
-        dto.depositMinimum,
         dto.passengerCapacity,
-        dto.fuelPrice,
         dto.year,
         dto.color,
         dto.category,
@@ -95,6 +93,8 @@ export class FleetController {
         dto.dailyRate,
         dto.photoUrl,
         dto.assignedBranchId,
+        dto.depositMinimum,
+        dto.fuelPrice,
       ),
     );
 

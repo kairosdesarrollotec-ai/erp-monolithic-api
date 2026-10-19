@@ -1,5 +1,5 @@
-export type ReturnAlertType = 'WARRANTY_RELEASE' | 'IMMOBILIZATION';
-export const RETURN_ALERT_TYPES: readonly ReturnAlertType[] = ['WARRANTY_RELEASE', 'IMMOBILIZATION'];
+export type ReturnAlertType = 'WARRANTY_RELEASE' | 'IMMOBILIZATION' | 'LATE_CHARGE';
+export const RETURN_ALERT_TYPES: readonly ReturnAlertType[] = ['WARRANTY_RELEASE', 'IMMOBILIZATION', 'LATE_CHARGE'];
 
 export const RETURN_ALERT_LIST_DEFAULT_LIMIT = 100;
 export const RETURN_ALERT_LIST_MAX_LIMIT = 200;

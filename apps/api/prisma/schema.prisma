@@ -44,6 +44,7 @@ model IdempotencyKey {
   createdAt      DateTime @default(now()) @map("created_at")
   expiresAt      DateTime @map("expires_at")
 
+  @@index([expiresAt], map: "idempotency_keys_expires_at_idx")
   @@map("idempotency_keys")
 }
 
@@ -73,6 +74,7 @@ model OutboxEvent {
   deadLetteredAt DateTime? @map("dead_lettered_at")
 
   @@index([processedAt])
+  @@index([deadLetteredAt], map: "outbox_events_dead_lettered_at_idx")
   @@index([aggregateType, processedAt, deadLetteredAt, lockedUntil, createdAt], map: "outbox_events_claim_idx")
   @@map("outbox_events")
 }
@@ -322,6 +324,7 @@ model Company {
   matrixVersions RolePermissionMatrixVersion[]
   vacancies    Vacancy[]
   employees    Employee[]
+  hrAreas      HrArea[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -891,6 +894,7 @@ model DashboardItem {
 
   @@unique([sourceEventId, itemType])
   @@index([organizationId, operatingCompanyId, branchId, role, dismissedAt, priority])
+  @@index([sourceType, dismissedAt], map: "idx_dashboard_items_source_active")
   @@map("dashboard_items")
 }
 
@@ -943,6 +947,8 @@ model Rental {
   updatedAt          DateTime           @default(now()) @updatedAt @map("updated_at")
   updatedBy          String             @map("updated_by")
   version            Int                @default(1)
+  /// DEC-ALQ-DRIVERRATE-001: tarifa diaria manual del conductor de la empresa (NULL = sin valor manual; CHECK >= 0 en la migracion).
+  companyDriverDailyRate Decimal?   @db.Decimal(10, 2) @map("company_driver_daily_rate")
 
   operatingCompany Company      @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   branch           Branch       @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
@@ -1511,10 +1517,26 @@ enum VacancyStatus {
   NECESIDAD_REGISTRADA
   PUBLICADA
   EN_NEGOCIACION
+  /// BDD-REC-001 §11.6 - "Entrevistado": hay al menos un candidato con entrevista realizada, en análisis.
+  ENTREVISTADA
   DECIDIDA
   CANCELADA
   /// REC-02 "Pausar": convocatoria detenida temporalmente; se reanuda a PUBLICADA.
   PAUSADA
+}
+
+/// BDD-REC-001 §11.6 (Reclutamiento y Selección) - Estado de proceso del candidato, desde que está en contacto
+/// hasta planilla. Convive con `CandidateStage` (columna Kanban de REC-03): la etapa es presentación del tablero,
+/// el estado de proceso es la máquina de estados normativa. `PLANILLA -> Terminado` queda fuera (el BDD lo marca "futuro").
+enum CandidateProcessState {
+  EN_NEGOCIACION
+  ENTREVISTADO
+  DECIDIDO
+  DESCARTADO
+  INGRESADO
+  PERIODO_PRUEBA
+  PLANILLA
+  TERMINADO
 }
 
 /// REC-04 - Resultado de una ronda de negociacion de condiciones (REC-P06/P07).
@@ -1599,6 +1621,9 @@ model Candidate {
   cvUploadedAt       DateTime?          @map("cv_uploaded_at")
   cvUploadedBy       String?            @map("cv_uploaded_by")
   stage              CandidateStage     @default(NUEVO)
+  /// BDD-REC-001 §11.6 - Estado normativo del proceso (ver enum CandidateProcessState).
+  processState          CandidateProcessState @default(EN_NEGOCIACION) @map("process_state")
+  processStateChangedAt DateTime?             @map("process_state_changed_at")
   score              Decimal?           @db.Decimal(5, 2)
   decision           CandidateDecision?
   decisionNotes      String?            @map("decision_notes") @db.Text
@@ -1616,6 +1641,7 @@ model Candidate {
 
   @@unique([vacancyId, documentNumber], map: "candidates_vacancy_id_document_number_key")
   @@index([vacancyId, stage], map: "candidates_vacancy_id_stage_idx")
+  @@index([vacancyId, processState], map: "candidates_vacancy_id_process_state_idx")
   @@map("candidates")
 }
 
@@ -2014,3 +2040,92 @@ model TrainingAttendee {
   @@map("training_attendees")
 }
 
+/// TR-08 / SDD-KAIROS-TRANSVERSAL 17 - estado de sincronizacion offline de un checklist (ENTREGA o RECEPCION) tal como
+/// lo CONFIRMA el servidor. `fields` guarda cada campo con su revision (merge por campo); `evidence` es el manifiesto
+/// aditivo de tomas (zona+slot, contentHash). `status` solo es SYNCED si no hay conflictos abiertos. Sin FK a
+/// rentals/returns (el expediente es polimorfico: `source_id` = rental_id o return_id). Ver migracion 20261019000400.
+model SyncChecklistState {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  operatingCompanyId String    @map("operating_company_id")
+  branchId           String    @map("branch_id")
+  /// ENTREGA | RECEPCION (CHECK en la migracion)
+  checklistType      String    @map("checklist_type")
+  sourceId           String    @map("source_id")
+  /// Alquiler asociado (para auditoria): = source_id en ENTREGA, returns.rental_id en RECEPCION.
+  rentalId           String    @map("rental_id")
+  /// SYNCED | SYNC_CONFLICT (CHECK en la migracion)
+  status             String    @default("SYNCED")
+  version            Int       @default(1)
+  fields             Json      @default("{}")
+  evidence           Json      @default("[]")
+  serverConfirmedAt  DateTime? @map("server_confirmed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  conflicts SyncConflict[]
+
+  @@unique([checklistType, sourceId], map: "sync_checklist_states_type_source_key")
+  @@index([organizationId, operatingCompanyId, status], map: "idx_sync_states_scope_status")
+  @@map("sync_checklist_states")
+}
+
+/// TR-08 - conflicto de sincronizacion (un dato en conflicto = un registro). Nunca se borra: RESOLVED conserva
+/// ambas versiones, quien resolvio, la accion y el `reason` (siempre auditado). Indice unico parcial (state_id, kind,
+/// key) WHERE status = 'OPEN' en la migracion.
+model SyncConflict {
+  id                 String    @id @default(uuid())
+  stateId            String    @map("state_id")
+  organizationId     String    @map("organization_id")
+  operatingCompanyId String    @map("operating_company_id")
+  branchId           String    @map("branch_id")
+  checklistType      String    @map("checklist_type")
+  sourceId           String    @map("source_id")
+  rentalId           String    @map("rental_id")
+  /// FIELD | EVIDENCE
+  kind               String
+  /// Campo del checklist, o `zona#slot`
+  key                String
+  serverVersion      Json      @map("server_version")
+  localVersion       Json      @map("local_version")
+  localBaseRev       Int?      @map("local_base_rev")
+  /// OPEN | RESOLVED
+  status             String    @default("OPEN")
+  /// KEEP_LOCAL | KEEP_SERVER | MERGE
+  resolution         String?
+  reason             String?
+  detectedBy         String    @map("detected_by")
+  deviceId           String?   @map("device_id")
+  resolvedBy         String?   @map("resolved_by")
+  resolvedAt         DateTime? @map("resolved_at")
+  version            Int       @default(1)
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  state SyncChecklistState @relation(fields: [stateId], references: [id], onDelete: Cascade)
+
+  @@index([stateId, status], map: "idx_sync_conflicts_state_status")
+  @@index([organizationId, operatingCompanyId, checklistType, sourceId, status], map: "idx_sync_conflicts_scope_source")
+  @@map("sync_conflicts")
+}
+
+/// H-02 (19 oct 2026) / DEC-ADP-AREAS-001 - catalogo de areas de RR.HH. por empresa (dato de referencia). La semilla trae SOLO
+/// las areas documentadas en el organigrama oficial (Inventario de Procesos, 17 ago). `Employee.areaId` guarda el `code` del
+/// catalogo cuando el area viene de el; el texto libre sigue permitido por compatibilidad (sin FK a proposito).
+model HrArea {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  code               String   @db.VarChar(100)
+  name               String   @db.VarChar(100)
+  description        String?  @db.VarChar(255)
+  sortOrder          Int      @default(0) @map("sort_order")
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+
+  @@unique([operatingCompanyId, code], map: "hr_areas_company_code_key")
+  @@index([organizationId, operatingCompanyId, isActive], map: "hr_areas_scope_active_idx")
+  @@map("hr_areas")
+}

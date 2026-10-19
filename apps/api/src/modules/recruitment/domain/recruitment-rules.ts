@@ -1,5 +1,6 @@
 import {
   CandidateDecision,
+  CandidateProcessState,
   CandidateStage,
   NegotiationOutcome,
   VacancyStatus,
@@ -11,21 +12,96 @@ import {
   NegotiationInvalidError,
   VacancyNotPausableError,
   CandidateStageRegressionError,
+  CandidateStateTransitionError,
   MechanicMissingTechnicalChannelsError,
   OnboardingChecklistIncompleteError,
   OnboardingMissingNotarizedContractError,
   VacancyNotTransitionableError,
 } from './recruitment-errors';
 
+// BDD-REC-001 §11.6: Necesidad registrada -> Publicado -> En negociación -> Entrevistado -> Decidido.
+// "Decidido" solo se alcanza desde "Entrevistado". CANCELADA/PAUSADA son estados operativos de la vacante (REC-02).
 const ALLOWED_VACANCY_TRANSITIONS: Record<VacancyStatus, readonly VacancyStatus[]> = {
   NECESIDAD_REGISTRADA: [VacancyStatus.PUBLICADA, VacancyStatus.CANCELADA],
-  PUBLICADA: [VacancyStatus.EN_NEGOCIACION, VacancyStatus.DECIDIDA, VacancyStatus.PAUSADA, VacancyStatus.CANCELADA],
-  EN_NEGOCIACION: [VacancyStatus.DECIDIDA, VacancyStatus.CANCELADA],
+  PUBLICADA: [VacancyStatus.EN_NEGOCIACION, VacancyStatus.PAUSADA, VacancyStatus.CANCELADA],
+  EN_NEGOCIACION: [VacancyStatus.ENTREVISTADA, VacancyStatus.CANCELADA],
+  ENTREVISTADA: [VacancyStatus.DECIDIDA, VacancyStatus.CANCELADA],
   // REC-02 "Pausar": solo se pausa una convocatoria activa; reanudar vuelve a PUBLICADA (sin reeditar el perfil).
   PAUSADA: [VacancyStatus.PUBLICADA, VacancyStatus.CANCELADA],
   DECIDIDA: [],
   CANCELADA: [],
 };
+
+/** Orden del avance de la vacante por el flujo §11.6 (los estados operativos PAUSADA/CANCELADA no participan). */
+const VACANCY_PROGRESS_RANK: Partial<Record<VacancyStatus, number>> = {
+  PUBLICADA: 1,
+  EN_NEGOCIACION: 2,
+  ENTREVISTADA: 3,
+  DECIDIDA: 4,
+};
+
+/**
+ * Avance automático de la vacante cuando un candidato progresa (registrar candidato -> EN_NEGOCIACION,
+ * resultado de entrevista -> ENTREVISTADA, contratación -> DECIDIDA). Es monótono: devuelve `target` solo si
+ * la vacante está activa y `target` está estrictamente más adelante; si no, null (nada que hacer). Un candidato
+ * descartado nunca hace retroceder la vacante (EX-REC-001/002: la vacante sigue abierta).
+ */
+export function resolveVacancyProgress(current: VacancyStatus, target: VacancyStatus): VacancyStatus | null {
+  const from = VACANCY_PROGRESS_RANK[current];
+  const to = VACANCY_PROGRESS_RANK[target];
+  if (from === undefined || to === undefined || to <= from) {
+    return null;
+  }
+  return target;
+}
+
+// BDD-REC-001 §11.6 (columna "Salidas permitidas"). PLANILLA -> TERMINADO está marcado "(futuro)" en el BDD:
+// no se habilita. Los estados terminales no admiten salidas.
+const ALLOWED_PROCESS_TRANSITIONS: Record<CandidateProcessState, readonly CandidateProcessState[]> = {
+  EN_NEGOCIACION: [CandidateProcessState.ENTREVISTADO, CandidateProcessState.DESCARTADO],
+  ENTREVISTADO: [CandidateProcessState.DECIDIDO],
+  DECIDIDO: [CandidateProcessState.INGRESADO, CandidateProcessState.DESCARTADO],
+  INGRESADO: [CandidateProcessState.PERIODO_PRUEBA],
+  PERIODO_PRUEBA: [CandidateProcessState.PLANILLA, CandidateProcessState.TERMINADO],
+  PLANILLA: [],
+  DESCARTADO: [],
+  TERMINADO: [],
+};
+
+export function canTransitionCandidateProcess(from: CandidateProcessState, to: CandidateProcessState): boolean {
+  return (ALLOWED_PROCESS_TRANSITIONS[from] ?? []).includes(to);
+}
+
+/** Valida una transición del flujo §11.6; permanecer en el mismo estado no es una transición (error). */
+export function assertCandidateProcessTransition(from: CandidateProcessState, to: CandidateProcessState): void {
+  if (!canTransitionCandidateProcess(from, to)) {
+    throw new CandidateStateTransitionError(from, to);
+  }
+}
+
+/**
+ * Camino de estados que recorre una decisión (todas las transiciones deben ser válidas):
+ * - CONTRATADO: ENTREVISTADO -> DECIDIDO.
+ * - RECHAZADO tras la entrevista: ENTREVISTADO -> DECIDIDO -> DESCARTADO ("Decidido: salidas Ingresado, Descartado").
+ * - RECHAZADO sin entrevista: EN_NEGOCIACION -> DESCARTADO ("En negociación: salidas Entrevistado, Descartado").
+ * Devuelve el estado final; lanza CANDIDATE_STATE_TRANSITION_INVALID si algún paso no es válido.
+ */
+export function resolveDecisionProcessState(
+  current: CandidateProcessState,
+  decision: CandidateDecision,
+): CandidateProcessState {
+  if (decision === CandidateDecision.CONTRATADO) {
+    assertCandidateProcessTransition(current, CandidateProcessState.DECIDIDO);
+    return CandidateProcessState.DECIDIDO;
+  }
+  if (current === CandidateProcessState.ENTREVISTADO) {
+    assertCandidateProcessTransition(current, CandidateProcessState.DECIDIDO);
+    assertCandidateProcessTransition(CandidateProcessState.DECIDIDO, CandidateProcessState.DESCARTADO);
+  } else {
+    assertCandidateProcessTransition(current, CandidateProcessState.DESCARTADO);
+  }
+  return CandidateProcessState.DESCARTADO;
+}
 
 /** Pausar solo aplica a una vacante PUBLICADA. */
 export function assertVacancyPausable(currentStatus: VacancyStatus): void {

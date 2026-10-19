@@ -11,6 +11,7 @@ import {
   SaveNotaryEvaluationInput,
   ApproveNotaryExceptionInput,
   FormalizeContractInput,
+  SetCompanyDriverDailyRateInput,
   AddAuthorizedDriverInput,
   CompleteDeliveryInput,
   RentalExtensionRecord,
@@ -401,6 +402,19 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
         status: 'CONTRACTING',
         updatedBy: input.updatedBy,
       },
+      tx,
+    );
+  }
+
+  async setCompanyDriverDailyRate(
+    input: SetCompanyDriverDailyRateInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord> {
+    return this.bumpVersion(
+      input.rentalId,
+      input.scope,
+      input.expectedVersion,
+      { companyDriverDailyRate: input.dailyRate, updatedBy: input.updatedBy },
       tx,
     );
   }

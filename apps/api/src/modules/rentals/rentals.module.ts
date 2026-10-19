@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { SyncConflictsModule } from '../sync-conflicts/sync-conflicts.module';
 import { RentalsController } from './presentation/http/rentals.controller';
 import { RentalsEvidenceController } from './presentation/http/rentals-evidence.controller';
 import { RentalsExtensionsController } from './presentation/http/rentals-extensions.controller';
@@ -9,6 +10,7 @@ import { RegisterAlcoholTestHandler } from './application/commands/register-alco
 import { EvaluateNotaryHandler } from './application/commands/evaluate-notary.handler';
 import { RegisterAuthorizedDriverHandler } from './application/commands/register-authorized-driver.handler';
 import { RegisterCompanionHandler } from './application/commands/register-companion.handler';
+import { SetCompanyDriverDailyRateHandler } from './application/commands/set-company-driver-daily-rate.handler';
 import { ApproveNotaryExceptionHandler } from './application/commands/approve-notary-exception.handler';
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
@@ -50,7 +52,7 @@ import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard'
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
 
 @Module({
-  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule, TemplatesModule],
+  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule, TemplatesModule, SyncConflictsModule],
   controllers: [RentalsController, RentalsEvidenceController, RentalsExtensionsController, RentalDocumentsController],
   providers: [
     CreateRentalHandler,
@@ -61,6 +63,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     ApproveNotaryExceptionHandler,
     RegisterAuthorizedDriverHandler,
     RegisterCompanionHandler,
+    SetCompanyDriverDailyRateHandler,
     FormalizeContractHandler,
     CompleteDeliveryHandler,
     RequestEvidenceUploadSessionHandler,

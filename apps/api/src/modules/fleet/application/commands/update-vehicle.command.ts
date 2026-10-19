@@ -11,7 +11,8 @@ export class UpdateVehicleCommand {
     public readonly category?: string,
     public readonly dailyRate?: number,
     public readonly depositMinimum?: number,
-    public readonly passengerCapacity?: number,
+    /** undefined = no cambia; null explicito = intento de vaciar => 400 PASSENGER_CAPACITY_REQUIRED. */
+    public readonly passengerCapacity?: number | null,
     public readonly fuelPrice?: number,
     public readonly photoUrl?: string,
     public readonly assignedBranchId?: string,

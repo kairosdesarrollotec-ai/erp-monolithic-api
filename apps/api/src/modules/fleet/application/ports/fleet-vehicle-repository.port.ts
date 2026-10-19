@@ -12,9 +12,9 @@ export interface CreateVehicleInput {
   category?: string | null;
   status?: VehicleStatus;
   dailyRate?: number | null;
-  depositMinimum: number;
+  depositMinimum?: number | null;
   passengerCapacity: number;
-  fuelPrice: number;
+  fuelPrice?: number | null;
   photoUrl?: string | null;
 }
 

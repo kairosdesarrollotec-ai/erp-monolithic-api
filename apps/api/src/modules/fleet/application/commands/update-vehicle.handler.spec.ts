@@ -120,4 +120,51 @@ describe('UpdateVehicleHandler', () => {
 
     expect(result.plate).toBe('ABC-123');
   });
+
+  describe('DEC-FLT-CAP-001: capacidad de pasajeros al editar', () => {
+    it('edita un vehiculo con capacidad NULL sin enviarla (no se bloquea la edicion)', async () => {
+      const vehicle = buildFleetVehicle({ passengerCapacity: null });
+      const repository = buildFleetVehicleRepository(vehicle);
+      const { access } = buildFleetAccessService('CAMPO');
+      const handler = new UpdateVehicleHandler(repository, access);
+
+      await handler.execute(new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, 'Toyota', 'Hilux', 2022));
+
+      expect(repository.update).toHaveBeenCalledWith(
+        'veh-1',
+        { organizationId: ORG, operatingCompanyId: COMPANY },
+        expect.objectContaining({ passengerCapacity: undefined }),
+      );
+    });
+
+    it('permite completar la capacidad de un vehiculo que no la tenia', async () => {
+      const vehicle = buildFleetVehicle({ passengerCapacity: null });
+      const repository = buildFleetVehicleRepository(vehicle);
+      const { access } = buildFleetAccessService('CAMPO');
+      const handler = new UpdateVehicleHandler(repository, access);
+
+      await handler.execute(
+        new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 7),
+      );
+
+      expect(repository.update).toHaveBeenCalledWith(
+        'veh-1',
+        { organizationId: ORG, operatingCompanyId: COMPANY },
+        expect.objectContaining({ passengerCapacity: 7 }),
+      );
+    });
+
+    it('rechaza con 400 PASSENGER_CAPACITY_REQUIRED si se envia la capacidad vacia (null) de forma explicita', async () => {
+      const repository = buildFleetVehicleRepository(buildFleetVehicle({ passengerCapacity: 5 }));
+      const { access } = buildFleetAccessService('CAMPO');
+      const handler = new UpdateVehicleHandler(repository, access);
+
+      await expect(
+        handler.execute(
+          new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, undefined, undefined, undefined, undefined, undefined, undefined, undefined, null),
+        ),
+      ).rejects.toMatchObject({ code: 'PASSENGER_CAPACITY_REQUIRED', httpStatus: 400 });
+      expect(repository.update).not.toHaveBeenCalled();
+    });
+  });
 });

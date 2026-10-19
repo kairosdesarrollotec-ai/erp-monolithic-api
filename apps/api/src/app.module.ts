@@ -23,6 +23,8 @@ import { AuthorizationModule } from './modules/authorization/authorization.modul
 import { ReportingModule } from './modules/reporting/reporting.module';
 import { SearchModule } from './modules/search/search.module';
 import { PrismaModule } from './common/persistence/prisma.module';
+import { RetentionModule } from './modules/retention/retention.module';
+import { SyncConflictsModule } from './modules/sync-conflicts/sync-conflicts.module';
 import { IdempotencyModule } from './common/http/idempotency.module';
 
 @Module({
@@ -54,6 +56,8 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     NotificationsModule,
     ReportingModule,
     SearchModule,
+    RetentionModule,
+    SyncConflictsModule,
   ],
   providers: [
     // Guard global de throttling: aplica a todos los endpoints.

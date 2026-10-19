@@ -23,6 +23,7 @@ import { GetVacationsCalendarHandler } from '../../application/queries/get-vacat
 import { ScheduleVacationDto } from './dto/schedule-vacation.dto';
 import { VacationsCalendarQueryDto } from './dto/vacations-calendar-query.dto';
 import { parseDateOnly } from './dto/hr-date';
+import { areaCodeFromText } from '../../domain/hr-area-rules';
 import type { VacationRequestResponse } from './dto/hr-administration.response';
 import { toVacationRequestResponse } from './hr-administration.mapper';
 
@@ -66,7 +67,7 @@ export class VacationsController {
     @Query() query: VacationsCalendarQueryDto,
   ): Promise<VacationRequestResponse[]> {
     const items = await this.getVacationsCalendar.execute(
-      new GetVacationsCalendarQuery(req.firebaseUid!, query.companyId, query.branchId, query.year, query.month, query.areaId),
+      new GetVacationsCalendarQuery(req.firebaseUid!, query.companyId, query.branchId, query.year, query.month, query.areaCode ? areaCodeFromText(query.areaCode) : query.areaId),
     );
     return items.map((v) =>
       toVacationRequestResponse(v, { employeeName: v.employee.fullName, areaName: v.employee.areaName }),

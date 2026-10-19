@@ -72,9 +72,13 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
         category: input.category ?? undefined,
         status: input.status ?? 'AVAILABLE',
         dailyRate: input.dailyRate !== undefined && input.dailyRate !== null ? new Prisma.Decimal(input.dailyRate) : undefined,
-        depositMinimum: new Prisma.Decimal(input.depositMinimum),
+        depositMinimum:
+          input.depositMinimum !== undefined && input.depositMinimum !== null
+            ? new Prisma.Decimal(input.depositMinimum)
+            : undefined,
         passengerCapacity: input.passengerCapacity,
-        fuelPrice: new Prisma.Decimal(input.fuelPrice),
+        fuelPrice:
+          input.fuelPrice !== undefined && input.fuelPrice !== null ? new Prisma.Decimal(input.fuelPrice) : undefined,
         photoUrl: input.photoUrl ?? undefined,
       },
     });

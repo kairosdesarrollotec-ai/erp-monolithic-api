@@ -144,15 +144,34 @@ describe('Consultas con alertas y recordatorios de Devolución', () => {
     it('filtra por tipo y consulta candidatos desde el umbral mínimo (20 h garantía / 24 h inmovilización)', async () => {
       const { deps, handler } = build();
       await handler.execute(new ListReturnAlertsQuery('uid-1', 'comp-1', 'branch-1'));
-      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: hoursBeforeNow(20), limit: 100 });
+      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: hoursBeforeNow(20), includeLateCharge: true, limit: 100 });
 
       await handler.execute(new ListReturnAlertsQuery('uid-1', 'comp-1', 'branch-1', 'IMMOBILIZATION', 5));
-      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: hoursBeforeNow(24), limit: 5 });
+      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: hoursBeforeNow(24), includeLateCharge: false, limit: 5 });
 
       deps.alerts.listCandidates.mockResolvedValue([
         buildReturnRecord({ id: 'r-overdue', status: 'SIN_DANOS', receivedAt: hoursBeforeNow(25) }),
       ]);
       expect(await handler.execute(new ListReturnAlertsQuery('uid-1', 'comp-1', 'branch-1', 'IMMOBILIZATION'))).toEqual([]);
+    });
+
+    it('LATE_CHARGE (DEC-DEVREM-003): sugiere registrar el cargo por retraso sin monto; solo pide candidatas por retraso (sin alertas de reloj)', async () => {
+      const { deps, handler } = build();
+      const scheduledAt = hoursBeforeNow(3);
+      deps.alerts.listCandidates.mockResolvedValue([
+        buildReturnRecord({ id: 'r-late', status: 'INSPECCION', scheduledAt, receivedAt: new Date(scheduledAt.getTime() + 45 * 60_000) }),
+        buildReturnRecord({ id: 'r-tolerance', status: 'INSPECCION', scheduledAt, receivedAt: new Date(scheduledAt.getTime() + 30 * 60_000) }),
+        buildReturnRecord({ id: 'r-registered', status: 'INSPECCION', scheduledAt, receivedAt: new Date(scheduledAt.getTime() + 90 * 60_000), lateChargeAmount: 50 }),
+        buildReturnRecord({ id: 'r-closed', status: 'CERRADA', scheduledAt, receivedAt: new Date(scheduledAt.getTime() + 90 * 60_000) }),
+      ]);
+
+      const items = await handler.execute(new ListReturnAlertsQuery('uid-1', 'comp-1', 'branch-1', 'LATE_CHARGE'));
+
+      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: null, includeLateCharge: true, limit: 100 });
+      expect(items).toHaveLength(1);
+      expect(items[0]).toMatchObject({ returnId: 'r-late', type: 'LATE_CHARGE', warrantyRelease: null, immobilization: null });
+      expect(items[0].lateCharge).toEqual({ lateMinutes: 45, lateToleranceMinutes: 30 });
+      expect(JSON.stringify(items[0])).not.toMatch(/amount|monto|suggestedTimeCharge/i);
     });
 
     it('rol sin lectura (RRHH) -> 403', async () => {

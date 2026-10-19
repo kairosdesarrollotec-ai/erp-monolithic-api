@@ -9,6 +9,11 @@ import { HrAdministrationAccessService } from './application/services/hr-adminis
 import { FieldTripCascadeService } from './application/services/field-trip-cascade.service';
 import { HrMemoService } from './application/services/hr-memo.service';
 import { EmployeeRepositoryPort } from './application/ports/employee-repository.port';
+import { HrAreaRepositoryPort } from './application/ports/hr-area-repository.port';
+import { HrAreaResolverService } from './application/services/hr-area-resolver.service';
+import { PrismaHrAreaRepository } from './infrastructure/persistence/prisma-hr-area.repository';
+import { ListHrAreasHandler } from './application/queries/list-hr-areas.handler';
+import { HrAreasController } from './presentation/http/hr-areas.controller';
 import { AttendanceRepositoryPort } from './application/ports/attendance-repository.port';
 import { LeaveRepositoryPort } from './application/ports/leave-repository.port';
 import { VacationRepositoryPort } from './application/ports/vacation-repository.port';
@@ -92,6 +97,7 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     FieldTripsController,
     MeEmployeeController,
     TrainingsController,
+    HrAreasController,
   ],
   providers: [
     HrAdministrationAccessService,
@@ -101,6 +107,9 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     RecentAuthGuard,
     FirebaseDisplayNameLookup,
     { provide: EmployeeRepositoryPort, useClass: PrismaEmployeeRepository },
+    { provide: HrAreaRepositoryPort, useClass: PrismaHrAreaRepository },
+    HrAreaResolverService,
+    ListHrAreasHandler,
     { provide: AttendanceRepositoryPort, useClass: PrismaAttendanceRepository },
     { provide: LeaveRepositoryPort, useClass: PrismaLeaveRepository },
     { provide: VacationRepositoryPort, useClass: PrismaVacationRepository },
