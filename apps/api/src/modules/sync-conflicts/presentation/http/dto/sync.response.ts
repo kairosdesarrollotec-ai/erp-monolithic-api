@@ -1,4 +1,4 @@
-import type { SyncChecklistStatus, SyncChecklistType, SyncConflictKind, SyncConflictStatus, SyncEvidenceEntry, SyncFieldVersion, SyncResolution } from '../../../domain/sync-types';
+import type { SyncFieldRevision, SyncChecklistStatus, SyncChecklistType, SyncConflictKind, SyncConflictStatus, SyncEvidenceEntry, SyncFieldVersion, SyncResolution } from '../../../domain/sync-types';
 
 export interface SyncConflictResponse {
   id: string;
@@ -34,6 +34,8 @@ export interface SyncChecklistResponse {
   serverConfirmedAt: string | null;
   stateVersion: number | null;
   openConflicts: SyncConflictResponse[];
+  /** 1.1.0: revision vigente por campo; el dispositivo la usa como `baseRev` de su siguiente edicion. */
+  fieldRevisions: SyncFieldRevision[];
 }
 
 export interface SyncChecklistResultResponse extends SyncChecklistResponse {
@@ -41,7 +43,9 @@ export interface SyncChecklistResultResponse extends SyncChecklistResponse {
   unchangedFields: string[];
   discardedFields: { key: string; dataType: string; code: string; detail: string }[];
   addedEvidence: string[];
-  duplicateEvidence: { clientCaptureId: string; reason: string; existingClientCaptureId: string }[];
+  duplicateEvidence: { clientCaptureId: string; reason: string; existingClientCaptureId: string; existingSlot?: number }[];
+  /** 1.1.0: slot definitivo de cada toma del lote. */
+  evidenceSlots: { clientCaptureId: string; zone: string; slot: number; outcome: string; assignedByServer: boolean }[];
 }
 
 export interface ResolveSyncConflictResponse {

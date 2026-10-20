@@ -107,6 +107,10 @@ export interface RentalResponse {
   vehicleBrand: string;
   vehicleModel: string;
   vehicleDepositMinimum: number | null;
+  /** DEC-ALQ-CAPWARN-001: null = vehiculo sin capacidad registrada (sin tope, no bloquea). */
+  vehiclePassengerCapacity: number | null;
+  /** DEC-ALQ-CAPWARN-002: acompanantes registrados (parties RESPONSIBLE). */
+  companionsCount: number;
   planCode: string;
   status: RentalStatus;
   startAt: string | null;

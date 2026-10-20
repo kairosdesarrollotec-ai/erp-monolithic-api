@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SyncSourceNotFoundError } from '../../domain/sync-errors';
-import type { SyncChecklistStatus } from '../../domain/sync-types';
+import { toFieldRevisions, type SyncChecklistStatus, type SyncFieldRevision } from '../../domain/sync-types';
 import { SyncChecklistState, SyncConflictRecord, SyncStateRepositoryPort } from '../ports/sync-state-repository.port';
 import { SyncSourcePort } from '../ports/sync-source.port';
 import { SyncAccessService } from '../services/sync-access.service';
@@ -15,6 +15,8 @@ export interface ChecklistSyncStatusResult {
   stateVersion: number | null;
   state: SyncChecklistState | null;
   openConflicts: SyncConflictRecord[];
+  /** Revision vigente por campo (1.1.0): base de la siguiente edicion del dispositivo. */
+  fieldRevisions: SyncFieldRevision[];
 }
 
 /** GET /sync/checklists/{type}/{sourceId} - estado que la pantalla TR-08 / ENTREGA-04 / DEV-04 muestra (el servidor manda). */
@@ -42,6 +44,7 @@ export class GetChecklistSyncStatusHandler {
       stateVersion: state?.version ?? null,
       state,
       openConflicts,
+      fieldRevisions: state ? toFieldRevisions(state.fields) : [],
     };
   }
 }

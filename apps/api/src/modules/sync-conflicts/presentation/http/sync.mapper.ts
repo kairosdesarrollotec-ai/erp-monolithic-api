@@ -44,6 +44,7 @@ export function toSyncChecklistResponse(r: ChecklistSyncStatusResult): SyncCheck
     serverConfirmedAt: r.serverConfirmedAt ? r.serverConfirmedAt.toISOString() : null,
     stateVersion: r.stateVersion,
     openConflicts: r.openConflicts.map(toSyncConflictResponse),
+    fieldRevisions: r.fieldRevisions,
   };
 }
 
@@ -60,6 +61,8 @@ export function toSyncChecklistResultResponse(r: SyncChecklistResult): SyncCheck
     discardedFields: r.discardedFields,
     addedEvidence: r.addedEvidence,
     duplicateEvidence: r.duplicateEvidence,
+    evidenceSlots: r.evidenceSlots,
+    fieldRevisions: r.fieldRevisions,
   };
 }
 

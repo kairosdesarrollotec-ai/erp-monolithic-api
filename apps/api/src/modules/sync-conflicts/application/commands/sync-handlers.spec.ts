@@ -5,6 +5,8 @@ import { SyncChecklistHandler } from './sync-checklist.handler';
 import { SyncChecklistCommand } from './sync-checklist.command';
 import { ResolveSyncConflictHandler } from './resolve-sync-conflict.handler';
 import { ResolveSyncConflictCommand } from './resolve-sync-conflict.command';
+import { GetChecklistSyncStatusHandler } from '../queries/get-checklist-sync-status.handler';
+import { GetChecklistSyncStatusQuery } from '../queries/sync-queries';
 import { SyncClosureGateService } from '../services/sync-closure-gate.service';
 import {
   SyncConfirmationRequiredError,
@@ -34,6 +36,10 @@ const field = (key: string, value: IncomingField['value'], baseRev = 0, dataType
   baseRev,
   editedAt: '2026-10-19T14:00:00.000Z',
 });
+const evidenceNoSlot = (id: string, hash: string): IncomingEvidence => {
+  const { slot: _slot, ...rest } = evidence(id, 1, hash);
+  return rest;
+};
 const evidence = (id: string, slot: number, hash: string): IncomingEvidence => ({
   clientCaptureId: id,
   zone: 'INTERIOR',
@@ -69,6 +75,7 @@ function build(opts: { type?: SyncChecklistType; acceptsDrafts?: boolean; source
   const sync = new SyncChecklistHandler(access, sources as never, repo, tm as never, clock as never, audit as never, outbox as never);
   const resolve = new ResolveSyncConflictHandler(access, repo, tm as never, clock as never, audit as never, outbox as never);
   const gate = new SyncClosureGateService(repo);
+  const status = new GetChecklistSyncStatusHandler(access, sources as never, repo);
   const syncCmd = (fields: IncomingField[], evidenceItems: IncomingEvidence[] = [], draftCreatedAt = new Date('2026-10-19T10:00:00.000Z'), uid = 'uid-campo') =>
     new SyncChecklistCommand(type, SOURCE_ID, uid, 'comp-1', 'branch-1', 'dev-1', draftCreatedAt, fields, evidenceItems);
   const resolveCmd = (conflictId: string, over: Partial<ResolveSyncConflictCommand> = {}) =>
@@ -76,7 +83,7 @@ function build(opts: { type?: SyncChecklistType; acceptsDrafts?: boolean; source
       new ResolveSyncConflictCommand(conflictId, 'uid-sup', 'comp-1', 'branch-1', 1, 'KEEP_LOCAL', 'Verifique el tablero en sitio', true),
       over,
     );
-  return { repo, audit, outbox, sources, matrixAuth, sync, resolve, gate, syncCmd, resolveCmd, type };
+  return { repo, audit, outbox, sources, matrixAuth, sync, resolve, gate, status, syncCmd, resolveCmd, type };
 }
 
 describe('SyncChecklistHandler (detectar)', () => {
@@ -130,6 +137,54 @@ describe('SyncChecklistHandler (detectar)', () => {
     expect(clash.status).toBe('SYNC_CONFLICT');
     expect(clash.conflicts[0]).toMatchObject({ kind: 'EVIDENCE', key: 'INTERIOR#1' });
     expect(t.repo.states[0].evidence).toHaveLength(1);
+  });
+
+  it('1.1.0 fieldRevisions: la respuesta trae la revision vigente y usarla como baseRev evita el conflicto contra uno mismo', async () => {
+    const t = build();
+    const first = await t.sync.execute(t.syncCmd([field('fuel', 'HALF')]));
+    expect(first.fieldRevisions).toEqual([{ key: 'fuel', rev: 1, value: 'HALF' }]);
+    const again = await t.sync.execute(t.syncCmd([field('fuel', 'FULL', first.fieldRevisions[0].rev)]));
+    expect(again.status).toBe('SYNCED');
+    expect(again.fieldRevisions).toEqual([{ key: 'fuel', rev: 2, value: 'FULL' }]);
+    // cliente 1.0.0 (baseRev 0) conserva el comportamiento anterior: choque
+    const legacy = await t.sync.execute(t.syncCmd([field('fuel', 'EMPTY', 0)]));
+    expect(legacy.status).toBe('SYNC_CONFLICT');
+  });
+
+  it('1.1.0 GET status devuelve fieldRevisions del estado (vacio sin estado previo)', async () => {
+    const t = build();
+    const query = new GetChecklistSyncStatusQuery(t.type, SOURCE_ID, 'uid-campo', 'comp-1', 'branch-1');
+    const empty = await t.status.execute(query);
+    expect(empty.fieldRevisions).toEqual([]);
+    await t.sync.execute(t.syncCmd([field('fuel', 'HALF'), field('mileage', 10)]));
+    const after = await t.status.execute(query);
+    expect(after.fieldRevisions).toEqual([
+      { key: 'fuel', rev: 1, value: 'HALF' },
+      { key: 'mileage', rev: 1, value: 10 },
+    ]);
+  });
+
+  it('1.1.0 slot: sin slot el servidor asigna el libre; no hay conflicto con una toma previa de otro hash en el slot 1', async () => {
+    const t = build();
+    await t.sync.execute(t.syncCmd([], [evidence('c1', 1, H1)]));
+    const r = await t.sync.execute(t.syncCmd([], [evidenceNoSlot('c2', H2)]));
+    expect(r.status).toBe('SYNCED');
+    expect(r.addedEvidence).toEqual(['c2']);
+    expect(r.evidenceSlots).toEqual([{ clientCaptureId: 'c2', zone: 'INTERIOR', slot: 2, outcome: 'ADDED', assignedByServer: true }]);
+    expect(t.repo.states[0].evidence.map((e) => e.slot)).toEqual([1, 2]);
+  });
+
+  it('1.1.0 slot: reenviar la misma captura (con o sin slot) es idempotente y devuelve el slot existente, sin duplicar ni chocar', async () => {
+    const t = build();
+    await t.sync.execute(t.syncCmd([], [evidenceNoSlot('c1', H1)]));
+    const retry = await t.sync.execute(t.syncCmd([], [evidenceNoSlot('c1', H1)]));
+    const sameHash = await t.sync.execute(t.syncCmd([], [evidence('c9', 4, H1)]));
+    expect(retry.duplicateEvidence).toEqual([{ clientCaptureId: 'c1', reason: 'SAME_CAPTURE', existingClientCaptureId: 'c1', existingSlot: 1 }]);
+    expect(sameHash.duplicateEvidence[0]).toMatchObject({ reason: 'SAME_CONTENT_HASH', existingSlot: 1 });
+    expect(sameHash.evidenceSlots[0]).toMatchObject({ slot: 1, outcome: 'DUPLICATE' });
+    expect(sameHash.status).toBe('SYNCED');
+    expect(t.repo.states[0].evidence).toHaveLength(1);
+    expect(t.repo.conflicts).toHaveLength(0);
   });
 
   it('un reintento identico no duplica el conflicto (idempotente); uno distinto exige resolver primero', async () => {

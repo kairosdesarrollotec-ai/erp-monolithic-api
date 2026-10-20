@@ -10,7 +10,7 @@ import * as yaml from 'js-yaml';
 import { SyncController } from './sync.controller';
 import { ResolveSyncConflictDto, SyncChecklistDto, SyncEvidenceDto, SyncFieldDto } from './dto/sync-checklist.dto';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
-import { toSyncChecklistResultResponse, toSyncConflictResponse, toResolveSyncConflictResponse } from './sync.mapper';
+import { toSyncChecklistResponse, toSyncChecklistResultResponse, toSyncConflictResponse, toResolveSyncConflictResponse } from './sync.mapper';
 import {
   SYNC_CHECKLIST_TYPES,
   SYNC_FIELD_DATA_TYPES,
@@ -66,8 +66,17 @@ function routes() {
 }
 
 describe('Contrato OpenAPI sync.yaml vs backend', () => {
-  it('version del contrato 1.0.0', () => {
-    expect(spec.info.version).toBe('1.0.0');
+  it('version del contrato 1.1.0 (aditiva)', () => {
+    expect(spec.info.version).toBe('1.1.0');
+  });
+
+  it('1.1.0 aditivo: slot opcional, fieldRevisions/evidenceSlots en la respuesta; los obligatorios de 1.0.0 siguen', () => {
+    const sc = spec.components.schemas;
+    expect(sc.SyncEvidenceInput.required).toEqual(['clientCaptureId', 'zone', 'type', 'contentHash', 'capturedAt']);
+    expect(sc.SyncEvidenceInput.properties.slot).toBeDefined();
+    expect(sc.SyncChecklistStatusResponse.required).toContain('fieldRevisions');
+    expect(sc.SyncFieldRevision.required).toEqual(['key', 'rev', 'value']);
+    expect(flatten(sc.SyncChecklistResult).required).toContain('evidenceSlots');
   });
 
   it('cada ruta del controller existe en OpenAPI y viceversa', () => {
@@ -153,9 +162,23 @@ describe('Contrato OpenAPI sync.yaml vs backend', () => {
       discardedFields: [],
       addedEvidence: [],
       duplicateEvidence: [],
+      evidenceSlots: [],
+      fieldRevisions: [],
       conflicts: [conflict],
     });
     expect(Object.keys(result).sort()).toEqual(Object.keys(flatten(sc.SyncChecklistResult).properties).sort());
+    const status = toSyncChecklistResponse({
+      checklistType: 'RECEPCION',
+      sourceId: 'x',
+      status: 'SYNCED',
+      serverConfirmedAt: null,
+      stateVersion: null,
+      state: null,
+      openConflicts: [],
+      fieldRevisions: [{ key: 'fuel', rev: 1, value: 'FULL' }],
+    });
+    expect(Object.keys(status).sort()).toEqual(Object.keys(sc.SyncChecklistStatusResponse.properties).sort());
+    expect(Object.keys(status.fieldRevisions[0]).sort()).toEqual(Object.keys(sc.SyncFieldRevision.properties).sort());
     const resolved = toResolveSyncConflictResponse({ conflict, checklistStatus: 'SYNCED', serverConfirmedAt: new Date(), openConflicts: 0 });
     expect(Object.keys(resolved).sort()).toEqual(Object.keys(sc.ResolveSyncConflictResponse.properties).sort());
   });
