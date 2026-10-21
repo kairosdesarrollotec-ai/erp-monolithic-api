@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.7.0');
+    expect(spec.info.version).toBe('0.8.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -57,6 +57,8 @@ describe('hr-administration.yaml contract specification', () => {
       '/field-trips/{id}/reject',
       '/field-trips/{id}/return',
       '/hr-areas',
+      '/hr-areas/{code}/deactivate',
+      '/hr-areas/{code}/reactivate',
       '/leaves/{id}/evidence',
       '/leaves/{id}/evidence/upload-url',
       '/leaves/{id}/resolve',
@@ -66,7 +68,7 @@ describe('hr-administration.yaml contract specification', () => {
     ]);
   });
 
-  it('expone exactamente las 34 operaciones esperadas', () => {
+  it('expone exactamente las 37 operaciones esperadas', () => {
     const ops: string[] = [];
     for (const item of Object.values<any>(spec.paths)) {
       for (const op of Object.values<any>(item)) {
@@ -79,6 +81,8 @@ describe('hr-administration.yaml contract specification', () => {
         'applyMonthDeductions',
         'authorizeFieldTrip',
         'createEmployee',
+        'createHrArea',
+        'deactivateHrArea',
         'evaluateFieldTripReturn',
         'getAttendanceSummary',
         'getEmployee',
@@ -97,6 +101,7 @@ describe('hr-administration.yaml contract specification', () => {
         'linkEmployeeAccount',
         'listTrainings',
         'logAttendance',
+        'reactivateHrArea',
         'reclassifyAttendance',
         'recordLeaveEvidence',
         'registerTraining',
@@ -207,7 +212,7 @@ describe('hr-administration.yaml contract specification', () => {
     const get = spec.paths['/hr-areas'].get;
     expect(get.responses['200'].content['application/json'].schema.$ref).toBe('#/components/schemas/HrAreaList');
     expect(Object.keys(get.responses)).toEqual(expect.arrayContaining(['200', '400', '401', '403']));
-    expect(spec.components.schemas.HrArea.required).toEqual(['code', 'name', 'description', 'sortOrder']);
+    expect(spec.components.schemas.HrArea.required).toEqual(['code', 'name', 'description', 'sortOrder', 'isActive']);
     const create = spec.components.schemas.CreateEmployeeRequest;
     expect(create.properties.areaCode).toBeDefined();
     // Compatibilidad: areaId/areaName ya no son obligatorios por separado; se pide areaCode o areaName.
@@ -224,5 +229,50 @@ describe('hr-administration.yaml contract specification', () => {
     for (const code of ['HR_AREA_NOT_FOUND', 'AREA_REQUIRED']) expect(raw).toContain(code);
     const errors = fs.readFileSync(path.resolve(__dirname, '../../domain/hr-administration-errors.ts'), 'utf8');
     for (const code of ['HR_AREA_NOT_FOUND', 'AREA_REQUIRED']) expect(errors).toContain(`'${code}'`);
+  });
+});
+
+describe('hr-administration.yaml 0.8.0 (Respuestas de negocio 2026-10-20, frente B)', () => {
+  it('areas: alta y (des)activacion solo Gerencia, con 409 y 403', () => {
+    expect(spec.paths['/hr-areas'].post.operationId).toBe('createHrArea');
+    expect(Object.keys(spec.paths['/hr-areas'].post.responses)).toEqual(expect.arrayContaining(['201', '403', '409', '422']));
+    expect(Object.keys(spec.paths['/hr-areas/{code}/deactivate'].post.responses)).toEqual(expect.arrayContaining(['200', '403', '409', '422']));
+    expect(spec.paths['/hr-areas/{code}/reactivate'].post.operationId).toBe('reactivateHrArea');
+    expect(spec.components.schemas.HrArea.required).toContain('isActive');
+    const inactive = spec.paths['/hr-areas'].get.parameters.find((p: any) => p.name === 'includeInactive');
+    expect(inactive?.required).toBe(false);
+  });
+
+  it('los codigos de error nuevos existen en el contrato Y en el dominio', () => {
+    const raw = fs.readFileSync(SPEC_PATH, 'utf8');
+    const errors = fs.readFileSync(path.resolve(__dirname, '../../domain/hr-administration-errors.ts'), 'utf8');
+    for (const code of ['HR_AREA_ALREADY_EXISTS', 'HR_AREA_IN_USE', 'HR_AREA_NAME_INVALID', 'EMPLOYEE_SALARY_GERENCIA_ONLY']) {
+      expect(raw).toContain(code);
+      expect(errors).toContain(`'${code}'`);
+    }
+  });
+
+  it('acciones nuevas MANAGE_AREAS y MANAGE_SALARY existen en el catalogo de permisos', () => {
+    const actions = PERMISSION_ACTION_CATALOG.filter((d) => d.module === 'HR_ADMINISTRATION').map((d) => d.action);
+    expect(actions).toEqual(expect.arrayContaining(['MANAGE_AREAS', 'MANAGE_SALARY']));
+  });
+
+  it('ficha: areaCode en la respuesta y 403 por sueldo documentado en PATCH', () => {
+    expect(spec.components.schemas.EmployeeResponse.properties.areaCode).toBeDefined();
+    expect(spec.components.schemas.EmployeeResponse.required).toContain('areaCode');
+    expect(spec.paths['/employees/{id}'].patch.responses['403'].description).toContain('EMPLOYEE_SALARY_GERENCIA_ONLY');
+    expect(spec.components.schemas.UpdateEmployeeRequest.properties.baseSalary.description).toContain('Gerencia');
+  });
+
+  it('HU-29: latitude/longitude/accuracy opcionales y acotados en el request y presentes en la respuesta', () => {
+    const req = spec.components.schemas.LogAttendanceRequest;
+    expect(req.required).toEqual(['date', 'status']);
+    expect(req.properties.latitude).toMatchObject({ minimum: -90, maximum: 90 });
+    expect(req.properties.longitude).toMatchObject({ minimum: -180, maximum: 180 });
+    expect(req.properties.accuracy.minimum).toBe(0);
+    const res = spec.components.schemas.AttendanceRecordResponse.properties;
+    expect(res.latitude.nullable).toBe(true);
+    expect(res.longitude.nullable).toBe(true);
+    expect(res.accuracy.nullable).toBe(true);
   });
 });

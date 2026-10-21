@@ -3,6 +3,7 @@ import { RentalEvidenceStoragePort } from '../ports/rental-evidence-storage.port
 import { RentalRepositoryPort } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { RENTAL_ALCOHOL_TEST_EVIDENCE_ZONE } from '../../domain/alcohol-test-result';
 import { RentalStateConflictError } from '../../domain/rental-errors';
 import { RequestEvidenceUploadSessionCommand } from './request-evidence-upload-session.command';
 
@@ -50,7 +51,9 @@ export class RequestEvidenceUploadSessionHandler {
     if (!rental) {
       throw new NotFoundException('Alquiler no encontrado.');
     }
-    if (rental.status !== 'PENDING_DELIVERY') {
+    // La foto del alcolimetro se sube en VALIDATION (antes de registrar el resultado); el resto, en PENDING_DELIVERY.
+    const allowedStatus = command.zone === RENTAL_ALCOHOL_TEST_EVIDENCE_ZONE ? 'VALIDATION' : 'PENDING_DELIVERY';
+    if (rental.status !== allowedStatus) {
       throw new RentalStateConflictError('subir evidencia de entrega en', rental.status);
     }
 

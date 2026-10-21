@@ -1,3 +1,4 @@
+import type { WorkerRole } from '../../../users/domain/worker-role';
 import type { ReturnDashboardItemInput } from '../../domain/return-dashboard-alerts';
 import type { ReturnRecord } from './return-repository.port';
 
@@ -5,8 +6,13 @@ export interface ActiveWarrantyDashboardItem {
   id: string;
   /** returnId. */
   sourceId: string;
-  /** Clave natural `return-warranty:<NIVEL>:<returnId>`. */
+  /** Clave natural `return-warranty:<NIVEL>:<returnId>[:<ROL>]`. */
   sourceEventId: string;
+  /** Destinatario del item y su alcance: la conciliacion lo descarta si el rol ya no tiene el permiso de alertas. */
+  role: WorkerRole;
+  organizationId: string;
+  operatingCompanyId: string;
+  branchId: string;
 }
 
 /**

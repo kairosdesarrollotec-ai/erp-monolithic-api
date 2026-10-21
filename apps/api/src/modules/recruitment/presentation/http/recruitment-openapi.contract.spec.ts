@@ -20,7 +20,7 @@ describe('recruitment.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Recruitment & Selection API');
-    expect(spec.info.version).toBe('0.3.0');
+    expect(spec.info.version).toBe('0.4.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -248,5 +248,27 @@ describe('recruitment.yaml contract specification', () => {
         'CANDIDATE_STATE_TRANSITION_INVALID',
       );
     });
+  });
+});
+
+describe('recruitment.yaml 0.4.0 (Respuestas de negocio 2026-10-20, frente B)', () => {
+  const raw = fs.readFileSync(SPEC_PATH, 'utf8');
+  const errors = fs.readFileSync(path.resolve(__dirname, '../../domain/recruitment-errors.ts'), 'utf8');
+
+  it('incorporacion repetida documentada como 409 con su codigo', () => {
+    expect(raw).toContain('ONBOARDING_ALREADY_COMPLETED');
+    expect(errors).toContain("'ONBOARDING_ALREADY_COMPLETED'");
+    const op = spec.paths['/candidates/{id}/commands/complete-onboarding'].post;
+    expect(op.responses['409'].description).toContain('ONBOARDING_ALREADY_COMPLETED');
+  });
+
+  it('motivo obligatorio del descarte tras entrevista (422 DECISION_REASON_REQUIRED)', () => {
+    expect(raw).toContain('DECISION_REASON_REQUIRED');
+    expect(errors).toContain("'DECISION_REASON_REQUIRED'");
+  });
+
+  it('No avanza y termino tras prueba negativa documentan sus permisos solo-Gerencia', () => {
+    expect(spec.paths['/interviews/{id}/commands/record-result']?.post?.responses?.['403']?.description ?? raw).toContain('DECIDE_NO_ADVANCE');
+    expect(raw).toContain('TERMINATE_PROBATION');
   });
 });

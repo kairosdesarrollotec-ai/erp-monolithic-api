@@ -99,4 +99,21 @@ describe('RecordEvidenceHandler', () => {
       ),
     ).rejects.toThrow(RentalStateConflictError);
   });
+
+  it('ENTREGA-02: la foto ALCOHOL_TEST se registra en VALIDATION y no en PENDING_DELIVERY', async () => {
+    const mk = (status: string) => ({
+      evidence: { record: jest.fn().mockResolvedValue({ id: 'ev-1' }) },
+      handler: undefined as any,
+      status,
+    });
+    const ok = mk('VALIDATION');
+    ok.handler = new RecordEvidenceHandler(ok.evidence as any, buildRentalsPort('VALIDATION') as any, buildWorkContext() as any, buildMatrixAuth() as any);
+    const cmd = new RecordEvidenceCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 'PHOTO', 'ALCOHOL_TEST' as any, 'https://storage.googleapis.com/bucket/a.jpg');
+    await expect(ok.handler.execute(cmd)).resolves.toBeDefined();
+    expect(ok.evidence.record).toHaveBeenCalledWith(expect.objectContaining({ zone: 'ALCOHOL_TEST' }));
+
+    const bad = mk('PENDING_DELIVERY');
+    bad.handler = new RecordEvidenceHandler(bad.evidence as any, buildRentalsPort('PENDING_DELIVERY') as any, buildWorkContext() as any, buildMatrixAuth() as any);
+    await expect(bad.handler.execute(cmd)).rejects.toThrow(RentalStateConflictError);
+  });
 });

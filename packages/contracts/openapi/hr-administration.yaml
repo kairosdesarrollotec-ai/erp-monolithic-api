@@ -1,8 +1,22 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.7.0
+  version: 0.8.0
   description: >
+    0.8.0 — Respuestas de negocio 2026-10-20 (frente B, ADITIVO salvo lo indicado): (1) Catálogo de áreas = 7 del organigrama +
+    Gerencia General / Subgerencia (GERENCIA_GENERAL) + Gestión y Procesos (GESTION_Y_PROCESOS); «RRHH» / «Recursos Humanos» se
+    mapean a TALENTO_HUMANO (areaCode, areaName y filtros). Nuevos POST /hr-areas (alta; 409 HR_AREA_ALREADY_EXISTS),
+    POST /hr-areas/{code}/deactivate (409 HR_AREA_IN_USE si hay colaboradores activos) y /reactivate: SOLO Gerencia (permiso nuevo
+    HR_ADMINISTRATION.MANAGE_AREAS); GET /hr-areas acepta includeInactive=true (solo MANAGE_AREAS) y HrArea expone `isActive`.
+    (2) Vacaciones: el cupo «máximo 1 persona por área» se evalúa POR EMPRESA (misma área en dos empresas ya no choca); sin
+    cambio de esquema HTTP. (3) PATCH /employees/{id}: `baseSalary` solo lo cambia Gerencia (permiso nuevo
+    HR_ADMINISTRATION.MANAGE_SALARY); otro rol con un valor distinto al vigente recibe 403 EMPLOYEE_SALARY_GERENCIA_ONLY y no se
+    guarda nada (reenviar el mismo valor no cuenta); `email` vacío ("" o null) desvincula la ficha sin error (accountRelink
+    UNLINKED); el backend NO notifica a la cuenta anterior. EmployeeResponse añade `areaCode` (= areaId). (4) HU-29: POST
+    /employees/{id}/attendance acepta `latitude`, `longitude`, `accuracy` OPCIONALES (ubicación automática); 422
+    INVALID_ATTENDANCE_RECORD si están fuera de rango o viene solo una coordenada; AttendanceRecordResponse los devuelve (null si
+    no se capturó).
+
     0.7.0 — H-02 / DEC-ADP-AREAS-001..003 (ADITIVO, sin romper clientes): catálogo de áreas de RR.HH. por empresa como dato
     de referencia. Nuevo GET /hr-areas (lectura; mismos permisos HR_ADMINISTRATION.VIEW_EMPLOYEES, MANAGE_EMPLOYEES o
     SCHEDULE_VACATION). POST /employees y PATCH /employees/{id} aceptan `areaCode` (código del catálogo; manda sobre
@@ -153,6 +167,7 @@ paths:
       parameters:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo (el catálogo es de la empresa) }
+        - { name: includeInactive, in: query, required: false, schema: { type: boolean }, description: Incluye áreas desactivadas. Solo con permiso HR_ADMINISTRATION.MANAGE_AREAS (Gerencia). }
       responses:
         '200':
           description: Áreas activas de la empresa, ordenadas por sortOrder y nombre (lista vacía si la empresa aún no tiene catálogo)
@@ -161,7 +176,72 @@ paths:
               schema: { $ref: '#/components/schemas/HrAreaList' }
         '400': { description: Parámetros inválidos }
         '401': { description: Token ausente o inválido }
-        '403': { description: 'Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES, MANAGE_EMPLOYEES o SCHEDULE_VACATION, o contexto no vigente' }
+        '403': { description: 'Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES, MANAGE_EMPLOYEES o SCHEDULE_VACATION (o sin MANAGE_AREAS si se pide includeInactive), o contexto no vigente' }
+    post:
+      operationId: createHrArea
+      summary: Dar de alta un área en el catálogo de la empresa (solo Gerencia General)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateHrAreaRequest' }
+      responses:
+        '201':
+          description: Área creada (el `code` se deriva del nombre; queda al final del orden)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HrArea' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_AREAS (solo Gerencia) o contexto no vigente }
+        '409': { description: Ya existe un área con ese código, nombre o alias en la empresa, activa o inactiva (HR_AREA_ALREADY_EXISTS) }
+        '422': { description: El nombre no produce un código válido (HR_AREA_NAME_INVALID) }
+
+  /hr-areas/{code}/deactivate:
+    post:
+      operationId: deactivateHrArea
+      summary: Desactivar un área del catálogo (solo Gerencia); deja de ofrecerse, conserva el histórico. Idempotente
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HrAreaContextRequest' }
+      responses:
+        '200':
+          description: Área desactivada (o ya lo estaba)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HrArea' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_AREAS }
+        '409': { description: Hay colaboradores activos asignados al área (HR_AREA_IN_USE) }
+        '422': { description: El área no existe en la empresa (HR_AREA_NOT_FOUND) }
+
+  /hr-areas/{code}/reactivate:
+    post:
+      operationId: reactivateHrArea
+      summary: Reactivar un área desactivada (solo Gerencia). Idempotente
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HrAreaContextRequest' }
+      responses:
+        '200':
+          description: Área activa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HrArea' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_AREAS }
+        '422': { description: El área no existe en la empresa (HR_AREA_NOT_FOUND) }
 
   /employees/{id}:
     get:
@@ -207,7 +287,7 @@ paths:
               schema: { $ref: '#/components/schemas/UpdateEmployeeResponse' }
         '400': { description: Datos inválidos o If-Match mal formado (IF_MATCH_INVALID) }
         '401': { description: Token ausente o inválido }
-        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES }
+        '403': { description: 'Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES, o baseSalary distinto al vigente sin permiso MANAGE_SALARY (solo Gerencia): code EMPLOYEE_SALARY_GERENCIA_ONLY' }
         '404': { description: Colaborador no encontrado }
         '409': { description: El colaborador ya está terminado (EMPLOYEE_TERMINATED) o el correo nuevo pertenece a una cuenta ya vinculada a otro colaborador (EMPLOYEE_ACCOUNT_ALREADY_LINKED) }
         '412': { description: La ficha cambió desde que se leyó - recargar (EMPLOYEE_VERSION_CONFLICT) }
@@ -887,12 +967,29 @@ components:
 
     HrArea:
       type: object
-      required: [code, name, description, sortOrder]
+      required: [code, name, description, sortOrder, isActive]
       properties:
+        isActive: { type: boolean, description: 'true en el listado normal; false solo con includeInactive=true (Gerencia).' }
         code: { type: string, example: 'ATENCION_AL_CLIENTE', description: 'Código estable; es el valor de Employee.areaId cuando el área viene del catálogo.' }
         name: { type: string, example: 'Atención al cliente' }
         description: { type: string, nullable: true }
         sortOrder: { type: integer }
+
+    CreateHrAreaRequest:
+      type: object
+      required: [companyId, branchId, name]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        name: { type: string, maxLength: 100, example: 'Logística' }
+        description: { type: string, maxLength: 255 }
+
+    HrAreaContextRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
 
     HrAreaList:
       type: object
@@ -927,20 +1024,20 @@ components:
       properties:
         branchId: { type: string, format: uuid }
         fullName: { type: string }
-        email: { type: string, format: email, nullable: true }
+        email: { type: string, format: email, nullable: true, description: 'Vaciarlo ("" o null) DESVINCULA la ficha de su cuenta sin error (accountRelink UNLINKED).' }
         phone: { type: string, nullable: true }
-        areaCode: { type: string, description: 'Código del catálogo de áreas (GET /hr-areas); manda sobre areaId/areaName; 422 HR_AREA_NOT_FOUND si no existe.' }
+        areaCode: { type: string, description: 'Código del catálogo de áreas (GET /hr-areas); manda sobre areaId/areaName; 422 HR_AREA_NOT_FOUND si no existe. «RRHH» se mapea a TALENTO_HUMANO.' }
         areaId: { type: string }
         areaName: { type: string }
         jobTitle: { type: string }
-        baseSalary: { type: number, nullable: true }
+        baseSalary: { type: number, nullable: true, description: 'Solo Gerencia (HR_ADMINISTRATION.MANAGE_SALARY) puede cambiarlo; otro rol con un valor distinto al vigente -> 403 EMPLOYEE_SALARY_GERENCIA_ONLY. Reenviar el mismo valor es válido.' }
         status: { $ref: '#/components/schemas/EmployeeStatus' }
         probationPassed: { type: boolean, nullable: true }
         payrollStartedAt: { type: string, format: date-time, nullable: true }
 
     EmployeeResponse:
       type: object
-      required: [accountLinked, id, companyId, branchId, fullName, documentType, documentNumber, areaId, areaName, jobTitle, status, hireDate, fieldTripLateCount, isFieldTripObserved, createdAt]
+      required: [accountLinked, id, companyId, branchId, fullName, documentType, documentNumber, areaId, areaCode, areaName, jobTitle, status, hireDate, fieldTripLateCount, isFieldTripObserved, createdAt]
       properties:
         id: { type: string, format: uuid }
         companyId: { type: string, format: uuid }
@@ -952,6 +1049,7 @@ components:
         email: { type: string, nullable: true }
         phone: { type: string, nullable: true }
         areaId: { type: string }
+        areaCode: { type: string, description: 'Código del área (igual a areaId; úsalo con GET /hr-areas).' }
         areaName: { type: string }
         jobTitle: { type: string }
         status: { $ref: '#/components/schemas/EmployeeStatus' }
@@ -1036,6 +1134,9 @@ components:
         minutesLate: { type: integer, minimum: 0, description: Opcional; una tardanza lo exige mayor a 0 (el sistema no asume 0) }
         deductionAmount: { type: number, minimum: 0, description: Opcional; si no se envía lo calcula el sistema }
         notes: { type: string, nullable: true }
+        latitude: { type: number, minimum: -90, maximum: 90, nullable: true, description: 'HU-29 ubicación automática (opcional). Debe ir con longitude; 422 INVALID_ATTENDANCE_RECORD si falta una o está fuera de rango.' }
+        longitude: { type: number, minimum: -180, maximum: 180, nullable: true }
+        accuracy: { type: number, minimum: 0, maximum: 100000, nullable: true, description: Precisión horizontal en metros (opcional) }
         evidence:
           nullable: true
           description: >
@@ -1094,6 +1195,9 @@ components:
         id: { type: string, format: uuid }
         employeeId: { type: string, format: uuid }
         employeeName: { type: string }
+        latitude: { type: number, nullable: true, description: 'HU-29: ubicación automática capturada (null si no se envió).' }
+        longitude: { type: number, nullable: true }
+        accuracy: { type: number, nullable: true }
         date: { type: string, format: date }
         checkInTime: { type: string, format: date-time, nullable: true }
         checkOutTime: { type: string, format: date-time, nullable: true }

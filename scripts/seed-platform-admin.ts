@@ -34,6 +34,7 @@ import * as admin from 'firebase-admin';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { ensureSystemRoles } from '../apps/api/src/modules/admin/infrastructure/persistence/system-roles-seeder';
+import { ensureHrAreasForCompany } from '../apps/api/src/modules/hr-administration/infrastructure/persistence/hr-areas-seeder';
 
 // ---------------------------------------------------------------------------
 // Constantes del negocio — empresas del Grupo KAIROS
@@ -198,6 +199,10 @@ async function main(): Promise<void> {
           },
         });
         console.log(`DB: Company creada — ${company.name} (id=${company.id})`);
+
+        // Alta de empresa -> se siembran sus areas de RR.HH. (Respuestas 2026-10-20 #17).
+        const areasSeeded = await ensureHrAreasForCompany(tx, config.organizationId, company.id);
+        console.log(`DB: areas de RR.HH. sembradas — ${areasSeeded}`);
 
         const branch = await tx.branch.create({
           data: {

@@ -55,6 +55,15 @@ export interface RecordRentalEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordFleetEventInput {
+  organizationId: string;
+  actorUserId: string;
+  vehicleId: string;
+  /** VEHICLE_CREATED | VEHICLE_UPDATED (quien y cuando = actorUserId + created_at). */
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 export interface RecordIncidentEventInput {
   organizationId: string;
   actorUserId: string;
@@ -75,7 +84,7 @@ export interface RecordRecruitmentEventInput {
 export interface RecordHrAdministrationEventInput {
   organizationId: string;
   actorUserId: string;
-  entityType: 'employee' | 'attendance' | 'leave' | 'vacation' | 'field_trip' | 'termination' | 'memo' | 'training';
+  entityType: 'employee' | 'attendance' | 'leave' | 'vacation' | 'field_trip' | 'termination' | 'memo' | 'training' | 'hr_area';
   entityId: string;
   action: string;
   changes: Record<string, unknown>;
@@ -151,6 +160,12 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordRentalEvent(
     input: RecordRentalEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /** Flota: auditoria (quien/cuando) del alta y edicion de vehiculos (entityType 'vehicle'). */
+  abstract recordFleetEvent(
+    input: RecordFleetEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 

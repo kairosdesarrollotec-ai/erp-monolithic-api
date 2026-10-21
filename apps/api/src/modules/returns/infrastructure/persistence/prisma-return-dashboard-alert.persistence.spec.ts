@@ -54,6 +54,8 @@ describe('PrismaReturnDashboardAlertPersistence (DEC-DEVREM-002)', () => {
     expect(prisma.dashboardItem.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { sourceType: 'RETURN', dismissedAt: null, sourceEventId: { startsWith: 'return-warranty:' } },
+        // la conciliacion necesita rol y alcance del item para saber si el rol sigue teniendo el permiso de alertas
+        select: expect.objectContaining({ role: true, organizationId: true, operatingCompanyId: true, branchId: true }),
       }),
     );
   });

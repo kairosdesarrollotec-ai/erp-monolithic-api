@@ -7,7 +7,7 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import { RecruitmentAccessService } from '../services/recruitment-access.service';
 import { CandidateDetailRecord, CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
-import { CandidateNotFoundError } from '../../domain/recruitment-errors';
+import { CandidateNotFoundError, DecisionReasonRequiredError } from '../../domain/recruitment-errors';
 import { VacancyStatus } from '../../domain/recruitment-domain-types';
 import {
   assertCandidateNotDecided,
@@ -50,6 +50,15 @@ export class DecideCandidateHandler {
       // BDD-REC §11.6: Decidido solo se alcanza desde Entrevistado; Descartado desde En negociación o Decidido.
       // CONTRATADO exige haber registrado la entrevista; RECHAZADO puede descartar antes o después de entrevistar.
       const targetProcessState = resolveDecisionProcessState(existing.processState, command.decision);
+
+      // Respuestas 2026-10-20 #14: rechazo tras la entrevista (p. ej. el candidato rechaza la oferta) = DESCARTADO con motivo obligatorio.
+      if (
+        command.decision === CandidateDecision.RECHAZADO &&
+        existing.processState === 'ENTREVISTADO' &&
+        !command.decisionNotes?.trim()
+      ) {
+        throw new DecisionReasonRequiredError();
+      }
 
       const now = this.clock.now();
       const decided = await this.candidates.updateDecision(

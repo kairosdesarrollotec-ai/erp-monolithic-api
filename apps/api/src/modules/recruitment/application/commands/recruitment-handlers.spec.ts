@@ -91,7 +91,7 @@ function onboarding(over: Partial<OnboardingRecord> = {}): OnboardingRecord {
   };
 }
 
-function setup(role: 'RRHH' | 'AUDITORIA' | 'ADMINISTRACION' = 'RRHH') {
+function setup(role: 'RRHH' | 'AUDITORIA' | 'ADMINISTRACION' | 'GERENCIA' = 'RRHH') {
   const access = new RecruitmentAccessService(buildWorkContext(role), buildMatrixAuth());
   const tm = buildTransactionManager();
   const clock = new FixedClock();
@@ -288,7 +288,7 @@ describe('EvaluateProbationHandler', () => {
   });
 
   it('no aprobado: no publica PasoAPlanilla', async () => {
-    const s = setup();
+    const s = setup('GERENCIA');
     s.candidates.findScopedById.mockResolvedValue(candidate({ processState: CandidateProcessState.PERIODO_PRUEBA }));
     s.onb.findByCandidateId.mockResolvedValue(onboarding());
     s.onb.evaluateProbation.mockResolvedValue(onboarding({ probationPassed: false }));

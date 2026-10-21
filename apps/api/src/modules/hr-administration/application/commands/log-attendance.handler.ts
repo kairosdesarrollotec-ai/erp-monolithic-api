@@ -12,6 +12,7 @@ import {
   InvalidAttendanceEvidenceError,
   EmployeeTerminatedError,
   AttendanceEvidenceRequiredError,
+  InvalidAttendanceRecordError,
 } from '../../domain/hr-administration-errors';
 import {
   ATTENDANCE_STATUSES_REQUIRING_EVIDENCE,
@@ -59,6 +60,7 @@ export class LogAttendanceHandler {
     );
 
     const evidence = this.resolveEvidence(command, found.operatingCompanyId);
+    const location = resolveAttendanceLocation(command.location);
 
     return this.transactionManager.run(async (tx) => {
       const employee = await this.employees.findById(command.employeeId, tx);
@@ -92,6 +94,7 @@ export class LogAttendanceHandler {
           deductionAmount: resolved.deductionAmount,
           notes: command.notes?.trim() || null,
           createdById: command.firebaseUid,
+          ...location,
           evidence,
         },
         tx,
@@ -112,6 +115,7 @@ export class LogAttendanceHandler {
             deductionAmount: Number(created.deductionAmount),
             evidenceKind: created.evidenceKind,
             evidenceMissing: !created.evidenceKind,
+            locationCaptured: created.latitude !== null && created.longitude !== null,
           },
         },
         tx,
@@ -177,4 +181,25 @@ export class LogAttendanceHandler {
       corroboratedAt: now,
     };
   }
+}
+
+/**
+ * HU-29 (Respuestas 2026-10-20 #20): la ubicacion automatica es OPCIONAL; si no viene, el registro sigue igual. Si viene, se valida
+ * el rango (latitud -90..90, longitud -180..180, precision 0..100000 m) y latitud/longitud deben ir juntas.
+ */
+export function resolveAttendanceLocation(
+  location: LogAttendanceCommand['location'],
+): { latitude: number | null; longitude: number | null; accuracy: number | null } {
+  if (!location) return { latitude: null, longitude: null, accuracy: null };
+  const { latitude, longitude, accuracy } = location;
+  const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
+  if (!finite(latitude) || !finite(longitude)) {
+    throw new InvalidAttendanceRecordError('La ubicación requiere latitude y longitude numéricas.');
+  }
+  if (latitude < -90 || latitude > 90) throw new InvalidAttendanceRecordError('latitude debe estar entre -90 y 90.');
+  if (longitude < -180 || longitude > 180) throw new InvalidAttendanceRecordError('longitude debe estar entre -180 y 180.');
+  if (accuracy !== undefined && accuracy !== null && (!finite(accuracy) || accuracy < 0 || accuracy > 100000)) {
+    throw new InvalidAttendanceRecordError('accuracy debe estar entre 0 y 100000 metros.');
+  }
+  return { latitude, longitude, accuracy: accuracy ?? null };
 }

@@ -15,19 +15,16 @@ import { isCompanyDriverVariantCode } from '../../domain/contract-variant';
 import { SetCompanyDriverDailyRateCommand } from './set-company-driver-daily-rate.command';
 
 /**
- * Estados en que aun se puede digitar/corregir la tarifa: desde que el contrato esta formalizado (solo entonces se
- * conoce la variante "con conductor de la empresa") hasta antes del cierre. CLOSED/CANCELLED -> 409.
+ * Respuestas de Russbel 20-oct-2026 (#2): la tarifa se digita/corrige desde que el contrato esta formalizado (solo
+ * entonces se conoce la variante "con conductor de la empresa") y SOLO hasta que termina el proceso de alquiler, es
+ * decir hasta completar la entrega (PENDING_DELIVERY -> ACTIVE). La devolucion es otro proceso: desde ACTIVE en
+ * adelante -> 409 COMPANY_DRIVER_RATE_CLOSED.
  */
-const RATE_EDITABLE_STATUSES: ReadonlySet<string> = new Set([
-  'PENDING_DELIVERY',
-  'ACTIVE',
-  'EXTENSION_PENDING',
-  'RETURN_IN_PROGRESS',
-]);
+const RATE_EDITABLE_STATUSES: ReadonlySet<string> = new Set(['PENDING_DELIVERY']);
 
 /**
- * DEC-ALQ-DRIVERRATE-001 (F-02; respuesta de Russbel 19-oct-2026): la tarifa diaria del conductor de la empresa aun no
- * existe y se digita a mano en el expediente cuando se requiera. El valor manual tiene prioridad sobre el env
+ * DEC-ALQ-DRIVERRATE-001 (F-02; respuestas de Russbel 19/20-oct-2026): la tarifa diaria del conductor de la empresa aun no
+ * existe y se digita a mano por alquiler; es OBLIGATORIA para completar la entrega (COMPANY_DRIVER_RATE_REQUIRED). El valor manual tiene prioridad sobre el env
  * `COMPANY_DRIVER_DAILY_RATE`. Solo alquileres con contrato "con conductor de la empresa". El total
  * (tarifa x dias) NO se persiste: se calcula en la respuesta. Permiso: reutiliza RENTAL.FORMALIZE_CONTRACT (ADM-02),
  * igual que register-companion/register-authorized-driver. Auditoria + evento outbox con el valor anterior y el nuevo.
@@ -70,7 +67,7 @@ export class SetCompanyDriverDailyRateHandler {
       if (!rental) {
         throw new NotFoundException('Alquiler no encontrado.');
       }
-      if (rental.status === 'CLOSED' || rental.status === 'CANCELLED') {
+      if (['ACTIVE', 'EXTENSION_PENDING', 'RETURN_IN_PROGRESS', 'CLOSED', 'CANCELLED'].includes(rental.status)) {
         throw new CompanyDriverRateClosedError(rental.status);
       }
       if (!isCompanyDriverVariantCode(rental.contract?.contractVariant) || !RATE_EDITABLE_STATUSES.has(rental.status)) {

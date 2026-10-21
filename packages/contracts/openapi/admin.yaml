@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Administracion API
-  version: 0.4.0
+  version: 0.5.0
   description: >
+    0.5.0 (Respuestas de negocio 2026-10-20, frente B, ADITIVO): el catalogo de permisos suma el modulo NOTIFICATIONS con la
+    accion RECEIVE_RETURN_ALERTS (destinatarios de las alertas de devolucion del tablero; v0: Finanzas, Administracion y
+    Gerencia) y las acciones HR_ADMINISTRATION.MANAGE_AREAS / MANAGE_SALARY y RECRUITMENT.DECIDE_NO_ADVANCE /
+    TERMINATE_PROBATION (solo Gerencia en la v0). Una matriz ya guardada que no las incluya las deniega hasta que se guarde
+    de nuevo (deny-by-default). PermissionModule suma NOTIFICATIONS.
+
     Contrato del modulo Administracion (ADM-01..05, TR-07,
     PANTALLAS-V2-B-SOPORTE.md). Cierra el hallazgo ALTO de revalidacion
     PR#7 ("falta documentacion OpenAPI de Administracion") - hasta esta
@@ -598,7 +604,7 @@ components:
         CANCEL_CUSTOMER_REQUESTED_CHANGE, CANCEL_NO_SHOW, FLAG_SALE,
         RESOLVE_SALE y CHANGE_VEHICLE. Una version ya guardada que no incluya
         una accion nueva la deniega hasta que se guarde la matriz (deny-by-default).
-      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RETURN, FLEET, CUSTOMER, RECRUITMENT, TEMPLATE, HR_ADMINISTRATION, PAYMENT, REPORT]
+      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RETURN, FLEET, CUSTOMER, RECRUITMENT, TEMPLATE, HR_ADMINISTRATION, PAYMENT, REPORT, NOTIFICATIONS]
     RolePermissionEntry:
       type: object
       required: [roleId, module, action, allowed]

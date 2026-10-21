@@ -1,3 +1,4 @@
+import { buildVehicleDataWarnings } from '../../../../common/domain/vehicle-data-warnings';
 import { RentalRecord } from '../../application/ports/rental-repository.port';
 import { RentalResponse } from './dto/rental.response';
 import { fromCents, toCents } from '../../domain/reservation-credit';
@@ -20,6 +21,12 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
     vehicleModel: record.vehicleModel,
     vehicleDepositMinimum: record.vehicleDepositMinimum,
     vehiclePassengerCapacity: record.vehiclePassengerCapacity ?? null,
+    vehicleFuelPrice: record.vehicleFuelPrice ?? null,
+    vehicleWarnings: buildVehicleDataWarnings({
+      passengerCapacity: record.vehiclePassengerCapacity,
+      depositMinimum: record.vehicleDepositMinimum,
+      fuelPrice: record.vehicleFuelPrice,
+    }),
     companionsCount: (record.parties ?? []).filter((p) => p.role === 'RESPONSIBLE').length,
     planCode: record.planCode,
     status: record.status,

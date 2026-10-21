@@ -13,8 +13,8 @@ describe('recruitment-role-policy (RECRUITMENT.*)', () => {
   const roleIdByKey = new Map(WORKER_ROLES.map((k) => [k, `role-${k}`]));
   const keyById = new Map(WORKER_ROLES.map((k) => [`role-${k}`, k]));
 
-  it.each(['GERENCIA', 'RRHH'] as const)('%s tiene acceso a todas las 10 acciones de reclutamiento', (role) => {
-    for (const action of RECRUITMENT_ACTIONS) {
+  it.each(['GERENCIA', 'RRHH'] as const)('%s tiene acceso a las 10 acciones de reclutamiento originales', (role) => {
+    for (const action of RECRUITMENT_ACTIONS.filter((a) => a !== 'DECIDE_NO_ADVANCE' && a !== 'TERMINATE_PROBATION')) {
       expect(isRecruitmentRoleAllowed(role, action)).toBe(true);
     }
   });
@@ -69,17 +69,26 @@ describe('recruitment-role-policy (RECRUITMENT.*)', () => {
     expect(() => assertRecruitmentRoleAllowed('GERENCIA', 'DECIDE_CANDIDATE')).not.toThrow();
   });
 
-  it('el catalogo ADM-02 expone las 10 acciones RECRUITMENT y la matriz v0 las deriva de esta politica', () => {
+  it('el catalogo ADM-02 expone las 12 acciones RECRUITMENT y la matriz v0 las deriva de esta politica', () => {
     const catalogActions = PERMISSION_ACTION_CATALOG.filter((d) => d.module === 'RECRUITMENT').map((d) => d.action).sort();
     expect(catalogActions).toEqual([...RECRUITMENT_ACTIONS].sort());
 
     const entries = buildDefaultRolePermissionMatrix(roleIdByKey).filter((e) => e.module === 'RECRUITMENT');
-    expect(entries).toHaveLength(WORKER_ROLES.length * 10);
+    expect(entries).toHaveLength(WORKER_ROLES.length * 12);
     for (const entry of entries) {
       const key = keyById.get(entry.roleId)!;
       expect(entry.allowed).toBe(
         key === 'PLATFORM_ADMIN' ? true : isRecruitmentRoleAllowed(key, entry.action as RecruitmentAction),
       );
+    }
+  });
+});
+
+describe('DECIDE_NO_ADVANCE y TERMINATE_PROBATION (Respuestas 2026-10-20 #12 y #13)', () => {
+  it.each(['DECIDE_NO_ADVANCE', 'TERMINATE_PROBATION'] as const)('%s solo lo tiene GERENCIA', (action) => {
+    expect(isRecruitmentRoleAllowed('GERENCIA', action)).toBe(true);
+    for (const role of ['RRHH', 'ADMINISTRACION', 'FRONT_OFFICE', 'CAMPO', 'AUDITORIA', 'FINANZAS'] as const) {
+      expect(isRecruitmentRoleAllowed(role, action)).toBe(false);
     }
   });
 });

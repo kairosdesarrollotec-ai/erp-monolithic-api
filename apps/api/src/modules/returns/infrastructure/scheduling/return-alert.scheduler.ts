@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PublishReturnDashboardAlertsHandler } from '../../application/commands/publish-return-dashboard-alerts.handler';
+import { isEnvFlagEnabled } from '../../../../common/config/env-flag';
 
 /** La alerta se publica con DUE_SOON a 4 h del límite y OVERDUE al vencer; revisar cada 5 min deja un desfase máximo de 5 min. */
 export const DEFAULT_RETURN_ALERT_INTERVAL_MS = 5 * 60_000;
@@ -19,7 +20,7 @@ export class ReturnAlertScheduler implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly publish: PublishReturnDashboardAlertsHandler) {}
 
   onModuleInit(): void {
-    if (process.env.RETURN_ALERT_SCHEDULER === 'off' || process.env.JEST_WORKER_ID !== undefined) {
+    if (!isEnvFlagEnabled(process.env.RETURN_ALERT_SCHEDULER) || process.env.JEST_WORKER_ID !== undefined) {
       return;
     }
     const configured = Number(process.env.RETURN_ALERT_INTERVAL_MS);

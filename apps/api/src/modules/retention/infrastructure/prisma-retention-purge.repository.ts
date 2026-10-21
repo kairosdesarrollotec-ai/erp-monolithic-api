@@ -34,6 +34,12 @@ export class PrismaRetentionPurgeRepository extends RetentionPurgePort {
           DELETE FROM "outbox_events" WHERE "id" IN (
             SELECT "id" FROM "outbox_events" WHERE "dead_lettered_at" IS NOT NULL AND "dead_lettered_at" < ${cutoff}
             ORDER BY "dead_lettered_at" ASC LIMIT ${limit} FOR UPDATE SKIP LOCKED)`;
+      case 'DASHBOARD_ITEMS_SEEN':
+        // "Visto" = ya no sale en el tablero (dismissed_at no nulo). Un item NO visto (dismissed_at NULL) jamas entra en el DELETE.
+        return this.prisma.$executeRaw`
+          DELETE FROM "dashboard_items" WHERE "id" IN (
+            SELECT "id" FROM "dashboard_items" WHERE "dismissed_at" IS NOT NULL AND "dismissed_at" < ${cutoff}
+            ORDER BY "dismissed_at" ASC LIMIT ${limit} FOR UPDATE SKIP LOCKED)`;
     }
   }
 }

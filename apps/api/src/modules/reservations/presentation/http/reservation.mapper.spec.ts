@@ -39,4 +39,10 @@ describe('toReservationResponse', () => {
       resolutionNote: null, resolvedAt: '2026-10-13T12:00:00.000Z',
     });
   });
+
+  it('DEC-ALQ-VEHDATA-001: expone vehicleWarnings (vacio por defecto; los del record si hay datos faltantes del vehiculo)', () => {
+    expect(toReservationResponse(record()).vehicleWarnings).toEqual([]);
+    const warning = { code: 'VEHICLE_FUEL_PRICE_MISSING' as const, field: 'fuelPrice' as const, message: 'x' };
+    expect(toReservationResponse(record({ vehicleWarnings: [warning] })).vehicleWarnings).toEqual([warning]);
+  });
 });

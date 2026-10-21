@@ -1,8 +1,18 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.11.0
+  version: 1.12.0
   description: >
+    1.12.0 — Respuestas de negocio de Russbel (2026-10-20). Aditivo salvo lo marcado. (a) DEC-ALQ-DRIVERRATE-002: la tarifa diaria del
+    conductor de la empresa (digitada a mano por alquiler) es OBLIGATORIA: POST complete-delivery responde 422 COMPANY_DRIVER_RATE_REQUIRED
+    si el contrato es «con conductor de la empresa» y no hay tarifa manual. set-company-driver-daily-rate solo se acepta mientras el
+    alquiler está en PENDING_DELIVERY (hasta terminar el proceso de alquiler = completar entrega); desde ACTIVE/EXTENSION_PENDING/
+    RETURN_IN_PROGRESS/CLOSED/CANCELLED responde 409 COMPANY_DRIVER_RATE_CLOSED (COMPORTAMIENTO CAMBIADO: antes se permitía hasta el cierre).
+    (b) DEC-ALQ-VEHDATA-001: `RentalResponse.vehicleFuelPrice` (number|null) y `vehicleWarnings[]` (un `VehicleDataWarning` por cada dato
+    faltante del vehículo: capacidad, garantía, combustible; no bloquea). (c) ENTREGA-02: nueva zona de evidencia `ALCOHOL_TEST` (foto de la
+    prueba, sin hora; se sube con upload-url/evidence mientras el alquiler está en VALIDATION y NO cuenta para las 35 fotos); register-alcohol-test
+    con DESFAVORABLE o RECHAZADO exige esa foto: 422 ALCOHOL_TEST_PHOTO_REQUIRED.
+
     1.11.0 — DEC-ALQ-CAPWARN-001/002 (G-05; aviso de capacidad en el flujo de acompañantes). Aditivo. `RentalResponse` expone
     `vehiclePassengerCapacity` (entero o null; null = el vehículo aún no tiene capacidad registrada en Flota, DEC-FLT-CAP-002: sin tope,
     el alquiler NO se bloquea) y `companionsCount` (acompañantes registrados = parties con rol RESPONSIBLE; el firmante es SIGNER y no cuenta).
@@ -255,6 +265,8 @@ paths:
           description: No autorizado para el contexto o rol insuficiente
         '409':
           description: Estado incompatible (debe estar en VALIDATION)
+        '422':
+          description: ALCOHOL_TEST_PHOTO_REQUIRED (DESFAVORABLE o RECHAZADO sin foto ALCOHOL_TEST subida antes)
         '412':
           description: Versión no coincide (If-Match)
         '428':
@@ -456,7 +468,7 @@ paths:
         requiera (cuando no hay tarifa de entorno, o para sobrescribirla en este alquiler). Prioridad: valor manual > env
         COMPANY_DRIVER_DAILY_RATE > «tarifa no definida». `dailyRate` es en PEN, > 0, máximo 2 decimales (hasta 99999999.99). Solo aplica
         a alquileres con contrato formalizado «con conductor de la empresa» (la variante se conoce al formalizar) y en estados
-        PENDING_DELIVERY, ACTIVE, EXTENSION_PENDING o RETURN_IN_PROGRESS. Volver a enviarlo corrige el valor (queda en auditoría el valor
+        PENDING_DELIVERY (se puede corregir hasta completar la entrega; después 409 COMPANY_DRIVER_RATE_CLOSED). Es OBLIGATORIA para completar la entrega. Volver a enviarlo corrige el valor (queda en auditoría el valor
         anterior). Incrementa la versión (If-Match) y publica el evento TarifaConductorEmpresaDefinida.v1. La respuesta trae
         `companyDriverCharge` (tarifa × días, con `source`). Permiso: RENTAL.FORMALIZE_CONTRACT.
       security: [{ bearerAuth: [] }]
@@ -483,7 +495,7 @@ paths:
         '403': { description: Sin permiso o contexto no autorizado }
         '404': { description: Alquiler no encontrado }
         '409':
-          description: COMPANY_DRIVER_RATE_CLOSED (alquiler CLOSED o CANCELLED)
+          description: COMPANY_DRIVER_RATE_CLOSED (el proceso de alquiler ya terminó - ACTIVE, EXTENSION_PENDING, RETURN_IN_PROGRESS - o está CLOSED/CANCELLED)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RentalErrorResponse' }
@@ -547,7 +559,8 @@ paths:
         Alquiler directo (sin reserva): fija startAt = ahora y, si viene de una
         consulta, expectedEndAt = startAt + estimatedDays de la cotizacion
         vinculada, re-chequeando la disponibilidad del vehiculo. Alquiler de
-        origen Reserva: conserva las fechas acordadas.
+        origen Reserva: conserva las fechas acordadas. Con conductor de la empresa exige la tarifa diaria digitada
+        (422 COMPANY_DRIVER_RATE_REQUIRED).
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -572,7 +585,7 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: Falta evidencia obligatoria (mínimo 35 fotos y 3 videos)
+          description: Falta evidencia obligatoria (mínimo 35 fotos y 3 videos), o COMPANY_DRIVER_RATE_REQUIRED (con conductor de la empresa sin tarifa diaria digitada)
         '428':
           description: Falta header If-Match
 
@@ -1087,9 +1100,26 @@ components:
           deprecated: true
         notes: { type: string }
 
+    VehicleDataWarning:
+      type: object
+      description: >
+        DEC-ALQ-VEHDATA-001 (Respuestas 2026-10-20 #5). Aviso estructurado por cada dato del vehículo que falta en Flota
+        (capacidad de pasajeros, garantía, precio del combustible). NO bloquea; el front pide completarlo con
+        PATCH /fleet/vehicles/{id}.
+      required: [code, field, message]
+      properties:
+        code:
+          type: string
+          enum: [VEHICLE_PASSENGER_CAPACITY_MISSING, VEHICLE_DEPOSIT_MINIMUM_MISSING, VEHICLE_FUEL_PRICE_MISSING]
+        field:
+          type: string
+          enum: [passengerCapacity, depositMinimum, fuelPrice]
+        message: { type: string }
+
     RentalEvidenceZone:
       type: string
-      enum: [FRONTAL, LATERAL_IZQUIERDO, LATERAL_DERECHO, POSTERIOR, INTERIOR]
+      enum: [FRONTAL, LATERAL_IZQUIERDO, LATERAL_DERECHO, POSTERIOR, INTERIOR, ALCOHOL_TEST]
+      description: ALCOHOL_TEST = foto de la prueba de alcoholímetro (ENTREGA-02; solo en VALIDATION; no cuenta para las 35 fotos del checklist).
 
     RequestEvidenceUploadSessionRequest:
       type: object
@@ -1354,6 +1384,8 @@ components:
         - vehicleBrand
         - vehicleModel
         - vehiclePassengerCapacity
+        - vehicleFuelPrice
+        - vehicleWarnings
         - companionsCount
         - planCode
         - status
@@ -1385,6 +1417,14 @@ components:
           type: integer
           nullable: true
           description: Capacidad de pasajeros del vehículo (máximo de acompañantes). Null = sin capacidad registrada en Flota (DEC-FLT-CAP-002); en ese caso el máximo no se valida.
+        vehicleFuelPrice:
+          type: number
+          nullable: true
+          description: Precio del combustible del vehículo (PEN). Null = no registrado en Flota (genera aviso VEHICLE_FUEL_PRICE_MISSING).
+        vehicleWarnings:
+          type: array
+          items: { $ref: '#/components/schemas/VehicleDataWarning' }
+          description: Un aviso por cada dato del vehículo que falta (capacidad, garantía, combustible). Vacío si está completo. No bloquea.
         companionsCount:
           type: integer
           minimum: 0

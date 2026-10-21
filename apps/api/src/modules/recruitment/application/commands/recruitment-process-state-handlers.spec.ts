@@ -2,7 +2,12 @@ import { CandidateDecision, CandidateStage, InterviewResult } from '@prisma/clie
 import type { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import type { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { CandidateProcessState as PS, VacancyStatus as VS } from '../../domain/recruitment-domain-types';
-import { CandidateStateTransitionError } from '../../domain/recruitment-errors';
+import {
+  CandidateStateTransitionError,
+  DecisionReasonRequiredError,
+  GerenciaDecisionRequiredError,
+  OnboardingAlreadyCompletedError,
+} from '../../domain/recruitment-errors';
 import {
   BRANCH_ID,
   COMPANY_ID,
@@ -113,8 +118,8 @@ function onboarding(over: Partial<OnboardingRecord> = {}): OnboardingRecord {
   };
 }
 
-function setup() {
-  const access = new RecruitmentAccessService(buildWorkContext('RRHH'), buildMatrixAuth());
+function setup(role: 'RRHH' | 'GERENCIA' | 'ADMINISTRACION' = 'RRHH') {
+  const access = new RecruitmentAccessService(buildWorkContext(role), buildMatrixAuth());
   const tm = buildTransactionManager();
   const clock = new FixedClock();
   const audit = { recordRecruitmentEvent: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AuditEventRepositoryPort>;
@@ -207,11 +212,28 @@ describe('Registrar resultado de entrevista: En negociación -> Entrevistado', (
   });
 
   it('NO_AVANZA también cuenta como entrevista realizada y NO descarta ni decide al candidato', async () => {
-    const s = setup();
+    const s = setup('GERENCIA');
     prep(s, PS.EN_NEGOCIACION);
     await build(s).execute(cmd(InterviewResult.NO_AVANZA));
     expect(processTransitions(s)).toEqual(['EN_NEGOCIACION>ENTREVISTADO']);
     expect(s.candidates.updateDecision).not.toHaveBeenCalled();
+  });
+
+  it.each(['RRHH', 'ADMINISTRACION'] as const)('«No avanza» lo decide solo Gerencia: %s recibe 403 y no se escribe nada', async (role) => {
+    const s = setup(role);
+    prep(s, PS.EN_NEGOCIACION);
+    const err = await build(s).execute(cmd(InterviewResult.NO_AVANZA)).catch((e) => e);
+    expect(err).toBeInstanceOf(GerenciaDecisionRequiredError);
+    expect(err.httpStatus).toBe(403);
+    expect(err.code).toBe('ROLE_NOT_ALLOWED');
+    expect(s.interviews.recordResult).not.toHaveBeenCalled();
+  });
+
+  it('«Avanza» sigue pudiendo registrarlo RRHH', async () => {
+    const s = setup('RRHH');
+    prep(s, PS.EN_NEGOCIACION);
+    await build(s).execute(cmd(InterviewResult.AVANZA));
+    expect(s.interviews.recordResult).toHaveBeenCalled();
   });
 
   it('una segunda entrevista de un candidato ya ENTREVISTADO no repite la transición', async () => {
@@ -224,7 +246,8 @@ describe('Registrar resultado de entrevista: En negociación -> Entrevistado', (
 });
 
 describe('Decidir: Entrevistado -> Decidido | Descartado', () => {
-  const cmd = (decision: CandidateDecision) => new DecideCandidateCommand(UID, CAND_ID, COMPANY_ID, BRANCH_ID, decision, 2, 'ok');
+  const cmd = (decision: CandidateDecision, notes: string | undefined = 'ok') =>
+    new DecideCandidateCommand(UID, CAND_ID, COMPANY_ID, BRANCH_ID, decision, 2, notes);
   const build = (s: S) => new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox, s.vacancies);
   const prep = (s: S, state: PS, status: VS = VS.ENTREVISTADA) => {
     s.candidates.findScopedById.mockResolvedValue(candidate({ processState: state }));
@@ -314,7 +337,29 @@ describe('Incorporar: Decidido -> Ingresado -> Periodo de prueba', () => {
     expect(s.outbox.publish).toHaveBeenCalledWith(expect.objectContaining({ eventType: 'PersonalIncorporado.v1' }), s.tm.tx);
   });
 
-  it.each([PS.ENTREVISTADO, PS.PERIODO_PRUEBA, PS.PLANILLA])(
+  it.each([PS.INGRESADO, PS.PERIODO_PRUEBA, PS.PLANILLA, PS.TERMINADO])(
+    'incorporación repetida (%s): 409 ONBOARDING_ALREADY_COMPLETED y no se escribe nada (Respuestas #16)',
+    async (state) => {
+      const s = setup();
+      prep(s, state);
+      const err = await build(s).execute(cmd()).catch((e) => e);
+      expect(err).toBeInstanceOf(OnboardingAlreadyCompletedError);
+      expect(err.httpStatus).toBe(409);
+      expect(err.code).toBe('ONBOARDING_ALREADY_COMPLETED');
+      expect(s.onb.complete).not.toHaveBeenCalled();
+      expect(s.outbox.publish).not.toHaveBeenCalled();
+    },
+  );
+
+  it('Ingresado y Periodo de prueba son UN solo paso: una llamada recorre ambos y deja PERIODO_PRUEBA (Respuestas #11)', async () => {
+    const s = setup();
+    prep(s, PS.DECIDIDO);
+    await build(s).execute(cmd());
+    expect(processTransitions(s).at(-1)).toBe('INGRESADO>PERIODO_PRUEBA');
+    expect(s.onb.complete).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([PS.ENTREVISTADO])(
     'un candidato en %s no puede incorporarse y no se escribe la incorporación',
     async (state) => {
       const s = setup();
@@ -343,12 +388,30 @@ describe('Evaluar periodo de prueba: Periodo de prueba -> Planilla | Terminado',
     expect(s.outbox.publish).toHaveBeenCalledWith(expect.objectContaining({ eventType: 'PasoAPlanilla.v1' }), s.tm.tx);
   });
 
-  it('evaluación negativa: TERMINADO, sin evento nuevo', async () => {
-    const s = setup();
+  it('evaluación negativa: TERMINADO, sin evento nuevo (la registra Gerencia)', async () => {
+    const s = setup('GERENCIA');
     prep(s, PS.PERIODO_PRUEBA);
     await build(s).execute(cmd(false));
     expect(processTransitions(s)).toEqual(['PERIODO_PRUEBA>TERMINADO']);
     expect(s.outbox.publish).not.toHaveBeenCalled();
+  });
+
+  it.each(['RRHH', 'ADMINISTRACION'] as const)('prueba negativa: el término lo registra solo Gerencia, %s recibe 403', async (role) => {
+    const s = setup(role);
+    prep(s, PS.PERIODO_PRUEBA);
+    const err = await build(s).execute(cmd(false)).catch((e) => e);
+    // ADMINISTRACION ni siquiera tiene EVALUATE_PROBATION (ForbiddenException); RRHH cae en la regla de Gerencia.
+    expect(err.status ?? err.httpStatus).toBe(403);
+    if (role === 'RRHH') expect(err).toBeInstanceOf(GerenciaDecisionRequiredError);
+    expect(s.onb.evaluateProbation).not.toHaveBeenCalled();
+    expect(s.candidates.updateProcessState).not.toHaveBeenCalled();
+  });
+
+  it('prueba positiva: RRHH sí puede pasar a planilla', async () => {
+    const s = setup('RRHH');
+    prep(s, PS.PERIODO_PRUEBA);
+    await build(s).execute(cmd(true));
+    expect(processTransitions(s)).toEqual(['PERIODO_PRUEBA>PLANILLA']);
   });
 
   it.each([PS.DECIDIDO, PS.INGRESADO, PS.PLANILLA, PS.TERMINADO])(
@@ -360,4 +423,56 @@ describe('Evaluar periodo de prueba: Periodo de prueba -> Planilla | Terminado',
       expect(s.onb.evaluateProbation).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('Respuestas de negocio 2026-10-20 (frente B): candidatos en vacantes pausadas/canceladas y motivo de descarte', () => {
+  it.each([VS.PAUSADA, VS.CANCELADA])(
+    'se puede registrar un candidato en una vacante %s: se crea y la vacante NO cambia de estado (#15)',
+    async (status) => {
+      const s = setup();
+      s.vacancies.findById.mockResolvedValue(vacancy({ status }));
+      s.candidates.create.mockResolvedValue(candidate({ stage: CandidateStage.NUEVO }));
+      const h = new RegisterCandidateHandler(s.access, s.vacancies, s.candidates, s.tm, s.audit);
+      await expect(
+        h.execute(new RegisterCandidateCommand(UID, VAC_ID, COMPANY_ID, BRANCH_ID, 'Ana Perez', 'DNI', '12345678', undefined)),
+      ).resolves.toBeDefined();
+      expect(s.candidates.create).toHaveBeenCalled();
+      expect(s.vacancies.updateStatus).not.toHaveBeenCalled();
+    },
+  );
+
+  const decide = (s: S, state: PS, notes: string | undefined | null) => {
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: state }));
+    s.vacancies.findById.mockResolvedValue(vacancy({ status: VS.ENTREVISTADA }));
+    s.candidates.updateDecision.mockImplementation(async (_id, decision, _n, _by, _at, processState) =>
+      candidate({ decision, processState, stage: CandidateStage.DECISION, version: 3 }),
+    );
+    s.candidates.findDetailById.mockResolvedValue({
+      ...candidate({ processState: state }), isMechanic: false, interviews: [], negotiations: [], onboarding: null,
+    });
+    const h = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox, s.vacancies);
+    return h.execute(new DecideCandidateCommand(UID, CAND_ID, COMPANY_ID, BRANCH_ID, CandidateDecision.RECHAZADO, 2, notes));
+  };
+
+  it.each([undefined, null, '', '   '])('rechazo tras la entrevista sin motivo (%p) -> 422 DECISION_REASON_REQUIRED y no escribe (#14)', async (notes) => {
+    const s = setup();
+    const err = await decide(s, PS.ENTREVISTADO, notes as never).catch((e) => e);
+    expect(err).toBeInstanceOf(DecisionReasonRequiredError);
+    expect(err.httpStatus).toBe(422);
+    expect(err.code).toBe('DECISION_REASON_REQUIRED');
+    expect(s.candidates.updateDecision).not.toHaveBeenCalled();
+  });
+
+  it('rechazo tras la entrevista con motivo -> DESCARTADO', async () => {
+    const s = setup();
+    await decide(s, PS.ENTREVISTADO, ' rechazó la oferta ');
+    expect(s.candidates.updateDecision).toHaveBeenCalledWith(
+      CAND_ID, CandidateDecision.RECHAZADO, 'rechazó la oferta', UID, expect.any(Date), PS.DESCARTADO, 2, s.tm.tx,
+    );
+  });
+
+  it('rechazo ANTES de la entrevista no exige motivo (no cambia lo existente)', async () => {
+    const s = setup();
+    await expect(decide(s, PS.EN_NEGOCIACION, undefined)).resolves.toBeDefined();
+  });
 });

@@ -59,7 +59,7 @@ export class PrismaReturnDashboardAlertPersistence implements ReturnDashboardAle
       },
       orderBy: { id: 'asc' },
       take: limit,
-      select: { id: true, sourceId: true, sourceEventId: true },
+      select: { id: true, sourceId: true, sourceEventId: true, role: true, organizationId: true, operatingCompanyId: true, branchId: true },
     });
     return rows;
   }

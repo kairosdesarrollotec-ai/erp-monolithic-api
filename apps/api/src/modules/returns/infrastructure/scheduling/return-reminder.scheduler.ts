@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { GenerateDueReturnRemindersHandler } from '../../application/commands/generate-due-return-reminders.handler';
+import { isEnvFlagEnabled } from '../../../../common/config/env-flag';
 
 /** El recordatorio se genera 3 h antes; revisar cada 5 min deja un desfase máximo de 5 min (BR-DEV-004 tolera 30). */
 export const DEFAULT_RETURN_REMINDER_INTERVAL_MS = 5 * 60_000;
@@ -20,7 +21,7 @@ export class ReturnReminderScheduler implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly generateDue: GenerateDueReturnRemindersHandler) {}
 
   onModuleInit(): void {
-    if (process.env.RETURN_REMINDER_SCHEDULER === 'off' || process.env.JEST_WORKER_ID !== undefined) {
+    if (!isEnvFlagEnabled(process.env.RETURN_REMINDER_SCHEDULER) || process.env.JEST_WORKER_ID !== undefined) {
       return;
     }
     const configured = Number(process.env.RETURN_REMINDER_INTERVAL_MS);

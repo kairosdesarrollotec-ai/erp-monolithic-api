@@ -41,7 +41,7 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { ListEmployeesQueryDto } from './dto/list-employees-query.dto';
 import { TerminateEmploymentDto } from './dto/terminate-employment.dto';
 import { parseDateOnly } from './dto/hr-date';
-import { areaCodeFromText } from '../../domain/hr-area-rules';
+import { areaFilterCode } from '../../domain/hr-area-rules';
 import type {
   EmployeeDetailResponse,
   EmployeeListResponse,
@@ -111,7 +111,7 @@ export class EmployeesController {
         query.companyId,
         query.branchId,
         query.status,
-        query.areaCode ? areaCodeFromText(query.areaCode) : query.areaId,
+        query.areaCode ? areaFilterCode(query.areaCode) : query.areaId,
         query.search,
         query.limit,
         query.offset,

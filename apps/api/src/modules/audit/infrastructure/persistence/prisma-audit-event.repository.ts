@@ -9,6 +9,7 @@ import {
   RecordInquiryEventInput,
   RecordAdminEventInput,
   RecordRentalEventInput,
+  RecordFleetEventInput,
   RecordIncidentEventInput,
   RecordRecruitmentEventInput,
   RecordHrAdministrationEventInput,
@@ -108,6 +109,20 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         entityId: input.rentalId,
         action: input.action,
         changes: input.changes as unknown as Prisma.InputJsonValue, // JsonValue compat
+      },
+    });
+  }
+
+  async recordFleetEvent(input: RecordFleetEventInput, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.auditEvent.create({
+      data: {
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        entityType: 'vehicle',
+        entityId: input.vehicleId,
+        action: input.action,
+        changes: input.changes as unknown as Prisma.InputJsonValue,
       },
     });
   }

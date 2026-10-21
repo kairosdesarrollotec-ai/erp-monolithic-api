@@ -7,6 +7,8 @@ export const RENTAL_EVIDENCE_ZONES = [
   'LATERAL_DERECHO',
   'POSTERIOR',
   'INTERIOR',
+  // ENTREGA-02 (Respuestas 2026-10-20 #10): foto de la prueba de alcoholimetro, sin hora; se sube en VALIDATION.
+  'ALCOHOL_TEST',
 ] as const;
 
 const MAX_VIDEO_BYTES = 200 * 1024 * 1024;

@@ -1,6 +1,7 @@
 import {
   DomainBadRequestError,
   DomainConflictError,
+  DomainForbiddenError,
   DomainNotFoundError,
   DomainPreconditionError,
   DomainServiceUnavailableError,
@@ -391,5 +392,41 @@ export class HrAreaRequiredError extends DomainBadRequestError {
 
   constructor() {
     super('Indica el área: elige una del catálogo (areaCode) o escribe el nombre (areaName).');
+  }
+}
+
+/** Respuestas 2026-10-20 #17: ya existe un area (activa o no) con ese codigo, nombre o alias en la empresa. */
+export class HrAreaAlreadyExistsError extends DomainConflictError {
+  readonly code = 'HR_AREA_ALREADY_EXISTS';
+
+  constructor(name: string) {
+    super(`Ya existe un área "${name}" (o equivalente) en el catálogo de esta empresa.`);
+  }
+}
+
+/** No se puede desactivar un area con colaboradores activos asignados. */
+export class HrAreaInUseError extends DomainConflictError {
+  readonly code = 'HR_AREA_IN_USE';
+
+  constructor(name: string, count: number) {
+    super(`El área "${name}" tiene ${count} colaborador(es) activo(s); reasígnalos antes de desactivarla.`);
+  }
+}
+
+/** El nombre del area no produce un codigo valido (vacio o solo simbolos). */
+export class HrAreaNameInvalidError extends DomainUnprocessableError {
+  readonly code = 'HR_AREA_NAME_INVALID';
+
+  constructor() {
+    super('El nombre del área debe contener letras o números.');
+  }
+}
+
+/** El sueldo base de la ficha solo lo edita Gerencia (permiso HR_ADMINISTRATION.MANAGE_SALARY). */
+export class EmployeeSalaryGerenciaOnlyError extends DomainForbiddenError {
+  readonly code = 'EMPLOYEE_SALARY_GERENCIA_ONLY';
+
+  constructor() {
+    super('El sueldo base solo puede editarlo Gerencia General; el resto de la ficha puede editarse sin cambiar el sueldo.');
   }
 }

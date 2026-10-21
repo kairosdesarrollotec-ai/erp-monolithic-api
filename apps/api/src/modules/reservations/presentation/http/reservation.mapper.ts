@@ -35,6 +35,7 @@ export function toReservationResponse(record: ReservationRecord, extras: Reserva
     version: record.version,
     customer: { id: record.customerId, name: record.customerName },
     vehicle: { id: record.vehicleId, plate: record.vehiclePlate, label: record.vehicleLabel },
+    vehicleWarnings: record.vehicleWarnings ?? [],
     startAt: record.startAt.toISOString(),
     endAt: record.endAt.toISOString(),
     requiredPayment: { amount: record.requiredPaymentAmount, currency: record.currency },

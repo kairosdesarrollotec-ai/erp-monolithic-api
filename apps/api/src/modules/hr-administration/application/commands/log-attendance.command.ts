@@ -14,6 +14,13 @@ export interface AttendanceEvidenceInput {
   note?: string | null;
 }
 
+/** HU-29: ubicacion automatica opcional (WGS84). Si viene, latitud y longitud van juntas; la precision es opcional. */
+export interface AttendanceLocationInput {
+  latitude: number;
+  longitude: number;
+  accuracy?: number | null;
+}
+
 export class LogAttendanceCommand {
   constructor(
     public readonly firebaseUid: string,
@@ -26,5 +33,6 @@ export class LogAttendanceCommand {
     public readonly checkOutTime?: Date | null,
     public readonly notes?: string | null,
     public readonly evidence?: AttendanceEvidenceInput | null,
+    public readonly location?: AttendanceLocationInput | null,
   ) {}
 }

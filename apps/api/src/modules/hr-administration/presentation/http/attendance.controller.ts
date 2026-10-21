@@ -88,6 +88,10 @@ export class AttendanceController {
               note: dto.evidence.note,
             }
           : null,
+        // HU-29: ubicacion automatica opcional; si falta una de las dos coordenadas el handler responde 422.
+        dto.latitude != null || dto.longitude != null
+          ? { latitude: dto.latitude as number, longitude: dto.longitude as number, accuracy: dto.accuracy }
+          : null,
       ),
     );
     return toAttendanceRecordResponse(record, undefined, memo);

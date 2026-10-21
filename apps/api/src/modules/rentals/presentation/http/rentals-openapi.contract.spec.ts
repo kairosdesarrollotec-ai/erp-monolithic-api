@@ -14,6 +14,7 @@ import { RentalDocumentsController } from './rental-documents.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
 import { ValidateDocumentsDto } from './dto/validate-documents.dto';
+import { RENTAL_EVIDENCE_ZONES } from './dto/request-evidence-upload-session.dto';
 import { RegisterAlcoholTestDto } from './dto/register-alcohol-test.dto';
 import { CommandScopeDto } from './dto/command-scope.dto';
 import { ApproveNotaryExceptionDto } from './dto/approve-notary-exception.dto';
@@ -246,7 +247,7 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
   });
 
   it('DEC-ALQ-CAPWARN-001/002 (contrato 1.11.0): RentalResponse expone vehiclePassengerCapacity (nullable) y companionsCount (RESPONSIBLE)', () => {
-    expect(spec.info.version).toBe('1.11.0');
+    expect(spec.info.version).toBe('1.12.0');
     const contract = flatten(spec.components.schemas.RentalResponse);
     expect(contract.properties.vehiclePassengerCapacity.nullable).toBe(true);
     expect(contract.properties.vehiclePassengerCapacity.type).toBe('integer');
@@ -268,6 +269,39 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     } as RentalRecord);
     expect(out.vehiclePassengerCapacity).toBe(4);
     expect(out.companionsCount).toBe(2);
+  });
+
+  it('DEC-ALQ-VEHDATA-001 (contrato 1.12.0): RentalResponse expone vehicleFuelPrice y vehicleWarnings (uno por dato faltante, no bloquea)', () => {
+    const contract = flatten(spec.components.schemas.RentalResponse);
+    expect(contract.required).toEqual(expect.arrayContaining(['vehicleFuelPrice', 'vehicleWarnings']));
+    expect(contract.properties.vehicleWarnings.items.$ref).toBe('#/components/schemas/VehicleDataWarning');
+    const warn = spec.components.schemas.VehicleDataWarning;
+    expect(warn.properties.code.enum).toEqual([
+      'VEHICLE_PASSENGER_CAPACITY_MISSING',
+      'VEHICLE_DEPOSIT_MINIMUM_MISSING',
+      'VEHICLE_FUEL_PRICE_MISSING',
+    ]);
+
+    const base = buildRentalRecord();
+    const missing = toRentalResponse({ ...base, vehicleDepositMinimum: null, vehiclePassengerCapacity: undefined, vehicleFuelPrice: undefined });
+    expect(missing.vehicleWarnings.map((w) => w.code)).toEqual([
+      'VEHICLE_PASSENGER_CAPACITY_MISSING',
+      'VEHICLE_DEPOSIT_MINIMUM_MISSING',
+      'VEHICLE_FUEL_PRICE_MISSING',
+    ]);
+    const complete = toRentalResponse({ ...base, vehicleDepositMinimum: 500, vehiclePassengerCapacity: 5, vehicleFuelPrice: 4.5 });
+    expect(complete.vehicleWarnings).toEqual([]);
+    expect(complete.vehicleFuelPrice).toBe(4.5);
+  });
+
+  it('ENTREGA-02 / DEC-ALQ-DRIVERRATE-002 (contrato 1.12.0): zona ALCOHOL_TEST y errores nuevos documentados', () => {
+    expect(spec.components.schemas.RentalEvidenceZone.enum).toContain('ALCOHOL_TEST');
+    expect(RENTAL_EVIDENCE_ZONES).toContain('ALCOHOL_TEST');
+    expect([...spec.components.schemas.RentalEvidenceZone.enum].sort()).toEqual([...RENTAL_EVIDENCE_ZONES].sort());
+    const alc: Operation = spec.paths['/rentals/{id}/commands/register-alcohol-test'].post;
+    expect((alc.responses['422'] as any).description).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
+    const del: Operation = spec.paths['/rentals/{id}/commands/complete-delivery'].post;
+    expect((del.responses['422'] as any).description).toContain('COMPANY_DRIVER_RATE_REQUIRED');
   });
 
   it('GET /rentals/{id}/contract-template: los query params del contrato son los del DTO', () => {

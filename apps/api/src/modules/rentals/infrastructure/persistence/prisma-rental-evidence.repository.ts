@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { RENTAL_ALCOHOL_TEST_EVIDENCE_ZONE } from '../../domain/alcohol-test-result';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   RentalEvidenceCounts,
@@ -65,6 +66,8 @@ export class PrismaRentalEvidenceRepository implements RentalEvidenceRepositoryP
           organizationId: scope.organizationId,
           operatingCompanyId: scope.operatingCompanyId,
           type: 'PHOTO',
+          // La foto del alcolimetro (ENTREGA-02) no cuenta para las 35 fotos del checklist.
+          zone: { not: RENTAL_ALCOHOL_TEST_EVIDENCE_ZONE },
         },
       }),
       client.rentalEvidence.count({

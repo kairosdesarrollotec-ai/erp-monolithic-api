@@ -8,11 +8,24 @@ import { RecruitmentAccessService } from '../services/recruitment-access.service
 import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
 import { OnboardingRecord, OnboardingRepositoryPort } from '../ports/onboarding-repository.port';
-import { CandidateNotContractedError, CandidateNotFoundError, VacancyNotFoundError } from '../../domain/recruitment-errors';
+import {
+  CandidateNotContractedError,
+  CandidateNotFoundError,
+  OnboardingAlreadyCompletedError,
+  VacancyNotFoundError,
+} from '../../domain/recruitment-errors';
 import { CandidateProcessState } from '../../domain/recruitment-domain-types';
 import { applyOnboardingFeeVisibility, assertCandidateProcessTransition, assertOnboardingValid } from '../../domain/recruitment-rules';
 import { transitionCandidateProcess } from '../services/recruitment-progress';
 import { CompleteOnboardingCommand } from './complete-onboarding.command';
+
+/** Estados posteriores a la incorporacion: «Ingresado» y «Periodo de prueba» son UN solo paso (Respuestas #11). */
+const ALREADY_ONBOARDED_STATES: readonly CandidateProcessState[] = [
+  CandidateProcessState.INGRESADO,
+  CandidateProcessState.PERIODO_PRUEBA,
+  CandidateProcessState.PLANILLA,
+  CandidateProcessState.TERMINADO,
+];
 
 @Injectable()
 export class CompleteOnboardingHandler {
@@ -45,6 +58,11 @@ export class CompleteOnboardingHandler {
 
       if (candidate.decision !== CandidateDecision.CONTRATADO) {
         throw new CandidateNotContractedError();
+      }
+
+      // Incorporacion repetida (Respuestas 2026-10-20 #16): ya paso por la incorporacion -> 409, no 422 de transicion.
+      if (ALREADY_ONBOARDED_STATES.includes(candidate.processState)) {
+        throw new OnboardingAlreadyCompletedError(candidate.processState);
       }
 
       const vacancy = await this.vacancies.findById(candidate.vacancyId, scope, tx);

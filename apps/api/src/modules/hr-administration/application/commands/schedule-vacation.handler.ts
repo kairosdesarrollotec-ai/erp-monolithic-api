@@ -86,6 +86,7 @@ export class ScheduleVacationHandler {
         const created = await this.vacations.create(
           {
             employeeId: employee.id,
+            operatingCompanyId: employee.operatingCompanyId,
             areaId: employee.areaId,
             startDate: command.startDate,
             endDate: command.endDate,

@@ -19,6 +19,8 @@ export interface EmployeeResponse {
   email: string | null;
   phone: string | null;
   areaId: string;
+  /** Codigo del area (igual a `areaId`; se expone con el nombre del catalogo GET /hr-areas). */
+  areaCode: string;
   areaName: string;
   jobTitle: string;
   status: EmployeeStatus;
@@ -59,6 +61,8 @@ export interface HrAreaResponse {
   name: string;
   description: string | null;
   sortOrder: number;
+  /** Siempre true en el listado normal; false solo con includeInactive=true (Gerencia). */
+  isActive: boolean;
 }
 
 export interface HrAreaListResponse {
@@ -83,6 +87,10 @@ export interface AttendanceEvidenceResponse {
 }
 
 export interface AttendanceRecordResponse {
+  /** HU-29: ubicacion automatica opcional del registro (null si no se capturo). */
+  latitude: number | null;
+  longitude: number | null;
+  accuracy: number | null;
   id: string;
   employeeId: string;
   employeeName?: string;

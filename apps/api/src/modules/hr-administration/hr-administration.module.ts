@@ -12,6 +12,8 @@ import { EmployeeRepositoryPort } from './application/ports/employee-repository.
 import { HrAreaRepositoryPort } from './application/ports/hr-area-repository.port';
 import { HrAreaResolverService } from './application/services/hr-area-resolver.service';
 import { PrismaHrAreaRepository } from './infrastructure/persistence/prisma-hr-area.repository';
+import { CreateHrAreaHandler } from './application/commands/create-hr-area.handler';
+import { SetHrAreaActiveHandler } from './application/commands/set-hr-area-active.handler';
 import { ListHrAreasHandler } from './application/queries/list-hr-areas.handler';
 import { HrAreasController } from './presentation/http/hr-areas.controller';
 import { AttendanceRepositoryPort } from './application/ports/attendance-repository.port';
@@ -110,6 +112,8 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     { provide: HrAreaRepositoryPort, useClass: PrismaHrAreaRepository },
     HrAreaResolverService,
     ListHrAreasHandler,
+    CreateHrAreaHandler,
+    SetHrAreaActiveHandler,
     { provide: AttendanceRepositoryPort, useClass: PrismaAttendanceRepository },
     { provide: LeaveRepositoryPort, useClass: PrismaLeaveRepository },
     { provide: VacationRepositoryPort, useClass: PrismaVacationRepository },

@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateVehicleCommand } from './create-vehicle.command';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { FleetAccessService } from '../services/fleet-access.service';
-import { VehiclePassengerCapacityRequiredError, VehiclePlateAlreadyExistsError } from '../../domain/fleet-errors';
+import { isValidPassengerCapacity, VehiclePassengerCapacityRequiredError, VehiclePlateAlreadyExistsError } from '../../domain/fleet-errors';
+import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { FleetVehicle } from '../../domain/vehicle';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class CreateVehicleHandler {
   constructor(
     private readonly vehicles: FleetVehicleRepositoryPort,
     private readonly access: FleetAccessService,
+    private readonly audit: AuditEventRepositoryPort,
   ) {}
 
   async execute(command: CreateVehicleCommand): Promise<FleetVehicle> {
@@ -20,7 +22,7 @@ export class CreateVehicleHandler {
     );
 
     // DEC-FLT-CAP-001: la capacidad de pasajeros se pide siempre al registrar (G-05).
-    if (command.passengerCapacity == null) {
+    if (!isValidPassengerCapacity(command.passengerCapacity)) {
       throw new VehiclePassengerCapacityRequiredError();
     }
 
@@ -31,7 +33,7 @@ export class CreateVehicleHandler {
       throw new VehiclePlateAlreadyExistsError(sanitizedPlate);
     }
 
-    return this.vehicles.create({
+    const created = await this.vehicles.create({
       organizationId: context.organizationId,
       operatingCompanyId: context.companyId,
       branchId: command.assignedBranchId?.trim() || command.branchId,
@@ -48,5 +50,23 @@ export class CreateVehicleHandler {
       fuelPrice: command.fuelPrice ?? null,
       photoUrl: command.photoUrl?.trim() || null,
     });
+
+    // B7 (Respuestas 2026-10-20/21): auditoria de quien/cuando creo el vehiculo.
+    await this.audit.recordFleetEvent({
+      organizationId: context.organizationId,
+      actorUserId: command.firebaseUid,
+      vehicleId: created.id,
+      action: 'VEHICLE_CREATED',
+      changes: {
+        plate: created.plate,
+        brand: created.brand,
+        model: created.model,
+        operatingCompanyId: context.companyId,
+        branchId: created.branchId ?? null,
+        status: created.status,
+        passengerCapacity: created.passengerCapacity ?? null,
+      },
+    });
+    return created;
   }
 }

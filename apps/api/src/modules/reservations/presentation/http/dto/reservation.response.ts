@@ -1,3 +1,4 @@
+import { VehicleDataWarning } from '../../../../../common/domain/vehicle-data-warnings';
 import { ReservationStatus } from '../../../domain/reservation-status';
 import { ChannelMode } from '../../../domain/channel-mode';
 
@@ -22,6 +23,8 @@ export interface ReservationResponse {
   version: number;
   customer: { id: string; name: string };
   vehicle: { id: string; plate: string; label: string };
+  /** DEC-ALQ-VEHDATA-001: un aviso por cada dato del vehiculo que falta (capacidad, garantia, combustible). No bloquea. */
+  vehicleWarnings: VehicleDataWarning[];
   startAt: string;
   endAt: string;
   requiredPayment: { amount: string; currency: string };

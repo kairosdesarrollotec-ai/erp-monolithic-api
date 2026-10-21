@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { HrAreaNotFoundError } from '../../domain/hr-administration-errors';
-import { areaCodeFromText, normalizeAreaText } from '../../domain/hr-area-rules';
+import { areaAliasCode, areaCodeFromText, normalizeAreaText } from '../../domain/hr-area-rules';
 import { HrAreaRepositoryPort } from '../ports/hr-area-repository.port';
 
 export interface ResolveAreaInput {
@@ -26,6 +26,7 @@ export interface ResolvedArea {
  * de vacaciones por area, comparada por `areaId`) no se parta por diferencias de escritura:
  *  1. `areaCode` del catalogo -> `areaId` = codigo, `areaName` = nombre oficial (si no existe: 422 HR_AREA_NOT_FOUND).
  *  2. Texto libre que coincide con el nombre o el codigo de un area del catalogo (sin mayusculas/tildes) -> se usa el catalogo.
+ *  2b. «RRHH»/«Recursos Humanos» (alias) -> Talento Humano.
  *  3. Texto libre sin coincidencia -> sigue permitido; `areaId` se normaliza (mayusculas, sin tildes, `_`).
  */
 @Injectable()
@@ -42,7 +43,8 @@ export class HrAreaResolverService {
 
     if (areaCode) {
       const code = areaCodeFromText(areaCode);
-      const found = catalog.find((a) => a.code === code);
+      const aliasCode = areaAliasCode(areaCode);
+      const found = catalog.find((a) => a.code === code) ?? (aliasCode ? catalog.find((a) => a.code === aliasCode) : undefined);
       if (!found) throw new HrAreaNotFoundError(areaCode);
       return { areaId: found.code, areaName: found.name, source: 'CATALOG' };
     }
@@ -51,9 +53,16 @@ export class HrAreaResolverService {
     const codeKeys = new Set<string>();
     if (areaIdText) codeKeys.add(areaCodeFromText(areaIdText));
     if (areaName) codeKeys.add(areaCodeFromText(areaName));
+    // Alias conocidos (Respuestas 2026-10-20 #17): «RRHH» / «Recursos Humanos» -> Talento Humano.
+    const aliasCodes = new Set<string>();
+    for (const text of [areaName, areaIdText]) {
+      const alias = text ? areaAliasCode(text) : undefined;
+      if (alias) aliasCodes.add(alias);
+    }
     const match =
       (nameKey ? catalog.find((a) => normalizeAreaText(a.name) === nameKey) : undefined) ??
-      catalog.find((a) => codeKeys.has(a.code));
+      catalog.find((a) => codeKeys.has(a.code)) ??
+      catalog.find((a) => aliasCodes.has(a.code));
     if (match) return { areaId: match.code, areaName: match.name, source: 'CATALOG' };
 
     const id = areaIdText ? areaCodeFromText(areaIdText) : areaName ? areaCodeFromText(areaName) : undefined;

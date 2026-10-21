@@ -1,3 +1,4 @@
+import { VehicleDataWarning } from '../../../../../common/domain/vehicle-data-warnings';
 import { RentalStatus } from '../../../domain/rental-status';
 import { AlcoholTestResult } from '../../../domain/alcohol-test-result';
 import { NotaryResult } from '../../../domain/notary-result';
@@ -109,6 +110,10 @@ export interface RentalResponse {
   vehicleDepositMinimum: number | null;
   /** DEC-ALQ-CAPWARN-001: null = vehiculo sin capacidad registrada (sin tope, no bloquea). */
   vehiclePassengerCapacity: number | null;
+  /** DEC-ALQ-VEHDATA-001: precio del combustible del vehiculo (null = no registrado). */
+  vehicleFuelPrice: number | null;
+  /** DEC-ALQ-VEHDATA-001: un aviso por cada dato del vehiculo que falta (capacidad, garantia, combustible). No bloquea. */
+  vehicleWarnings: VehicleDataWarning[];
   /** DEC-ALQ-CAPWARN-002: acompanantes registrados (parties RESPONSIBLE). */
   companionsCount: number;
   planCode: string;

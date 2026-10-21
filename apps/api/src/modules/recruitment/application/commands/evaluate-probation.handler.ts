@@ -6,7 +6,12 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import { RecruitmentAccessService } from '../services/recruitment-access.service';
 import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { OnboardingRecord, OnboardingRepositoryPort } from '../ports/onboarding-repository.port';
-import { CandidateNotFoundError, OnboardingNotFoundError, ProbationAlreadyEvaluatedError } from '../../domain/recruitment-errors';
+import {
+  CandidateNotFoundError,
+  GerenciaDecisionRequiredError,
+  OnboardingNotFoundError,
+  ProbationAlreadyEvaluatedError,
+} from '../../domain/recruitment-errors';
 import { CandidateProcessState } from '../../domain/recruitment-domain-types';
 import { applyOnboardingFeeVisibility, assertCandidateProcessTransition } from '../../domain/recruitment-rules';
 import { transitionCandidateProcess } from '../services/recruitment-progress';
@@ -33,6 +38,11 @@ export class EvaluateProbationHandler {
       },
       'EVALUATE_PROBATION',
     );
+
+    // Respuestas 2026-10-20 #13: el termino tras una prueba negativa lo registra Gerencia General.
+    if (!command.passed && !(await this.access.isActionAllowed(context, 'TERMINATE_PROBATION'))) {
+      throw new GerenciaDecisionRequiredError('Registrar el término tras una evaluación negativa del periodo de prueba');
+    }
 
     return this.transactionManager.run(async (tx) => {
       const candidate = await this.candidates.findScopedById(command.candidateId, scope, tx);

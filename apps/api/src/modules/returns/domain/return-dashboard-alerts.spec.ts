@@ -44,6 +44,16 @@ describe('alerta de garantía 24 h en el tablero (DEC-DEVREM-002)', () => {
     expect(JSON.stringify(item)).not.toMatch(/cliente|customer|Juan/i);
   });
 
+  it('rol destinatario distinto de FINANZAS: item para ese rol y clave con sufijo de rol; FINANZAS conserva la clave historica', () => {
+    const alert = computeWarrantyReleaseAlert(sinDanos, at(21))!;
+    const gerencia = buildWarrantyDashboardItem(subject, alert, 'GERENCIA');
+    expect(gerencia.role).toBe('GERENCIA');
+    expect(gerencia.sourceEventId).toBe('return-warranty:DUE_SOON:ret-1:GERENCIA');
+    expect(buildWarrantyDashboardItem(subject, alert, 'FINANZAS').sourceEventId).toBe('return-warranty:DUE_SOON:ret-1');
+    // el nivel se sigue leyendo de la clave aunque lleve sufijo de rol
+    expect(parseWarrantyDashboardLevel(gerencia.sourceEventId)).toBe('DUE_SOON');
+  });
+
   it('parseWarrantyDashboardLevel recupera el nivel de la clave y rechaza claves ajenas', () => {
     expect(parseWarrantyDashboardLevel(warrantyDashboardKey('DUE_SOON', 'x'))).toBe('DUE_SOON');
     expect(parseWarrantyDashboardLevel(warrantyDashboardKey('OVERDUE', 'x'))).toBe('OVERDUE');

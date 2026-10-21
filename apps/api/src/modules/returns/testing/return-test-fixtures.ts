@@ -323,6 +323,7 @@ export function buildDeps(
     recordRecruitmentEvent: jest.fn().mockResolvedValue(undefined),
     recordHrAdministrationEvent: jest.fn().mockResolvedValue(undefined),
     recordPaymentEvent: jest.fn().mockResolvedValue(undefined),
+    recordFleetEvent: jest.fn().mockResolvedValue(undefined),
   };
 
   const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {

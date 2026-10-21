@@ -113,4 +113,23 @@ describe('RequestEvidenceUploadSessionHandler', () => {
       ),
     ).rejects.toThrow(RentalStateConflictError);
   });
+
+  describe('ENTREGA-02: zona ALCOHOL_TEST (Respuestas 2026-10-20 #10)', () => {
+    const photoCmd = (zone: string) =>
+      new RequestEvidenceUploadSessionCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 'PHOTO', zone as any, 'image/jpeg', 1000);
+
+    it('la foto del alcolimetro se sube en VALIDATION', async () => {
+      const storage = buildStoragePort();
+      const handler = new RequestEvidenceUploadSessionHandler(storage as any, buildRentalsPort('VALIDATION') as any, buildWorkContext() as any, buildMatrixAuth() as any);
+      await expect(handler.execute(photoCmd('ALCOHOL_TEST'))).resolves.toBeDefined();
+      expect(storage.generateSignedUploadUrl).toHaveBeenCalledWith(expect.objectContaining({ zone: 'ALCOHOL_TEST' }));
+    });
+
+    it('la foto del alcolimetro no se sube en PENDING_DELIVERY y una zona normal no se sube en VALIDATION', async () => {
+      const h1 = new RequestEvidenceUploadSessionHandler(buildStoragePort() as any, buildRentalsPort('PENDING_DELIVERY') as any, buildWorkContext() as any, buildMatrixAuth() as any);
+      await expect(h1.execute(photoCmd('ALCOHOL_TEST'))).rejects.toThrow(RentalStateConflictError);
+      const h2 = new RequestEvidenceUploadSessionHandler(buildStoragePort() as any, buildRentalsPort('VALIDATION') as any, buildWorkContext() as any, buildMatrixAuth() as any);
+      await expect(h2.execute(photoCmd('FRONTAL'))).rejects.toThrow(RentalStateConflictError);
+    });
+  });
 });

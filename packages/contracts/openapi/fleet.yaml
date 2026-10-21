@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.6.0
+  version: 0.7.0
   description: >
+    0.7.0 — Respuestas de Russbel (2026-10-20 #3/#4). Sin cambios de forma. La capacidad de pasajeros es SIEMPRE > 0: en el alta
+    (POST) ausente, null, 0, negativa, no entera o > 60 responde 400 PASSENGER_CAPACITY_REQUIRED; en la edición (PATCH /fleet/vehicles/{id},
+    permiso FLEET.WRITE; es el botón EDITAR de Flota, también para completar la capacidad de vehículos antiguos) omitirla no la cambia y
+    enviarla null/0/negativa/no entera/> 60 responde 400 PASSENGER_CAPACITY_REQUIRED. Rango del año del vehículo sin cambios (1950..2100).
+
     0.6.0 — G-05 (Russbel, 2026-10-19): la capacidad de pasajeros se pide siempre
     al registrar un vehículo. CreateVehicleRequest.passengerCapacity sigue siendo
     obligatoria (entero 1..60); si falta o llega null responde 400
@@ -154,7 +159,7 @@ paths:
         '400':
           description: >
             Validación fallida (class-validator) o PASSENGER_CAPACITY_REQUIRED
-            (passengerCapacity ausente o null en el alta).
+            (passengerCapacity ausente, null, 0, negativa o > 60 en el alta).
           content:
             application/json:
               schema:
@@ -355,7 +360,7 @@ paths:
         '400':
           description: >
             Validación fallida (class-validator) o PASSENGER_CAPACITY_REQUIRED
-            (passengerCapacity enviada en null).
+            (passengerCapacity enviada en null, 0, negativa, no entera o > 60).
           content:
             application/json:
               schema:

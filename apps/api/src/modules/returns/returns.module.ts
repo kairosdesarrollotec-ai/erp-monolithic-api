@@ -54,6 +54,8 @@ import { ReturnReminderScheduler } from './infrastructure/scheduling/return-remi
 import { ReturnAlertScheduler } from './infrastructure/scheduling/return-alert.scheduler';
 import { PublishReturnDashboardAlertsHandler } from './application/commands/publish-return-dashboard-alerts.handler';
 import { ReturnDashboardAlertPort } from './application/ports/return-dashboard-alert.port';
+import { ReturnAlertRecipientsPort } from './application/ports/return-alert-recipients.port';
+import { MatrixReturnAlertRecipientsPersistence } from './infrastructure/persistence/matrix-return-alert-recipients.persistence';
 import { PrismaReturnDashboardAlertPersistence } from './infrastructure/persistence/prisma-return-dashboard-alert.persistence';
 import { GetResponsibilityTemplateHandler } from './application/queries/get-responsibility-template.handler';
 
@@ -108,6 +110,7 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     { provide: ReturnAlertRepositoryPort, useClass: PrismaReturnAlertPersistence },
     // DEC-DEVREM-002: proyección de la alerta de garantía de 24 h al tablero de Finanzas (dashboard_items).
     { provide: ReturnDashboardAlertPort, useClass: PrismaReturnDashboardAlertPersistence },
+    { provide: ReturnAlertRecipientsPort, useClass: MatrixReturnAlertRecipientsPersistence },
     // DEC-DEV-COMMITMENT-001: libera el compromiso RENTAL del vehículo al cerrar la devolución.
     { provide: ReturnVehicleCommitmentPort, useClass: PrismaReturnVehicleCommitmentPersistence },
   ],

@@ -895,6 +895,7 @@ model DashboardItem {
   @@unique([sourceEventId, itemType])
   @@index([organizationId, operatingCompanyId, branchId, role, dismissedAt, priority])
   @@index([sourceType, dismissedAt], map: "idx_dashboard_items_source_active")
+  @@index([dismissedAt], map: "dashboard_items_dismissed_at_idx")
   @@map("dashboard_items")
 }
 
@@ -1855,6 +1856,11 @@ model AttendanceRecord {
   evidenceNote               String?   @map("evidence_note") @db.Text
   evidenceCorroboratedById   String?   @map("evidence_corroborated_by_id")
   evidenceCorroboratedAt     DateTime? @map("evidence_corroborated_at")
+  /// HU-29 (Respuestas 2026-10-20 #20): ubicacion automatica opcional (WGS84) al registrar la asistencia; nunca bloquea el registro.
+  latitude           Float?
+  longitude          Float?
+  /// Precision horizontal reportada por el dispositivo, en metros.
+  accuracy           Float?           @map("accuracy_meters")
   createdById        String           @map("created_by_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
@@ -1896,6 +1902,8 @@ model LeaveRequest {
 model VacationRequest {
   id          String         @id @default(uuid())
   employeeId  String         @map("employee_id")
+  /// BR-ADP-002 por EMPRESA (Respuestas 2026-10-20 #18): empresa del colaborador, desnormalizada para la EXCLUDE.
+  operatingCompanyId String  @map("operating_company_id")
   areaId      String         @map("area_id") @db.VarChar(100)
   startDate   DateTime       @map("start_date") @db.Date
   endDate     DateTime       @map("end_date") @db.Date
@@ -1909,9 +1917,10 @@ model VacationRequest {
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  // BR-ADP-002: EXCLUDE USING gist (area_id WITH =, daterange(start_date, end_date, '[]') WITH &&)
-  // WHERE status IN ('PROGRAMADA','REPROGRAMADA') — gestionado en migration 20261008000001.
+  // BR-ADP-002: EXCLUDE USING gist (operating_company_id WITH =, area_id WITH =, daterange(start_date, end_date, '[]') WITH &&)
+  // WHERE status IN ('PROGRAMADA','REPROGRAMADA') — creada en 20261008000001 y hecha POR EMPRESA en 20261021010002.
   @@index([areaId, status, startDate, endDate], map: "vacation_requests_area_status_dates_idx")
+  @@index([operatingCompanyId, areaId, status, startDate, endDate], map: "vacation_requests_company_area_status_idx")
   @@index([employeeId, status], map: "vacation_requests_employee_status_idx")
   @@map("vacation_requests")
 }

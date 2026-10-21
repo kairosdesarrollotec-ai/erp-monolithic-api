@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsIn,
   IsInt,
+  Max,
   IsISO8601,
   IsNumber,
   IsOptional,
@@ -77,4 +78,24 @@ export class LogAttendanceDto {
   @ValidateNested()
   @Type(() => AttendanceEvidenceDto)
   evidence?: AttendanceEvidenceDto | null;
+
+  /** HU-29: ubicacion automatica opcional (WGS84). Latitud y longitud van juntas; el registro nunca se bloquea por no traerla. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 8 })
+  @Min(-90)
+  @Max(90)
+  latitude?: number | null;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 8 })
+  @Min(-180)
+  @Max(180)
+  longitude?: number | null;
+
+  /** Precision horizontal en metros. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100000)
+  accuracy?: number | null;
 }

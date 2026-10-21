@@ -5,14 +5,21 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { RentalStateConflictError } from '../../domain/rental-errors';
-import { isAlcoholTestPassing } from '../../domain/alcohol-test-result';
+import { AlcoholTestPhotoRequiredError, RentalStateConflictError } from '../../domain/rental-errors';
+import {
+  alcoholTestRequiresPhoto,
+  isAlcoholTestPassing,
+  RENTAL_ALCOHOL_TEST_EVIDENCE_ZONE,
+} from '../../domain/alcohol-test-result';
+import { RentalEvidenceRepositoryPort } from '../ports/rental-evidence-repository.port';
 import { RegisterAlcoholTestCommand } from './register-alcohol-test.command';
 
 /**
  * ALQ-04 / BR-ALQ-005 - Registro obligatorio de prueba de alcolímetro (tolerancia cero).
  * Favorable -> NOTARY_EVALUATION.
  * Desfavorable o Rechazado -> CANCELLED (cancelación irreversible con auditoría).
+ * ENTREGA-02 (Respuestas 2026-10-20 #10): igual que la devolución, DESFAVORABLE/RECHAZADO = check «no cumple rango» +
+ * FOTO obligatoria (evidencia PHOTO zona ALCOHOL_TEST subida antes, sin hora); sin foto -> 422 ALCOHOL_TEST_PHOTO_REQUIRED.
  */
 @Injectable()
 export class RegisterAlcoholTestHandler {
@@ -23,6 +30,7 @@ export class RegisterAlcoholTestHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    private readonly evidenceRepository: RentalEvidenceRepositoryPort,
   ) {}
 
   async execute(command: RegisterAlcoholTestCommand): Promise<RentalRecord> {
@@ -60,6 +68,16 @@ export class RegisterAlcoholTestHandler {
         throw new RentalStateConflictError('registrar alcolímetro en', current.status);
       }
 
+      let alcoholPhotoEvidenceId: string | undefined;
+      if (alcoholTestRequiresPhoto(command.result)) {
+        const evidences = await this.evidenceRepository.list(command.id, scope);
+        const photo = evidences.find((e) => e.type === 'PHOTO' && e.zone === RENTAL_ALCOHOL_TEST_EVIDENCE_ZONE);
+        if (!photo) {
+          throw new AlcoholTestPhotoRequiredError();
+        }
+        alcoholPhotoEvidenceId = photo.id;
+      }
+
       const updated = await this.rentals.saveAlcoholTest(
         {
           id: command.id,
@@ -80,6 +98,7 @@ export class RegisterAlcoholTestHandler {
           changes: {
             result: command.result,
             targetStatus,
+            alcoholPhotoEvidenceId,
             notes: command.notes,
           },
         },
@@ -94,6 +113,7 @@ export class RegisterAlcoholTestHandler {
           payload: {
             rentalId: updated.id,
             result: command.result,
+            alcoholPhotoEvidenceId: alcoholPhotoEvidenceId ?? null,
             status: updated.status,
             organizationId: context.organizationId,
             operatingCompanyId: context.companyId,

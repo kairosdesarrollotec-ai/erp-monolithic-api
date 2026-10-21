@@ -72,6 +72,25 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
     expect(allowed('PLATFORM_ADMIN', 'REPORT', 'EXPORT')).toBe(true);
   });
 
+  it('NOTIFICATIONS.RECEIVE_RETURN_ALERTS: v0 = Finanzas, Administracion y Gerencia (+ PLATFORM_ADMIN); el resto no', () => {
+    for (const role of ['FINANZAS', 'ADMINISTRACION', 'GERENCIA', 'PLATFORM_ADMIN'] as const) {
+      expect(allowed(role, 'NOTIFICATIONS', 'RECEIVE_RETURN_ALERTS')).toBe(true);
+    }
+    for (const role of ['FRONT_OFFICE', 'CAMPO', 'AUDITORIA', 'RRHH'] as const) {
+      expect(allowed(role, 'NOTIFICATIONS', 'RECEIVE_RETURN_ALERTS')).toBe(false);
+    }
+  });
+
+  it('HR_ADMINISTRATION.MANAGE_AREAS / MANAGE_SALARY solo GERENCIA (+ PLATFORM_ADMIN) en la v0; RECRUITMENT.DECIDE_NO_ADVANCE / TERMINATE_PROBATION idem', () => {
+    for (const [module, action] of [['HR_ADMINISTRATION', 'MANAGE_AREAS'], ['HR_ADMINISTRATION', 'MANAGE_SALARY'], ['RECRUITMENT', 'DECIDE_NO_ADVANCE'], ['RECRUITMENT', 'TERMINATE_PROBATION']] as const) {
+      expect(allowed('GERENCIA', module, action)).toBe(true);
+      expect(allowed('PLATFORM_ADMIN', module, action)).toBe(true);
+      for (const role of ['RRHH', 'ADMINISTRACION', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE'] as const) {
+        expect(allowed(role, module, action)).toBe(false);
+      }
+    }
+  });
+
   it('UPLOAD_EVIDENCE (reutilizada para borrar evidencia) sigue en el catalogo de Alquiler y Devolucion', () => {
     expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RENTAL' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);
     expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RETURN' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);

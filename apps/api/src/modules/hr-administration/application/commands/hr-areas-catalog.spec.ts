@@ -168,7 +168,7 @@ describe('ListHrAreasHandler (H-02)', () => {
     const areas = areasMock();
     const access = new HrAdministrationAccessService(buildWorkContext('RRHH'), buildMatrixAuth());
     const result = await new ListHrAreasHandler(access, areas).execute(new ListHrAreasQuery(UID, COMPANY_ID, 'branch-hr-1'));
-    expect(result).toEqual(CATALOG);
+    expect(result).toEqual(CATALOG.map((a) => ({ ...a, isActive: true })));
     expect(areas.listActive).toHaveBeenCalledWith(COMPANY_ID);
   });
 });
