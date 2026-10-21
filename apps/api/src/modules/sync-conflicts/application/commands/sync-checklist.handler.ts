@@ -6,7 +6,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { classifyIncomingFields, type DiscardedField } from '../../domain/sync-conflict-matrix';
 import { mergeChecklistFields } from '../../domain/sync-checklist-merge';
-import { mergeEvidence, type EvidenceDuplicate } from '../../domain/sync-evidence-merge';
+import { mergeEvidence, type EvidenceDuplicate, type EvidenceSlotAssignment } from '../../domain/sync-evidence-merge';
 import { deriveChecklistStatus } from '../../domain/sync-closure-gate';
 import {
   SyncConflictAlreadyOpenError,
@@ -17,6 +17,8 @@ import {
 } from '../../domain/sync-errors';
 import {
   SYNC_DRAFT_TTL_HOURS,
+  toFieldRevisions,
+  type SyncFieldRevision,
   type SyncChecklistStatus,
   type SyncEvidenceEntry,
   type SyncFieldVersion,
@@ -46,6 +48,10 @@ export interface SyncChecklistResult {
   discardedFields: DiscardedField[];
   addedEvidence: string[];
   duplicateEvidence: EvidenceDuplicate[];
+  /** Slot definitivo de cada toma del lote (1.1.0). */
+  evidenceSlots: EvidenceSlotAssignment[];
+  /** Revision vigente de cada campo del checklist tras esta sincronizacion (1.1.0). */
+  fieldRevisions: SyncFieldRevision[];
   /** Conflictos abiertos del checklist (nuevos y previos): nada se resuelve solo. */
   conflicts: SyncConflictRecord[];
 }
@@ -193,6 +199,7 @@ export class SyncChecklistHandler {
           discardedFields: discarded.map((d) => d.key),
           addedEvidence: evidenceMerge.toAdd.map((e) => e.clientCaptureId),
           duplicateEvidence: evidenceMerge.duplicates.map((d) => d.clientCaptureId),
+          assignedSlots: evidenceMerge.assignments.filter((a) => a.assignedByServer).map((a) => `${a.zone}#${a.slot}`),
           newConflicts: created.map((c) => ({ conflictId: c.id, kind: c.kind, key: c.key, auditRef: syncAuditRef(c.id) })),
         };
         await this.auditRepository.recordRentalEvent(
@@ -233,6 +240,8 @@ export class SyncChecklistHandler {
           discardedFields: discarded,
           addedEvidence: evidenceMerge.toAdd.map((e) => e.clientCaptureId),
           duplicateEvidence: evidenceMerge.duplicates,
+          evidenceSlots: evidenceMerge.assignments,
+          fieldRevisions: toFieldRevisions(saved.fields),
           conflicts: openConflicts.concat(created.filter((c) => !openConflicts.some((o) => o.id === c.id))),
         };
       },

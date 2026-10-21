@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.10.0
+  version: 1.11.0
   description: >
+    1.11.0 — DEC-ALQ-CAPWARN-001/002 (G-05; aviso de capacidad en el flujo de acompañantes). Aditivo. `RentalResponse` expone
+    `vehiclePassengerCapacity` (entero o null; null = el vehículo aún no tiene capacidad registrada en Flota, DEC-FLT-CAP-002: sin tope,
+    el alquiler NO se bloquea) y `companionsCount` (acompañantes registrados = parties con rol RESPONSIBLE; el firmante es SIGNER y no cuenta).
+    Sin cambios en requests ni en operaciones.
+
     1.10.0 — DEC-ALQ-DRIVERRATE-001..004 (F-02; respuesta de Russbel 19-oct-2026: «este precio todavía no lo tenemos, pero pongamos que se
     pueda rellenar manualmente cuando se requiera»). Aditivo. (a) Nuevo POST /rentals/{id}/commands/set-company-driver-daily-rate
     (If-Match + Idempotency-Key; permiso RENTAL.FORMALIZE_CONTRACT): digita la tarifa diaria del conductor de la empresa (PEN, monto > 0,
@@ -1348,6 +1353,8 @@ components:
         - vehiclePlate
         - vehicleBrand
         - vehicleModel
+        - vehiclePassengerCapacity
+        - companionsCount
         - planCode
         - status
         - createdAt
@@ -1374,6 +1381,14 @@ components:
           type: number
           nullable: true
           description: Monto mínimo de garantía configurado para el vehículo (PEN).
+        vehiclePassengerCapacity:
+          type: integer
+          nullable: true
+          description: Capacidad de pasajeros del vehículo (máximo de acompañantes). Null = sin capacidad registrada en Flota (DEC-FLT-CAP-002); en ese caso el máximo no se valida.
+        companionsCount:
+          type: integer
+          minimum: 0
+          description: Acompañantes registrados en el alquiler (parties con rol RESPONSIBLE). Se compara contra vehiclePassengerCapacity.
         planCode: { type: string }
         status: { $ref: '#/components/schemas/RentalStatus' }
         startAt: { type: string, format: date-time, nullable: true }

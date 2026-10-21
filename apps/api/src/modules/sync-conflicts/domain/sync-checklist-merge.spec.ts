@@ -1,6 +1,6 @@
 import { mergeChecklistFields } from './sync-checklist-merge';
 import { SyncPayloadInvalidError } from './sync-errors';
-import type { SyncServerField } from './sync-types';
+import { toFieldRevisions, type SyncServerField } from './sync-types';
 
 const server = (value: SyncServerField['value'], rev: number, by = 'uid-server'): SyncServerField => ({
   value,
@@ -46,5 +46,21 @@ describe('mergeChecklistFields', () => {
   it('rechaza claves repetidas y revisiones base imposibles', () => {
     expect(() => mergeChecklistFields({}, [local('a', 1, 0), local('a', 2, 0)])).toThrow(SyncPayloadInvalidError);
     expect(() => mergeChecklistFields({ a: server(1, 1) }, [local('a', 2, 5)])).toThrow(SyncPayloadInvalidError);
+  });
+});
+
+describe('toFieldRevisions / baseRev (1.1.0, DEC-SYNC-10)', () => {
+  it('expone key, rev y value ordenados por key', () => {
+    expect(toFieldRevisions({ fuel: server('FULL', 2), a: server(1, 1) })).toEqual([
+      { key: 'a', rev: 1, value: 1 },
+      { key: 'fuel', rev: 2, value: 'FULL' },
+    ]);
+    expect(toFieldRevisions({})).toEqual([]);
+  });
+
+  it('con la revision conocida como baseRev, reeditar el mismo campo se aplica; con baseRev 0 choca contra si mismo', () => {
+    const state = { fuel: server('FULL', 1, 'uid-a') };
+    expect(mergeChecklistFields(state, [local('fuel', 'HALF', 1)]).toApply).toEqual([{ key: 'fuel', value: 'HALF' }]);
+    expect(mergeChecklistFields(state, [local('fuel', 'HALF', 0)]).clashes).toHaveLength(1);
   });
 });

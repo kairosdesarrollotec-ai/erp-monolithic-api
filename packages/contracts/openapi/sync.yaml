@@ -1,8 +1,24 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Sync Conflicts API (TR-08 / ENTREGA-04 / DEV-04)
-  version: 1.0.0
+  version: 1.1.0
   description: >
+    1.1.0 — ADITIVO, sin romper clientes 1.0.0 (cambios tecnicos, ninguna regla de negocio de la matriz SDD 17.4 cambia):
+    (1) `fieldRevisions` en la respuesta de `sync` y en `GET status`: revision vigente (y valor) de cada campo del checklist
+    en el servidor. El dispositivo la guarda y la usa como `baseRev` de su SIGUIENTE edicion de ese campo; asi una edicion
+    posterior a un sync exitoso no se marca como conflicto contra si misma (DEC-SYNC-10). Un cliente 1.0.0 que sigue
+    enviando `baseRev` 0 conserva el comportamiento anterior.
+    (2) `slot` de `SyncEvidenceInput` pasa a OPCIONAL y se documenta su asignacion (DEC-SYNC-11): sin `slot` el servidor
+    asigna el siguiente slot libre de la zona (max + 1 sobre todas las tomas de la zona, incluidas las ARCHIVED y las del
+    mismo lote) y lo informa en `evidenceSlots`; con `slot` es un pedido explicito de ese slot exacto. Un archivo ya
+    registrado (mismo `clientCaptureId` o mismo `contentHash`) es SIEMPRE idempotente y devuelve el slot existente
+    (`duplicateEvidence[].existingSlot`) aunque el cliente pida otro; el conflicto de evidencia solo ocurre cuando se pide
+    explicitamente un slot ocupado por una toma PRIMARY con DISTINTO `contentHash`. El archivo fisico lo registra la via
+    tradicional (`recordEvidence` de Alquiler / Devolucion, que no guarda slot ni hash); `/sync` solo lleva el manifiesto
+    de metadatos (nunca crea ni cuenta archivos), por lo que informar una captura ya registrada no la duplica ni choca con
+    ella. Las evidencias de la via online que no se informan a `/sync` no ocupan slots del manifiesto.
+
+
     1.0.0 — Contrato backend de conflictos de sincronizacion offline de los DOS checklists autorizados (SDD-KAIROS-TRANSVERSAL
     17.1): ENTREGA (Alquiler, ENTREGA-04) y RECEPCION (Devolucion, DEV-04). Reglas documentadas, sin agregar ninguna:
     SDD-KAIROS-TRANSVERSAL 17.3-17.4, PANTALLAS-V3-B-TRANSVERSAL (TR-08), PANTALLAS-V3-B-ALQUILER (bloque SYNC_CONFLICT de
@@ -255,11 +271,19 @@ components:
         editedAt: { type: string, format: date-time }
     SyncEvidenceInput:
       type: object
-      required: [clientCaptureId, zone, slot, type, contentHash, capturedAt]
+      required: [clientCaptureId, zone, type, contentHash, capturedAt]
       properties:
         clientCaptureId: { type: string, format: uuid, description: Idempotencia por captura (generado offline) }
         zone: { type: string, maxLength: 60 }
-        slot: { type: integer, minimum: 1, maximum: 1000, description: N.o de toma dentro de la zona }
+        slot:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          description: >
+            OPCIONAL (1.1.0). N.o de toma dentro de la zona. Ausente = el servidor asigna el siguiente slot libre y lo devuelve
+            en `evidenceSlots`. Presente = pedido explicito: si esta ocupado por una toma PRIMARY con otro contentHash es
+            conflicto (kind EVIDENCE); si el archivo ya esta registrado (mismo contentHash/clientCaptureId) es duplicado
+            idempotente con el slot existente.
         type: { type: string, enum: [PHOTO, VIDEO] }
         contentHash: { type: string, pattern: '^[a-fA-F0-9]{64}$', description: SHA-256 hexadecimal del archivo }
         sizeBytes: { type: integer, minimum: 0, maximum: 52428800 }
@@ -340,7 +364,7 @@ components:
         createdAt: { type: string, format: date-time }
     SyncChecklistStatusResponse:
       type: object
-      required: [checklistType, sourceId, status, serverConfirmedAt, stateVersion, openConflicts]
+      required: [checklistType, sourceId, status, serverConfirmedAt, stateVersion, openConflicts, fieldRevisions]
       properties:
         checklistType: { $ref: '#/components/schemas/SyncChecklistType' }
         sourceId: { type: string, format: uuid }
@@ -350,11 +374,25 @@ components:
         openConflicts:
           type: array
           items: { $ref: '#/components/schemas/SyncConflict' }
+        fieldRevisions:
+          type: array
+          description: >
+            1.1.0. Revision vigente de cada campo del checklist en el servidor (vacio sin estado previo). El dispositivo la
+            usa como `baseRev` de la siguiente edicion del mismo campo (solo si no tiene una edicion local sin enviar ni un
+            conflicto abierto sobre ese campo).
+          items: { $ref: '#/components/schemas/SyncFieldRevision' }
+    SyncFieldRevision:
+      type: object
+      required: [key, rev, value]
+      properties:
+        key: { type: string }
+        rev: { type: integer, minimum: 1, description: Revision vigente del campo en el servidor }
+        value: { $ref: '#/components/schemas/SyncScalar' }
     SyncChecklistResult:
       allOf:
         - $ref: '#/components/schemas/SyncChecklistStatusResponse'
         - type: object
-          required: [appliedFields, unchangedFields, discardedFields, addedEvidence, duplicateEvidence]
+          required: [appliedFields, unchangedFields, discardedFields, addedEvidence, duplicateEvidence, evidenceSlots]
           properties:
             appliedFields: { type: array, items: { type: string } }
             unchangedFields: { type: array, items: { type: string } }
@@ -379,6 +417,19 @@ components:
                   clientCaptureId: { type: string }
                   reason: { type: string, enum: [SAME_CAPTURE, SAME_CONTENT_HASH] }
                   existingClientCaptureId: { type: string }
+                  existingSlot: { type: integer, description: 'Slot de la toma ya registrada (1.1.0); el dispositivo lo adopta' }
+            evidenceSlots:
+              type: array
+              description: 1.1.0. Slot definitivo de CADA toma del lote, en el orden recibido.
+              items:
+                type: object
+                required: [clientCaptureId, zone, slot, outcome, assignedByServer]
+                properties:
+                  clientCaptureId: { type: string }
+                  zone: { type: string }
+                  slot: { type: integer }
+                  outcome: { type: string, enum: [ADDED, DUPLICATE, CONFLICT] }
+                  assignedByServer: { type: boolean, description: 'true si el cliente no envio slot y el servidor lo eligio' }
     ResolveSyncConflictRequest:
       type: object
       required: [companyId, branchId, resolution]

@@ -62,7 +62,11 @@ export class SyncEvidenceDto {
   /** Idempotencia por captura (uuid generado offline). */
   @IsUUID() clientCaptureId!: string;
   @IsString() @MinLength(1) @MaxLength(60) zone!: string;
-  @IsInt() @Min(1) @Max(1000) slot!: number;
+  /**
+   * Opcional desde 1.1.0 (DEC-SYNC-11): si falta, el servidor asigna el siguiente slot libre de la zona y lo devuelve en
+   * `evidenceSlots`. Si viene, es un pedido explicito de ese slot (ocupado con otro hash = conflicto).
+   */
+  @IsOptional() @IsInt() @Min(1) @Max(1000) slot?: number;
   @IsEnum(['PHOTO', 'VIDEO']) type!: 'PHOTO' | 'VIDEO';
 
   /** SHA-256 hexadecimal del archivo (integridad / anti-duplicado). */

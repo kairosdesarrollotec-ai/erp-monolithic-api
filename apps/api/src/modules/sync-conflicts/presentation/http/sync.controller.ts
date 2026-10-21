@@ -81,7 +81,7 @@ export class SyncController {
     const evidence: IncomingEvidence[] = dto.evidence.map((e) => ({
       clientCaptureId: e.clientCaptureId,
       zone: e.zone,
-      slot: e.slot,
+      ...(e.slot !== undefined ? { slot: e.slot } : {}),
       type: e.type,
       contentHash: e.contentHash,
       sizeBytes: e.sizeBytes ?? null,

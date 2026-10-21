@@ -245,6 +245,31 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     expect(mapperKeys.every((k) => specProperties.includes(k))).toBe(true);
   });
 
+  it('DEC-ALQ-CAPWARN-001/002 (contrato 1.11.0): RentalResponse expone vehiclePassengerCapacity (nullable) y companionsCount (RESPONSIBLE)', () => {
+    expect(spec.info.version).toBe('1.11.0');
+    const contract = flatten(spec.components.schemas.RentalResponse);
+    expect(contract.properties.vehiclePassengerCapacity.nullable).toBe(true);
+    expect(contract.properties.vehiclePassengerCapacity.type).toBe('integer');
+    expect(contract.properties.companionsCount.type).toBe('integer');
+    expect(contract.required).toEqual(expect.arrayContaining(['vehiclePassengerCapacity', 'companionsCount']));
+
+    const base = buildRentalRecord();
+    const none = toRentalResponse({ ...base, vehiclePassengerCapacity: undefined, parties: undefined });
+    expect(none.vehiclePassengerCapacity).toBeNull();
+    expect(none.companionsCount).toBe(0);
+
+    const party = (id: string, role: 'SIGNER' | 'DRIVER' | 'RESPONSIBLE') => ({
+      id, rentalId: base.id, customerId: `c-${id}`, role, createdAt: new Date('2026-10-02T00:00:00Z'),
+    });
+    const out = toRentalResponse({
+      ...base,
+      vehiclePassengerCapacity: 4,
+      parties: [party('1', 'SIGNER'), party('2', 'RESPONSIBLE'), party('3', 'DRIVER'), party('4', 'RESPONSIBLE')],
+    } as RentalRecord);
+    expect(out.vehiclePassengerCapacity).toBe(4);
+    expect(out.companionsCount).toBe(2);
+  });
+
   it('GET /rentals/{id}/contract-template: los query params del contrato son los del DTO', () => {
     const op: Operation = spec.paths['/rentals/{id}/contract-template'].get;
     const queryParams = (op.parameters ?? [])

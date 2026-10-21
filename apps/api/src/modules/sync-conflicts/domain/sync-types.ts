@@ -47,6 +47,22 @@ export interface SyncServerField {
   updatedAt: string;
 }
 
+/**
+ * Revision vigente de un campo en el servidor (sync.yaml 1.1.0, DEC-SYNC-10): el dispositivo la guarda y la usa como
+ * `baseRev` de su siguiente edicion, para no chocar contra su propio cambio ya sincronizado.
+ */
+export interface SyncFieldRevision {
+  key: string;
+  rev: number;
+  value: SyncScalar;
+}
+
+export function toFieldRevisions(fields: Readonly<Record<string, SyncServerField>>): SyncFieldRevision[] {
+  return Object.keys(fields)
+    .sort()
+    .map((key) => ({ key, rev: fields[key].rev, value: fields[key].value }));
+}
+
 export type SyncEvidenceType = 'PHOTO' | 'VIDEO';
 /** PRIMARY = toma vigente; ANNEX = segunda toma conservada con "Combinar"; ARCHIVED = reemplazada (nunca se borra). */
 export type SyncEvidenceRole = 'PRIMARY' | 'ANNEX' | 'ARCHIVED';
