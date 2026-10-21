@@ -14,5 +14,7 @@ export class CreateEmployeeCommand {
     public readonly phone?: string | null,
     public readonly baseSalary?: number | null,
     public readonly candidateId?: string | null,
+    /** H-02: codigo del catalogo de areas de la empresa. Si viene, manda sobre `areaId`/`areaName` (que pueden ir vacios). */
+    public readonly areaCode?: string | null,
   ) {}
 }

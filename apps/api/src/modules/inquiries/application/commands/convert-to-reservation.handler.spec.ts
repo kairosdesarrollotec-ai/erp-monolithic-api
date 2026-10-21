@@ -5,7 +5,7 @@ import { ConvertToReservationCommand } from './convert-to-reservation.command';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
 import { ReservationRepositoryPort } from '../../../reservations/application/ports/reservation-repository.port';
-import { InquiryAlreadyHasReservationError } from '../../../reservations/domain/reservation-errors';
+import { InquiryAlreadyHasReservationError, ReservationExceedsGuaranteeError } from '../../../reservations/domain/reservation-errors';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import {
@@ -42,11 +42,13 @@ function build(options: {
   role?: Parameters<typeof buildWorkContext>[0];
   production?: boolean;
   now?: Date;
+  depositMinimum?: number | null;
 } = {}) {
   const existing = options.existing === undefined ? quotedInquiry() : options.existing;
   const inquiries = buildInquiryRepository(existing);
   const reservations = {
     create: jest.fn().mockResolvedValue({ id: 'res-1', inquiryId: 'inq-1', status: 'DRAFT' }),
+    findVehicleById: jest.fn().mockResolvedValue({ id: 'veh-new', depositMinimum: options.depositMinimum === undefined ? 500 : options.depositMinimum }),
   } as unknown as jest.Mocked<ReservationRepositoryPort>;
   const audit = { recordInquiryEvent: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AuditEventRepositoryPort>;
   const outbox = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxEventRepositoryPort>;
@@ -109,6 +111,30 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
       transactions.tx,
     );
     expect(result.reservation.id).toBe('res-1');
+  });
+
+  describe('F-01: la reserva nunca supera la garantia del vehiculo', () => {
+    it('rechaza con 422 RESERVATION_EXCEEDS_GUARANTEE si el monto de la politica (300) supera la garantia del vehiculo; no transiciona ni crea', async () => {
+      const { handler, inquiries, reservations } = build({ depositMinimum: 250 });
+
+      await expect(handler.execute(command())).rejects.toBeInstanceOf(ReservationExceedsGuaranteeError);
+      expect(inquiries.convertToReservation).not.toHaveBeenCalled();
+      expect(reservations.create).not.toHaveBeenCalled();
+    });
+
+    it('acepta si el monto es igual a la garantia', async () => {
+      const { handler, reservations } = build({ depositMinimum: 300 });
+
+      await handler.execute(command());
+      expect(reservations.create).toHaveBeenCalled();
+    });
+
+    it('sin garantia definida en Flota (null) no hay tope', async () => {
+      const { handler, reservations } = build({ depositMinimum: null });
+
+      await handler.execute(command());
+      expect(reservations.create).toHaveBeenCalled();
+    });
   });
 
   describe('vigencia de la cotizacion (hallazgo ALTO "acepta cotizaciones vencidas")', () => {

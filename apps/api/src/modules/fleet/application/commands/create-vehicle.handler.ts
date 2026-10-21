@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateVehicleCommand } from './create-vehicle.command';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { FleetAccessService } from '../services/fleet-access.service';
-import { VehiclePlateAlreadyExistsError } from '../../domain/fleet-errors';
+import { VehiclePassengerCapacityRequiredError, VehiclePlateAlreadyExistsError } from '../../domain/fleet-errors';
 import { FleetVehicle } from '../../domain/vehicle';
 
 @Injectable()
@@ -18,6 +18,11 @@ export class CreateVehicleHandler {
       'WRITE',
       { targetBranchId: command.assignedBranchId },
     );
+
+    // DEC-FLT-CAP-001: la capacidad de pasajeros se pide siempre al registrar (G-05).
+    if (command.passengerCapacity == null) {
+      throw new VehiclePassengerCapacityRequiredError();
+    }
 
     const sanitizedPlate = command.plate.trim().toUpperCase();
 
@@ -38,7 +43,9 @@ export class CreateVehicleHandler {
       category: command.category?.trim() || 'SEDAN',
       status: command.status ?? 'AVAILABLE',
       dailyRate: command.dailyRate,
-      depositMinimum: command.depositMinimum,
+      depositMinimum: command.depositMinimum ?? null,
+      passengerCapacity: command.passengerCapacity,
+      fuelPrice: command.fuelPrice ?? null,
       photoUrl: command.photoUrl?.trim() || null,
     });
   }

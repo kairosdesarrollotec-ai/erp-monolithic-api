@@ -4,7 +4,8 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
-import { CandidateAlreadyEmployeeError, DuplicateEmployeeDocumentError } from '../../domain/hr-administration-errors';
+import { CandidateAlreadyEmployeeError, DuplicateEmployeeDocumentError, HrAreaRequiredError } from '../../domain/hr-administration-errors';
+import { HrAreaResolverService } from '../services/hr-area-resolver.service';
 import { EmployeeAccountLinkService } from '../services/employee-account-link.service';
 import { normalizeEmail } from '../../domain/hr-administration-rules';
 import { CreateEmployeeCommand } from './create-employee.command';
@@ -27,6 +28,7 @@ export class CreateEmployeeHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly accountLinker?: EmployeeAccountLinkService,
+    private readonly areaResolver?: HrAreaResolverService,
   ) {}
 
   async execute(command: CreateEmployeeCommand): Promise<Employee> {
@@ -40,6 +42,21 @@ export class CreateEmployeeHandler {
     );
 
     const documentNumber = command.documentNumber.trim();
+
+    // H-02: el area sale del catalogo (areaCode) o del texto libre normalizado; BR-ADP-002 compara `areaId` por igualdad.
+    const area = this.areaResolver
+      ? await this.areaResolver.resolve({
+          operatingCompanyId: scope.operatingCompanyId,
+          areaCode: command.areaCode,
+          areaId: command.areaId,
+          areaName: command.areaName,
+        })
+      : { areaId: command.areaId.trim(), areaName: command.areaName.trim() };
+    const areaId = area.areaId;
+    const areaName = area.areaName;
+    if (!areaId || !areaName) {
+      throw new HrAreaRequiredError();
+    }
 
     try {
       const created = await this.transactionManager.run(async (tx) => {
@@ -59,8 +76,8 @@ export class CreateEmployeeHandler {
             fullName: command.fullName.trim(),
             email: normalizeEmail(command.email),
             phone: command.phone?.trim() || null,
-            areaId: command.areaId.trim(),
-            areaName: command.areaName.trim(),
+            areaId,
+            areaName,
             jobTitle: command.jobTitle.trim(),
             hireDate: command.hireDate,
             baseSalary: command.baseSalary ?? null,

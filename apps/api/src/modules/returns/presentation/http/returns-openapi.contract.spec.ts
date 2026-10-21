@@ -231,7 +231,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('1.7.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
-    expect(spec.info.version).toBe('1.7.0');
+    expect(spec.info.version).toBe('1.8.0');
     const alcohol: Operation = spec.paths['/returns/{id}/commands/register-alcohol-test'].post;
     expect(JSON.stringify(alcohol.responses['422'])).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
     const op: Operation = spec.paths['/returns/{id}/commands/register-late-charge'].post;
@@ -294,7 +294,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     ['AlcoholTestResult', $Enums.AlcoholTestResult, ALCOHOL_TEST_RESULTS],
     ['ReturnEvidenceType', $Enums.ReturnEvidenceType, RETURN_EVIDENCE_TYPES],
     ['ReturnReminderStatus', $Enums.ReturnReminderStatus, RETURN_REMINDER_STATUSES],
-    ['ReturnAlertType', { WARRANTY_RELEASE: 'WARRANTY_RELEASE', IMMOBILIZATION: 'IMMOBILIZATION' }, RETURN_ALERT_TYPES],
+    ['ReturnAlertType', { WARRANTY_RELEASE: 'WARRANTY_RELEASE', IMMOBILIZATION: 'IMMOBILIZATION', LATE_CHARGE: 'LATE_CHARGE' }, RETURN_ALERT_TYPES],
   ])('enum %s coincide con schema.prisma y con las constantes del dominio', (name, prismaEnum, domainValues) => {
     const specValues = [...spec.components.schemas[name].enum].sort();
     expect(specValues).toEqual(Object.values(prismaEnum).sort());
@@ -548,11 +548,36 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
       receivedAt: FIXED_NOW,
       warrantyRelease: { level: 'DUE_SOON', deadlineAt: FIXED_NOW, hoursRemaining: 3.5 },
       immobilization: null,
+      lateCharge: null,
     });
     expectMapperMatchesSchema('ReturnAlertItem', alert);
+
+    // 1.8.0 (DEC-DEVREM-003): sugerencia de cargo por retraso, SIN monto.
+    const late = toReturnAlertItemResponse({
+      type: 'LATE_CHARGE',
+      returnId: 'ret-1',
+      rentalId: 'rent-1',
+      returnStatus: 'INSPECCION',
+      returnVersion: 2,
+      vehiclePlate: 'ABC-123',
+      customerName: 'Juan Perez',
+      receivedAt: FIXED_NOW,
+      warrantyRelease: null,
+      immobilization: null,
+      lateCharge: { lateMinutes: 45, lateToleranceMinutes: 30 },
+    });
+    expectMapperMatchesSchema('ReturnAlertItem', late);
+    expectMapperMatchesSchema('LateChargeSuggestion', late.lateCharge as object);
+    expect(Object.keys(late.lateCharge as object).sort()).toEqual(['lateMinutes', 'lateToleranceMinutes']);
   });
 
-  it('contrato 1.7.0', () => {
-    expect(spec.info.version).toBe('1.7.0');
+  it('1.8.0: GET /returns/alerts documenta type=LATE_CHARGE y la sugerencia no expone ningún monto', () => {
+    const lateSchema = spec.components.schemas.LateChargeSuggestion;
+    expect(Object.keys(lateSchema.properties).sort()).toEqual(['lateMinutes', 'lateToleranceMinutes']);
+    expect(spec.components.schemas.ReturnAlertItem.required).toContain('lateCharge');
+  });
+
+  it('contrato 1.8.0', () => {
+    expect(spec.info.version).toBe('1.8.0');
   });
 });

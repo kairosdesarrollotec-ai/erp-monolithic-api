@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.5.0');
+    expect(spec.info.version).toBe('0.7.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -56,6 +56,7 @@ describe('hr-administration.yaml contract specification', () => {
       '/field-trips/{id}/authorize',
       '/field-trips/{id}/reject',
       '/field-trips/{id}/return',
+      '/hr-areas',
       '/leaves/{id}/evidence',
       '/leaves/{id}/evidence/upload-url',
       '/leaves/{id}/resolve',
@@ -65,7 +66,7 @@ describe('hr-administration.yaml contract specification', () => {
     ]);
   });
 
-  it('expone exactamente las 33 operaciones esperadas', () => {
+  it('expone exactamente las 34 operaciones esperadas', () => {
     const ops: string[] = [];
     for (const item of Object.values<any>(spec.paths)) {
       for (const op of Object.values<any>(item)) {
@@ -91,6 +92,7 @@ describe('hr-administration.yaml contract specification', () => {
         'getVacationsCalendar',
         'listEmployees',
         'listFieldTrips',
+        'listHrAreas',
         'listLeaveEvidence',
         'linkEmployeeAccount',
         'listTrainings',
@@ -117,6 +119,7 @@ describe('hr-administration.yaml contract specification', () => {
       ['/attendance/summary', 'get'],
       ['/vacations/calendar', 'get'],
       ['/field-trips', 'get'],
+      ['/hr-areas', 'get'],
     ];
     for (const [route, method] of queries) {
       const params: any[] = spec.paths[route][method].parameters;
@@ -173,5 +176,53 @@ describe('hr-administration.yaml contract specification', () => {
       .map((d) => d.action)
       .sort();
     expect(catalogActions).toEqual([...HR_ADMINISTRATION_ACTIONS].sort());
+  });
+
+  it('0.6.0: PATCH /employees/{id} declara If-Match opcional, 412 y el aviso accountRelink (DEC-ADP-EDIT-ETAG-001)', () => {
+    const patch = spec.paths['/employees/{id}'].patch;
+    const ifMatch = patch.parameters.find((x: any) => x.name === 'If-Match' && x.in === 'header');
+    expect(ifMatch?.required).toBe(false);
+    expect(Object.keys(patch.responses)).toEqual(expect.arrayContaining(['400', '403', '404', '409', '412', '422']));
+    expect(patch.responses['200'].content['application/json'].schema.$ref).toBe('#/components/schemas/UpdateEmployeeResponse');
+    expect(patch.responses['200'].headers.ETag).toBeDefined();
+    expect(spec.paths['/employees/{id}'].get.responses['200'].headers.ETag).toBeDefined();
+    expect(spec.components.schemas.EmployeeResponse.properties.version.type).toBe('integer');
+    expect(spec.components.schemas.AccountRelinkNotice.properties.action.enum).toEqual(['RELINKED', 'UNLINKED']);
+  });
+
+  it('el controlador implementa lo que el contrato declara en PATCH /employees/{id} (If-Match, ETag, accountRelink, errores)', () => {
+    const controller = fs.readFileSync(path.resolve(__dirname, 'employees.controller.ts'), 'utf8');
+    expect(controller).toMatch(/@Headers\('if-match'\)/);
+    expect(controller).toContain('parseVersionIfMatch');
+    expect(controller).toMatch(/setHeader\('ETag'/);
+    expect(controller).toContain('accountRelink');
+    const errors = fs.readFileSync(path.resolve(__dirname, '../../domain/hr-administration-errors.ts'), 'utf8');
+    for (const code of ['EMPLOYEE_VERSION_CONFLICT', 'EMPLOYEE_ACCOUNT_ALREADY_LINKED']) {
+      expect(errors).toContain(`'${code}'`);
+      expect(fs.readFileSync(SPEC_PATH, 'utf8')).toContain(code);
+    }
+  });
+
+  it('0.7.0: catalogo de areas (H-02) - GET /hr-areas y areaCode aditivo en alta, edicion, listado y calendario', () => {
+    const get = spec.paths['/hr-areas'].get;
+    expect(get.responses['200'].content['application/json'].schema.$ref).toBe('#/components/schemas/HrAreaList');
+    expect(Object.keys(get.responses)).toEqual(expect.arrayContaining(['200', '400', '401', '403']));
+    expect(spec.components.schemas.HrArea.required).toEqual(['code', 'name', 'description', 'sortOrder']);
+    const create = spec.components.schemas.CreateEmployeeRequest;
+    expect(create.properties.areaCode).toBeDefined();
+    // Compatibilidad: areaId/areaName ya no son obligatorios por separado; se pide areaCode o areaName.
+    expect(create.required).not.toContain('areaId');
+    expect(create.required).not.toContain('areaName');
+    expect(create.properties.areaName).toBeDefined();
+    expect(spec.paths['/hr-areas'].get.responses['403'].description).toContain('SCHEDULE_VACATION');
+    expect(spec.components.schemas.UpdateEmployeeRequest.properties.areaCode).toBeDefined();
+    for (const [route, method] of [['/employees', 'get'], ['/vacations/calendar', 'get']] as const) {
+      const p = spec.paths[route][method].parameters.find((x: any) => x.name === 'areaCode' && x.in === 'query');
+      expect(p?.required).toBe(false);
+    }
+    const raw = fs.readFileSync(SPEC_PATH, 'utf8');
+    for (const code of ['HR_AREA_NOT_FOUND', 'AREA_REQUIRED']) expect(raw).toContain(code);
+    const errors = fs.readFileSync(path.resolve(__dirname, '../../domain/hr-administration-errors.ts'), 'utf8');
+    for (const code of ['HR_AREA_NOT_FOUND', 'AREA_REQUIRED']) expect(errors).toContain(`'${code}'`);
   });
 });

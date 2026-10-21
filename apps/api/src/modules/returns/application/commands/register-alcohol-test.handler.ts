@@ -16,7 +16,7 @@ import { RegisterReturnAlcoholTestCommand } from './register-alcohol-test.comman
  * comando no falla en ese caso: el resultado queda registrado (200).
  * Fiorella 2026-10-16: DESFAVORABLE = check "no cumple rango" + FOTO de la prueba obligatoria (evidencia PHOTO con zona
  * ALCOHOL_TEST subida antes); sin foto -> 422 ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni otros campos.
- * RECHAZADO (se negó a la prueba) no tiene prueba que fotografiar: no exige foto.
+ * RECHAZADO (16/19-oct, Russbel): la foto de la prueba tambien se sube y es obligatoria, como evidencia "por si acaso".
  */
 @Injectable()
 export class RegisterReturnAlcoholTestHandler {
@@ -53,7 +53,7 @@ export class RegisterReturnAlcoholTestHandler {
         assertCanTransitionReturn(current.status, 'INSPECCION');
       }
       let alcoholPhotoEvidenceId: string | undefined;
-      if (command.result === 'DESFAVORABLE') {
+      if (command.result === 'DESFAVORABLE' || command.result === 'RECHAZADO') {
         const evidences = await this.returns.listEvidences(command.id, scope);
         const photo = evidences.find((e) => e.type === 'PHOTO' && e.zone === RETURN_ALCOHOL_TEST_EVIDENCE_ZONE);
         if (!photo) {

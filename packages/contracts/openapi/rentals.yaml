@@ -1,8 +1,17 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.9.0
+  version: 1.10.0
   description: >
+    1.10.0 — DEC-ALQ-DRIVERRATE-001..004 (F-02; respuesta de Russbel 19-oct-2026: «este precio todavía no lo tenemos, pero pongamos que se
+    pueda rellenar manualmente cuando se requiera»). Aditivo. (a) Nuevo POST /rentals/{id}/commands/set-company-driver-daily-rate
+    (If-Match + Idempotency-Key; permiso RENTAL.FORMALIZE_CONTRACT): digita la tarifa diaria del conductor de la empresa (PEN, monto > 0,
+    máx. 2 decimales) en el alquiler; solo con contrato «con conductor de la empresa» y alquiler no cerrado/cancelado. Devuelve el alquiler
+    con `companyDriverCharge`. (b) `CompanyDriverChargeResponse.source` (`MANUAL` | `ENV` | `NOT_DEFINED`): prioridad valor manual del
+    alquiler > env COMPANY_DRIVER_DAILY_RATE > tarifa no definida (`configured=false`, importes «0.00», cobro pendiente de digitar; nunca se
+    inventa un monto). Errores con la forma { statusCode, code, detail } (`RentalErrorResponse`): 400 COMPANY_DRIVER_RATE_INVALID,
+    409 COMPANY_DRIVER_RATE_CLOSED, 422 COMPANY_DRIVER_RATE_NOT_APPLICABLE.
+
     1.9.0 — respuestas de negocio de Fiorella (16-oct-2026) sobre el acompañante.
     (a) register-companion EXIGE registrar también al conductor real (`driverCustomerId`, party DRIVER; el
     firmante/acompañante queda RESPONSIBLE) y los checks `companionLicenseVerified`/`driverLicenseVerified`
@@ -430,6 +439,55 @@ paths:
         '409': { description: RENTAL_DRIVER_ALREADY_REGISTERED (el cliente ya es interviniente) o RENTAL_DRIVER_REGISTRATION_CLOSED (estado posterior a la entrega) }
         '412': { description: Versión no coincide (If-Match) }
         '422': { description: 'COMPANION_NOT_APPLICABLE_FOR_LEGAL_HOLDER, HOLDER_TYPE_REQUIRED, HOLDER_TYPE_MISMATCH, COMPANION_CUSTOMER_NOT_FOUND, DRIVER_CUSTOMER_NOT_FOUND, LICENSE_VERIFICATION_REQUIRED, COMPANION_DRIVER_MUST_DIFFER o COMPANION_PASSENGER_CAPACITY_EXCEEDED' }
+        '428': { description: Falta header If-Match }
+        '500': { description: Error interno }
+
+  /rentals/{id}/commands/set-company-driver-daily-rate:
+    post:
+      operationId: setCompanyDriverDailyRate
+      summary: Digitar la tarifa diaria del conductor de la empresa en el alquiler (DEC-ALQ-DRIVERRATE-001, F-02)
+      description: >
+        El monto de la tarifa diaria aún no está definido por negocio: un usuario autorizado lo digita a mano en el expediente cuando se
+        requiera (cuando no hay tarifa de entorno, o para sobrescribirla en este alquiler). Prioridad: valor manual > env
+        COMPANY_DRIVER_DAILY_RATE > «tarifa no definida». `dailyRate` es en PEN, > 0, máximo 2 decimales (hasta 99999999.99). Solo aplica
+        a alquileres con contrato formalizado «con conductor de la empresa» (la variante se conoce al formalizar) y en estados
+        PENDING_DELIVERY, ACTIVE, EXTENSION_PENDING o RETURN_IN_PROGRESS. Volver a enviarlo corrige el valor (queda en auditoría el valor
+        anterior). Incrementa la versión (If-Match) y publica el evento TarifaConductorEmpresaDefinida.v1. La respuesta trae
+        `companyDriverCharge` (tarifa × días, con `source`). Permiso: RENTAL.FORMALIZE_CONTRACT.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SetCompanyDriverDailyRateRequest' }
+      responses:
+        '200':
+          description: Tarifa registrada; el alquiler trae `companyDriverCharge` con `source=MANUAL`
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '400':
+          description: COMPANY_DRIVER_RATE_INVALID o datos inválidos (monto <= 0, más de 2 decimales)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalErrorResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin permiso o contexto no autorizado }
+        '404': { description: Alquiler no encontrado }
+        '409':
+          description: COMPANY_DRIVER_RATE_CLOSED (alquiler CLOSED o CANCELLED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalErrorResponse' }
+        '412': { description: Versión no coincide (If-Match) }
+        '422':
+          description: COMPANY_DRIVER_RATE_NOT_APPLICABLE (el alquiler no es con conductor de la empresa o aún no tiene contrato formalizado)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalErrorResponse' }
         '428': { description: Falta header If-Match }
         '500': { description: Error interno }
 
@@ -953,6 +1011,26 @@ components:
         addendumDocumentRef: { type: string, minLength: 1, maxLength: 200, description: Referencia documental opcional (la autorización del acompañante es la del firmante; no se exige documento aparte). }
         holderType: { $ref: '#/components/schemas/ContractHolderType' }
 
+    RentalErrorResponse:
+      type: object
+      required: [statusCode, code, detail]
+      description: Forma de los errores de dominio del módulo.
+      properties:
+        statusCode: { type: integer }
+        code: { type: string }
+        detail: { type: string }
+
+    SetCompanyDriverDailyRateRequest:
+      type: object
+      required: [companyId, branchId, dailyRate]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        dailyRate:
+          type: string
+          pattern: '^(?!0+(\.0{1,2})?$)\d{1,8}(\.\d{1,2})?$'
+          description: Tarifa diaria del conductor de la empresa en PEN; > 0, máximo 2 decimales. Ej. "120" o "120.50".
+
     FormalizeContractRequest:
       type: object
       required: [companyId, branchId, documentRef]
@@ -1199,12 +1277,17 @@ components:
 
     CompanyDriverChargeResponse:
       type: object
-      required: [configured, dailyRate, currency, days, total]
+      required: [configured, source, dailyRate, currency, days, total]
       description: >
         Servicio de conductor de la empresa: TARIFA DIARIA × días del alquiler, sin garantía (Fiorella, 16-oct-2026).
-        Vista calculada; la tarifa es un parámetro del sistema (COMPANY_DRIVER_DAILY_RATE) aún sin definir por negocio.
+        Vista calculada (el total no se persiste). Tarifa diaria: valor manual del alquiler (set-company-driver-daily-rate) > parámetro
+        COMPANY_DRIVER_DAILY_RATE > no definida (DEC-ALQ-DRIVERRATE-001; el monto aún no lo define negocio y nunca se inventa).
       properties:
-        configured: { type: boolean, description: false = la tarifa diaria aún no está configurada (importes en "0.00"). }
+        configured: { type: boolean, description: false = la tarifa diaria no está definida (source NOT_DEFINED; importes en "0.00"; el cobro queda pendiente de digitar). }
+        source:
+          type: string
+          enum: [MANUAL, ENV, NOT_DEFINED]
+          description: Origen de la tarifa aplicada (MANUAL = digitada en el alquiler; ENV = parámetro del sistema; NOT_DEFINED = sin tarifa).
         dailyRate: { type: string }
         currency: { type: string, enum: [PEN, USD] }
         days: { type: integer, minimum: 0 }

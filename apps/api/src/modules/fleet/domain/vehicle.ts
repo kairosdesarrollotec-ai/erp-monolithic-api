@@ -14,6 +14,10 @@ export interface FleetVehicle {
   status: VehicleStatus;
   dailyRate?: number | null;
   depositMinimum?: number | null;
+  /** Pasajeros que admite el vehiculo (1..60); tope de acompanantes del alquiler. */
+  passengerCapacity?: number | null;
+  /** Precio del combustible por unidad (PEN); insumo de la multa por combustible (aun no calculada). */
+  fuelPrice?: number | null;
   photoUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;

@@ -82,7 +82,7 @@ describe('Reclutamiento - ids de otra sede/empresa devuelven 404 (alcance)', () 
 
   it('DecideCandidate', async () => {
     const s = setup();
-    const h = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
+    const h = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox, s.vacancies);
     const p = h.execute(new DecideCandidateCommand(UID, OTHER_ID, COMPANY_ID, BRANCH_ID, 'RECHAZADO' as never, 1, 'x'));
     await expect(p).rejects.toBeInstanceOf(CandidateNotFoundError);
     expect(s.candidates.findScopedById).toHaveBeenCalledWith(OTHER_ID, RECRUITMENT_SCOPE, s.tm.tx);
@@ -124,7 +124,7 @@ describe('Reclutamiento - ids de otra sede/empresa devuelven 404 (alcance)', () 
 
   it('RecordInterviewResult: entrevista fuera de alcance -> 404', async () => {
     const s = setup();
-    const h = new RecordInterviewResultHandler(s.access, s.candidates, s.interviews, s.tm, s.clock, s.audit);
+    const h = new RecordInterviewResultHandler(s.access, s.candidates, s.interviews, s.tm, s.clock, s.audit, s.vacancies);
     const p = h.execute(new RecordInterviewResultCommand(UID, 'int-x', COMPANY_ID, BRANCH_ID, InterviewResult.AVANZA, 'notas'));
     await expect(p).rejects.toBeInstanceOf(InterviewNotFoundError);
     expect(s.interviews.findScopedById).toHaveBeenCalledWith('int-x', RECRUITMENT_SCOPE, s.tm.tx);
@@ -135,7 +135,7 @@ describe('Reclutamiento - ids de otra sede/empresa devuelven 404 (alcance)', () 
   it('RecordInterviewResult: candidato de la entrevista fuera de alcance -> 404', async () => {
     const s = setup();
     s.interviews.findScopedById.mockResolvedValue({ id: 'int-x', candidateId: OTHER_ID } as never);
-    const h = new RecordInterviewResultHandler(s.access, s.candidates, s.interviews, s.tm, s.clock, s.audit);
+    const h = new RecordInterviewResultHandler(s.access, s.candidates, s.interviews, s.tm, s.clock, s.audit, s.vacancies);
     const p = h.execute(new RecordInterviewResultCommand(UID, 'int-x', COMPANY_ID, BRANCH_ID, InterviewResult.AVANZA, 'notas'));
     await expect(p).rejects.toBeInstanceOf(CandidateNotFoundError);
     expect(s.interviews.recordResult).not.toHaveBeenCalled();

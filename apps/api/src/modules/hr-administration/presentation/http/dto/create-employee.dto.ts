@@ -9,6 +9,7 @@ import {
   Matches,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 import { DATE_ONLY_PATTERN } from './hr-date';
 
@@ -48,15 +49,25 @@ export class CreateEmployeeDto {
   @MaxLength(50)
   phone?: string | null;
 
+  /** H-02: codigo del catalogo de areas (GET /hr-areas). Si viene, `areaId`/`areaName` se ignoran. */
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  areaId!: string;
+  areaCode?: string;
 
+  /** Compatibilidad (texto libre): opcional; se deriva del nombre. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  areaId?: string;
+
+  /** Compatibilidad (texto libre): obligatorio solo si no se envia `areaCode`. */
+  @ValidateIf((o: CreateEmployeeDto) => !o.areaCode)
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  areaName!: string;
+  areaName?: string;
 
   @IsString()
   @IsNotEmpty()

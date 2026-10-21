@@ -6,6 +6,8 @@ import { RecruitmentAccessService } from '../services/recruitment-access.service
 import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
 import { CandidateRecord, CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { CandidateDocumentDuplicateError, VacancyNotFoundError } from '../../domain/recruitment-errors';
+import { VacancyStatus } from '../../domain/recruitment-domain-types';
+import { advanceVacancyProgress } from '../services/recruitment-progress';
 import { RegisterCandidateCommand } from './register-candidate.command';
 
 @Injectable()
@@ -70,6 +72,20 @@ export class RegisterCandidateHandler {
             documentNumber: created.documentNumber,
             stage: created.stage,
           },
+        },
+        tx,
+      );
+
+      // BDD-REC §11.6 (OP-REC-002 "Candidato en negociación"): el primer candidato en contacto lleva la vacante
+      // de Publicado a En negociación. Las vacantes pausadas/canceladas/sin publicar no se mueven.
+      await advanceVacancyProgress(
+        { vacancies: this.vacancies, audit: this.auditRepository },
+        {
+          vacancy,
+          target: VacancyStatus.EN_NEGOCIACION,
+          organizationId: context.organizationId,
+          actorUserId: command.firebaseUid,
+          trigger: 'CANDIDATE_REGISTERED',
         },
         tx,
       );

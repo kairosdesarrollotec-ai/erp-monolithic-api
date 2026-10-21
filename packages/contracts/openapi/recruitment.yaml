@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Recruitment & Selection API
-  version: 0.2.0
+  version: 0.3.0
   description: >
     Contrato del módulo de Reclutamiento y Selección (REC-01 a REC-08).
     Fuentes canónicas: BDD-05 (BDD-REC-001 v1.7), SDD-05 (SDD-REC-001 v2.0), TDD-05 (TDD-REC-001 v2.0)
@@ -16,6 +16,16 @@ info:
     visor (REC-03/REC-04, DAT-REC-004), historial de negociación de condiciones (REC-04) y honorarios del
     periodo de prueba (REC-08, DAT-REC-007). El CV, la negociación y los honorarios son datos sensibles: solo se
     exponen con RECRUITMENT.VIEW_CANDIDATE_SENSITIVE_DATA.
+
+    v0.3.0 (flujo de estados BDD-REC-001 §11.6): el candidato expone `processState` (EN_NEGOCIACION, ENTREVISTADO,
+    DECIDIDO, DESCARTADO, INGRESADO, PERIODO_PRUEBA, PLANILLA, TERMINADO) y la vacante suma el estado ENTREVISTADA.
+    Las transiciones son derivadas de los comandos existentes (no hay endpoint para fijar el estado a mano):
+    registrar candidato (vacante PUBLICADA -> EN_NEGOCIACION), registrar resultado de entrevista (candidato ->
+    ENTREVISTADO, vacante -> ENTREVISTADA), decidir (CONTRATADO -> DECIDIDO y vacante DECIDIDA; RECHAZADO -> DESCARTADO),
+    completar incorporación (DECIDIDO -> INGRESADO -> PERIODO_PRUEBA, SDD UC-REC-004) y evaluar periodo de prueba
+    (PLANILLA | TERMINADO). Una transición fuera de la tabla del BDD responde 422 `CANDIDATE_STATE_TRANSITION_INVALID`.
+    PLANILLA -> TERMINADO está marcado "(futuro)" en el BDD y no se habilita.
+    Errores de dominio: cuerpo `{ statusCode, code, detail }` (schema ProblemDetail).
 
 paths:
   /vacancies:
@@ -188,7 +198,7 @@ paths:
             schema: { $ref: '#/components/schemas/RegisterCandidateRequest' }
       responses:
         '201':
-          description: Postulante registrado en etapa NUEVO
+          description: Postulante registrado en etapa NUEVO y estado de proceso EN_NEGOCIACION; si la vacante estaba PUBLICADA pasa a EN_NEGOCIACION (BDD-REC §11.6)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CandidateResponse' }
@@ -483,7 +493,7 @@ paths:
             schema: { $ref: '#/components/schemas/RecordInterviewResultRequest' }
       responses:
         '200':
-          description: Resultado de entrevista registrado
+          description: Resultado de entrevista registrado. Si es la primera entrevista realizada, el candidato pasa a ENTREVISTADO y la vacante a ENTREVISTADA (BDD-REC §11.6); NO_AVANZA no descarta ni decide
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CandidateInterviewResponse' }
@@ -491,6 +501,11 @@ paths:
         '401': { description: Token ausente o inválido }
         '403': { description: Rol sin permiso RECRUITMENT.MANAGE_INTERVIEW o contexto no autorizado }
         '404': { description: Entrevista no encontrada }
+        '409':
+          description: Candidato ya decidido (CANDIDATE_ALREADY_DECIDED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
         '500': { description: Error interno }
 
   /candidates/{id}/commands/decide:
@@ -508,7 +523,9 @@ paths:
             schema: { $ref: '#/components/schemas/DecideCandidateRequest' }
       responses:
         '200':
-          description: Decisión procesada (emite evento CandidatoSeleccionado.v1 en outbox si es CONTRATADO)
+          description: >
+            Decisión procesada. CONTRATADO: candidato DECIDIDO, vacante DECIDIDA y evento CandidatoSeleccionado.v1 en outbox.
+            RECHAZADO: candidato DESCARTADO (tras la entrevista recorre DECIDIDO -> DESCARTADO).
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CandidateDetailResponse' }
@@ -516,7 +533,18 @@ paths:
         '401': { description: Token ausente o inválido }
         '403': { description: Rol sin permiso RECRUITMENT.DECIDE_CANDIDATE o contexto no autorizado }
         '404': { description: Candidato no encontrado }
-        '409': { description: Conflicto de versión (VERSION_CONFLICT) o candidato ya decidido (CANDIDATE_ALREADY_DECIDED) }
+        '409':
+          description: Conflicto de versión (VERSION_CONFLICT) o candidato ya decidido (CANDIDATE_ALREADY_DECIDED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
+        '422':
+          description: >
+            Transición no permitida por BDD-REC §11.6 (CANDIDATE_STATE_TRANSITION_INVALID): CONTRATADO exige que el candidato
+            esté ENTREVISTADO; RECHAZADO exige EN_NEGOCIACION o ENTREVISTADO.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
         '500': { description: Error interno }
 
   /candidates/{id}/commands/complete-onboarding:
@@ -533,7 +561,7 @@ paths:
             schema: { $ref: '#/components/schemas/CompleteOnboardingRequest' }
       responses:
         '200':
-          description: Incorporación completada (emite PersonalIncorporado.v1 hacia ADP)
+          description: Incorporación completada. El candidato recorre DECIDIDO -> INGRESADO -> PERIODO_PRUEBA en la misma operación (SDD UC-REC-004) y se emite PersonalIncorporado.v1 hacia ADP
           content:
             application/json:
               schema: { $ref: '#/components/schemas/OnboardingResponse' }
@@ -542,6 +570,13 @@ paths:
         '403': { description: Rol sin permiso RECRUITMENT.MANAGE_ONBOARDING o contexto no autorizado }
         '404': { description: Candidato no encontrado o no contratado }
         '409': { description: Onboarding ya completado previamente }
+        '422':
+          description: >
+            Candidato no contratado (CANDIDATE_NOT_CONTRACTED), checklist incompleto, falta contrato notariado de mecánico,
+            o el candidato no está DECIDIDO (CANDIDATE_STATE_TRANSITION_INVALID, p. ej. incorporación repetida).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
         '500': { description: Error interno }
 
   /candidates/{id}/commands/evaluate-probation:
@@ -558,7 +593,7 @@ paths:
             schema: { $ref: '#/components/schemas/EvaluateProbationRequest' }
       responses:
         '200':
-          description: Evaluación registrada (si es aprobada, emite PasoAPlanilla.v1)
+          description: Evaluación registrada. Aprobada -> candidato PLANILLA y evento PasoAPlanilla.v1; no aprobada -> candidato TERMINADO (sin evento nuevo, ver preguntas abiertas del BDD)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/OnboardingResponse' }
@@ -567,6 +602,11 @@ paths:
         '403': { description: Rol sin permiso RECRUITMENT.EVALUATE_PROBATION o contexto no autorizado }
         '404': { description: Candidato u onboarding no encontrado }
         '409': { description: Periodo de prueba ya evaluado }
+        '422':
+          description: El candidato no está en PERIODO_PRUEBA (CANDIDATE_STATE_TRANSITION_INVALID)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
         '500': { description: Error interno }
 
 components:
@@ -583,11 +623,20 @@ components:
 
     VacancyStatus:
       type: string
-      enum: [NECESIDAD_REGISTRADA, PUBLICADA, EN_NEGOCIACION, DECIDIDA, CANCELADA, PAUSADA]
+      enum: [NECESIDAD_REGISTRADA, PUBLICADA, EN_NEGOCIACION, ENTREVISTADA, DECIDIDA, CANCELADA, PAUSADA]
 
     CandidateStage:
       type: string
       enum: [NUEVO, CONTACTADO, ENTREVISTA, DECISION]
+
+    CandidateProcessState:
+      type: string
+      description: >
+        Estado normativo del candidato (BDD-REC-001 §11.6). Distinto de `stage` (columna del tablero Kanban de REC-03).
+        Salidas permitidas: EN_NEGOCIACION -> ENTREVISTADO | DESCARTADO; ENTREVISTADO -> DECIDIDO;
+        DECIDIDO -> INGRESADO | DESCARTADO; INGRESADO -> PERIODO_PRUEBA; PERIODO_PRUEBA -> PLANILLA | TERMINADO.
+        DESCARTADO, PLANILLA y TERMINADO no tienen salidas.
+      enum: [EN_NEGOCIACION, ENTREVISTADO, DECIDIDO, DESCARTADO, INGRESADO, PERIODO_PRUEBA, PLANILLA, TERMINADO]
 
     CandidateDecision:
       type: string
@@ -820,6 +869,17 @@ components:
         passed: { type: boolean }
         qualitativeEvaluation: { type: string, minLength: 5 }
 
+    ProblemDetail:
+      type: object
+      description: >
+        Cuerpo de error de dominio. `code` es estable y apto para que el front decida el mensaje
+        (p. ej. CANDIDATE_STATE_TRANSITION_INVALID, CANDIDATE_ALREADY_DECIDED, VERSION_CONFLICT).
+      required: [statusCode, code, detail]
+      properties:
+        statusCode: { type: integer }
+        code: { type: string, example: CANDIDATE_STATE_TRANSITION_INVALID }
+        detail: { type: string }
+
     VacancyResponse:
       type: object
       required: [id, code, title, department, source, status, isMechanic, version, createdAt]
@@ -854,7 +914,7 @@ components:
 
     CandidateResponse:
       type: object
-      required: [id, vacancyId, fullName, documentType, documentNumber, stage, version, createdAt]
+      required: [id, vacancyId, fullName, documentType, documentNumber, stage, processState, version, createdAt]
       properties:
         id: { type: string, format: uuid }
         vacancyId: { type: string, format: uuid }
@@ -862,6 +922,12 @@ components:
         documentType: { type: string }
         documentNumber: { type: string }
         stage: { $ref: '#/components/schemas/CandidateStage' }
+        processState: { $ref: '#/components/schemas/CandidateProcessState' }
+        processStateChangedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Último cambio del estado de proceso; null en candidatos anteriores a v0.3.0 (migrados sin fecha).
         decision: { $ref: '#/components/schemas/CandidateDecision', nullable: true }
         version: { type: integer }
         createdAt: { type: string, format: date-time }

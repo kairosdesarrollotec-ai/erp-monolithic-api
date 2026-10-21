@@ -1,5 +1,6 @@
 import { calculateImmobilizationCharge } from './damage-calculator';
 import { roundMoney } from './return-rules';
+import { computeReturnLateness, LATE_CHARGE_REGISTRABLE_STATUSES, RETURN_LATE_TOLERANCE_MINUTES } from './return-lateness';
 import type { DamageOrigin, ReturnStatus } from './return-status';
 
 /**
@@ -36,6 +37,16 @@ export interface ImmobilizationAlert {
   suggestedAmount: number | null;
 }
 
+/**
+ * DEC-DEVREM-003 / F-03 (Fiorella): el retraso pasada la tolerancia SÍ tiene cargo y se registra MANUALMENTE. El sistema solo
+ * SUGIERE al usuario autorizado que lo registre: NO lleva monto (lo digita la persona) ni cobra nada.
+ */
+export interface LateChargeSuggestion {
+  /** Minutos enteros de retraso real (recepción menos hora pactada). */
+  lateMinutes: number;
+  lateToleranceMinutes: number;
+}
+
 export interface ReturnAlerts {
   warrantyRelease: WarrantyReleaseAlert | null;
   immobilization: ImmobilizationAlert | null;
@@ -49,6 +60,10 @@ export interface AlertSubject {
   depositRequired?: boolean;
   damages?: ReadonlyArray<{ origin: DamageOrigin }>;
   immobilizationCharges?: ReadonlyArray<{ daysCharged: number }>;
+  /** Solo para la sugerencia de cargo por retraso. */
+  scheduledAt?: Date;
+  /** Cargo por retraso manual ya registrado (null/ausente = sin registrar). */
+  lateChargeAmount?: number | null;
 }
 
 /**
@@ -96,4 +111,21 @@ export function computeReturnAlerts(subject: AlertSubject, now: Date): ReturnAle
     warrantyRelease: computeWarrantyReleaseAlert(subject, now),
     immobilization: computeImmobilizationAlert(subject, now),
   };
+}
+
+/**
+ * Sugerencia de registrar el cargo por retraso manual: vehículo ya recibido, devolución abierta (estados registrables),
+ * recepción real posterior a la hora pactada + 30 min (BR-DEV-003) y todavía sin cargo registrado. Se apaga sola al
+ * registrar el cargo. Sin monto: el cobro y la cifra son del usuario autorizado.
+ */
+export function computeLateChargeSuggestion(subject: AlertSubject, now: Date): LateChargeSuggestion | null {
+  if (!subject.receivedAt || !subject.scheduledAt) return null;
+  if (!LATE_CHARGE_REGISTRABLE_STATUSES.includes(subject.status)) return null;
+  if (subject.lateChargeAmount !== null && subject.lateChargeAmount !== undefined) return null;
+  const lateness = computeReturnLateness(
+    { status: subject.status, scheduledAt: subject.scheduledAt, receivedAt: subject.receivedAt },
+    now,
+  );
+  if (!lateness || !lateness.isLate) return null;
+  return { lateMinutes: lateness.lateMinutes, lateToleranceMinutes: RETURN_LATE_TOLERANCE_MINUTES };
 }

@@ -24,13 +24,16 @@ describe('CreateVehicleHandler', () => {
       '  xyz-789  ',
       ' Hyundai ',
       ' Tucson ',
+      5,
       2023,
       ' Negro ',
       ' SUV ',
       'AVAILABLE',
       190,
-      undefined,
       'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
+      undefined,
+      500,
+      4.5,
     );
 
     const result = await handler.execute(command);
@@ -53,6 +56,9 @@ describe('CreateVehicleHandler', () => {
       category: 'SUV',
       status: 'AVAILABLE',
       dailyRate: 190,
+      depositMinimum: 500,
+      passengerCapacity: 5,
+      fuelPrice: 4.5,
       photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
     });
     expect(result.plate).toBe('XYZ-789');
@@ -73,6 +79,7 @@ describe('CreateVehicleHandler', () => {
       'xyz-789',
       'Nissan',
       'Frontier',
+      5,
     );
 
     await expect(handler.execute(command)).rejects.toThrow(VehiclePlateAlreadyExistsError);
@@ -84,7 +91,7 @@ describe('CreateVehicleHandler', () => {
     const { access } = buildFleetAccessService('FRONT_OFFICE');
     const handler = new CreateVehicleHandler(repository, access);
 
-    const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'AAA-000', 'Kia', 'Sportage');
+    const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'AAA-000', 'Kia', 'Sportage', 5);
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);
     expect(repository.create).not.toHaveBeenCalled();
@@ -97,11 +104,40 @@ describe('CreateVehicleHandler', () => {
     const handler = new CreateVehicleHandler(repository, access);
 
     const command = new CreateVehicleCommand(
-      'uid-1', COMPANY, BRANCH, 'BBB-111', 'Nissan', 'Frontier',
-      undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'branch-other',
+      'uid-1', COMPANY, BRANCH, 'BBB-111', 'Nissan', 'Frontier', 5,
+      undefined, undefined, undefined, undefined, undefined, undefined, 'branch-other',
     );
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenException);
     expect(repository.create).not.toHaveBeenCalled();
+  });
+  describe('DEC-FLT-CAP-001: capacidad de pasajeros obligatoria al registrar (G-05)', () => {
+    it.each([[undefined], [null]])('rechaza con 400 PASSENGER_CAPACITY_REQUIRED si la capacidad es %s', async (cap) => {
+      const repository = buildFleetVehicleRepository(null);
+      repository.findByPlate.mockResolvedValue(null);
+      const { access } = buildFleetAccessService('CAMPO');
+      const handler = new CreateVehicleHandler(repository, access);
+
+      const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'CCC-222', 'Kia', 'Rio', cap);
+
+      await expect(handler.execute(command)).rejects.toMatchObject({
+        code: 'PASSENGER_CAPACITY_REQUIRED',
+        httpStatus: 400,
+      });
+      expect(repository.create).not.toHaveBeenCalled();
+    });
+
+    it('permite registrar sin garantia ni precio de combustible (siguen opcionales)', async () => {
+      const repository = buildFleetVehicleRepository(null);
+      repository.findByPlate.mockResolvedValue(null);
+      const { access } = buildFleetAccessService('CAMPO');
+      const handler = new CreateVehicleHandler(repository, access);
+
+      await handler.execute(new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'DDD-333', 'Kia', 'Rio', 5));
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ passengerCapacity: 5, depositMinimum: null, fuelPrice: null }),
+      );
+    });
   });
 });

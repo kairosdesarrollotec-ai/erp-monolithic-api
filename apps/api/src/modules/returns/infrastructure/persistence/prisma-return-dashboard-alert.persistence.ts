@@ -1,0 +1,81 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../../common/persistence/prisma.service';
+import {
+  ActiveWarrantyDashboardItem,
+  ReturnDashboardAlertPort,
+} from '../../application/ports/return-dashboard-alert.port';
+import type { ReturnRecord } from '../../application/ports/return-repository.port';
+import {
+  RETURN_DASHBOARD_SOURCE_TYPE,
+  ReturnDashboardItemInput,
+  WARRANTY_DASHBOARD_KEY_PREFIX,
+} from '../../domain/return-dashboard-alerts';
+import { RETURN_INCLUDE, toReturnRecord } from './return-persistence.mapper';
+
+@Injectable()
+export class PrismaReturnDashboardAlertPersistence implements ReturnDashboardAlertPort {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async listWarrantyCandidates(receivedBefore: Date, limit: number, afterId?: string): Promise<ReturnRecord[]> {
+    const rows = await this.prisma.rentalReturn.findMany({
+      where: { status: 'SIN_DANOS', receivedAt: { not: null, lte: receivedBefore }, ...(afterId ? { id: { gt: afterId } } : {}) },
+      orderBy: { id: 'asc' },
+      take: limit,
+      include: RETURN_INCLUDE,
+    });
+    return rows.map(toReturnRecord);
+  }
+
+  async createDashboardItems(items: readonly ReturnDashboardItemInput[]): Promise<number> {
+    if (items.length === 0) return 0;
+    // INSERT ... ON CONFLICT DO NOTHING sobre (source_event_id, item_type): seguro con varias réplicas / reintentos.
+    const result = await this.prisma.dashboardItem.createMany({
+      data: items.map((item) => ({
+        organizationId: item.organizationId,
+        operatingCompanyId: item.operatingCompanyId,
+        branchId: item.branchId,
+        role: item.role,
+        itemType: item.itemType,
+        priority: item.priority,
+        title: item.title,
+        detail: item.detail,
+        deepLink: item.deepLink,
+        sourceType: item.sourceType,
+        sourceId: item.sourceId,
+        sourceEventId: item.sourceEventId,
+      })),
+      skipDuplicates: true,
+    });
+    return result.count;
+  }
+
+  async listActiveWarrantyItems(limit: number, afterId?: string): Promise<ActiveWarrantyDashboardItem[]> {
+    const rows = await this.prisma.dashboardItem.findMany({
+      where: {
+        sourceType: RETURN_DASHBOARD_SOURCE_TYPE,
+        dismissedAt: null,
+        sourceEventId: { startsWith: `${WARRANTY_DASHBOARD_KEY_PREFIX}:` },
+        ...(afterId ? { id: { gt: afterId } } : {}),
+      },
+      orderBy: { id: 'asc' },
+      take: limit,
+      select: { id: true, sourceId: true, sourceEventId: true },
+    });
+    return rows;
+  }
+
+  async findReturnsByIds(ids: readonly string[]): Promise<ReturnRecord[]> {
+    if (ids.length === 0) return [];
+    const rows = await this.prisma.rentalReturn.findMany({ where: { id: { in: [...ids] } }, include: RETURN_INCLUDE });
+    return rows.map(toReturnRecord);
+  }
+
+  async dismissItems(ids: readonly string[], at: Date): Promise<number> {
+    if (ids.length === 0) return 0;
+    const result = await this.prisma.dashboardItem.updateMany({
+      where: { id: { in: [...ids] }, dismissedAt: null },
+      data: { dismissedAt: at },
+    });
+    return result.count;
+  }
+}

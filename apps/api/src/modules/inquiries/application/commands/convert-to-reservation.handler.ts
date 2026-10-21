@@ -10,6 +10,7 @@ import { InquiryNotTransitionableError, QuotationExpiredError } from '../../doma
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { ReservationRepositoryPort, ReservationRecord } from '../../../reservations/application/ports/reservation-repository.port';
 import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
+import { assertReservationWithinGuarantee } from '../../../reservations/domain/reservation-guarantee';
 import { ConvertToReservationCommand } from './convert-to-reservation.command';
 
 export interface ConvertToReservationResult {
@@ -105,6 +106,13 @@ export class ConvertToReservationHandler {
         this.assertConvertible(current);
 
         const quotation = this.currentValidQuotation(current, this.clock.now());
+
+        // F-01: el monto de la reserva (politica ADM-03) no puede superar la
+        // garantia del vehiculo cotizado. Se valida ANTES de transicionar la
+        // consulta: si falla, la consulta sigue COTIZADA y no se crea reserva.
+        const vehicle = await this.reservations.findVehicleById(quotation.vehicleId);
+        assertReservationWithinGuarantee(depositPolicy.amount, vehicle?.depositMinimum);
+
         const startAt = command.startAt;
         const endAt = new Date(startAt.getTime() + quotation.estimatedDays * MS_PER_DAY);
 

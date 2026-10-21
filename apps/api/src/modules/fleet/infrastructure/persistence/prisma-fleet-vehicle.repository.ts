@@ -24,6 +24,8 @@ function toDomain(row: {
   status: string;
   dailyRate: Prisma.Decimal | null;
   depositMinimum: Prisma.Decimal | null;
+  passengerCapacity: number | null;
+  fuelPrice: Prisma.Decimal | null;
   photoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +44,8 @@ function toDomain(row: {
     status: row.status as VehicleStatus,
     dailyRate: row.dailyRate !== null ? Number(row.dailyRate) : null,
     depositMinimum: row.depositMinimum !== null ? Number(row.depositMinimum) : null,
+    passengerCapacity: row.passengerCapacity,
+    fuelPrice: row.fuelPrice !== null ? Number(row.fuelPrice) : null,
     photoUrl: row.photoUrl,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -68,7 +72,13 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
         category: input.category ?? undefined,
         status: input.status ?? 'AVAILABLE',
         dailyRate: input.dailyRate !== undefined && input.dailyRate !== null ? new Prisma.Decimal(input.dailyRate) : undefined,
-        depositMinimum: input.depositMinimum !== undefined && input.depositMinimum !== null ? new Prisma.Decimal(input.depositMinimum) : undefined,
+        depositMinimum:
+          input.depositMinimum !== undefined && input.depositMinimum !== null
+            ? new Prisma.Decimal(input.depositMinimum)
+            : undefined,
+        passengerCapacity: input.passengerCapacity,
+        fuelPrice:
+          input.fuelPrice !== undefined && input.fuelPrice !== null ? new Prisma.Decimal(input.fuelPrice) : undefined,
         photoUrl: input.photoUrl ?? undefined,
       },
     });
@@ -187,6 +197,11 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
         depositMinimum:
           input.depositMinimum !== undefined && input.depositMinimum !== null
             ? new Prisma.Decimal(input.depositMinimum)
+            : undefined,
+        passengerCapacity: input.passengerCapacity ?? undefined,
+        fuelPrice:
+          input.fuelPrice !== undefined && input.fuelPrice !== null
+            ? new Prisma.Decimal(input.fuelPrice)
             : undefined,
         photoUrl: input.photoUrl ?? undefined,
       },

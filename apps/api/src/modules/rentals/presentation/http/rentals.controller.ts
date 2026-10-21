@@ -39,6 +39,9 @@ import { RegisterAuthorizedDriverDto } from './dto/register-authorized-driver.dt
 import { RegisterCompanionHandler } from '../../application/commands/register-companion.handler';
 import { RegisterCompanionCommand } from '../../application/commands/register-companion.command';
 import { RegisterCompanionDto } from './dto/register-companion.dto';
+import { SetCompanyDriverDailyRateHandler } from '../../application/commands/set-company-driver-daily-rate.handler';
+import { SetCompanyDriverDailyRateCommand } from '../../application/commands/set-company-driver-daily-rate.command';
+import { SetCompanyDriverDailyRateDto } from './dto/set-company-driver-daily-rate.dto';
 import { ApproveNotaryExceptionHandler } from '../../application/commands/approve-notary-exception.handler';
 import { ApproveNotaryExceptionCommand } from '../../application/commands/approve-notary-exception.command';
 import { FormalizeContractHandler } from '../../application/commands/formalize-contract.handler';
@@ -81,6 +84,7 @@ export class RentalsController {
     private readonly approveNotaryException: ApproveNotaryExceptionHandler,
     private readonly registerAuthorizedDriver: RegisterAuthorizedDriverHandler,
     private readonly registerCompanion: RegisterCompanionHandler,
+    private readonly setCompanyDriverDailyRate: SetCompanyDriverDailyRateHandler,
     private readonly formalizeContract: FormalizeContractHandler,
     private readonly completeDelivery: CompleteDeliveryHandler,
     private readonly getRental: GetRentalHandler,
@@ -362,6 +366,29 @@ export class RentalsController {
         dto.reason,
         dto.addendumDocumentRef,
         dto.holderType,
+      ),
+    );
+    return toRentalResponse(updated);
+  }
+
+  /** DEC-ALQ-DRIVERRATE-001: tarifa diaria manual del conductor de la empresa (prioridad sobre el env). */
+  @Post(':id/commands/set-company-driver-daily-rate')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async setCompanyDriverDailyRateCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetCompanyDriverDailyRateDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<RentalResponse> {
+    const updated = await this.setCompanyDriverDailyRate.execute(
+      new SetCompanyDriverDailyRateCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.dailyRate,
       ),
     );
     return toRentalResponse(updated);

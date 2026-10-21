@@ -3,6 +3,7 @@ import { UpdateVehicleCommand } from './update-vehicle.command';
 import { FleetVehicleRepositoryPort } from '../ports/fleet-vehicle-repository.port';
 import { FleetAccessService } from '../services/fleet-access.service';
 import { FleetVehicle } from '../../domain/vehicle';
+import { VehiclePassengerCapacityRequiredError } from '../../domain/fleet-errors';
 
 /**
  * Edita los datos descriptivos de un vehiculo (marca, modelo, anio, color,
@@ -13,6 +14,9 @@ import { FleetVehicle } from '../../domain/vehicle';
  * CreateVehicleHandler) y cambiarla equivaldria a re-matricular el
  * vehiculo. El estado (`status`) tampoco se edita aqui: sigue siendo
  * responsabilidad exclusiva de UpdateVehicleStatusHandler.
+ *
+ * DEC-FLT-CAP-001: `passengerCapacity` omitido no cambia el valor (un vehiculo anterior con capacidad NULL
+ * sigue editable); enviado como `null` de forma explicita se rechaza con 400 PASSENGER_CAPACITY_REQUIRED.
  */
 @Injectable()
 export class UpdateVehicleHandler {
@@ -27,6 +31,10 @@ export class UpdateVehicleHandler {
       'WRITE',
       { targetBranchId: command.assignedBranchId },
     );
+
+    if (command.passengerCapacity === null) {
+      throw new VehiclePassengerCapacityRequiredError();
+    }
 
     const scope = {
       organizationId: context.organizationId,
@@ -51,6 +59,8 @@ export class UpdateVehicleHandler {
       category: command.category?.trim() || existing.category,
       dailyRate: command.dailyRate,
       depositMinimum: command.depositMinimum,
+      passengerCapacity: command.passengerCapacity,
+      fuelPrice: command.fuelPrice,
       photoUrl: command.photoUrl?.trim() || null,
     });
   }

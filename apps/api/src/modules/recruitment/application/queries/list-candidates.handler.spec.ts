@@ -32,6 +32,8 @@ function candidate(id: string, stage: CandidateStage): CandidateRecord {
     hasCv: false,
     salaryExpectation: 3000,
     stage,
+    processState: 'EN_NEGOCIACION',
+    processStateChangedAt: null,
     decision: null,
     decisionNotes: null,
     decidedBy: null,

@@ -20,7 +20,7 @@ describe('recruitment.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Recruitment & Selection API');
-    expect(spec.info.version).toBe('0.2.0');
+    expect(spec.info.version).toBe('0.3.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -35,6 +35,10 @@ describe('recruitment.yaml contract specification', () => {
     const candidateStagesInSpec = spec.components.schemas.CandidateStage.enum.sort();
     const candidateStagesInPrisma = Object.values($Enums.CandidateStage).sort();
     expect(candidateStagesInSpec).toEqual(candidateStagesInPrisma);
+
+    const processStatesInSpec = spec.components.schemas.CandidateProcessState.enum.sort();
+    const processStatesInPrisma = Object.values($Enums.CandidateProcessState).sort();
+    expect(processStatesInSpec).toEqual(processStatesInPrisma);
 
     const candidateDecisionsInSpec = spec.components.schemas.CandidateDecision.enum.sort();
     const candidateDecisionsInPrisma = Object.values($Enums.CandidateDecision).sort();
@@ -205,5 +209,44 @@ describe('recruitment.yaml contract specification', () => {
     expect(catalogRecActions).toContain('DECIDE_CANDIDATE');
     expect(catalogRecActions).toContain('MANAGE_ONBOARDING');
     expect(catalogRecActions).toContain('EVALUATE_PROBATION');
+  });
+  describe('flujo de estados BDD-REC §11.6 (v0.3.0)', () => {
+    it('CandidateResponse expone processState obligatorio y processStateChangedAt nullable', () => {
+      const schema = spec.components.schemas.CandidateResponse;
+      expect(schema.required).toContain('processState');
+      expect(schema.properties.processState.$ref).toBe('#/components/schemas/CandidateProcessState');
+      expect(schema.properties.processStateChangedAt.nullable).toBe(true);
+    });
+
+    it('la vacante suma el estado ENTREVISTADA', () => {
+      expect(spec.components.schemas.VacancyStatus.enum).toContain('ENTREVISTADA');
+    });
+
+    it('no existe endpoint para fijar el estado a mano: solo comandos de negocio mueven el flujo', () => {
+      const paths = Object.keys(spec.paths);
+      expect(paths.filter((p) => /process-?state|\/state/i.test(p))).toEqual([]);
+    });
+
+    it('ProblemDetail documenta el cuerpo de error { statusCode, code, detail }', () => {
+      const schema = spec.components.schemas.ProblemDetail;
+      expect(schema.required).toEqual(['statusCode', 'code', 'detail']);
+    });
+
+    it.each([
+      ['/candidates/{id}/commands/decide', '422'],
+      ['/candidates/{id}/commands/complete-onboarding', '422'],
+      ['/candidates/{id}/commands/evaluate-probation', '422'],
+      ['/candidates/{id}/commands/decide', '409'],
+      ['/interviews/{id}/commands/record-result', '409'],
+    ])('%s responde %s con ProblemDetail', (route, status) => {
+      const response = spec.paths[route].post.responses[status];
+      expect(response.content['application/json'].schema.$ref).toBe('#/components/schemas/ProblemDetail');
+    });
+
+    it('decide documenta CANDIDATE_STATE_TRANSITION_INVALID en su 422', () => {
+      expect(spec.paths['/candidates/{id}/commands/decide'].post.responses['422'].description).toContain(
+        'CANDIDATE_STATE_TRANSITION_INVALID',
+      );
+    });
   });
 });

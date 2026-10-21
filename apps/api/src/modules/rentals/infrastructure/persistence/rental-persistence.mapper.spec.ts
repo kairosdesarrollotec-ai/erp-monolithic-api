@@ -1,6 +1,7 @@
 import { toRentalRecord, toRentalExtensionRecord, toRentalPartyRecord, toNotaryEvaluationRecord, toRentalContractRecord, toRentalDepositRecord, RentalWithRelations } from './rental-persistence.mapper';
 import { ExtensionStatus } from '../../domain/extension-status';
 import { RentalStatus } from '../../domain/rental-status';
+import { assertCompanionWithinCapacity } from '../../domain/passenger-capacity';
 
 describe('RentalPersistenceMapper', () => {
   it('correctly maps rental party record', () => {
@@ -182,5 +183,26 @@ describe('RentalPersistenceMapper', () => {
     expect(record.customerName).toBe('Juan Perez');
     expect(record.vehiclePlate).toBe('ABC-123');
     expect(record.status).toBe('ACTIVE');
+    expect(record.vehiclePassengerCapacity).toBeNull(); // vehiculo sin capacidad -> el tope no se aplica
+  });
+
+  it('mapea vehicle.passengerCapacity a vehiclePassengerCapacity y activa el tope de acompanantes (G-05)', () => {
+    const now = new Date();
+    const row = {
+      id: 'r-2', organizationId: 'org-1', operatingCompanyId: 'comp-1', branchId: 'b-1', inquiryId: null, reservationId: null,
+      customerId: 'cust-1', vehicleId: 'veh-1', planCode: 'NORMAL', status: 'ACTIVE', startAt: now, expectedEndAt: now,
+      alcoholTestResult: null, createdAt: now, createdBy: 'u', updatedAt: now, updatedBy: 'u', version: 1,
+      customer: { fullName: 'Juan Perez', documentNumber: '12345678' },
+      vehicle: { plate: 'ABC-123', brand: 'Toyota', model: 'Corolla', depositMinimum: null, passengerCapacity: 4 },
+      parties: [], notaryEvaluation: null, contract: null, deposit: null,
+    } as unknown as RentalWithRelations;
+
+    const record = toRentalRecord(row);
+    expect(record.vehiclePassengerCapacity).toBe(4);
+    // 3 acompanantes + 1 nuevo = 4 <= 4: permitido; con 4 actuales se excede.
+    expect(() => assertCompanionWithinCapacity(record.vehiclePassengerCapacity, 3)).not.toThrow();
+    expect(() => assertCompanionWithinCapacity(record.vehiclePassengerCapacity, 4)).toThrow(
+      expect.objectContaining({ code: 'COMPANION_PASSENGER_CAPACITY_EXCEEDED' }),
+    );
   });
 });

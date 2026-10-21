@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
@@ -14,6 +14,7 @@ import { resolveResponsibilityDocument } from '../../domain/responsibility-docum
 import { missingReturnEvidence } from '../../domain/return-evidence-requirements';
 import { appendNotes } from '../../domain/return-rules';
 import { assertCanTransitionReturn, ReturnStatus } from '../../domain/return-status';
+import { SyncClosureGatePort } from '../../../sync-conflicts/application/ports/sync-closure-gate.port';
 import { CompleteInspectionCommand } from './complete-inspection.command';
 
 /**
@@ -31,6 +32,11 @@ export class CompleteInspectionHandler {
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    /**
+     * TR-08 / DEV-04: el cierre de la inspeccion ("Continuar a Resultado") queda bloqueado mientras el checklist offline
+     * tenga conflictos de sincronizacion sin resolver (409 SYNC_CONFLICT_PENDING). Opcional solo para los specs previos.
+     */
+    @Optional() private readonly syncGate?: SyncClosureGatePort,
   ) {}
 
   async execute(command: CompleteInspectionCommand): Promise<ReturnRecord> {
@@ -43,6 +49,8 @@ export class CompleteInspectionHandler {
     if (existing.status !== 'INSPECCION') {
       throw new ReturnStateConflictError('completar la inspección de', existing.status);
     }
+
+    await this.syncGate?.assertSynced('RECEPCION', command.id, scope);
 
     // BR-DEV-009 / DAT-DEV-005: sin documento de responsabilidad firmado no se completa la inspección (422).
     const responsibility = resolveResponsibilityDocument(command.responsibilityDocument);
@@ -59,6 +67,7 @@ export class CompleteInspectionHandler {
         throw new ReturnStateConflictError('completar la inspección de', current.status);
       }
       assertCanTransitionReturn(current.status, target);
+      await this.syncGate?.assertSynced('RECEPCION', command.id, scope, tx);
 
       const counts = await this.returns.countEvidenceByType(command.id, scope, tx);
       const missing = missingReturnEvidence(counts);

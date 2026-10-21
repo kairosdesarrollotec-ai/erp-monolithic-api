@@ -9,7 +9,9 @@ import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
 import { OnboardingRecord, OnboardingRepositoryPort } from '../ports/onboarding-repository.port';
 import { CandidateNotContractedError, CandidateNotFoundError, VacancyNotFoundError } from '../../domain/recruitment-errors';
-import { applyOnboardingFeeVisibility, assertOnboardingValid } from '../../domain/recruitment-rules';
+import { CandidateProcessState } from '../../domain/recruitment-domain-types';
+import { applyOnboardingFeeVisibility, assertCandidateProcessTransition, assertOnboardingValid } from '../../domain/recruitment-rules';
+import { transitionCandidateProcess } from '../services/recruitment-progress';
 import { CompleteOnboardingCommand } from './complete-onboarding.command';
 
 @Injectable()
@@ -50,6 +52,12 @@ export class CompleteOnboardingHandler {
         throw new VacancyNotFoundError(candidate.vacancyId);
       }
 
+      // BDD-REC §11.6: Ingresado solo desde Decidido, y de Ingresado se pasa a Periodo de prueba. El SDD (UC-REC-004)
+      // define el resultado de incorporar como "personal incorporado, periodo de prueba iniciado": ambos pasos ocurren
+      // en esta misma operación. Se validan los dos antes de escribir nada.
+      assertCandidateProcessTransition(candidate.processState, CandidateProcessState.INGRESADO);
+      assertCandidateProcessTransition(CandidateProcessState.INGRESADO, CandidateProcessState.PERIODO_PRUEBA);
+
       assertOnboardingValid(vacancy.isMechanic, {
         startDate: command.startDate,
         inductionScheduled: command.inductionScheduled,
@@ -69,6 +77,31 @@ export class CompleteOnboardingHandler {
           notarizedContractSigned: command.notarizedContractSigned,
           completedAt: now,
           completedBy: command.firebaseUid,
+        },
+        tx,
+      );
+
+      const ingresado = await transitionCandidateProcess(
+        { candidates: this.candidates, audit: this.auditRepository },
+        {
+          candidate,
+          to: CandidateProcessState.INGRESADO,
+          at: now,
+          organizationId: context.organizationId,
+          actorUserId: command.firebaseUid,
+          trigger: 'ONBOARDING_COMPLETED',
+        },
+        tx,
+      );
+      await transitionCandidateProcess(
+        { candidates: this.candidates, audit: this.auditRepository },
+        {
+          candidate: ingresado,
+          to: CandidateProcessState.PERIODO_PRUEBA,
+          at: now,
+          organizationId: context.organizationId,
+          actorUserId: command.firebaseUid,
+          trigger: 'ONBOARDING_COMPLETED',
         },
         tx,
       );

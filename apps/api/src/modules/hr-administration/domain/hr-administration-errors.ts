@@ -2,6 +2,7 @@ import {
   DomainBadRequestError,
   DomainConflictError,
   DomainNotFoundError,
+  DomainPreconditionError,
   DomainServiceUnavailableError,
   DomainUnprocessableError,
 } from '../../../common/domain/domain-errors';
@@ -240,6 +241,19 @@ export class UserAccountNotFoundError extends DomainNotFoundError {
   }
 }
 
+/** DEC-ADP-EDIT-ETAG-001: la ficha cambió desde que el cliente la leyó (If-Match no coincide) - 412 EMPLOYEE_VERSION_CONFLICT. */
+export class EmployeeVersionConflictError extends DomainPreconditionError {
+  readonly code = 'EMPLOYEE_VERSION_CONFLICT';
+
+  constructor(currentVersion?: number) {
+    super(
+      currentVersion === undefined
+        ? 'La ficha fue modificada por otra persona; vuelve a cargarla antes de guardar.'
+        : `La ficha fue modificada por otra persona (versión actual ${currentVersion}); vuelve a cargarla antes de guardar.`,
+    );
+  }
+}
+
 export class EmployeeAccountAlreadyLinkedError extends DomainConflictError {
   readonly code = 'EMPLOYEE_ACCOUNT_ALREADY_LINKED';
 
@@ -359,5 +373,23 @@ export class InvalidTrainingError extends DomainUnprocessableError {
 
   constructor(detail: string) {
     super(detail);
+  }
+}
+
+/** H-02 / DEC-ADP-AREAS-001: el `areaCode` enviado no existe (o esta inactivo) en el catalogo de areas de la empresa. */
+export class HrAreaNotFoundError extends DomainUnprocessableError {
+  readonly code = 'HR_AREA_NOT_FOUND';
+
+  constructor(areaCode: string) {
+    super(`El área "${areaCode}" no existe en el catálogo de áreas de esta empresa.`);
+  }
+}
+
+/** H-02: falta el area (ni `areaCode` ni `areaName`). */
+export class HrAreaRequiredError extends DomainBadRequestError {
+  readonly code = 'AREA_REQUIRED';
+
+  constructor() {
+    super('Indica el área: elige una del catálogo (areaCode) o escribe el nombre (areaName).');
   }
 }

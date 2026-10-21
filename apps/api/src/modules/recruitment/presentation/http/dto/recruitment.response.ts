@@ -1,3 +1,4 @@
+import type { CandidateProcessState } from '../../../domain/recruitment-domain-types';
 import {
   CandidateDecision,
   CandidateStage,
@@ -35,6 +36,10 @@ export interface CandidateResponse {
   documentType: string;
   documentNumber: string;
   stage: CandidateStage;
+  /** BDD-REC §11.6 - estado normativo del proceso. */
+  processState: CandidateProcessState;
+  /** Cuándo cambió por última vez el estado de proceso; null en filas históricas anteriores al flujo de estados. */
+  processStateChangedAt: string | null;
   decision: CandidateDecision | null;
   version: number;
   createdAt: string;

@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { CandidateDecision, CandidateStage } from '@prisma/client';
+import { CandidateProcessState } from '../../domain/recruitment-domain-types';
 import type { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import type { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import {
@@ -49,6 +50,8 @@ function candidate(over: Partial<CandidateRecord> = {}): CandidateRecord {
     hasCv: false,
     salaryExpectation: null,
     stage: CandidateStage.ENTREVISTA,
+    processState: CandidateProcessState.ENTREVISTADO,
+    processStateChangedAt: null,
     decision: null,
     decisionNotes: null,
     decidedBy: null,
@@ -99,8 +102,11 @@ function setup(role: 'RRHH' | 'AUDITORIA' | 'ADMINISTRACION' = 'RRHH') {
     findDetailById: jest.fn(),
     updateStage: jest.fn(),
     updateDecision: jest.fn(),
+    updateProcessState: jest
+      .fn()
+      .mockImplementation(async (_id: string, _from: string, to: CandidateProcessState) => candidate({ processState: to })),
   } as unknown as jest.Mocked<CandidateRepositoryPort>;
-  const vacancies = { findById: jest.fn() } as unknown as jest.Mocked<VacancyRepositoryPort>;
+  const vacancies = { findById: jest.fn(), updateStatus: jest.fn() } as unknown as jest.Mocked<VacancyRepositoryPort>;
   const onb = {
     complete: jest.fn(),
     findByCandidateId: jest.fn(),
@@ -144,14 +150,14 @@ describe('DecideCandidateHandler', () => {
 
   it('solo Gerencia/RRHH deciden (Administracion queda fuera, BR-REC-003)', async () => {
     const s = setup('ADMINISTRACION');
-    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
+    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox, s.vacancies);
     await expect(handler.execute(cmd(CandidateDecision.CONTRATADO))).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('rechaza una segunda decision sobre el mismo candidato', async () => {
     const s = setup();
     s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.RECHAZADO }));
-    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
+    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox, s.vacancies);
     await expect(handler.execute(cmd(CandidateDecision.CONTRATADO))).rejects.toBeInstanceOf(
       CandidateAlreadyDecidedError,
     );
@@ -164,7 +170,7 @@ describe('DecideCandidateHandler', () => {
     s.candidates.findScopedById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
     s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], negotiations: [], onboarding: null });
-    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
+    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox, s.vacancies);
     await handler.execute(cmd(CandidateDecision.CONTRATADO));
     expect(s.candidates.updateDecision).toHaveBeenCalledWith(
       CAND_ID,
@@ -172,6 +178,7 @@ describe('DecideCandidateHandler', () => {
       'ok',
       UID,
       expect.any(Date),
+      CandidateProcessState.DECIDIDO,
       1,
       s.tm.tx,
     );
@@ -187,7 +194,7 @@ describe('DecideCandidateHandler', () => {
     s.candidates.findScopedById.mockResolvedValue(candidate());
     s.candidates.updateDecision.mockResolvedValue(decided);
     s.candidates.findDetailById.mockResolvedValue({ ...decided, isMechanic: false, interviews: [], negotiations: [], onboarding: null });
-    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox);
+    const handler = new DecideCandidateHandler(s.access, s.candidates, s.tm, s.clock, s.audit, s.outbox, s.vacancies);
     await handler.execute(cmd(CandidateDecision.RECHAZADO));
     expect(s.outbox.publish).not.toHaveBeenCalled();
   });
@@ -218,21 +225,21 @@ describe('CompleteOnboardingHandler', () => {
 
   it('exige el checklist completo', async () => {
     const s = setup();
-    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO, processState: CandidateProcessState.DECIDIDO }));
     s.vacancies.findById.mockResolvedValue({ id: 'vac-1', isMechanic: false } as never);
     await expect(build(s).execute(cmd({ eq: false }))).rejects.toBeInstanceOf(OnboardingChecklistIncompleteError);
   });
 
   it('puesto mecanico sin contrato notariado es rechazado (BR-REC-009)', async () => {
     const s = setup();
-    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO, processState: CandidateProcessState.DECIDIDO }));
     s.vacancies.findById.mockResolvedValue({ id: 'vac-1', isMechanic: true } as never);
     await expect(build(s).execute(cmd())).rejects.toBeInstanceOf(OnboardingMissingNotarizedContractError);
   });
 
   it('completa, registra completedBy y publica PersonalIncorporado', async () => {
     const s = setup();
-    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ decision: CandidateDecision.CONTRATADO, processState: CandidateProcessState.DECIDIDO }));
     s.vacancies.findById.mockResolvedValue({ id: 'vac-1', isMechanic: true } as never);
     s.onb.complete.mockResolvedValue(onboarding({ notarizedContractSigned: true }));
     await build(s).execute(cmd({ notary: true }));
@@ -251,21 +258,21 @@ describe('EvaluateProbationHandler', () => {
 
   it('falla si no existe la incorporacion', async () => {
     const s = setup();
-    s.candidates.findScopedById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: CandidateProcessState.PERIODO_PRUEBA }));
     s.onb.findByCandidateId.mockResolvedValue(null);
     await expect(build(s).execute(cmd(true))).rejects.toBeInstanceOf(OnboardingNotFoundError);
   });
 
   it('no permite evaluar dos veces', async () => {
     const s = setup();
-    s.candidates.findScopedById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: CandidateProcessState.PERIODO_PRUEBA }));
     s.onb.findByCandidateId.mockResolvedValue(onboarding({ probationPassed: true }));
     await expect(build(s).execute(cmd(true))).rejects.toBeInstanceOf(ProbationAlreadyEvaluatedError);
   });
 
   it('aprobado: registra evaluatedBy y publica PasoAPlanilla', async () => {
     const s = setup();
-    s.candidates.findScopedById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: CandidateProcessState.PERIODO_PRUEBA }));
     s.onb.findByCandidateId.mockResolvedValue(onboarding());
     s.onb.evaluateProbation.mockResolvedValue(onboarding({ probationPassed: true, probationEvaluation: 'bien' }));
     await build(s).execute(cmd(true));
@@ -282,7 +289,7 @@ describe('EvaluateProbationHandler', () => {
 
   it('no aprobado: no publica PasoAPlanilla', async () => {
     const s = setup();
-    s.candidates.findScopedById.mockResolvedValue(candidate());
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: CandidateProcessState.PERIODO_PRUEBA }));
     s.onb.findByCandidateId.mockResolvedValue(onboarding());
     s.onb.evaluateProbation.mockResolvedValue(onboarding({ probationPassed: false }));
     await build(s).execute(cmd(false));

@@ -71,9 +71,21 @@ describe('GetRentalHandler', () => {
     const prev = process.env.COMPANY_DRIVER_DAILY_RATE;
     try {
       delete process.env.COMPANY_DRIVER_DAILY_RATE;
-      expect((await handler.execute(q)).companyDriverCharge).toMatchObject({ configured: false, days: 3, total: '0.00' });
+      expect((await handler.execute(q)).companyDriverCharge).toMatchObject({ configured: false, source: 'NOT_DEFINED', days: 3, total: '0.00' });
       process.env.COMPANY_DRIVER_DAILY_RATE = '80';
-      expect((await handler.execute(q)).companyDriverCharge).toEqual({ configured: true, dailyRate: '80.00', currency: 'PEN', days: 3, total: '240.00' });
+      expect((await handler.execute(q)).companyDriverCharge).toEqual({ configured: true, source: 'ENV', dailyRate: '80.00', currency: 'PEN', days: 3, total: '240.00' });
+      // DEC-ALQ-DRIVERRATE-001: el valor manual del alquiler tiene prioridad sobre el env.
+      (deps.rentals.findById as jest.Mock).mockResolvedValue({
+        ...fakeRental,
+        startAt: start,
+        expectedEndAt: new Date('2026-10-04T10:00:00Z'),
+        contract: { contractVariant: 'NATURAL_WITH_DRIVER' },
+        companyDriverDailyRate: '120.50',
+      });
+      expect((await handler.execute(q)).companyDriverCharge).toEqual({ configured: true, source: 'MANUAL', dailyRate: '120.50', currency: 'PEN', days: 3, total: '361.50' });
+      // Sin env y con valor manual: tambien MANUAL.
+      delete process.env.COMPANY_DRIVER_DAILY_RATE;
+      expect((await handler.execute(q)).companyDriverCharge).toMatchObject({ source: 'MANUAL', total: '361.50' });
     } finally {
       if (prev === undefined) delete process.env.COMPANY_DRIVER_DAILY_RATE; else process.env.COMPANY_DRIVER_DAILY_RATE = prev;
     }

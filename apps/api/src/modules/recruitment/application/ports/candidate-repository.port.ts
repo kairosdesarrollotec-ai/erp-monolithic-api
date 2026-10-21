@@ -1,4 +1,5 @@
 import type { Prisma, CandidateStage, CandidateDecision, NegotiationOutcome } from '@prisma/client';
+import type { CandidateProcessState } from '../../domain/recruitment-domain-types';
 import type { CandidateInterviewRecord } from './interview-repository.port';
 import type { OnboardingRecord } from './onboarding-repository.port';
 
@@ -71,6 +72,9 @@ export interface CandidateRecord {
   hasCv: boolean;
   salaryExpectation: number | null;
   stage: CandidateStage;
+  /** BDD-REC §11.6 - estado normativo del proceso (la etapa Kanban `stage` es solo presentación del tablero). */
+  processState: CandidateProcessState;
+  processStateChangedAt: Date | null;
   decision: CandidateDecision | null;
   decisionNotes: string | null;
   decidedBy: string | null;
@@ -148,7 +152,22 @@ export abstract class CandidateRepositoryPort {
     decisionNotes: string | null,
     decidedBy: string,
     decidedAt: Date,
+    /** Estado de proceso resultante de la decisión (DECIDIDO o DESCARTADO), se escribe en la misma sentencia. */
+    processState: CandidateProcessState,
     expectedVersion: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<CandidateRecord>;
+  /**
+   * Transición del estado de proceso (BDD-REC §11.6) con compare-and-set sobre el estado actual: si otro comando lo
+   * cambió entre la lectura y la escritura lanza VERSION_CONFLICT. No incrementa `version` (If-Match del cliente):
+   * el estado de proceso es derivado de comandos que ya tienen su propia concurrencia (resultado de entrevista,
+   * incorporación, evaluación de prueba).
+   */
+  abstract updateProcessState(
+    id: string,
+    from: CandidateProcessState,
+    to: CandidateProcessState,
+    changedAt: Date,
     tx?: Prisma.TransactionClient,
   ): Promise<CandidateRecord>;
   abstract listByVacancy(vacancyId: string, tx?: Prisma.TransactionClient): Promise<CandidateRecord[]>;
