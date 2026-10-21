@@ -10,6 +10,7 @@ import {
   ReturnDashboardItemInput,
   WARRANTY_DASHBOARD_KEY_PREFIX,
 } from '../../domain/return-dashboard-alerts';
+import { LATE_CHARGE_REGISTRABLE_STATUSES, RETURN_LATE_TOLERANCE_MS } from '../../domain/return-lateness';
 import { RETURN_INCLUDE, toReturnRecord } from './return-persistence.mapper';
 
 @Injectable()
@@ -50,11 +51,46 @@ export class PrismaReturnDashboardAlertPersistence implements ReturnDashboardAle
   }
 
   async listActiveWarrantyItems(limit: number, afterId?: string): Promise<ActiveWarrantyDashboardItem[]> {
+    return this.listActiveItems(`${WARRANTY_DASHBOARD_KEY_PREFIX}:`, limit, afterId);
+  }
+
+  async listLateChargeCandidates(now: Date, limit: number, afterId?: string): Promise<ReturnRecord[]> {
+    const rows = await this.prisma.rentalReturn.findMany({
+      where: {
+        status: { in: [...LATE_CHARGE_REGISTRABLE_STATUSES] },
+        receivedAt: { not: null },
+        lateChargeAmount: null,
+        scheduledAt: { lte: new Date(now.getTime() - RETURN_LATE_TOLERANCE_MS) },
+        ...(afterId ? { id: { gt: afterId } } : {}),
+      },
+      orderBy: { id: 'asc' },
+      take: limit,
+      include: RETURN_INCLUDE,
+    });
+    return rows.map(toReturnRecord);
+  }
+
+  async listImmobilizationCandidates(receivedBefore: Date, limit: number, afterId?: string): Promise<ReturnRecord[]> {
+    const rows = await this.prisma.rentalReturn.findMany({
+      where: {
+        status: { in: ['CON_DANOS', 'CIERRE_FINANCIERO'] },
+        receivedAt: { not: null, lte: receivedBefore },
+        damages: { some: { origin: 'TECHNICAL' } },
+        ...(afterId ? { id: { gt: afterId } } : {}),
+      },
+      orderBy: { id: 'asc' },
+      take: limit,
+      include: RETURN_INCLUDE,
+    });
+    return rows.map(toReturnRecord);
+  }
+
+  async listActiveItems(keyPrefix: string, limit: number, afterId?: string): Promise<ActiveWarrantyDashboardItem[]> {
     const rows = await this.prisma.dashboardItem.findMany({
       where: {
         sourceType: RETURN_DASHBOARD_SOURCE_TYPE,
         dismissedAt: null,
-        sourceEventId: { startsWith: `${WARRANTY_DASHBOARD_KEY_PREFIX}:` },
+        sourceEventId: { startsWith: keyPrefix },
         ...(afterId ? { id: { gt: afterId } } : {}),
       },
       orderBy: { id: 'asc' },

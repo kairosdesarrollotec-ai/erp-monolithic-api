@@ -388,12 +388,13 @@ describe('Evaluar periodo de prueba: Periodo de prueba -> Planilla | Terminado',
     expect(s.outbox.publish).toHaveBeenCalledWith(expect.objectContaining({ eventType: 'PasoAPlanilla.v1' }), s.tm.tx);
   });
 
-  it('evaluación negativa: TERMINADO, sin evento nuevo (la registra Gerencia)', async () => {
+  it('evaluación negativa: TERMINADO y evento RelacionLaboralTerminada.v1 (la registra Gerencia; P4), sin PasoAPlanilla', async () => {
     const s = setup('GERENCIA');
     prep(s, PS.PERIODO_PRUEBA);
     await build(s).execute(cmd(false));
     expect(processTransitions(s)).toEqual(['PERIODO_PRUEBA>TERMINADO']);
-    expect(s.outbox.publish).not.toHaveBeenCalled();
+    expect(s.outbox.publish).toHaveBeenCalledTimes(1);
+    expect(s.outbox.publish).toHaveBeenCalledWith(expect.objectContaining({ eventType: 'RelacionLaboralTerminada.v1' }), s.tm.tx);
   });
 
   it.each(['RRHH', 'ADMINISTRACION'] as const)('prueba negativa: el término lo registra solo Gerencia, %s recibe 403', async (role) => {

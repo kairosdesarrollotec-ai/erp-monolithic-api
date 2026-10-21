@@ -2138,3 +2138,46 @@ model HrArea {
   @@index([organizationId, operatingCompanyId, isActive], map: "hr_areas_scope_active_idx")
   @@map("hr_areas")
 }
+
+/// DEC-EVID-DELETE-002 (Respuestas 2026-10-20 #35, SDD-KAIROS-TRANSVERSAL 15.5): eliminar evidencia exige DOBLE APROBACION
+/// (solicitante y aprobadores = personas distintas). Una solicitud por evidencia a la vez: PENDING -> APPROVED_1 -> EXECUTED
+/// (+ REJECTED, EXPIRED). La segunda aprobacion ejecuta el borrado en la misma transaccion. `evidence_snapshot` conserva la
+/// foto fija del registro (tipo, zona, objeto, quien lo subio) porque el registro original deja de existir al ejecutarse.
+/// `target_kind` = RENTAL (parent_id = rentalId) | RETURN (parent_id = returnId); sin FK a proposito (el borrado de la evidencia
+/// no debe depender de esta tabla ni al reves, y la solicitud es historial de auditoria). La separacion de funciones tambien se
+/// impone en la base con CHECK. Indice unico parcial `uq_evidence_deletion_open_evidence` (solo SQL): una solicitud abierta por evidencia.
+model EvidenceDeletionRequest {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  operatingCompanyId String    @map("operating_company_id")
+  branchId           String    @map("branch_id")
+  targetKind         String    @map("target_kind")
+  parentId           String    @map("parent_id")
+  evidenceId         String    @map("evidence_id")
+  evidenceSnapshot   Json      @map("evidence_snapshot")
+  reason             String
+  /// PENDING | APPROVED_1 | EXECUTED | REJECTED | EXPIRED
+  status             String    @default("PENDING")
+  requestedBy        String    @map("requested_by")
+  requestedAt        DateTime  @default(now()) @map("requested_at")
+  firstApprovedBy    String?   @map("first_approved_by")
+  firstApprovedAt    DateTime? @map("first_approved_at")
+  firstApprovalNote  String?   @map("first_approval_note")
+  secondApprovedBy   String?   @map("second_approved_by")
+  secondApprovedAt   DateTime? @map("second_approved_at")
+  secondApprovalNote String?   @map("second_approval_note")
+  rejectedBy         String?   @map("rejected_by")
+  rejectedAt         DateTime? @map("rejected_at")
+  rejectionReason    String?   @map("rejection_reason")
+  executedAt         DateTime? @map("executed_at")
+  expiredAt          DateTime? @map("expired_at")
+  expiresAt          DateTime  @map("expires_at")
+  version            Int       @default(1)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([organizationId, operatingCompanyId, status, requestedAt(sort: Desc)], map: "idx_evidence_deletion_scope_status")
+  @@index([targetKind, evidenceId], map: "idx_evidence_deletion_target")
+  @@index([status, expiresAt], map: "idx_evidence_deletion_expiry")
+  @@map("evidence_deletion_requests")
+}

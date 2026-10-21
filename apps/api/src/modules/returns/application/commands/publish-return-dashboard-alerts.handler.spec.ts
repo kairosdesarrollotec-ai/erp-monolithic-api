@@ -13,6 +13,9 @@ function build(recipientRoles: WorkerRole[] = ['FINANZAS']) {
     listWarrantyCandidates: jest.fn().mockResolvedValue([]),
     createDashboardItems: jest.fn().mockResolvedValue(0),
     listActiveWarrantyItems: jest.fn().mockResolvedValue([]),
+    listActiveItems: jest.fn().mockResolvedValue([]),
+    listLateChargeCandidates: jest.fn().mockResolvedValue([]),
+    listImmobilizationCandidates: jest.fn().mockResolvedValue([]),
     findReturnsByIds: jest.fn().mockResolvedValue([]),
     dismissItems: jest.fn().mockResolvedValue(0),
   };
@@ -145,6 +148,91 @@ describe('PublishReturnDashboardAlertsHandler (BR-DEV-001 / DEC-DEVREM-002)', ()
       port.findReturnsByIds.mockResolvedValue([buildReturnRecord({ id: 'x', status: 'SIN_DANOS', receivedAt: hoursBeforeNow(30) })]);
       await handler.execute();
       expect(port.dismissItems).toHaveBeenCalledWith(['lost'], FIXED_NOW);
+    });
+  });
+
+  describe('P3: cargo por retraso e inmovilizacion al tablero (Respuestas 2026-10-20 #7-#9)', () => {
+    const late = (over: Record<string, unknown> = {}) =>
+      buildReturnRecord({ id: 'l1', status: 'INSPECCION', scheduledAt: hoursBeforeNow(5), receivedAt: hoursBeforeNow(3), lateChargeAmount: null, ...over });
+    const immo = (over: Record<string, unknown> = {}) =>
+      buildReturnRecord({
+        id: 'm1',
+        status: 'CON_DANOS',
+        receivedAt: hoursBeforeNow(50),
+        vehicleDailyRate: 100,
+        damages: [{ origin: 'TECHNICAL' }] as never,
+        immobilizationCharges: [],
+        ...over,
+      });
+
+    it('LATE_CHARGE: un item por rol destinatario, clave con sufijo de rol, sin monto y sin datos del cliente', async () => {
+      const { port, handler } = build(['FINANZAS', 'GERENCIA']);
+      port.listLateChargeCandidates.mockResolvedValue([late(), late({ id: 'l2', receivedAt: hoursBeforeNow(4.9) })]); // l2: 6 min tarde < tolerancia
+      port.createDashboardItems.mockResolvedValue(2);
+      const result = await handler.execute();
+      expect(port.listLateChargeCandidates).toHaveBeenCalledWith(FIXED_NOW, DASHBOARD_ALERT_PAGE_SIZE, undefined);
+      const items = port.createDashboardItems.mock.calls[0][0] as Array<{ sourceEventId: string; role: string; title: string; detail: string; priority: number }>;
+      expect(items.map((i) => i.sourceEventId)).toEqual(['return-late-charge:l1:FINANZAS', 'return-late-charge:l1:GERENCIA']);
+      expect(items[0].detail).toContain('120 min');
+      expect(items[0].detail).not.toMatch(/S\//);
+      expect(result.created).toBe(2);
+    });
+
+    it('LATE_CHARGE: idempotente (mismas claves en dos ciclos)', async () => {
+      const { port, handler } = build();
+      port.listLateChargeCandidates.mockResolvedValue([late()]);
+      await handler.execute();
+      await handler.execute();
+      expect(port.createDashboardItems.mock.calls[0][0]).toEqual(port.createDashboardItems.mock.calls[1][0]);
+    });
+
+    it('IMMOBILIZATION: pide recibidas hace >= 24 h y publica solo con dano tecnico y dias pendientes', async () => {
+      const { port, handler } = build(['ADMINISTRACION']);
+      port.listImmobilizationCandidates.mockResolvedValue([
+        immo(),
+        immo({ id: 'm2', damages: [{ origin: 'THIRD_PARTY' }] as never }), // sin dano tecnico
+        immo({ id: 'm3', immobilizationCharges: [{ daysCharged: 5 }] as never }), // ya cobrado
+      ]);
+      await handler.execute();
+      expect(port.listImmobilizationCandidates).toHaveBeenCalledWith(hoursBeforeNow(24), DASHBOARD_ALERT_PAGE_SIZE, undefined);
+      const items = port.createDashboardItems.mock.calls[0][0] as Array<{ sourceEventId: string; role: string; priority: number; detail: string }>;
+      expect(items.map((i) => i.sourceEventId)).toEqual(['return-immobilization:m1:ADMINISTRACION']);
+      expect(items[0].priority).toBeGreaterThan(60);
+      expect(items[0].detail).toContain('cobro es manual');
+    });
+
+    it('reconcilia LATE_CHARGE: descarta al registrarse el cargo, al cerrar la devolucion o si el rol pierde el permiso', async () => {
+      const { port, handler } = build(['FINANZAS']);
+      port.listActiveItems.mockImplementation(async (prefix: string) =>
+        prefix === 'return-late-charge:'
+          ? [
+              { ...SCOPE, id: 'keep', sourceId: 'l1', sourceEventId: 'return-late-charge:l1:FINANZAS' },
+              { ...SCOPE, id: 'charged', sourceId: 'l2', sourceEventId: 'return-late-charge:l2:FINANZAS' },
+              { ...SCOPE, id: 'closed', sourceId: 'l3', sourceEventId: 'return-late-charge:l3:FINANZAS' },
+              { ...SCOPE, role: 'GERENCIA' as WorkerRole, id: 'lost', sourceId: 'l1', sourceEventId: 'return-late-charge:l1:GERENCIA' },
+            ]
+          : [],
+      );
+      port.findReturnsByIds.mockResolvedValue([late(), late({ id: 'l2', lateChargeAmount: 40 }), late({ id: 'l3', status: 'CERRADA' })]);
+      port.dismissItems.mockResolvedValue(3);
+      await handler.execute();
+      expect(port.dismissItems).toHaveBeenCalledWith(['charged', 'closed', 'lost'], FIXED_NOW);
+    });
+
+    it('reconcilia IMMOBILIZATION: se descarta cuando los dias pendientes ya fueron cobrados', async () => {
+      const { port, handler } = build(['FINANZAS']);
+      port.listActiveItems.mockImplementation(async (prefix: string) =>
+        prefix === 'return-immobilization:'
+          ? [
+              { ...SCOPE, id: 'keep', sourceId: 'm1', sourceEventId: 'return-immobilization:m1:FINANZAS' },
+              { ...SCOPE, id: 'paid', sourceId: 'm2', sourceEventId: 'return-immobilization:m2:FINANZAS' },
+            ]
+          : [],
+      );
+      port.findReturnsByIds.mockResolvedValue([immo(), immo({ id: 'm2', immobilizationCharges: [{ daysCharged: 5 }] as never })]);
+      port.dismissItems.mockResolvedValue(1);
+      await handler.execute();
+      expect(port.dismissItems).toHaveBeenCalledWith(['paid'], FIXED_NOW);
     });
   });
 });

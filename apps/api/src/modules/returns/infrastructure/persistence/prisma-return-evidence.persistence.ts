@@ -46,8 +46,9 @@ export class PrismaReturnEvidencePersistence {
     return rows.map(toReturnEvidenceRecord);
   }
 
-  async delete(returnId: string, evidenceId: string, scope: ReturnScope): Promise<boolean> {
-    const result = await this.prisma.returnEvidence.deleteMany({
+  async delete(returnId: string, evidenceId: string, scope: ReturnScope, tx?: Prisma.TransactionClient): Promise<boolean> {
+    const client = tx ?? this.prisma;
+    const result = await client.returnEvidence.deleteMany({
       where: { ...evidenceScopeWhere(returnId, scope), id: evidenceId },
     });
     return result.count > 0;

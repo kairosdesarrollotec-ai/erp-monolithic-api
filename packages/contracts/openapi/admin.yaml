@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Administracion API
-  version: 0.5.0
+  version: 0.6.0
   description: >
+    0.6.0 (frente B2, 2026-10-21, ADITIVO): (1) el catalogo de permisos suma el modulo EVIDENCE con REQUEST_DELETION, APPROVE_DELETION
+    (v0: Gerencia y Administracion + PLATFORM_ADMIN) y DELETE_DIRECT (v0: solo PLATFORM_ADMIN; protege el DELETE directo DEPRECADO de
+    evidencia). PermissionModule suma EVIDENCE. (2) Los permisos nuevos del catalogo (NOTIFICATIONS.RECEIVE_RETURN_ALERTS,
+    HR_ADMINISTRATION.MANAGE_AREAS / MANAGE_SALARY, RECRUITMENT.DECIDE_NO_ADVANCE / TERMINATE_PROBATION y los de EVIDENCE) YA NO quedan
+    denegados en organizaciones con matriz guardada: al arrancar el backend los siembra con la regla de la v0 en la version vigente
+    (solo celdas sin fila, nunca pisa lo que el administrador ya fijo; idempotente; sin subir la version).
     0.5.0 (Respuestas de negocio 2026-10-20, frente B, ADITIVO): el catalogo de permisos suma el modulo NOTIFICATIONS con la
     accion RECEIVE_RETURN_ALERTS (destinatarios de las alertas de devolucion del tablero; v0: Finanzas, Administracion y
     Gerencia) y las acciones HR_ADMINISTRATION.MANAGE_AREAS / MANAGE_SALARY y RECRUITMENT.DECIDE_NO_ADVANCE /
@@ -604,7 +610,7 @@ components:
         CANCEL_CUSTOMER_REQUESTED_CHANGE, CANCEL_NO_SHOW, FLAG_SALE,
         RESOLVE_SALE y CHANGE_VEHICLE. Una version ya guardada que no incluya
         una accion nueva la deniega hasta que se guarde la matriz (deny-by-default).
-      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RETURN, FLEET, CUSTOMER, RECRUITMENT, TEMPLATE, HR_ADMINISTRATION, PAYMENT, REPORT, NOTIFICATIONS]
+      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RETURN, FLEET, CUSTOMER, RECRUITMENT, TEMPLATE, HR_ADMINISTRATION, PAYMENT, REPORT, NOTIFICATIONS, EVIDENCE]
     RolePermissionEntry:
       type: object
       required: [roleId, module, action, allowed]

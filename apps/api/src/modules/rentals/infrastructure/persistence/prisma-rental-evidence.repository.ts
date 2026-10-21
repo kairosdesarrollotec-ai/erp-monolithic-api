@@ -82,8 +82,9 @@ export class PrismaRentalEvidenceRepository implements RentalEvidenceRepositoryP
     return { photos, videos };
   }
 
-  async delete(rentalId: string, evidenceId: string, scope: RentalScope): Promise<boolean> {
-    const result = await this.prisma.rentalEvidence.deleteMany({
+  async delete(rentalId: string, evidenceId: string, scope: RentalScope, tx?: Prisma.TransactionClient): Promise<boolean> {
+    const client = tx ?? this.prisma;
+    const result = await client.rentalEvidence.deleteMany({
       where: {
         id: evidenceId,
         rentalId,

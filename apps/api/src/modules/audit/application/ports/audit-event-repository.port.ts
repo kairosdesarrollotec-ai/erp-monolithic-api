@@ -98,6 +98,16 @@ export interface RecordPaymentEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordEvidenceDeletionEventInput {
+  organizationId: string;
+  /** Usuario que ejecuta el paso; null = proceso del sistema (vencimiento). */
+  actorUserId: string | null;
+  requestId: string;
+  /** EVIDENCE_DELETION_REQUESTED | _APPROVED_1 | _APPROVED_2 | _EXECUTED | _REJECTED | _EXPIRED */
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 /**
  * Puerto de escritura de eventos de auditoria (TDD-KAIROS-TRANSVERSAL.md
  * 7.3: audit_events es una tabla transversal, reutilizada por los 6
@@ -202,6 +212,15 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordPaymentEvent(
     input: RecordPaymentEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * DEC-EVID-DELETE-002 - cada paso de la doble aprobacion para eliminar evidencia (entityType 'evidence_deletion_request').
+   * `tx` opcional para atomicidad con la mutacion.
+   */
+  abstract recordEvidenceDeletionEvent(
+    input: RecordEvidenceDeletionEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

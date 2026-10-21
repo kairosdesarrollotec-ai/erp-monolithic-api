@@ -16,6 +16,7 @@ import { FormalizeContractHandler } from './application/commands/formalize-contr
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
 import { RequestEvidenceUploadSessionHandler } from './application/commands/request-evidence-upload-session.handler';
 import { RecordEvidenceHandler } from './application/commands/record-evidence.handler';
+import { RentalEvidenceRemovalService } from './application/services/rental-evidence-removal.service';
 import { DeleteEvidenceHandler } from './application/commands/delete-evidence.handler';
 import { ListRentalEvidenceHandler } from './application/queries/list-rental-evidence.handler';
 import { RequestExtensionHandler } from './application/commands/request-extension.handler';
@@ -69,6 +70,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     RequestEvidenceUploadSessionHandler,
     RecordEvidenceHandler,
     DeleteEvidenceHandler,
+    RentalEvidenceRemovalService,
     ListRentalEvidenceHandler,
     RequestExtensionHandler,
     AuthorizeExtensionHandler,
@@ -91,6 +93,6 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     { provide: RentalDocumentRepositoryPort, useClass: PrismaRentalDocumentRepository },
     { provide: RentalDocumentStoragePort, useClass: GcsRentalDocumentService },
   ],
-  exports: [RentalRepositoryPort, RentalCreationGuard],
+  exports: [RentalRepositoryPort, RentalCreationGuard, RentalEvidenceRemovalService],
 })
 export class RentalsModule {}

@@ -7,6 +7,7 @@ import {
   CandidateAlreadyEmployeeError,
   DeductionsBeforeMonthEndError,
   DuplicateEmployeeDocumentError,
+  EmployeeSalaryGerenciaOnlyError,
   EmployeeNotFoundError,
   EmployeeStatusTransitionNotAllowedError,
   EmployeeTerminatedError,
@@ -229,11 +230,39 @@ function fieldTrip(over: Partial<FieldTripRequest> = {}) {
 }
 
 describe('CreateEmployeeHandler', () => {
-  const cmd = () =>
+  const cmd = (salary: number | null = null) =>
     new CreateEmployeeCommand(
       UID, COMPANY_ID, BRANCH_ID, 'DNI', ' 45678912 ', ' Carlos Perez ', 'OPERACIONES', 'Operaciones', 'Auxiliar',
-      new Date('2026-10-01T00:00:00Z'), null, null, 1500,
+      new Date('2026-10-01T00:00:00Z'), null, null, salary,
     );
+
+  it('P2: quien no es Gerencia y envia baseSalary -> 403 EMPLOYEE_SALARY_GERENCIA_ONLY sin crear nada', async () => {
+    const s = setup('ADMINISTRACION');
+    s.employees.findByCompanyAndDocument.mockResolvedValue(null);
+    const handler = new CreateEmployeeHandler(s.access, s.employees, s.tm, s.audit);
+    const err = await handler.execute(cmd(1500)).catch((e) => e);
+    expect(err).toBeInstanceOf(EmployeeSalaryGerenciaOnlyError);
+    expect(err.code).toBe('EMPLOYEE_SALARY_GERENCIA_ONLY');
+    expect(s.employees.create).not.toHaveBeenCalled();
+  });
+
+  it('P2: quien no es Gerencia crea la ficha SIN sueldo (queda null = pendiente)', async () => {
+    const s = setup('ADMINISTRACION');
+    s.employees.findByCompanyAndDocument.mockResolvedValue(null);
+    s.employees.create.mockResolvedValue(buildEmployee());
+    const handler = new CreateEmployeeHandler(s.access, s.employees, s.tm, s.audit);
+    await handler.execute(cmd(null));
+    expect(s.employees.create).toHaveBeenCalledWith(expect.objectContaining({ baseSalary: null }), s.tm.tx);
+  });
+
+  it('P2: Gerencia si fija el sueldo al crear', async () => {
+    const s = setup('GERENCIA');
+    s.employees.findByCompanyAndDocument.mockResolvedValue(null);
+    s.employees.create.mockResolvedValue(buildEmployee());
+    const handler = new CreateEmployeeHandler(s.access, s.employees, s.tm, s.audit);
+    await handler.execute(cmd(1500));
+    expect(s.employees.create).toHaveBeenCalledWith(expect.objectContaining({ baseSalary: 1500 }), s.tm.tx);
+  });
 
   it('un rol de solo lectura (Auditoria) no puede registrar colaboradores', async () => {
     const s = setup('AUDITORIA');

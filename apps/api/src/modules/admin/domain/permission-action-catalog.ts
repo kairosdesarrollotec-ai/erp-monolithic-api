@@ -5,7 +5,7 @@
  * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
-export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION', 'PAYMENT', 'REPORT', 'NOTIFICATIONS'] as const;
+export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION', 'PAYMENT', 'REPORT', 'NOTIFICATIONS', 'EVIDENCE'] as const;
 
 /** Modulos cuyas acciones administra la matriz ADM-02 (unica definicion; antes estaba repetida en ~6 sitios). */
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
@@ -118,7 +118,11 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'REPORT', action: 'READ_FINANCIAL', label: 'Reportes: ver KPIs financieros' },
   { module: 'REPORT', action: 'EXPORT', label: 'Reportes: exportar datos (CSV)' },
   // NOTIFICATIONS (1 accion — Respuestas 2026-10-20 #8: alertas de devolucion a quien tenga permiso de notificacion, no solo Finanzas)
-  { module: 'NOTIFICATIONS', action: 'RECEIVE_RETURN_ALERTS', label: 'Notificaciones: recibir alertas de devolución en el tablero (garantía 24 h)' },
+  { module: 'NOTIFICATIONS', action: 'RECEIVE_RETURN_ALERTS', label: 'Notificaciones: recibir alertas de devolución en el tablero (garantía 24 h, cargo por retraso, inmovilización)' },
+  // EVIDENCE (3 acciones — DEC-EVID-DELETE-002, Respuestas 2026-10-20 #35: doble aprobación para eliminar evidencia, SDD §15.5)
+  { module: 'EVIDENCE', action: 'REQUEST_DELETION', label: 'Evidencia: solicitar eliminación (motivo obligatorio)' },
+  { module: 'EVIDENCE', action: 'APPROVE_DELETION', label: 'Evidencia: aprobar o rechazar solicitudes de eliminación' },
+  { module: 'EVIDENCE', action: 'DELETE_DIRECT', label: 'Evidencia: eliminar directo sin doble aprobación (DEPRECADO, solo administrador de plataforma)' },
 ];
 
 /**

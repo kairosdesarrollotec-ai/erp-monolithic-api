@@ -14,6 +14,7 @@ import {
   RecordRecruitmentEventInput,
   RecordHrAdministrationEventInput,
   RecordPaymentEventInput,
+  RecordEvidenceDeletionEventInput,
 } from '../../application/ports/audit-event-repository.port';
 import {
   AuditEventQueryPort,
@@ -163,6 +164,20 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         actorUserId: input.actorUserId,
         entityType: input.entityType,
         entityId: input.entityId,
+        action: input.action,
+        changes: input.changes as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  async recordEvidenceDeletionEvent(input: RecordEvidenceDeletionEventInput, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.auditEvent.create({
+      data: {
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        entityType: 'evidence_deletion_request',
+        entityId: input.requestId,
         action: input.action,
         changes: input.changes as unknown as Prisma.InputJsonValue,
       },

@@ -91,6 +91,15 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
     }
   });
 
+  it('EVIDENCE: solicitar/aprobar eliminacion = Gerencia y Administracion (+ PLATFORM_ADMIN); el directo solo PLATFORM_ADMIN', () => {
+    for (const action of ['REQUEST_DELETION', 'APPROVE_DELETION']) {
+      for (const role of ['GERENCIA', 'ADMINISTRACION', 'PLATFORM_ADMIN'] as const) expect(allowed(role, 'EVIDENCE', action)).toBe(true);
+      for (const role of ['RRHH', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE'] as const) expect(allowed(role, 'EVIDENCE', action)).toBe(false);
+    }
+    expect(allowed('PLATFORM_ADMIN', 'EVIDENCE', 'DELETE_DIRECT')).toBe(true);
+    for (const role of ['GERENCIA', 'ADMINISTRACION', 'CAMPO'] as const) expect(allowed(role, 'EVIDENCE', 'DELETE_DIRECT')).toBe(false);
+  });
+
   it('UPLOAD_EVIDENCE (reutilizada para borrar evidencia) sigue en el catalogo de Alquiler y Devolucion', () => {
     expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RENTAL' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);
     expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RETURN' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);

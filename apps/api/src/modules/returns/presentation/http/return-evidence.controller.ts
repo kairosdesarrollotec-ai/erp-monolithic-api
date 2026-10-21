@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Header,
   Get,
   HttpCode,
   Param,
@@ -96,6 +97,8 @@ export class ReturnEvidenceController {
   }
 
   @Delete(':evidenceId')
+  // DEPRECADO (DEC-EVID-DELETE-002): usar POST /evidence/deletion-requests (doble aprobacion). Exige EVIDENCE.DELETE_DIRECT.
+  @Header('Deprecation', 'true')
   @HttpCode(204)
   async remove(
     @Req() req: AuthenticatedRequest,

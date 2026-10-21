@@ -88,6 +88,7 @@ export function buildDeps(options: { role?: WorkerRole } = {}): PaymentTestDeps 
     recordHrAdministrationEvent: jest.fn(),
     recordPaymentEvent: jest.fn().mockResolvedValue(undefined),
     recordFleetEvent: jest.fn().mockResolvedValue(undefined),
+    recordEvidenceDeletionEvent: jest.fn().mockResolvedValue(undefined),
   };
 
   return {

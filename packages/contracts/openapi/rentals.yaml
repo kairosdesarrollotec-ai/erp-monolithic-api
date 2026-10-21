@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.12.0
+  version: 1.13.0
   description: >
+    1.13.0 - DEC-EVID-DELETE-002 (Respuestas 2026-10-20 #35, SDD 15.5): eliminar evidencia ahora exige DOBLE APROBACION (contrato nuevo
+    evidence.yaml: POST /evidence/deletion-requests, approve, reject). `DELETE /rentals/{id}/evidence/{evidenceId}` queda DEPRECADO
+    (responde con el header `Deprecation: true`) y CAMBIA su permiso: ya no basta RENTAL.UPLOAD_EVIDENCE, exige el permiso nuevo
+    EVIDENCE.DELETE_DIRECT (v0: solo PLATFORM_ADMIN) -> 403 ROLE_NOT_ALLOWED para los demas roles (COMPORTAMIENTO CAMBIADO). Sin
+    otros cambios de esquema.
     1.12.0 — Respuestas de negocio de Russbel (2026-10-20). Aditivo salvo lo marcado. (a) DEC-ALQ-DRIVERRATE-002: la tarifa diaria del
     conductor de la empresa (digitada a mano por alquiler) es OBLIGATORIA: POST complete-delivery responde 422 COMPANY_DRIVER_RATE_REQUIRED
     si el contrato es «con conductor de la empresa» y no hay tarifa manual. set-company-driver-daily-rate solo se acepta mientras el
@@ -682,11 +687,13 @@ paths:
   /rentals/{id}/evidence/{evidenceId}:
     delete:
       operationId: deleteRentalEvidence
+      deprecated: true
       summary: Elimina una evidencia (foto/video) de entrega registrada por error
       description: >
-        Solo mientras el alquiler esté en PENDING_DELIVERY; una vez completada la
-        entrega la evidencia no se puede alterar. Misma acción de matriz que subirla
-        (RENTAL.UPLOAD_EVIDENCE). Se elimina el registro; el archivo del bucket no se toca.
+        DEPRECADO (DEC-EVID-DELETE-002): usar POST /evidence/deletion-requests (doble aprobación, evidence.yaml). Este atajo exige
+        EVIDENCE.DELETE_DIRECT (v0: solo PLATFORM_ADMIN) y responde con el header `Deprecation: true`. Solo mientras el alquiler
+        esté en PENDING_DELIVERY; una vez completada la entrega la evidencia no se puede alterar. Se elimina el registro; el archivo
+        del bucket no se toca.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }

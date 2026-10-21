@@ -110,6 +110,36 @@ export class EvaluateProbationHandler {
           },
           tx,
         );
+      } else {
+        // P4 (Respuestas 2026-10-20 #13): el termino tras prueba negativa lo registra Gerencia General y emite el evento transversal
+        // RelacionLaboralTerminada.v1 (ADR-KAI-006) en la misma transaccion. SDD/TDD-REC no definen su payload: se usa el contrato
+        // del evento que ya emite Administracion de Personal (reason, terminatedAt, actorUserId, alcance) + candidateId/vacancyId;
+        // `employeeId`/`terminationId` van en null (la ficha de colaborador la gestiona HR-Administration, no este modulo).
+        await this.outboxRepository.publish(
+          {
+            aggregateType: 'EmployeeOnboarding',
+            aggregateId: updated.id,
+            eventType: 'RelacionLaboralTerminada.v1',
+            payload: {
+              source: 'PROBATION_NEGATIVE',
+              candidateId: updated.candidateId,
+              vacancyId: candidate.vacancyId,
+              employeeId: null,
+              terminationId: null,
+              fullName: candidate.fullName,
+              documentNumber: candidate.documentNumber,
+              reason: 'PRUEBA_NEGATIVA',
+              qualitativeEvaluation: updated.probationEvaluation,
+              noticeDays: 0,
+              terminatedAt: now.toISOString(),
+              actorUserId: command.firebaseUid,
+              organizationId: context.organizationId,
+              operatingCompanyId: scope.operatingCompanyId,
+              branchId: scope.branchId,
+            },
+          },
+          tx,
+        );
       }
 
       await this.auditRepository.recordRecruitmentEvent(

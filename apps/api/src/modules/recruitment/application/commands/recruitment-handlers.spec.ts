@@ -287,12 +287,34 @@ describe('EvaluateProbationHandler', () => {
     );
   });
 
-  it('no aprobado: no publica PasoAPlanilla', async () => {
+  it('no aprobado (Gerencia General): NO publica PasoAPlanilla y SI publica RelacionLaboralTerminada.v1 (P4)', async () => {
     const s = setup('GERENCIA');
     s.candidates.findScopedById.mockResolvedValue(candidate({ processState: CandidateProcessState.PERIODO_PRUEBA }));
     s.onb.findByCandidateId.mockResolvedValue(onboarding());
-    s.onb.evaluateProbation.mockResolvedValue(onboarding({ probationPassed: false }));
+    s.onb.evaluateProbation.mockResolvedValue(onboarding({ probationPassed: false, probationEvaluation: 'No cumple' }));
     await build(s).execute(cmd(false));
+    expect(s.outbox.publish).toHaveBeenCalledTimes(1);
+    expect(s.outbox.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        aggregateType: 'EmployeeOnboarding',
+        eventType: 'RelacionLaboralTerminada.v1',
+        payload: expect.objectContaining({
+          source: 'PROBATION_NEGATIVE',
+          candidateId: CAND_ID,
+          employeeId: null,
+          reason: 'PRUEBA_NEGATIVA',
+          actorUserId: UID,
+          qualitativeEvaluation: 'No cumple',
+        }),
+      }),
+      s.tm.tx,
+    );
+    expect(s.outbox.publish).not.toHaveBeenCalledWith(expect.objectContaining({ eventType: 'PasoAPlanilla.v1' }), expect.anything());
+  });
+
+  it('no aprobado sin TERMINATE_PROBATION (p. ej. RRHH): 403 y no publica nada', async () => {
+    const s = setup('RRHH');
+    await expect(build(s).execute(cmd(false))).rejects.toBeDefined();
     expect(s.outbox.publish).not.toHaveBeenCalled();
   });
 });

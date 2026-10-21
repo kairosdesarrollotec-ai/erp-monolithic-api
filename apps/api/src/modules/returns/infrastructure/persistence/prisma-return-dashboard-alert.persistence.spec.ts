@@ -68,4 +68,40 @@ describe('PrismaReturnDashboardAlertPersistence (DEC-DEVREM-002)', () => {
     expect(prisma.dashboardItem.updateMany).toHaveBeenCalledWith({ where: { id: { in: ['a', 'b'] }, dismissedAt: null }, data: { dismissedAt: at } });
     expect(await persistence.dismissItems([], at)).toBe(0);
   });
+
+  it('P3 listLateChargeCandidates: abiertas y recibidas, sin cargo registrado, con hora pactada anterior a ahora - 30 min', async () => {
+    const { prisma, persistence } = build();
+    const now = new Date('2026-10-21T15:00:00Z');
+    await persistence.listLateChargeCandidates(now, 25, 'r-1');
+    const arg = prisma.rentalReturn.findMany.mock.calls[0][0];
+    expect(arg.where).toEqual({
+      status: { in: ['RECEPCION_PROVISIONAL', 'INSPECCION', 'SIN_DANOS', 'CON_DANOS', 'CIERRE_FINANCIERO'] },
+      receivedAt: { not: null },
+      lateChargeAmount: null,
+      scheduledAt: { lte: new Date('2026-10-21T14:30:00Z') },
+      id: { gt: 'r-1' },
+    });
+    expect(arg.take).toBe(25);
+  });
+
+  it('P3 listImmobilizationCandidates: CON_DANOS / CIERRE_FINANCIERO con dano tecnico recibidas antes del limite', async () => {
+    const { prisma, persistence } = build();
+    const before = new Date('2026-10-20T15:00:00Z');
+    await persistence.listImmobilizationCandidates(before, 10);
+    expect(prisma.rentalReturn.findMany.mock.calls[0][0].where).toEqual({
+      status: { in: ['CON_DANOS', 'CIERRE_FINANCIERO'] },
+      receivedAt: { not: null, lte: before },
+      damages: { some: { origin: 'TECHNICAL' } },
+    });
+  });
+
+  it('P3 listActiveItems: filtra por el prefijo de la familia', async () => {
+    const { prisma, persistence } = build();
+    await persistence.listActiveItems('return-late-charge:', 10);
+    expect(prisma.dashboardItem.findMany.mock.calls[0][0].where).toEqual({
+      sourceType: 'RETURN',
+      dismissedAt: null,
+      sourceEventId: { startsWith: 'return-late-charge:' },
+    });
+  });
 });

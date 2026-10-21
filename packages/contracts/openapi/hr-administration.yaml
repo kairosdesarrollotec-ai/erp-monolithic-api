@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.8.0
+  version: 0.9.0
   description: >
+    0.9.0 (frente B2, 2026-10-21): POST /employees: `baseSalary` solo lo fija Gerencia (HR_ADMINISTRATION.MANAGE_SALARY), igual que en
+    PATCH. Otro rol que envie un `baseSalary` distinto de null recibe 403 EMPLOYEE_SALARY_GERENCIA_ONLY y NO se crea la ficha
+    (COMPORTAMIENTO CAMBIADO). Sin sueldo (omitido o null) la ficha se crea normalmente con `baseSalary: null` = pendiente de que
+    Gerencia lo complete con PATCH (el campo ya era nulable).
+
     0.8.0 — Respuestas de negocio 2026-10-20 (frente B, ADITIVO salvo lo indicado): (1) Catálogo de áreas = 7 del organigrama +
     Gerencia General / Subgerencia (GERENCIA_GENERAL) + Gestión y Procesos (GESTION_Y_PROCESOS); «RRHH» / «Recursos Humanos» se
     mapean a TALENTO_HUMANO (areaCode, areaName y filtros). Nuevos POST /hr-areas (alta; 409 HR_AREA_ALREADY_EXISTS),
@@ -127,7 +132,7 @@ paths:
               schema: { $ref: '#/components/schemas/EmployeeResponse' }
         '400': { description: Datos inválidos }
         '401': { description: Token ausente o inválido }
-        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES o contexto no autorizado }
+        '403': { description: 'Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES o contexto no autorizado; o baseSalary enviado sin permiso HR_ADMINISTRATION.MANAGE_SALARY (EMPLOYEE_SALARY_GERENCIA_ONLY)' }
         '409': { description: Documento ya registrado para la empresa o Idempotency-Key en conflicto }
     get:
       operationId: listEmployees

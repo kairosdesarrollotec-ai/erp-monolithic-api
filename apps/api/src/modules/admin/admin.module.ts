@@ -33,6 +33,7 @@ import { NotificationTemplatesModule } from '../notification-templates/notificat
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { AdminMatrixAuthorizationService } from './application/services/admin-matrix-authorization.service';
 import { EmailNotificationPort } from './application/ports/email-notification.port';
+import { MatrixCatalogSyncService } from './infrastructure/persistence/matrix-catalog-sync.service';
 import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter';
 
 /**
@@ -67,6 +68,7 @@ import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter'
     AdminMatrixAuthorizationService,
     AdministratorGuardService,
     MatrixScopeService,
+    MatrixCatalogSyncService,
     { provide: RoleRepositoryPort, useClass: PrismaRoleRepository },
     { provide: AdminUserRepositoryPort, useClass: PrismaAdminUserRepository },
     { provide: IdentityLookupPort, useClass: FirebaseIdentityLookupAdapter },
