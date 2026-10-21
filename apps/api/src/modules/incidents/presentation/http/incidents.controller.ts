@@ -164,7 +164,7 @@ export class IncidentsController {
     @Headers('if-match') ifMatch: string,
   ): Promise<IncidentDetailResponse> {
     const updated = await this.closeIncident.execute(
-      new CloseIncidentCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch), dto.resolutionSummary),
+      new CloseIncidentCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch), dto.resolutionSummary, dto.decision),
     );
     return toIncidentDetailResponse(updated);
   }
@@ -179,7 +179,7 @@ export class IncidentsController {
     @Headers('if-match') ifMatch: string,
   ): Promise<IncidentDetailResponse> {
     const updated = await this.referIncidentToLegal.execute(
-      new ReferIncidentToLegalCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch), dto.reason),
+      new ReferIncidentToLegalCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, parseVersionIfMatch(ifMatch), dto.reason, dto.decision),
     );
     return toIncidentDetailResponse(updated);
   }

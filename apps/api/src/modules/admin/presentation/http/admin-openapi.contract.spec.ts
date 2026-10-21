@@ -18,6 +18,7 @@ import { RenameRoleDto } from './dto/rename-role.dto';
 import { DeactivateRoleDto } from './dto/deactivate-role.dto';
 import { NOTIFICATION_CHANNELS } from '../../../notification-templates/domain/notification-variable-catalog';
 
+import { PERMISSION_ACTION_CATALOG, PERMISSION_MODULES } from '../../domain/permission-action-catalog';
 import * as yaml from 'js-yaml';
 
 /**
@@ -147,7 +148,26 @@ describe('Contrato OpenAPI admin.yaml vs backend', () => {
 
   it('enum PermissionModule coincide entre admin.yaml y el DTO de permisos', () => {
     const specModules = [...spec.components.schemas.PermissionModule.enum].sort();
-    // Los valores del DTO se obtienen del @IsIn() - los mismos que el spec debe declarar.
-    expect(specModules).toEqual(['ADMIN', 'HR_ADMINISTRATION', 'INCIDENT', 'INQUIRY', 'RECRUITMENT', 'RENTAL', 'RESERVATION']);
+    // Los valores del DTO se obtienen del @IsIn(PERMISSION_MODULES) - los mismos que el spec debe declarar.
+    expect(specModules).toEqual([...PERMISSION_MODULES].sort());
+  });
+
+  it('todo modulo del catalogo de acciones esta declarado en PermissionModule', () => {
+    const specModules = new Set<string>(spec.components.schemas.PermissionModule.enum);
+    for (const descriptor of PERMISSION_ACTION_CATALOG) expect(specModules.has(descriptor.module)).toBe(true);
+  });
+
+  it('el catalogo incluye las acciones nuevas de Reserva (FLAG_SALE, RESOLVE_SALE, CHANGE_VEHICLE) y conserva UPLOAD_EVIDENCE', () => {
+    const keys = PERMISSION_ACTION_CATALOG.map((d) => `${d.module}.${d.action}`);
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        'RESERVATION.FLAG_SALE',
+        'RESERVATION.RESOLVE_SALE',
+        'RESERVATION.CHANGE_VEHICLE',
+        'RENTAL.UPLOAD_EVIDENCE',
+        'RETURN.UPLOAD_EVIDENCE',
+      ]),
+    );
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });

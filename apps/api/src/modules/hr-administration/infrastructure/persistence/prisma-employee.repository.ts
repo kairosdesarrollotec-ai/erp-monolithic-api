@@ -88,6 +88,11 @@ export class PrismaEmployeeRepository implements EmployeeRepositoryPort {
     return client.employee.findUniqueOrThrow({ where: { id } });
   }
 
+  async setFirebaseUid(id: string, firebaseUid: string | null, tx?: Prisma.TransactionClient): Promise<Employee> {
+    const client = tx ?? this.prisma;
+    return client.employee.update({ where: { id }, data: { firebaseUid } });
+  }
+
   async findMany(
     filters: ListEmployeesFilters,
     tx?: Prisma.TransactionClient,

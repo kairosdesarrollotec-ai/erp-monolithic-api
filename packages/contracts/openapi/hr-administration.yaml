@@ -1,8 +1,17 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.4.0
+  version: 0.5.0
   description: >
+    0.5.0 — DEC-ADP-LINK-EMAIL-002: PATCH /employees/{id} con un correo distinto
+    en una ficha YA vinculada la re-vincula a la cuenta del correo nuevo (audita
+    EMPLOYEE_ACCOUNT_RELINKED); si no existe cuenta con ese correo la ficha queda
+    sin vincular (EMPLOYEE_ACCOUNT_UNLINKED) hasta que exista y se use
+    POST /employees/{id}/link-account; 409 EMPLOYEE_ACCOUNT_ALREADY_LINKED si la
+    cuenta del correo nuevo ya pertenece a otro colaborador (no se aplica la
+    edición). Sin cambios de esquema. Foto de asistencia: solo PRESENTE y
+    TARDANZA (permisos y faltas no la llevan).
+
     0.4.0 — DEC-ADP-ATT-EVIDENCE-002: la evidencia de asistencia es OBLIGATORIA
     en marcaciones de presencia (PRESENTE/TARDANZA) de registros nuevos:
     POST /employees/{id}/attendance responde 422 ATTENDANCE_EVIDENCE_REQUIRED
@@ -135,7 +144,7 @@ paths:
         '404': { description: Colaborador no encontrado }
     patch:
       operationId: updateEmployee
-      summary: Actualizar datos laborales del colaborador (área, puesto, salario, sede)
+      summary: Actualizar datos laborales del colaborador (área, puesto, salario, sede, correo). Si cambia el correo de una ficha vinculada, se re-vincula a la cuenta del correo nuevo (o queda sin vincular si no existe)
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -154,7 +163,7 @@ paths:
         '401': { description: Token ausente o inválido }
         '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EMPLOYEES }
         '404': { description: Colaborador no encontrado }
-        '409': { description: El colaborador ya está terminado (EMPLOYEE_TERMINATED) }
+        '409': { description: El colaborador ya está terminado (EMPLOYEE_TERMINATED) o el correo nuevo pertenece a una cuenta ya vinculada a otro colaborador (EMPLOYEE_ACCOUNT_ALREADY_LINKED) }
         '422': { description: Cambio de estado no permitido por edición - TERMINADO solo se registra con /terminate (EMPLOYEE_STATUS_TRANSITION_NOT_ALLOWED) }
 
   /employees/{id}/attendance:

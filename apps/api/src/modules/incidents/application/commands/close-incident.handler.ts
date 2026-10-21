@@ -27,6 +27,8 @@ export class CloseIncidentHandler {
       kind: 'CLOSED',
       description: resolutionSummary,
       nextStatus: 'CERRADA',
+      decision: command.decision,
+      validateDecision: true,
       resolutionSummary,
       auditAction: 'INCIDENT_CLOSED',
       auditChanges: { resolutionSummary },

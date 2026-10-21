@@ -8,6 +8,7 @@ import { ValidateDocumentsHandler } from './application/commands/validate-docume
 import { RegisterAlcoholTestHandler } from './application/commands/register-alcohol-test.handler';
 import { EvaluateNotaryHandler } from './application/commands/evaluate-notary.handler';
 import { RegisterAuthorizedDriverHandler } from './application/commands/register-authorized-driver.handler';
+import { RegisterCompanionHandler } from './application/commands/register-companion.handler';
 import { ApproveNotaryExceptionHandler } from './application/commands/approve-notary-exception.handler';
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
@@ -59,6 +60,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     EvaluateNotaryHandler,
     ApproveNotaryExceptionHandler,
     RegisterAuthorizedDriverHandler,
+    RegisterCompanionHandler,
     FormalizeContractHandler,
     CompleteDeliveryHandler,
     RequestEvidenceUploadSessionHandler,

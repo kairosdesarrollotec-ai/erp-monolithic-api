@@ -13,6 +13,17 @@ export type IncidentType = (typeof INCIDENT_TYPES)[number];
  */
 export const MANAGEMENT_DECISION_INCIDENT_TYPES: readonly IncidentType[] = ['UNAUTHORIZED_DRIVER'];
 
+/**
+ * DEC-ALQ-UNAUTH-DRIVER-003 (pregunta abierta 2): resultado estructurado de la decision de Gerencia. Solo se REGISTRA
+ * (historial, auditoria y evento IncidentClosed/IncidentReferredToLegal): no ejecuta nada; Finanzas/Legal actuan despues.
+ */
+export interface ManagementDecisionOutcome {
+  /** true = la garantia del alquiler se retiene (se pierde, segun la Hoja de Politicas). */
+  retainGuarantee: boolean;
+  /** true = el contrato se resuelve. */
+  terminateContract: boolean;
+}
+
 /** Severidades admitidas por tipo (solo los tipos con restriccion). UNAUTHORIZED_DRIVER es siempre GRAVE. */
 export const INCIDENT_SEVERITIES_BY_TYPE: Readonly<Partial<Record<IncidentType, readonly IncidentSeverity[]>>> = {
   UNAUTHORIZED_DRIVER: ['GRAVE'],

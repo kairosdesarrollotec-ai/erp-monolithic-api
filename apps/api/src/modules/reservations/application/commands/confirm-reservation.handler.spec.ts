@@ -113,6 +113,18 @@ describe('ConfirmReservationHandler', () => {
    * por TransactionManagerPort.run, con aislamiento Serializable
    * (seccion 10.1 del TDD).
    */
+  it('rechaza con RESERVATION_EXCEEDS_GUARANTEE si el monto supera la garantía del vehículo', async () => {
+    const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+    reservations.findVehicleById.mockResolvedValue({ id: 'veh-1', operatingCompanyId: 'company-1', depositMinimum: 250 });
+    const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+    await expect(
+      handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
+    ).rejects.toMatchObject({ code: 'RESERVATION_EXCEEDS_GUARANTEE', httpStatus: 422 });
+    expect(reservations.confirm).not.toHaveBeenCalled();
+  });
+
   it('abre la transaccion con aislamiento Serializable', async () => {
     const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
     const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);

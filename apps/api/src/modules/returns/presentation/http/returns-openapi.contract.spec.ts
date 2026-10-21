@@ -144,13 +144,13 @@ function controllerRoutes() {
 describe('Contrato OpenAPI returns.yaml vs backend', () => {
   const routes = controllerRoutes();
 
-  it('cada ruta del controller existe en OpenAPI y viceversa (20 operaciones)', () => {
+  it('cada ruta del controller existe en OpenAPI y viceversa (21 operaciones)', () => {
     const fromController = routes.map((r) => `${r.method} ${r.openApiPath}`).sort();
     const fromSpec = Object.entries(spec.paths)
       .flatMap(([p, ops]: [string, any]) => Object.keys(ops).map((m) => `${m} ${p}`))
       .sort();
     expect(fromController).toEqual(fromSpec);
-    expect(fromSpec).toHaveLength(20);
+    expect(fromSpec).toHaveLength(21);
   });
 
   it('el código de exito declarado en OpenAPI es el que devuelve NestJS', () => {
@@ -169,7 +169,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
 
   it('todo comando POST (/commands/) declara If-Match obligatorio y respuestas 428 + 412', () => {
     const commandRoutes = routes.filter((r) => r.method === 'post' && r.openApiPath.includes('/commands/'));
-    expect(commandRoutes).toHaveLength(8);
+    expect(commandRoutes).toHaveLength(9);
     for (const route of commandRoutes) {
       const op: Operation = spec.paths[route.openApiPath][route.method];
       const headerParams = (op.parameters ?? []).map(deref).filter((p: any) => p.in === 'header');
@@ -228,6 +228,16 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
       expect(JSON.stringify(op.responses['422'])).toContain('INCIDENT_STILL_OPEN');
       expect(JSON.stringify(op.responses['409'])).not.toContain('INCIDENT_STILL_OPEN');
     }
+  });
+
+  it('1.7.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
+    expect(spec.info.version).toBe('1.7.0');
+    const alcohol: Operation = spec.paths['/returns/{id}/commands/register-alcohol-test'].post;
+    expect(JSON.stringify(alcohol.responses['422'])).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
+    const op: Operation = spec.paths['/returns/{id}/commands/register-late-charge'].post;
+    expect(Object.keys(op.responses)).toEqual(expect.arrayContaining(['200', '403', '404', '409', '412', '422', '428']));
+    const route = routes.find((r) => r.openApiPath === '/returns/{id}/commands/register-late-charge');
+    expect(route).toMatchObject({ method: 'post', httpCode: 200, idempotent: true });
   });
 
   it('ALCOHOL_TEST_DISAPPROVAL ya no existe en el contrato (el alcolímetro desfavorable responde 200)', () => {
@@ -334,6 +344,26 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expectMapperMatchesSchema('ReturnResponse', response);
     expectMapperMatchesSchema('ReturnDamageResponse', response.damages[0]);
     expectMapperMatchesSchema('ImmobilizationChargeResponse', response.immobilizationCharges[0]);
+  });
+
+  it('ReturnResponse con cargo por retraso manual: sub-objeto dentro del contrato (null si no hay)', () => {
+    expect(toReturnResponse(buildReturnRecord()).manualLateCharge).toBeNull();
+    const response = toReturnResponse(
+      buildReturnRecord({
+        lateChargeAmount: 45.5,
+        lateChargeNotes: 'sin aviso',
+        lateChargeRegisteredById: 'uid-7',
+        lateChargeRegisteredAt: FIXED_NOW,
+      }),
+    );
+    expectMapperMatchesSchema('ReturnResponse', response);
+    expectMapperMatchesSchema('ManualLateChargeResponse', response.manualLateCharge as object);
+    expect(response.manualLateCharge).toEqual({
+      amount: 45.5,
+      notes: 'sin aviso',
+      registeredById: 'uid-7',
+      registeredAt: FIXED_NOW.toISOString(),
+    });
   });
 
   it('ReturnResponse con escalada y documento de responsabilidad: sub-objetos dentro del contrato y sin signatureData', () => {
@@ -522,7 +552,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expectMapperMatchesSchema('ReturnAlertItem', alert);
   });
 
-  it('contrato 1.6.0', () => {
-    expect(spec.info.version).toBe('1.6.0');
+  it('contrato 1.7.0', () => {
+    expect(spec.info.version).toBe('1.7.0');
   });
 });

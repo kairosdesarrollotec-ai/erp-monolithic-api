@@ -68,6 +68,8 @@ export abstract class EmployeeRepositoryPort {
   abstract findActiveByEmail(companyId: string, email: string, tx?: Prisma.TransactionClient): Promise<Employee[]>;
   /** Vincula la ficha a la cuenta solo si aún no tenía una (condicional); devuelve la ficha vigente. */
   abstract linkFirebaseUid(id: string, firebaseUid: string, tx?: Prisma.TransactionClient): Promise<Employee>;
+  /** Reasigna (o limpia con null) la cuenta vinculada de la ficha sin condición previa; solo para re-vinculación por cambio de correo. */
+  abstract setFirebaseUid(id: string, firebaseUid: string | null, tx?: Prisma.TransactionClient): Promise<Employee>;
   abstract findMany(
     filters: ListEmployeesFilters,
     tx?: Prisma.TransactionClient,

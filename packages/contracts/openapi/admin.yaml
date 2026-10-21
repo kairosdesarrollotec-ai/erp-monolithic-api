@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Administracion API
-  version: 0.2.3
+  version: 0.4.0
   description: >
     Contrato del modulo Administracion (ADM-01..05, TR-07,
     PANTALLAS-V2-B-SOPORTE.md). Cierra el hallazgo ALTO de revalidacion
@@ -247,8 +247,15 @@ paths:
               schema: { $ref: '#/components/schemas/RolePermissionMatrixResponse' }
         '400':
           description: 'INCOMPLETE_MATRIX - falta una entrada rol x accion del catalogo'
+        '401':
+          description: Token invalido, expirado o revocado
         '403':
-          description: Sin contexto vigente, o rol sin MANAGE_PERMISSIONS
+          description: >
+            MFA_RECENT_REQUIRED - el token no trae segundo factor o su
+            `auth_time` supera 5 minutos (SEC-F4, TDD-00 8.4; 0.4.0). El
+            cliente debe reautenticar con MFA (TR-03), obtener un token
+            nuevo y reintentar. Tambien: sin contexto vigente, o rol sin
+            MANAGE_PERMISSIONS. Cuerpo `{statusCode, code, detail, maxAgeSeconds}`.
         '409':
           description: >
             INCOMPATIBLE_PERMISSIONS - segregacion de funciones violada
@@ -582,7 +589,16 @@ components:
         currency: { type: string, enum: [PEN, USD] }
     PermissionModule:
       type: string
-      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RECRUITMENT, HR_ADMINISTRATION]
+      description: >
+        Modulos cuyas acciones administra la matriz ADM-02 (PERMISSION_MODULES
+        del dominio). 0.3.0: se declaran RETURN, FLEET, CUSTOMER, TEMPLATE,
+        PAYMENT y REPORT, que el backend ya devolvia en el catalogo. Acciones
+        de Reserva incluidas en el catalogo: READ_LIST, READ_DETAIL, CREATE,
+        REGISTER_PAYMENT, REGISTER_DOCUMENTS, CONFIRM,
+        CANCEL_CUSTOMER_REQUESTED_CHANGE, CANCEL_NO_SHOW, FLAG_SALE,
+        RESOLVE_SALE y CHANGE_VEHICLE. Una version ya guardada que no incluya
+        una accion nueva la deniega hasta que se guarde la matriz (deny-by-default).
+      enum: [RESERVATION, INQUIRY, ADMIN, RENTAL, INCIDENT, RETURN, FLEET, CUSTOMER, RECRUITMENT, TEMPLATE, HR_ADMINISTRATION, PAYMENT, REPORT]
     RolePermissionEntry:
       type: object
       required: [roleId, module, action, allowed]

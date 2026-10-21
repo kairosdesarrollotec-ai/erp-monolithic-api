@@ -129,6 +129,10 @@ export function toReturnRecord(row: ReturnWithRelations): ReturnRecord {
     responsibilitySignerRelation: row.responsibilitySignerRelation,
     responsibilitySignatureData: row.responsibilitySignatureData,
     responsibilitySignedAt: row.responsibilitySignedAt,
+    lateChargeAmount: decimalToNumber(row.lateChargeAmount),
+    lateChargeNotes: row.lateChargeNotes,
+    lateChargeRegisteredById: row.lateChargeRegisteredById,
+    lateChargeRegisteredAt: row.lateChargeRegisteredAt,
     vehicleDailyRate: decimalToNumber(row.vehicle.dailyRate),
     depositRequired: row.rental?.contract?.depositRequired ?? true,
     rentalDeposit: row.rental?.deposit

@@ -33,6 +33,19 @@ function dmy(date: Date): string {
   return formatLimaDMY(date);
 }
 
+/**
+ * Regla de negocio (Fiorella, 16-oct-2026): "la reserva nunca superara la garantia".
+ * Validacion defensiva: el monto de la reserva no puede exceder la garantia del vehiculo
+ * (`Vehicle.depositMinimum`, Flota). RESERVATION_EXCEEDS_GUARANTEE (422).
+ */
+export class ReservationExceedsGuaranteeError extends DomainUnprocessableError {
+  readonly code = 'RESERVATION_EXCEEDS_GUARANTEE';
+
+  constructor(amount: string, guarantee: string) {
+    super(`El monto de la reserva (${amount}) no puede superar la garantía del vehículo (${guarantee}).`);
+  }
+}
+
 /** TDD-RES-001.md seccion 11.4 - VEHICLE_NOT_AVAILABLE (409). */
 export class VehicleNotAvailableError extends DomainConflictError {
   readonly code = 'VEHICLE_NOT_AVAILABLE';

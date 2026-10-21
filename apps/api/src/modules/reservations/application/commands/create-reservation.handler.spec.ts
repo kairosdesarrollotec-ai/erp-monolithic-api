@@ -96,6 +96,33 @@ describe('CreateReservationHandler', () => {
     } as unknown as MatrixAuthorizationService;
   }
 
+  it('rechaza con RESERVATION_EXCEEDS_GUARANTEE 422 si el monto supera la garantía del vehículo', async () => {
+    const repo = buildRepository();
+    repo.findVehicleById.mockResolvedValue({ id: 'veh-1', operatingCompanyId: COMPANY, depositMinimum: 250 });
+    const handler = new CreateReservationHandler(
+      repo,
+      buildWorkContext({ role: 'FRONT_OFFICE' }) as unknown as WorkContextAuthorizationService,
+      buildMatrixAuth() as unknown as MatrixAuthorizationService,
+    );
+    await expect(handler.execute(buildCommand())).rejects.toMatchObject({
+      code: 'RESERVATION_EXCEEDS_GUARANTEE',
+      httpStatus: 422,
+    });
+    expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it('acepta una reserva igual a la garantía del vehículo', async () => {
+    const repo = buildRepository();
+    repo.findVehicleById.mockResolvedValue({ id: 'veh-1', operatingCompanyId: COMPANY, depositMinimum: 300 });
+    const handler = new CreateReservationHandler(
+      repo,
+      buildWorkContext({ role: 'FRONT_OFFICE' }) as unknown as WorkContextAuthorizationService,
+      buildMatrixAuth() as unknown as MatrixAuthorizationService,
+    );
+    await expect(handler.execute(buildCommand())).resolves.toBeDefined();
+    expect(repo.create).toHaveBeenCalled();
+  });
+
   it('crea la reserva cuando el cliente y vehiculo son validos (caso directo sin consulta)', async () => {
     const repo = buildRepository();
     const handler = new CreateReservationHandler(repo, buildWorkContext({ role: 'FRONT_OFFICE' }), buildMatrixAuth());

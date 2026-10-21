@@ -1,13 +1,15 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Incidents API
-  version: 0.2.0
+  version: 0.3.0
   description: >
     Contrato del módulo Incidencias (INC-01 bandeja, INC-02 detalle/RIO). Fuentes: PANTALLAS-V2-B-SOPORTE.md,
     diccionario de datos 1.8 (RIO), SDD (Incident pertenece a Incidents, ligado a Rental/Return; ciclo Abierta -> Cerrada / Vía legal),
     cláusula 26 del contrato (aviso de siniestro en 15 min, evidencia en 30 min), DEV-09 (no liberar garantía con incidencia abierta).
     Historial de acciones append-only: nunca se edita ni borra una entrada. "Resolver" directo solo para severidad LEVE y exige resumen.
     Concurrencia optimista con If-Match/version; Idempotency-Key opcional en comandos.
+    0.3.0: cerrar / derivar a vía legal una incidencia UNAUTHORIZED_DRIVER exige el resultado estructurado de la decisión de
+    Gerencia (`decision`: retener garantía / resolver contrato). Solo se REGISTRA (historial, auditoría, evento); no ejecuta nada.
 
 paths:
   /incidents:
@@ -167,6 +169,7 @@ paths:
         '403': { description: Rol sin permiso INCIDENT.CLOSE; en incidencias UNAUTHORIZED_DRIVER solo Gerencia decide (MANAGEMENT_DECISION_REQUIRED) }
         '404': { description: Incidencia no encontrada }
         '409': { description: VERSION_CONFLICT o INCIDENT_NOT_OPEN }
+        '422': { description: Falta `decision` en UNAUTHORIZED_DRIVER (MANAGEMENT_DECISION_OUTCOME_REQUIRED) o se envió en otro tipo (MANAGEMENT_DECISION_OUTCOME_NOT_APPLICABLE) }
         '428': { description: Falta If-Match }
         '500': { description: Error interno }
 
@@ -195,6 +198,7 @@ paths:
         '403': { description: Rol sin permiso INCIDENT.REFER_LEGAL; en incidencias UNAUTHORIZED_DRIVER solo Gerencia decide (MANAGEMENT_DECISION_REQUIRED) }
         '404': { description: Incidencia no encontrada }
         '409': { description: VERSION_CONFLICT o INCIDENT_NOT_OPEN }
+        '422': { description: Falta `decision` en UNAUTHORIZED_DRIVER (MANAGEMENT_DECISION_OUTCOME_REQUIRED) o se envió en otro tipo (MANAGEMENT_DECISION_OUTCOME_NOT_APPLICABLE) }
         '428': { description: Falta If-Match }
         '500': { description: Error interno }
 
@@ -248,6 +252,17 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         resolutionSummary: { type: string, minLength: 1, maxLength: 2000 }
+        decision: { $ref: '#/components/schemas/ManagementDecisionOutcome' }
+    ManagementDecisionOutcome:
+      type: object
+      description: >
+        Resultado estructurado de la decisión de Gerencia sobre una incidencia UNAUTHORIZED_DRIVER (obligatorio en close y
+        refer-legal para ese tipo; no aplica a los demás). Ambos en false = ninguna consecuencia. Solo se registra: queda como
+        encabezado de la entrada del historial, en la auditoría y en el payload del evento (`decision`) para Finanzas/Legal.
+      required: [retainGuarantee, terminateContract]
+      properties:
+        retainGuarantee: { type: boolean, description: La garantía del alquiler se retiene }
+        terminateContract: { type: boolean, description: El contrato se resuelve }
     ReferLegalRequest:
       type: object
       required: [companyId, branchId, reason]
@@ -255,6 +270,7 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         reason: { type: string, minLength: 1, maxLength: 2000 }
+        decision: { $ref: '#/components/schemas/ManagementDecisionOutcome' }
     IncidentActionEntry:
       type: object
       required: [id, kind, description, authorUserId, createdAt]

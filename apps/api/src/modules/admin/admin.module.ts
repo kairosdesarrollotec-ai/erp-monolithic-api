@@ -26,6 +26,7 @@ import { PrismaAdminUserRepository } from './infrastructure/persistence/prisma-a
 import { IdentityLookupPort } from './application/ports/identity-lookup.port';
 import { FirebaseIdentityLookupAdapter } from './infrastructure/identity/firebase-identity-lookup.adapter';
 import { UsersModule } from '../users/users.module';
+import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { AuditModule } from '../audit/audit.module';
 import { ParametersModule } from '../parameters/parameters.module';
 import { NotificationTemplatesModule } from '../notification-templates/notification-templates.module';
@@ -46,6 +47,7 @@ import { ResendEmailAdapter } from './infrastructure/email/resend-email.adapter'
   imports: [UsersModule, AuditModule, ParametersModule, NotificationTemplatesModule, AuthorizationModule],
   controllers: [AdminController, MePermissionsController],
   providers: [
+    RecentAuthGuard,
     ListOrganizationUsersHandler,
     GetOrganizationCompaniesHandler,
     AssignUserToCompanyHandler,

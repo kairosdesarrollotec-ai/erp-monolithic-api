@@ -38,8 +38,12 @@ describe('Incidencia UNAUTHORIZED_DRIVER (conductor no autorizado)', () => {
 
   const create = (severity: 'LEVE' | 'MODERADA' | 'GRAVE') =>
     new CreateIncidentCommand('uid-1', 'comp-1', 'branch-1', 'rent-1', 'UNAUTHORIZED_DRIVER', severity, 'Manejaba un tercero');
-  const close = () => new CloseIncidentCommand('inc-1', 'uid-2', 'comp-1', 'branch-1', 4, 'Gerencia decide mantener el contrato');
-  const refer = () => new ReferIncidentToLegalCommand('inc-1', 'uid-2', 'comp-1', 'branch-1', 4, 'Gerencia resuelve el contrato');
+  const none = { retainGuarantee: false, terminateContract: false };
+  const both = { retainGuarantee: true, terminateContract: true };
+  const close = (decision: typeof none | null = none) =>
+    new CloseIncidentCommand('inc-1', 'uid-2', 'comp-1', 'branch-1', 4, 'Gerencia decide mantener el contrato', decision ?? undefined);
+  const refer = (decision: typeof none | null = both) =>
+    new ReferIncidentToLegalCommand('inc-1', 'uid-2', 'comp-1', 'branch-1', 4, 'Gerencia resuelve el contrato', decision ?? undefined);
 
   it.each(['FRONT_OFFICE', 'GERENCIA', 'CAMPO'] as const)('%s puede registrarla (GRAVE) y NO hay consecuencias automaticas', async (role) => {
     const { deps, create: handler } = setup(role);
@@ -67,7 +71,12 @@ describe('Incidencia UNAUTHORIZED_DRIVER (conductor no autorizado)', () => {
 
     expect(result.status).toBe('CERRADA');
     expect(deps.incidents.appendAction).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: 'CLOSED', description: 'Gerencia decide mantener el contrato', authorUserId: 'uid-2' }),
+      expect.objectContaining({
+        kind: 'CLOSED',
+        description: 'Decision de Gerencia: no se retiene la garantia; se mantiene el contrato.\nGerencia decide mantener el contrato',
+        resolutionSummary: 'Gerencia decide mantener el contrato',
+        authorUserId: 'uid-2',
+      }),
       expect.anything(),
     );
   });
@@ -79,6 +88,30 @@ describe('Incidencia UNAUTHORIZED_DRIVER (conductor no autorizado)', () => {
 
     expect(result.status).toBe('VIA_LEGAL');
     expect(deps.incidents.appendAction).toHaveBeenCalledWith(expect.objectContaining({ kind: 'REFERRED_LEGAL' }), expect.anything());
+  });
+
+  it('el resultado estructurado viaja en auditoria y evento (retener garantia + resolver contrato) para Finanzas/Legal', async () => {
+    const { deps, refer: handler } = setup('GERENCIA');
+
+    await handler.execute(refer(both));
+
+    expect(deps.incidents.appendAction).toHaveBeenCalledWith(
+      expect.objectContaining({ description: expect.stringContaining('se retiene la garantia; se resuelve el contrato.') }),
+      expect.anything(),
+    );
+    expect(deps.auditRepository.recordIncidentEvent.mock.calls[0][0].changes).toMatchObject({ decision: both });
+    const published = deps.outboxRepository.publish.mock.calls[0][0];
+    expect(published.eventType).toBe('IncidentReferredToLegal.v1');
+    expect(published.payload).toMatchObject({ decision: both });
+  });
+
+  it('sin resultado estructurado -> 422 MANAGEMENT_DECISION_OUTCOME_REQUIRED y no se escribe nada', async () => {
+    const { deps, close: closeHandler, refer: referHandler } = setup('GERENCIA');
+
+    await expect(closeHandler.execute(close(null))).rejects.toMatchObject({ code: 'MANAGEMENT_DECISION_OUTCOME_REQUIRED', httpStatus: 422 });
+    await expect(referHandler.execute(refer(null))).rejects.toMatchObject({ code: 'MANAGEMENT_DECISION_OUTCOME_REQUIRED', httpStatus: 422 });
+    expect(deps.incidents.appendAction).not.toHaveBeenCalled();
+    expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
   });
 
   it('Front-office (con permiso CLOSE/REFER_LEGAL en la matriz) NO decide: 403 MANAGEMENT_DECISION_REQUIRED', async () => {
@@ -104,6 +137,12 @@ describe('Incidencia UNAUTHORIZED_DRIVER (conductor no autorizado)', () => {
 
   it('otros tipos conservan el comportamiento previo: Front-office sigue cerrando una incidencia comun', async () => {
     const { close: handler } = setup('FRONT_OFFICE', buildIncident({ type: 'KEY_LOSS', severity: 'MODERADA', version: 4 }));
-    await expect(handler.execute(close())).resolves.toMatchObject({ status: 'CERRADA' });
+    await expect(handler.execute(close(null))).resolves.toMatchObject({ status: 'CERRADA' });
+  });
+
+  it('otros tipos no admiten el resultado estructurado: 422 MANAGEMENT_DECISION_OUTCOME_NOT_APPLICABLE', async () => {
+    const { deps, close: handler } = setup('GERENCIA', buildIncident({ type: 'KEY_LOSS', severity: 'MODERADA', version: 4 }));
+    await expect(handler.execute(close(both))).rejects.toMatchObject({ code: 'MANAGEMENT_DECISION_OUTCOME_NOT_APPLICABLE', httpStatus: 422 });
+    expect(deps.incidents.appendAction).not.toHaveBeenCalled();
   });
 });

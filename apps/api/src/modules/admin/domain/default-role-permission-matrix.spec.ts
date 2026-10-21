@@ -50,6 +50,33 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
     expect(allowed('AUDITORIA', 'HR_ADMINISTRATION', 'VIEW_EMPLOYEES')).toBe(true);
   });
 
+  it('acciones nuevas de Reserva: FLAG_SALE/RESOLVE_SALE para Gerencia y Administracion; CHANGE_VEHICLE para el personal operativo', () => {
+    for (const action of ['FLAG_SALE', 'RESOLVE_SALE']) {
+      expect(allowed('GERENCIA', 'RESERVATION', action)).toBe(true);
+      expect(allowed('ADMINISTRACION', 'RESERVATION', action)).toBe(true);
+      expect(allowed('FRONT_OFFICE', 'RESERVATION', action)).toBe(false);
+      expect(allowed('CAMPO', 'RESERVATION', action)).toBe(false);
+      expect(allowed('PLATFORM_ADMIN', 'RESERVATION', action)).toBe(true);
+    }
+    expect(allowed('FRONT_OFFICE', 'RESERVATION', 'CHANGE_VEHICLE')).toBe(true);
+    expect(allowed('GERENCIA', 'RESERVATION', 'CHANGE_VEHICLE')).toBe(true);
+    expect(allowed('AUDITORIA', 'RESERVATION', 'CHANGE_VEHICLE')).toBe(false);
+  });
+
+  it('PAYMENT se siembra desde payment-role-policy y REPORT queda denegado (sin regla documentada)', () => {
+    expect(allowed('FINANZAS', 'PAYMENT', 'APPROVE_REFUND')).toBe(true);
+    expect(allowed('FRONT_OFFICE', 'PAYMENT', 'APPROVE_REFUND')).toBe(false);
+    expect(allowed('FRONT_OFFICE', 'PAYMENT', 'REGISTER_ADJUSTMENT')).toBe(true);
+    expect(allowed('AUDITORIA', 'PAYMENT', 'READ_LIST')).toBe(true);
+    expect(allowed('GERENCIA', 'REPORT', 'READ_OPERATIONAL')).toBe(false);
+    expect(allowed('PLATFORM_ADMIN', 'REPORT', 'EXPORT')).toBe(true);
+  });
+
+  it('UPLOAD_EVIDENCE (reutilizada para borrar evidencia) sigue en el catalogo de Alquiler y Devolucion', () => {
+    expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RENTAL' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);
+    expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RETURN' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);
+  });
+
   it('un rol de sistema sin fila sembrada en la organizacion se omite (no inventa role_id)', () => {
     const partial = buildDefaultRolePermissionMatrix(new Map([['GERENCIA', 'role-GERENCIA']]));
     expect(new Set(partial.map((e) => e.roleId))).toEqual(new Set(['role-GERENCIA']));

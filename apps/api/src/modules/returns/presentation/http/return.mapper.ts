@@ -12,6 +12,7 @@ import { CosmeticTariffItem } from '../../domain/cosmetic-damage-rate';
 import { CustomerRiskStatus } from '../../domain/customer-risk-status';
 import {
   AlcoholEscalationResponse,
+  ManualLateChargeResponse,
   CosmeticTariffResponse,
   ResponsibilityDocumentResponse,
   ImmobilizationChargeResponse,
@@ -78,6 +79,16 @@ export function toReturnEvidenceResponse(record: ReturnEvidenceRecord): ReturnEv
 
 export function toCosmeticTariffResponse(items: readonly CosmeticTariffItem[]): CosmeticTariffResponse {
   return { items: items.map((i) => ({ code: i.code, name: i.name, pricePen: i.pricePen })) };
+}
+
+function toManualLateChargeResponse(record: ReturnRecord): ManualLateChargeResponse | null {
+  if (record.lateChargeAmount === null || record.lateChargeAmount === undefined) return null;
+  return {
+    amount: record.lateChargeAmount,
+    notes: record.lateChargeNotes ?? null,
+    registeredById: record.lateChargeRegisteredById ?? '',
+    registeredAt: record.lateChargeRegisteredAt ? record.lateChargeRegisteredAt.toISOString() : '',
+  };
 }
 
 function toAlcoholEscalationResponse(record: ReturnRecord): AlcoholEscalationResponse | null {
@@ -190,6 +201,7 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     alcoholTestResult: record.alcoholTestResult,
     alcoholTestNotes: record.alcoholTestNotes,
     alcoholEscalation: toAlcoholEscalationResponse(record),
+    manualLateCharge: toManualLateChargeResponse(record),
     responsibilityDocument: toResponsibilityDocumentResponse(record),
     reminder: record.reminder ? toReturnReminderResponse(record.reminder) : null,
     ...(record.alerts ? { alerts: toReturnAlertsResponse(record.alerts) } : {}),

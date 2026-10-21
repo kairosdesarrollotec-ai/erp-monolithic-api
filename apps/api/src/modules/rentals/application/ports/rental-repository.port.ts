@@ -1,3 +1,4 @@
+import type { CompanyDriverCharge } from '../../domain/company-driver-charge';
 import type { Prisma } from '@prisma/client';
 import { RentalStatus } from '../../domain/rental-status';
 import { AlcoholTestResult } from '../../domain/alcohol-test-result';
@@ -101,6 +102,13 @@ export interface RentalRecord {
   reservationCredit?: ReservationCreditResolution | null;
   /** Solo en el detalle (GET): ampliaciones del alquiler, la mas reciente primero. */
   extensions?: RentalExtensionRecord[];
+  /**
+   * TODO(DEC-ALQ-CAPACITY-009): capacidad de pasajeros del vehiculo. `vehicles` no tiene la columna todavia
+   * (requiere migracion en Flota); mientras no se complete no se valida el maximo de acompanantes.
+   */
+  vehiclePassengerCapacity?: number | null;
+  /** Solo en el detalle (GET) de alquileres con conductor de la empresa: tarifa diaria x dias (no se persiste). */
+  companyDriverCharge?: CompanyDriverCharge | null;
 }
 
 export interface CreateRentalInput {
@@ -155,7 +163,10 @@ export interface AddAuthorizedDriverInput {
   scope: RentalScope;
   expectedVersion: number;
   customerId: string;
-  addendumDocumentRef: string;
+  /** Rol de la party: DRIVER (conductor autorizado de persona juridica, por defecto) o RESPONSIBLE (acompanante autorizado de persona natural). */
+  role?: 'DRIVER' | 'RESPONSIBLE';
+  /** Obligatoria para DRIVER; opcional (null) para el acompanante RESPONSIBLE. */
+  addendumDocumentRef: string | null;
   updatedBy: string;
 }
 
@@ -277,6 +288,8 @@ export abstract class RentalRepositoryPort {
     operatingCompanyId: string;
     fullName: string;
     documentNumber: string;
+    /** DNI | RUC | CE ... (deduce el tipo de titular: RUC -> juridica, DNI -> natural). */
+    documentType?: string;
     /** Semaforo de riesgo: NORMAL | ROJO (el ambar no tiene columna propia). */
     status: string;
     isBiometricVerified?: boolean;

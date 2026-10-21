@@ -33,6 +33,8 @@ import { AssessDamageHandler } from '../../application/commands/assess-damage.ha
 import { AssessDamageCommand } from '../../application/commands/assess-damage.command';
 import { ChargeImmobilizationHandler } from '../../application/commands/charge-immobilization.handler';
 import { ChargeImmobilizationCommand } from '../../application/commands/charge-immobilization.command';
+import { RegisterReturnLateChargeHandler } from '../../application/commands/register-late-charge.handler';
+import { RegisterReturnLateChargeCommand } from '../../application/commands/register-late-charge.command';
 import { CloseFinancialHandler } from '../../application/commands/close-financial.handler';
 import { CloseFinancialCommand } from '../../application/commands/close-financial.command';
 import { CloseReturnHandler } from '../../application/commands/close-return.handler';
@@ -67,6 +69,7 @@ import { ResolveAlcoholEscalationDto } from './dto/resolve-alcohol-escalation.dt
 import { CompleteInspectionDto } from './dto/complete-inspection.dto';
 import { AssessDamageDto } from './dto/assess-damage.dto';
 import { ChargeImmobilizationDto } from './dto/charge-immobilization.dto';
+import { RegisterReturnLateChargeDto } from './dto/register-late-charge.dto';
 import { CloseFinancialDto } from './dto/close-financial.dto';
 import { CloseReturnDto } from './dto/close-return.dto';
 import { RegisterReturnReminderDto } from './dto/register-return-reminder.dto';
@@ -110,6 +113,7 @@ export class ReturnsController {
     private readonly completeInspection: CompleteInspectionHandler,
     private readonly assessDamage: AssessDamageHandler,
     private readonly chargeImmobilization: ChargeImmobilizationHandler,
+    private readonly registerLateCharge: RegisterReturnLateChargeHandler,
     private readonly closeFinancial: CloseFinancialHandler,
     private readonly closeReturn: CloseReturnHandler,
     private readonly getReturn: GetReturnHandler,
@@ -385,6 +389,30 @@ export class ReturnsController {
       ),
     );
     return toImmobilizationChargeResponse(result.charge, result.rentalReturn);
+  }
+
+  /** DEC-DEV-LATE-CHARGE-002: cargo por retraso MANUAL (monto digitado; sin cálculo automático). */
+  @Post(':id/commands/register-late-charge')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async registerLateChargeCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RegisterReturnLateChargeDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReturnResponse> {
+    const updated = await this.registerLateCharge.execute(
+      new RegisterReturnLateChargeCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.amount,
+        dto.notes,
+      ),
+    );
+    return toReturnResponse(updated);
   }
 
   /** BR-DEV-004 / DAT-DEV-001: registra el resultado del envío manual del recordatorio. If-Match = reminder.version. */

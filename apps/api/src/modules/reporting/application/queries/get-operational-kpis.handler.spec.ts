@@ -1,4 +1,5 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
+import { DomainBadRequestError } from '../../../../common/domain/domain-errors';
 import { GetOperationalKpisHandler } from './get-operational-kpis.handler';
 import { GetOperationalKpisQuery } from './get-operational-kpis.query';
 import { validateDateRange } from './reporting.utils';
@@ -121,7 +122,7 @@ describe('GetOperationalKpisHandler (REP-01 / BDD-REP-001)', () => {
   });
 
   describe('BR-REP-005 — Validacion de rango de fechas maximo 90 dias', () => {
-    it('lanza BadRequestException con codigo RANGE_EXCEEDS_MAX cuando el rango supera 90 dias', async () => {
+    it('lanza DomainBadRequestError con codigo RANGE_EXCEEDS_MAX cuando el rango supera 90 dias', async () => {
       const workContext = buildWorkContext();
       const matrixAuth = buildMatrixAuth(true);
       const prisma = buildMockPrisma();
@@ -132,14 +133,14 @@ describe('GetOperationalKpisHandler (REP-01 / BDD-REP-001)', () => {
 
       await expect(
         handler.execute(new GetOperationalKpisQuery('uid-1', 'comp-1', 'branch-1', dateFrom, dateTo)),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(DomainBadRequestError);
 
       await expect(
         handler.execute(new GetOperationalKpisQuery('uid-1', 'comp-1', 'branch-1', dateFrom, dateTo)),
-      ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'RANGE_EXCEEDS_MAX' }) });
+      ).rejects.toMatchObject({ code: 'RANGE_EXCEEDS_MAX', httpStatus: 400 });
     });
 
-    it('lanza BadRequestException con codigo INVALID_DATE_RANGE cuando dateFrom es posterior a dateTo', async () => {
+    it('lanza DomainBadRequestError con codigo INVALID_DATE_RANGE cuando dateFrom es posterior a dateTo', async () => {
       const workContext = buildWorkContext();
       const matrixAuth = buildMatrixAuth(true);
       const prisma = buildMockPrisma();
@@ -150,12 +151,12 @@ describe('GetOperationalKpisHandler (REP-01 / BDD-REP-001)', () => {
         handler.execute(
           new GetOperationalKpisQuery('uid-1', 'comp-1', 'branch-1', new Date('2026-05-01'), new Date('2026-01-01')),
         ),
-      ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_DATE_RANGE' }) });
+      ).rejects.toMatchObject({ code: 'INVALID_DATE_RANGE', httpStatus: 400 });
     });
 
-    it('acepta rango de exactamente 90 dias sin lanzar error', () => {
+    it('acepta rango de exactamente 90 dias inclusivos sin lanzar error', () => {
       const dateFrom = new Date('2026-01-01');
-      const dateTo = new Date('2026-04-01'); // 90 dias exactos
+      const dateTo = new Date('2026-03-31'); // 90 dias calendario inclusivos
 
       // validateDateRange es la funcion pura que el handler delega — se prueba directamente
       expect(() => validateDateRange(dateFrom, dateTo)).not.toThrow();

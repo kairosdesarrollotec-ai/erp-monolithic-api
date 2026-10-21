@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.6.0
+  version: 1.7.0
   description: >
+    1.7.0 — Respuestas de negocio de Fiorella (2026-10-16). (1) DEV-03: alcolímetro DESFAVORABLE = check "no cumple el rango" +
+    FOTO de la prueba OBLIGATORIA (evidencia PHOTO con zona ALCOHOL_TEST subida antes con upload-url/evidence); sin foto ->
+    422 ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni otros campos; RECHAZADO no exige foto. (2) Retraso pasada la tolerancia
+    de 30 min: SÍ hay cargo, MANUAL por ahora: POST register-late-charge (monto digitado por usuario autorizado, sin cálculo
+    automático; auditado y evento CargoRetrasoRegistrado.v1) y ReturnResponse.manualLateCharge. (3) "Día completo" = 100% de la
+    tarifa diaria (tramo > 300 min de latenessCharge).
     1.4.0 — DEC-ALQ-COMPANY-DRIVER-004: alquiler CON CONDUCTOR DE LA EMPRESA = sin garantía.
     ReturnResponse.depositRequired (false = N/A liberación/devolución de garantía): el expediente
     no emite la alerta WARRANTY_RELEASE de 24 h y close-financial solo admite refundAmount =
@@ -280,6 +286,10 @@ paths:
     post:
       operationId: registerAlcoholTest
       summary: Registrar resultado de prueba de alcolímetro de salida (DEV-04 / BR-DEV-005)
+      description: >
+        DESFAVORABLE = check "no cumple el rango del alcoholímetro" + foto de la prueba OBLIGATORIA: antes de registrar, subir la
+        foto como evidencia PHOTO con zona ALCOHOL_TEST (upload-url -> PUT -> POST evidence). Sin foto -> 422
+        ALCOHOL_TEST_PHOTO_REQUIRED. No se registra hora ni más campos. RECHAZADO no exige foto.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -305,6 +315,8 @@ paths:
           description: Estado incompatible (debe estar en RECEPCION_PROVISIONAL)
         '412':
           description: Versión no coincide (If-Match)
+        '422':
+          description: Resultado DESFAVORABLE sin la foto de la prueba (evidencia PHOTO con zona ALCOHOL_TEST) -> ALCOHOL_TEST_PHOTO_REQUIRED
         '428':
           description: Falta header If-Match
         '500':
@@ -475,6 +487,47 @@ paths:
           description: Versión no coincide (If-Match)
         '422':
           description: No han transcurrido 24 horas naturales desde la recepción (IMMOBILIZATION_PERIOD_NOT_ELAPSED), no hay daño técnico, el vehículo no tiene dailyRate o los días exceden los pendientes de cobro (INVALID_IMMOBILIZATION_CHARGE)
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
+  /returns/{id}/commands/register-late-charge:
+    post:
+      operationId: registerReturnLateCharge
+      summary: Registrar el cargo por retraso en la devolución, MANUAL (DEC-DEV-LATE-CHARGE-002)
+      description: >
+        Pasada la tolerancia de 30 min sobre la hora pactada SÍ hay cargo; por ahora el monto lo digita un usuario autorizado
+        (Administración, Gerencia o Finanzas) y NO se calcula automáticamente (el cargo sugerido de latenessCharge sigue siendo
+        informativo). Volver a registrar corrige el monto (queda el último; cada registro se audita y emite CargoRetrasoRegistrado.v1).
+        No ajusta la garantía por sí mismo.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterReturnLateChargeRequest' }
+      responses:
+        '200':
+          description: Cargo por retraso registrado (ReturnResponse.manualLateCharge)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (el vehículo debe estar recibido y la devolución no cerrada/cancelada)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: La devolución no superó la tolerancia de 30 minutos o el monto no es válido (INVALID_LATE_CHARGE)
         '428':
           description: Falta header If-Match
         '500':
@@ -1031,6 +1084,25 @@ components:
         result: { $ref: '#/components/schemas/AlcoholTestResult' }
         notes: { type: string }
 
+    RegisterReturnLateChargeRequest:
+      type: object
+      required: [companyId, branchId, amount]
+      description: Cargo por retraso MANUAL (DEC-DEV-LATE-CHARGE-002); el monto lo digita el usuario autorizado, sin cálculo automático.
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        amount: { type: number, minimum: 0.01, description: Monto en la moneda del negocio (máx. 2 decimales) }
+        notes: { type: string, maxLength: 500 }
+
+    ManualLateChargeResponse:
+      type: object
+      required: [amount, notes, registeredById, registeredAt]
+      properties:
+        amount: { type: number }
+        notes: { type: string, nullable: true }
+        registeredById: { type: string }
+        registeredAt: { type: string, format: date-time }
+
     ResolveAlcoholEscalationRequest:
       type: object
       required: [companyId, branchId, decision, markCustomerRed, notes]
@@ -1282,6 +1354,11 @@ components:
         fuelLevelAtReturn: { $ref: '#/components/schemas/ReturnFuelLevel', nullable: true }
         alcoholTestResult: { $ref: '#/components/schemas/AlcoholTestResult', nullable: true }
         alcoholTestNotes: { type: string, nullable: true }
+        manualLateCharge:
+          nullable: true
+          description: Cargo por retraso registrado manualmente (DEC-DEV-LATE-CHARGE-002); null si no hay
+          allOf:
+            - $ref: '#/components/schemas/ManualLateChargeResponse'
         alcoholEscalation:
           nullable: true
           description: Última decisión de Gerencia ante alcolímetro desfavorable (null si no hubo)

@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.8.1
+  version: 0.8.2
   description: >
+    0.8.2 — Regla de negocio (Fiorella, 16-oct-2026): "la reserva nunca superará la garantía".
+    confirm responde 422 RESERVATION_EXCEEDS_GUARANTEE si requiredPaymentAmount supera la garantía
+    del vehículo (Vehicle.depositMinimum, Flota); si el vehículo no tiene garantía definida no se valida.
     0.8.1 — DEC-RES-CANCEL-001 — Razones de cancelación: enum CERRADO. cancel acepta solo
     CUSTOMER_REQUESTED_CHANGE (cambio de fecha/hora/vehículo, el monto se pierde) y NO_SHOW
     (solo Gerencia, el monto se pierde); cualquier otro valor responde 400. La cancelación
@@ -210,7 +213,7 @@ paths:
         '404': { description: Reserva no encontrada en el scope del usuario }
         '409': { description: 'VEHICLE_NOT_AVAILABLE (el detail indica las fechas ocupadas, dd/mm/yyyy) o RESERVATION_STATE_CONFLICT (la reserva ya no esta en DRAFT)' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
-        '422': { description: REQUIREMENTS_INCOMPLETE - falta pago o documentos }
+        '422': { description: 'REQUIREMENTS_INCOMPLETE - falta pago o documentos; RESERVATION_EXCEEDS_GUARANTEE - el monto de la reserva supera la garantia del vehiculo' }
         '428': { description: IF_MATCH_REQUIRED }
   /reservations/{id}/commands/cancel:
     post:
