@@ -36,6 +36,7 @@ import { GetEmployeeMemosQuery } from '../../application/queries/get-employee-me
 import { GetEmployeeMemosHandler } from '../../application/queries/get-employee-memos.handler';
 import { GetEmployeeTrainingsQuery } from '../../application/queries/get-employee-trainings.query';
 import { GetEmployeeTrainingsHandler } from '../../application/queries/get-employee-trainings.handler';
+import { EmployeeFieldVisibilityService } from '../../application/services/employee-field-visibility.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { ListEmployeesQueryDto } from './dto/list-employees-query.dto';
@@ -72,7 +73,16 @@ export class EmployeesController {
     private readonly getEmployeeMemos: GetEmployeeMemosHandler,
     private readonly getEmployeeTrainings: GetEmployeeTrainingsHandler,
     private readonly linkEmployeeAccount: LinkEmployeeAccountHandler,
+    private readonly visibility: EmployeeFieldVisibilityService,
   ) {}
+
+  private scopeVisibility(req: AuthenticatedRequest, e: { operatingCompanyId: string; branchId: string }) {
+    return this.visibility.resolve({
+      firebaseUid: req.firebaseUid!,
+      companyId: e.operatingCompanyId,
+      branchId: e.branchId,
+    });
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -97,7 +107,7 @@ export class EmployeesController {
         dto.areaCode,
       ),
     );
-    return toEmployeeResponse(created);
+    return toEmployeeResponse(created, await this.scopeVisibility(req, created));
   }
 
   @Get()
@@ -117,7 +127,12 @@ export class EmployeesController {
         query.offset,
       ),
     );
-    return { items: result.items.map(toEmployeeResponse), total: result.total };
+    const visibility = await this.visibility.resolve({
+      firebaseUid: req.firebaseUid!,
+      companyId: query.companyId,
+      branchId: query.branchId,
+    });
+    return { items: result.items.map((e) => toEmployeeResponse(e, visibility)), total: result.total };
   }
 
   @Get(':id')
@@ -128,7 +143,7 @@ export class EmployeesController {
   ): Promise<EmployeeDetailResponse> {
     const detail = await this.getEmployeeDetail.execute(new GetEmployeeDetailQuery(req.firebaseUid!, id));
     res.setHeader('ETag', `"${detail.employee.version}"`);
-    return toEmployeeDetailResponse(detail);
+    return toEmployeeDetailResponse(detail, await this.scopeVisibility(req, detail.employee));
   }
 
   @Get(':id/memos')
@@ -172,7 +187,7 @@ export class EmployeesController {
     );
     res.setHeader('ETag', `"${employee.version}"`);
     return {
-      ...toEmployeeResponse(employee),
+      ...toEmployeeResponse(employee, await this.scopeVisibility(req, employee)),
       ...(accountRelink
         ? { accountRelink: { action: accountRelink, reason: 'EMAIL_CHANGED' as const, previousEmail, newEmail: employee.email ?? null } }
         : {}),
@@ -187,7 +202,7 @@ export class EmployeesController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<EmployeeResponse> {
     const linked = await this.linkEmployeeAccount.execute(new LinkEmployeeAccountCommand(req.firebaseUid!, id));
-    return toEmployeeResponse(linked);
+    return toEmployeeResponse(linked, await this.scopeVisibility(req, linked));
   }
 
   @Post(':id/terminate')

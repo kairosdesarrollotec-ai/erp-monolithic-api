@@ -281,17 +281,17 @@ describe('ResolveSyncConflictHandler (resolver)', () => {
     await expect(t.resolve.execute(t.resolveCmd(conflict.id, { resolution: 'MERGE' }))).rejects.toBeInstanceOf(SyncMergeNotAllowedError);
   });
 
-  it('exige rol supervisor: RECEPCION -> RETURN.CLOSE, ENTREGA -> RENTAL.MANAGE_CONTRACT_TEMPLATES (403 si la matriz lo niega)', async () => {
+  it('exige la accion propia SYNC.SUPERVISE_CONFLICTS en ENTREGA y RECEPCION (403 si la matriz lo niega)', async () => {
     const r1 = await withFieldConflict('RECEPCION');
     r1.t.matrixAuth.assertAllowed.mockImplementation((_o: string, _r: string, m: string, a: string) =>
-      m === 'RETURN' && a === 'CLOSE' ? Promise.reject(new ForbiddenException({ code: 'ROLE_NOT_ALLOWED' })) : Promise.resolve(),
+      m === 'SYNC' && a === 'SUPERVISE_CONFLICTS' ? Promise.reject(new ForbiddenException({ code: 'ROLE_NOT_ALLOWED' })) : Promise.resolve(),
     );
     await expect(r1.t.resolve.execute(r1.t.resolveCmd(r1.conflict.id))).rejects.toBeInstanceOf(ForbiddenException);
     expect(r1.t.repo.conflicts[0].status).toBe('OPEN');
 
     const r2 = await withFieldConflict('ENTREGA');
     await r2.t.resolve.execute(r2.t.resolveCmd(r2.conflict.id));
-    expect(r2.t.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-CAMPO', 'RENTAL', 'MANAGE_CONTRACT_TEMPLATES', { companyId: 'comp-1', branchId: 'branch-1' });
+    expect(r2.t.matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', 'role-CAMPO', 'SYNC', 'SUPERVISE_CONFLICTS', { companyId: 'comp-1', branchId: 'branch-1' });
   });
 
   it('If-Match: version distinta -> 412; ya resuelto -> 409', async () => {

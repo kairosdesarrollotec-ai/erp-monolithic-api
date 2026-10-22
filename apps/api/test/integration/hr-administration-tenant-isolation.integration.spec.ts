@@ -55,6 +55,7 @@ describe('HR-Administration — aislamiento multiempresa (Postgres real)', () =>
     // MatrixAuthorizationService con DB real requeriría sembrar la matriz completa.
     return {
       assertAllowed: async () => undefined,
+      isAllowed: async () => true, // 22-oct: el listado consulta VIEW_EMPLOYEE_DOCUMENT via isActionAllowed
     } as unknown as MatrixAuthorizationService;
   }
 

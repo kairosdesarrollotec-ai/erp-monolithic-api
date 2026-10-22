@@ -11,6 +11,7 @@ import {
 import { ReturnDepositSettlementPort } from '../ports/return-deposit-settlement.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import {
+  ImmobilizationClockNotStartedError,
   ImmobilizationPeriodNotElapsedError,
   InvalidImmobilizationChargeError,
   ReturnDamageNotFoundError,
@@ -27,11 +28,15 @@ export interface ChargeImmobilizationResult {
   rentalReturn: ReturnRecord;
 }
 
-const CHARGEABLE_STATUSES: ReadonlySet<ReturnStatus> = new Set<ReturnStatus>(['CON_DANOS', 'CIERRE_FINANCIERO']);
+/**
+ * Estados donde el cobro puede evaluarse. Desde el 22-oct-2026 el reloj arranca al CERRAR la devolucion (CERRADA / closedAt):
+ * en CON_DANOS y CIERRE_FINANCIERO el reloj aun no corre y el cobro responde 422 IMMOBILIZATION_CLOCK_NOT_STARTED.
+ */
+const CHARGEABLE_STATUSES: ReadonlySet<ReturnStatus> = new Set<ReturnStatus>(['CON_DANOS', 'CIERRE_FINANCIERO', 'CERRADA']);
 
 /**
  * DEV-07 / BR-DEV-011 / invariante 6 del TDD - Cobro (tarifa = dailyRate vigente del vehículo, TDD §9.3) de días de paralización: solo procede si transcurrieron
- * más de 24 h naturales desde la recepción con un daño TÉCNICO registrado. Los días cobrados nunca superan
+ * más de 24 h naturales desde el CIERRE de la devolución (22-oct-2026; antes: la recepción) con un daño TÉCNICO registrado. Los días cobrados nunca superan
  * los que el reloj justifica (acumulando cobros previos), de modo que reintentos no duplican el cargo.
  */
 @Injectable()
@@ -93,10 +98,11 @@ export class ChargeImmobilizationHandler {
         );
       }
 
-      if (!current.receivedAt) {
-        throw new InvalidImmobilizationChargeError('La devolución no tiene fecha de recepción registrada.');
+      // BR-DEV-011 (22-oct-2026): el reloj de paralizacion arranca al CERRAR la devolucion, no en la recepcion.
+      if (current.status !== 'CERRADA' || !current.closedAt) {
+        throw new ImmobilizationClockNotStartedError();
       }
-      const calculation = calculateImmobilizationCharge(current.receivedAt, this.clock.now(), dailyRate);
+      const calculation = calculateImmobilizationCharge(current.closedAt, this.clock.now(), dailyRate);
       if (!calculation.eligible) {
         throw new ImmobilizationPeriodNotElapsedError();
       }

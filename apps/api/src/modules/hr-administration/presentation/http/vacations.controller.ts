@@ -16,11 +16,16 @@ import { AuthenticatedRequest, FirebaseAuthGuard } from '../../../users/infrastr
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
 import { ScheduleVacationCommand } from '../../application/commands/schedule-vacation.command';
 import { ScheduleVacationHandler } from '../../application/commands/schedule-vacation.handler';
+import { RescheduleVacationCommand } from '../../application/commands/reschedule-vacation.command';
+import { RescheduleVacationHandler } from '../../application/commands/reschedule-vacation.handler';
+import { CancelVacationCommand } from '../../application/commands/cancel-vacation.command';
+import { CancelVacationHandler } from '../../application/commands/cancel-vacation.handler';
 import { GetEmployeeVacationsQuery } from '../../application/queries/get-employee-vacations.query';
 import { GetEmployeeVacationsHandler } from '../../application/queries/get-employee-vacations.handler';
 import { GetVacationsCalendarQuery } from '../../application/queries/get-vacations-calendar.query';
 import { GetVacationsCalendarHandler } from '../../application/queries/get-vacations-calendar.handler';
 import { ScheduleVacationDto } from './dto/schedule-vacation.dto';
+import { CancelVacationDto, RescheduleVacationDto } from './dto/change-vacation.dto';
 import { VacationsCalendarQueryDto } from './dto/vacations-calendar-query.dto';
 import { parseDateOnly } from './dto/hr-date';
 import { areaFilterCode } from '../../domain/hr-area-rules';
@@ -32,6 +37,8 @@ import { toVacationRequestResponse } from './hr-administration.mapper';
 export class VacationsController {
   constructor(
     private readonly scheduleVacation: ScheduleVacationHandler,
+    private readonly rescheduleVacation: RescheduleVacationHandler,
+    private readonly cancelVacation: CancelVacationHandler,
     private readonly getEmployeeVacations: GetEmployeeVacationsHandler,
     private readonly getVacationsCalendar: GetVacationsCalendarHandler,
   ) {}
@@ -48,6 +55,34 @@ export class VacationsController {
       new ScheduleVacationCommand(req.firebaseUid!, id, parseDateOnly(dto.startDate), parseDateOnly(dto.endDate), dto.notes),
     );
     return toVacationRequestResponse(created);
+  }
+
+  /** #10 (22-oct): reprograma las vacaciones a otra fecha libre del area (sin lista de espera); estado REPROGRAMADA. */
+  @Post('vacations/:id/reschedule')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(IdempotencyInterceptor)
+  async reschedule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RescheduleVacationDto,
+  ): Promise<VacationRequestResponse> {
+    const updated = await this.rescheduleVacation.execute(
+      new RescheduleVacationCommand(req.firebaseUid!, id, parseDateOnly(dto.startDate), parseDateOnly(dto.endDate), dto.reason),
+    );
+    return toVacationRequestResponse(updated);
+  }
+
+  /** #10 (22-oct): cancela las vacaciones (libera el cupo); estado CANCELADA, motivo obligatorio. */
+  @Post('vacations/:id/cancel')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(IdempotencyInterceptor)
+  async cancel(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CancelVacationDto,
+  ): Promise<VacationRequestResponse> {
+    const updated = await this.cancelVacation.execute(new CancelVacationCommand(req.firebaseUid!, id, dto.reason));
+    return toVacationRequestResponse(updated);
   }
 
   @Get('employees/:id/vacations')

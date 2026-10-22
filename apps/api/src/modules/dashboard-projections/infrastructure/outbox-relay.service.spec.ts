@@ -1,3 +1,4 @@
+import { OutboxEventConsumerRegistry } from '../../outbox/application/outbox-event-consumer.registry';
 import { OutboxRelayService } from './outbox-relay.service';
 import { PrismaService } from '../../../common/persistence/prisma.service';
 import { DashboardItemRepositoryPort } from '../application/ports/dashboard-item-repository.port';
@@ -73,7 +74,7 @@ describe('OutboxRelayService', () => {
       },
     });
     const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
-    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
 
     await service.processPendingEvents();
 
@@ -87,7 +88,7 @@ describe('OutboxRelayService', () => {
     const event = buildEventRow({ attempts: 0 });
     const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
     dashboardItems.dismissBySource.mockRejectedValue(new Error('fallo de proyeccion'));
-    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
 
     await service.processPendingEvents();
 
@@ -103,7 +104,7 @@ describe('OutboxRelayService', () => {
     const event = buildEventRow({ attempts: maxAttempts - 1 });
     const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
     dashboardItems.dismissBySource.mockRejectedValue(new Error('fallo definitivo'));
-    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
 
     await service.processPendingEvents();
 
@@ -119,7 +120,7 @@ describe('OutboxRelayService', () => {
     (prisma.$queryRaw as jest.Mock).mockImplementationOnce(
       () => new Promise((resolve) => (resolveFirstClaim = resolve)),
     );
-    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+    const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
 
     const firstCall = service.processPendingEvents();
     const secondCall = service.processPendingEvents();
@@ -149,7 +150,7 @@ describe('OutboxRelayService', () => {
         },
       });
       const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
-      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
 
       await service.processPendingEvents();
 
@@ -192,7 +193,7 @@ describe('OutboxRelayService', () => {
         },
       });
       const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
-      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
 
       await service.processPendingEvents();
 
@@ -219,7 +220,7 @@ describe('OutboxRelayService', () => {
         },
       });
       const { prisma, dashboardItems, notifications, notificationTemplates, dispatcher } = buildDeps([event]);
-      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
 
       await service.processPendingEvents();
 
@@ -254,7 +255,7 @@ describe('OutboxRelayService', () => {
         channels: ['EMAIL', 'PUSH'],
       });
 
-      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
       await service.processPendingEvents();
 
       expect(notifications.create).toHaveBeenCalledTimes(1);
@@ -290,7 +291,7 @@ describe('OutboxRelayService', () => {
       });
       dispatcher.dispatch.mockRejectedValue(new Error('FCM / SMTP connection timeout'));
 
-      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
       await service.processPendingEvents();
 
       // In-app creada
@@ -322,7 +323,7 @@ describe('OutboxRelayService', () => {
         channels: [],
       });
 
-      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher);
+      const service = new OutboxRelayService(prisma, dashboardItems, notifications, notificationTemplates, dispatcher, new OutboxEventConsumerRegistry());
       await service.processPendingEvents();
 
       expect(notifications.create).toHaveBeenCalledTimes(1);

@@ -7,6 +7,8 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
+import { ClockPort } from '../../../../common/application/ports/clock.port';
+import { ReservationStartDatePassedError, ReservationStartNotReachedError } from '../../domain/rental-errors';
 import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('CreateRentalFromReservationHandler (RES-05)', () => {
@@ -58,6 +60,8 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       markReservationConverted: jest.fn().mockResolvedValue(true),
       transferReservationCommitmentToRental: jest.fn().mockResolvedValue(1),
       findByReservationId: jest.fn().mockResolvedValue(null),
+      findVehicleById: jest.fn().mockResolvedValue({ id: 'veh-1', depositMinimum: null }),
+      findReservationCreditSource: jest.fn().mockResolvedValue(null),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
     const workContext = {
@@ -93,7 +97,10 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       publish: jest.fn().mockResolvedValue(undefined),
     };
 
-    return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository };
+    // 22-oct-2026 (decision 3): el reloj esta en el dia pactado de la reserva (01-oct-2026, hora de Lima).
+    const clock: ClockPort = { now: () => new Date('2026-10-01T15:00:00Z') };
+
+    return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository, clock };
   }
 
   it('crea alquiler exitosamente a partir de reserva confirmada (RES-05)', async () => {
@@ -105,6 +112,7 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.clock,
     );
 
     const result = await handler.execute(
@@ -137,6 +145,7 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.clock,
     );
   }
 
@@ -174,6 +183,22 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
     ).rejects.toThrow(ConflictException);
     expect(deps.rentals.create).not.toHaveBeenCalled();
     expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+  });
+
+  it('antes del dia pactado -> 422 RESERVATION_START_NOT_REACHED; despues -> 422 RESERVATION_START_DATE_PASSED (no-show por Gerencia); no convierte nada', async () => {
+    const early = buildDeps();
+    early.clock.now = () => new Date('2026-09-30T15:00:00Z');
+    await expect(
+      buildHandler(early).execute(new CreateRentalFromReservationCommand('uid-1', 'comp-1', 'branch-1', 'res-1')),
+    ).rejects.toBeInstanceOf(ReservationStartNotReachedError);
+
+    const late = buildDeps();
+    late.clock.now = () => new Date('2026-10-02T15:00:00Z');
+    await expect(
+      buildHandler(late).execute(new CreateRentalFromReservationCommand('uid-1', 'comp-1', 'branch-1', 'res-1')),
+    ).rejects.toBeInstanceOf(ReservationStartDatePassedError);
+    expect(early.rentals.markReservationConverted).not.toHaveBeenCalled();
+    expect(late.rentals.markReservationConverted).not.toHaveBeenCalled();
   });
 
   it('es idempotente: una reserva ya CONVERTED devuelve el alquiler existente sin crear otro', async () => {
@@ -214,6 +239,7 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.clock,
     );
 
     await expect(
@@ -232,6 +258,7 @@ describe('CreateRentalFromReservationHandler (RES-05)', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.clock,
     );
 
     await expect(

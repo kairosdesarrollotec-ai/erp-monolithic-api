@@ -6,6 +6,7 @@ import { PrismaDashboardItemRepository } from '../../src/modules/dashboard-proje
 import { PrismaNotificationReadModelRepository } from '../../src/modules/notifications/infrastructure/persistence/prisma-notification-read-model.repository';
 import { PrismaNotificationTemplateRepository } from '../../src/modules/notification-templates/infrastructure/persistence/prisma-notification-template.repository';
 import { OutboxRelayService } from '../../src/modules/dashboard-projections/infrastructure/outbox-relay.service';
+import { OutboxEventConsumerRegistry } from '../../src/modules/outbox/application/outbox-event-consumer.registry';
 import { NotificationDispatcherPort } from '../../src/modules/notifications/application/ports/notification-dispatcher.port';
 
 describe('TR-07 - Despacho Externo de Notificaciones (Postgres real)', () => {
@@ -39,6 +40,7 @@ describe('TR-07 - Despacho Externo de Notificaciones (Postgres real)', () => {
       notifications,
       notificationTemplates,
       dispatcherMock,
+      new OutboxEventConsumerRegistry(),
     );
   }, 60000);
 

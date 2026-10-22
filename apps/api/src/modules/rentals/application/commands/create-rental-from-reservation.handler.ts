@@ -5,6 +5,10 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
+import { assertReservationWithinGuarantee } from '../../../reservations/domain/reservation-guarantee';
+import { ClockPort } from '../../../../common/application/ports/clock.port';
+import { toLimaDateString } from '../../../../common/time/lima-time';
+import { ReservationStartDatePassedError, ReservationStartNotReachedError } from '../../domain/rental-errors';
 import { CreateRentalFromReservationCommand } from './create-rental-from-reservation.command';
 
 /**
@@ -24,6 +28,8 @@ import { CreateRentalFromReservationCommand } from './create-rental-from-reserva
  * de reserva + alquiler y eventos outbox `ReservationConverted` /
  * `RentalCreatedFromReservation.v1`.
  *
+ * Fecha (22-oct-2026, decision 3): solo se puede iniciar el dia pactado (hora de Lima).
+ *
  * Idempotente: reintentar sobre una reserva ya CONVERTED devuelve el alquiler
  * existente en vez de fallar. El monto pagado NO se toca aqui: sigue
  * trasladandose a la garantia en formalize-contract (P0-03 opcion a,
@@ -38,6 +44,7 @@ export class CreateRentalFromReservationHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    private readonly clock: ClockPort,
   ) {}
 
   async execute(command: CreateRentalFromReservationCommand): Promise<RentalRecord> {
@@ -78,6 +85,27 @@ export class CreateRentalFromReservationHandler {
         code: 'RESERVATION_NOT_CONFIRMED',
         detail: `No se puede iniciar el alquiler: la reserva se encuentra en estado ${reservation.status} (debe estar CONFIRMED).`,
       });
+    }
+
+    // Russbel 22-oct-2026 (decision 3): Reserva -> Alquiler solo en la fecha pactada, segun el calendario de Lima.
+    // Antes del dia -> 422 RESERVATION_START_NOT_REACHED; despues -> 422 RESERVATION_START_DATE_PASSED (protocolo de
+    // no-show por Gerencia: cancelar con CANCEL_NO_SHOW).
+    const startDate = toLimaDateString(reservation.startAt);
+    const today = toLimaDateString(this.clock.now());
+    if (today < startDate) {
+      throw new ReservationStartNotReachedError(startDate);
+    }
+    if (today > startDate) {
+      throw new ReservationStartDatePassedError(startDate);
+    }
+
+    // Decision 2 (22-oct-2026): validacion defensiva del tope de garantia tambien al convertir a alquiler.
+    const [vehicle, creditSource] = await Promise.all([
+      this.rentals.findVehicleById(reservation.vehicleId),
+      this.rentals.findReservationCreditSource(reservation.id),
+    ]);
+    if (creditSource) {
+      assertReservationWithinGuarantee(creditSource.amount, vehicle?.depositMinimum);
     }
 
     return this.transactionManager.run(async (tx) => {

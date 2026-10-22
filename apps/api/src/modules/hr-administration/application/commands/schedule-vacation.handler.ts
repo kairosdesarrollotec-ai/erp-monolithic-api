@@ -11,7 +11,7 @@ import {
   EmployeeTerminatedError,
   InvalidDateRangeError,
 } from '../../domain/hr-administration-errors';
-import { validateVacationAreaCapacity } from '../../domain/hr-administration-rules';
+import { VACATION_CAPACITY_SCOPE, validateVacationAreaCapacity } from '../../domain/hr-administration-rules';
 import { ScheduleVacationCommand } from './schedule-vacation.command';
 
 /**
@@ -60,7 +60,10 @@ export class ScheduleVacationHandler {
           throw new EmployeeTerminatedError(employee.id);
         }
 
-        const activeInArea = await this.vacations.findActiveByArea(employee.operatingCompanyId, employee.areaId, tx);
+        const activeInArea =
+          VACATION_CAPACITY_SCOPE === 'COMPANY'
+            ? await this.vacations.findActiveByCompany(employee.operatingCompanyId, tx)
+            : await this.vacations.findActiveByArea(employee.operatingCompanyId, employee.areaId, tx);
 
         validateVacationAreaCapacity(
           activeInArea.map((v) => ({

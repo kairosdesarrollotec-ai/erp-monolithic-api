@@ -331,3 +331,143 @@ export class CompanyDriverRateInvalidError extends DomainBadRequestError {
     super('La tarifa diaria debe ser un monto mayor que 0 con un maximo de 2 decimales (hasta 99999999.99).');
   }
 }
+
+/** Russbel 22-oct-2026 (decision 1; BR-CON-003, EX-CON-001): Consulta es el unico punto de entrada; `POST /rentals` exige `inquiryId`. */
+export class RentalInquiryRequiredError extends DomainUnprocessableError {
+  readonly code = 'INQUIRY_REQUIRED';
+
+  constructor() {
+    super(
+      'Un alquiler nace siempre de una Consulta (BR-CON-003): registra y cotiza la consulta y usa ' +
+        'POST /inquiries/{id}/commands/convert-to-rental, o parte de una reserva con POST /rentals/from-reservation/{id}.',
+    );
+  }
+}
+
+/** `POST /rentals`: el vehiculo debe ser el de la cotizacion vigente de la consulta (como en convert-to-rental). */
+export class RentalInquiryVehicleMismatchError extends DomainUnprocessableError {
+  readonly code = 'INQUIRY_VEHICLE_MISMATCH';
+
+  constructor() {
+    super('El vehículo indicado no es el de la cotización vigente de la consulta.');
+  }
+}
+
+/** El `customerId` enviado no es el cliente de la consulta indicada. */
+export class RentalInquiryCustomerMismatchError extends DomainUnprocessableError {
+  readonly code = 'INQUIRY_CUSTOMER_MISMATCH';
+
+  constructor() {
+    super('El cliente indicado no coincide con el cliente de la consulta.');
+  }
+}
+
+/** Russbel 22-oct-2026 (decision 3): Reserva -> Alquiler solo desde el dia pactado (hora de Lima). Antes del dia: 422. */
+export class ReservationStartNotReachedError extends DomainUnprocessableError {
+  readonly code = 'RESERVATION_START_NOT_REACHED';
+
+  constructor(startDate: string) {
+    super(`La reserva es para el ${startDate} (hora de Lima): el alquiler solo puede iniciarse desde ese dia.`, { startDate });
+  }
+}
+
+/** Russbel 22-oct-2026 (decision 3): pasado el dia pactado aplica el protocolo de no-show por Gerencia; no se inicia alquiler. */
+export class ReservationStartDatePassedError extends DomainUnprocessableError {
+  readonly code = 'RESERVATION_START_DATE_PASSED';
+
+  constructor(startDate: string) {
+    super(
+      `La fecha pactada de la reserva (${startDate}, hora de Lima) ya paso: aplica el protocolo de no-show por Gerencia (cancelar por no-show); no se puede iniciar el alquiler.`,
+      { startDate },
+    );
+  }
+}
+
+/** Decision 8 (22-oct-2026): garantia insuficiente respecto a la tarifa de Flota (x2 si DOUBLE_DEPOSIT) o monto no valido. */
+export class GuaranteeBelowRequiredError extends DomainUnprocessableError {
+  readonly code = 'INVALID_DEPOSIT_AMOUNT';
+
+  constructor(submitted: string, required: string, multiplier: number) {
+    super(
+      `La garantia (${submitted}) es menor que la exigida por la tarifa de Flota (${required}${multiplier === 2 ? ', doble garantia' : ''}).`,
+      { submittedAmount: submitted, requiredAmount: required, multiplier },
+    );
+  }
+}
+
+/** Decision 8: el cobro de la garantia exige comprobante (medio, nº de operacion/recibo, pagador, comprobante subido). */
+export class GuaranteePaymentProofRequiredError extends DomainUnprocessableError {
+  readonly code = 'PAYMENT_PROOF_REQUIRED';
+
+  constructor(missing: string[]) {
+    super(`Falta el comprobante del cobro de la garantia: ${missing.join(', ')}.`, { missing });
+  }
+}
+
+/** BR-ALQ-011: pagos hechos por un agente externo requieren verificacion adicional. */
+export class ExternalAgentVerificationRequiredError extends DomainUnprocessableError {
+  readonly code = 'EXTERNAL_AGENT_VERIFICATION_REQUIRED';
+
+  constructor() {
+    super(
+      'El pago lo realiza un agente externo (BR-ALQ-011): indique el documento del pagador y confirme la verificacion adicional (externalAgentVerified=true).',
+    );
+  }
+}
+
+export class GuaranteeVoucherNotFoundError extends DomainUnprocessableError {
+  readonly code = 'PAYMENT_VOUCHER_NOT_FOUND';
+
+  constructor() {
+    super('El comprobante indicado no existe entre los documentos de este alquiler (suba primero un documento PAYMENT_VOUCHER).');
+  }
+}
+
+/** BR-CON-004: documentos requeridos segun nacionalidad no validados. Incluye el set requerido y los faltantes. */
+export class RentalDocumentsIncompleteError extends DomainUnprocessableError {
+  readonly code = 'DOCUMENTS_INCOMPLETE';
+
+  constructor(missing: string[], required: string[]) {
+    super(`Falta validar los siguientes documentos requeridos (BR-CON-004): ${missing.join(', ')}`, {
+      missingDocuments: missing,
+      requiredDocuments: required,
+    });
+  }
+}
+
+/** Decision 2 (22-oct-2026): el credito de reserva nunca supera la garantia (sin saldo a favor); defensa en formalizar contrato. */
+export class ReservationCreditExceedsGuaranteeError extends DomainUnprocessableError {
+  readonly code = 'RESERVATION_EXCEEDS_GUARANTEE';
+
+  constructor(reservationAmount: string, guarantee: string) {
+    super(
+      `El monto de la reserva (${reservationAmount}) no puede superar la garantia del alquiler (${guarantee}); no hay saldo a favor.`,
+      { reservationAmount, guarantee },
+    );
+  }
+}
+
+/** DEC-ALQ-CANCEL-001: la cancelacion exige un motivo valido. */
+export class RentalCancelReasonInvalidError extends DomainBadRequestError {
+  readonly code = 'INVALID_CANCEL_REASON';
+
+  constructor(allowed: readonly string[]) {
+    super(`Motivo de cancelacion no valido. Use ${allowed.join(', ')} (OTHER exige una nota de al menos 10 caracteres).`);
+  }
+}
+
+export class NotaryEvaluationRequiredError extends DomainUnprocessableError {
+  readonly code = 'NOTARY_EVALUATION_REQUIRED';
+
+  constructor() {
+    super('Primero se debe evaluar la notaria (evaluate-notary): no hay evaluacion notarial que aprobar.');
+  }
+}
+
+export class NotaryExceptionNotApplicableError extends DomainUnprocessableError {
+  readonly code = 'NOTARY_EXCEPTION_NOT_APPLICABLE';
+
+  constructor(result: string) {
+    super(`La evaluacion notarial dio ${result}: solo THIRD_PATH_ELIGIBLE o MANUAL_REVIEW admiten aprobacion de excepcion por Gerencia.`);
+  }
+}

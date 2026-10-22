@@ -52,6 +52,16 @@ export class UpdateVehicleHandler {
       });
     }
 
+    // DEC-ALQ-THIRDPATH-001: solo Gerencia (accion FLEET.MANAGE_THIRD_PATH de la matriz ADM-02) cambia la marca.
+    const thirdPathChanges =
+      command.thirdPathEligible !== undefined && command.thirdPathEligible !== (existing.thirdPathEligible ?? false);
+    if (thirdPathChanges) {
+      await this.access.authorize(
+        { firebaseUid: command.firebaseUid, companyId: command.companyId, branchId: command.branchId },
+        'MANAGE_THIRD_PATH',
+      );
+    }
+
     const updated = await this.vehicles.update(command.vehicleId, scope, {
       branchId: command.assignedBranchId?.trim() || existing.branchId,
       brand: command.brand != null ? command.brand.trim() : existing.brand,
@@ -64,12 +74,13 @@ export class UpdateVehicleHandler {
       passengerCapacity: command.passengerCapacity,
       fuelPrice: command.fuelPrice,
       photoUrl: command.photoUrl?.trim() || null,
+      thirdPathEligible: thirdPathChanges ? command.thirdPathEligible : undefined,
     });
 
     // B7: auditoria de quien/cuando edito el vehiculo, con el diff antes/despues de los campos que cambiaron.
     const tracked = [
       'branchId', 'brand', 'model', 'year', 'color', 'category',
-      'dailyRate', 'depositMinimum', 'passengerCapacity', 'fuelPrice', 'photoUrl',
+      'dailyRate', 'depositMinimum', 'passengerCapacity', 'fuelPrice', 'photoUrl', 'thirdPathEligible',
     ] as const;
     const changes: Record<string, { from: unknown; to: unknown }> = {};
     for (const key of tracked) {

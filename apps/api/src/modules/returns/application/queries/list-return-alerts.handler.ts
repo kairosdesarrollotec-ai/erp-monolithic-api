@@ -53,14 +53,12 @@ export class ListReturnAlertsHandler {
     const wantWarranty = !query.type || query.type === 'WARRANTY_RELEASE';
     const wantImmobilization = !query.type || query.type === 'IMMOBILIZATION';
     const wantLateCharge = !query.type || query.type === 'LATE_CHARGE';
-    // Ninguna alerta de reloj puede existir antes de este umbral de horas desde la recepción.
-    const earliestHours = Math.min(
-      wantWarranty ? WARRANTY_RELEASE_WINDOW_HOURS - WARRANTY_RELEASE_WARNING_LEAD_HOURS : Infinity,
-      wantImmobilization ? IMMOBILIZATION_ALERT_AFTER_HOURS : Infinity,
-    );
+    // Garantia: ninguna alerta puede existir antes de este umbral desde la recepcion. Inmovilizacion: 24 h desde el CIERRE.
+    const hourMs = 60 * 60 * 1000;
     const candidates = await this.alerts.listCandidates({
       ...scope,
-      receivedBefore: Number.isFinite(earliestHours) ? new Date(now.getTime() - earliestHours * 60 * 60 * 1000) : null,
+      receivedBefore: wantWarranty ? new Date(now.getTime() - (WARRANTY_RELEASE_WINDOW_HOURS - WARRANTY_RELEASE_WARNING_LEAD_HOURS) * hourMs) : null,
+      closedBefore: wantImmobilization ? new Date(now.getTime() - IMMOBILIZATION_ALERT_AFTER_HOURS * hourMs) : null,
       includeLateCharge: wantLateCharge,
       limit: query.limit,
     });

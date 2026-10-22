@@ -14,6 +14,14 @@ export interface CreateAttendanceData {
   latitude?: number | null;
   longitude?: number | null;
   accuracy?: number | null;
+  /** 22-oct (#9): origen y control de geocerca. */
+  source?: 'SELF' | 'ON_BEHALF';
+  onBehalfReason?: string | null;
+  capturedAt?: Date | null;
+  outsideGeofence?: boolean;
+  distanceMeters?: number | null;
+  geofenceRadiusMeters?: number | null;
+  reviewStatus?: 'PENDING' | null;
   /** DEC-ADP-ATT-EVIDENCE-001 */
   evidence?: {
     kind: string;
@@ -32,6 +40,26 @@ export interface ReclassifyAttendanceData {
   justification: string;
   reclassifiedById: string;
   reclassifiedAt: Date;
+}
+
+export interface CheckOutData {
+  checkOutTime: Date;
+  capturedAt: Date;
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  outsideGeofence: boolean;
+  distanceMeters: number | null;
+}
+
+export interface ReviewAttendanceData {
+  reviewStatus: 'APPROVED' | 'CORRECTED';
+  reviewedById: string;
+  reviewedAt: Date;
+  reviewNote: string | null;
+  status?: AttendanceStatus;
+  minutesLate?: number;
+  deductionAmount?: number;
 }
 
 export interface AttendanceWithEmployee extends AttendanceRecord {
@@ -87,6 +115,16 @@ export abstract class AttendanceRepositoryPort {
    * Reclasifica una falta de forma condicional: solo si sigue siendo falta y su descuento aún no se liquidó.
    * Si otra operación la movió antes devuelve null.
    */
+  /** Marca la salida sobre la fila del dia, solo si aun no tiene salida propia. Null si ya la tenia. */
+  abstract recordCheckOut(id: string, data: CheckOutData, tx?: Prisma.TransactionClient): Promise<AttendanceRecord | null>;
+  /** Revision condicional: solo si sigue PENDING y el descuento no se liquido. Null si cambio. */
+  abstract review(id: string, data: ReviewAttendanceData, tx?: Prisma.TransactionClient): Promise<AttendanceRecord | null>;
+  /** Marcas fuera de geocerca pendientes de revision de la empresa, mas antiguas primero. */
+  abstract findPendingReview(
+    companyId: string,
+    limit: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<AttendanceWithEmployee[]>;
   abstract reclassify(
     id: string,
     data: ReclassifyAttendanceData,

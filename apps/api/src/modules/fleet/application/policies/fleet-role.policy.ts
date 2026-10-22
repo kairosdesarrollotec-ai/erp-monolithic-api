@@ -76,6 +76,16 @@ export function assertFleetCrossBranchPermission(role: WorkerRole | null): void 
   }
 }
 
+/** DEC-ALQ-THIRDPATH-001: marcar un vehiculo como elegible para la tercera via notarial lo decide solo Gerencia. */
+export function assertFleetManageThirdPath(role: WorkerRole | null): void {
+  if (role !== 'GERENCIA' && role !== 'PLATFORM_ADMIN') {
+    throw new ForbiddenException({
+      code: 'FLEET_THIRD_PATH_NOT_ALLOWED',
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no puede marcar vehiculos como elegibles para la tercera via (solo Gerencia).`,
+    });
+  }
+}
+
 /**
  * Valida que el usuario tenga permiso para operar sobre una sede distinta a
  * la de su contexto de trabajo (IDOR por sede - Finding #2, PR#34).

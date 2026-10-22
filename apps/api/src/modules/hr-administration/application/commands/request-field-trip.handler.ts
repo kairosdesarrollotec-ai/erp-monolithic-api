@@ -4,6 +4,7 @@ import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
+import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import {
@@ -24,6 +25,7 @@ export class RequestFieldTripHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly alerts: FieldTripAlertPublisher,
   ) {}
 
   async execute(command: RequestFieldTripCommand): Promise<FieldTripRequest> {
@@ -83,6 +85,9 @@ export class RequestFieldTripHandler {
         },
         tx,
       );
+
+      // 22-oct #4: aviso a quien tenga NOTIFICATIONS.RECEIVE_FIELD_TRIP_ALERTS (v0 Gerencia), en la misma transaccion.
+      await this.alerts.publish('REQUESTED', created, employee, tx, { estimatedDeparture: created.estimatedDeparture.toISOString() });
 
       return created;
     });

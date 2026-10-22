@@ -9,7 +9,13 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { RentalCreationGuard } from '../services/rental-creation.guard';
-import { CustomerBlockedError, RentalInquiryNotFoundError, VehicleNotAvailableForRentalError } from '../../domain/rental-errors';
+import {
+  CustomerBlockedError,
+  RentalInquiryCustomerMismatchError,
+  RentalInquiryNotFoundError,
+  RentalInquiryRequiredError,
+  VehicleNotAvailableForRentalError,
+} from '../../domain/rental-errors';
 import { InquiryNotTransitionableError } from '../../../inquiries/domain/inquiry-errors';
 import { testRole } from '../../../users/testing/role-fixtures';
 
@@ -72,8 +78,9 @@ describe('CreateRentalHandler', () => {
         branchId: 'branch-1',
         customerId: 'cust-1',
         status: 'COTIZADA',
-        quotations: [{ id: 'q-1', vehicleId: 'veh-1', estimatedDays: 3, validUntil: new Date(), createdAt: new Date() }],
+        quotations: [{ id: 'q-1', vehicleId: 'veh-1', estimatedDays: 3, validUntil: new Date('2026-12-31T00:00:00Z'), createdAt: new Date() }],
       }),
+      markInquiryConverted: jest.fn().mockResolvedValue(true),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
     const workContext = {
@@ -112,7 +119,7 @@ describe('CreateRentalHandler', () => {
     const clock: ClockPort = { now: () => new Date('2026-10-05T15:00:00Z') };
     const creationGuard = new RentalCreationGuard(rentals, clock);
 
-    return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository, creationGuard };
+    return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository, creationGuard, clock };
   }
 
   function buildHandler(deps: ReturnType<typeof buildDeps>) {
@@ -124,6 +131,7 @@ describe('CreateRentalHandler', () => {
       deps.auditRepository,
       deps.outboxRepository,
       deps.creationGuard,
+      deps.clock,
     );
   }
 
@@ -144,6 +152,7 @@ describe('CreateRentalHandler', () => {
         'NORMAL',
         startAt,
         expectedEndAt,
+        'inq-1',
       ),
     );
 
@@ -176,7 +185,7 @@ describe('CreateRentalHandler', () => {
 
     await expect(
       handler.execute(
-        new CreateRentalCommand('uid-1', 'comp-1', 'branch-1', 'cust-inexistente', 'veh-1'),
+        new CreateRentalCommand('uid-1', 'comp-1', 'branch-1', 'cust-inexistente', 'veh-1', undefined, undefined, undefined, 'inq-1'),
       ),
     ).rejects.toThrow(NotFoundException);
   });
@@ -189,7 +198,7 @@ describe('CreateRentalHandler', () => {
 
     await expect(
       handler.execute(
-        new CreateRentalCommand('uid-1', 'comp-1', 'branch-1', 'cust-1', 'veh-inexistente'),
+        new CreateRentalCommand('uid-1', 'comp-1', 'branch-1', 'cust-1', 'veh-inexistente', undefined, undefined, undefined, 'inq-1'),
       ),
     ).rejects.toThrow(NotFoundException);
   });
@@ -212,13 +221,14 @@ describe('CreateRentalHandler', () => {
           'NORMAL',
           startAt,
           expectedEndAt,
+          'inq-1',
         ),
       ),
     ).rejects.toThrow(UnprocessableEntityException);
   });
 
   describe('endurecimiento (ALQ-02, DT-ALQ-05)', () => {
-    const create = (deps: ReturnType<typeof buildDeps>, inquiryId?: string, startAt?: Date, expectedEndAt?: Date) =>
+    const create = (deps: ReturnType<typeof buildDeps>, inquiryId: string | undefined = 'inq-1', startAt?: Date, expectedEndAt?: Date) =>
       buildHandler(deps).execute(
         new CreateRentalCommand('uid-1', 'comp-1', 'branch-1', 'cust-1', 'veh-1', 'NORMAL', startAt, expectedEndAt, inquiryId),
       );
@@ -287,6 +297,24 @@ describe('CreateRentalHandler', () => {
       expect(deps.rentals.create).toHaveBeenCalledWith(expect.objectContaining({ inquiryId: 'inq-1' }), fakeTx);
     });
 
+    it('sin inquiryId -> 422 INQUIRY_REQUIRED (un alquiler nace siempre de una Consulta, BR-CON-003) y no crea nada', async () => {
+      const deps = buildDeps();
+      const handler = buildHandler(deps);
+      await expect(
+        handler.execute(new CreateRentalCommand('uid-1', 'comp-1', 'branch-1', 'cust-1', 'veh-1')),
+      ).rejects.toBeInstanceOf(RentalInquiryRequiredError);
+      expect(deps.rentals.create).not.toHaveBeenCalled();
+    });
+
+    it('la consulta es de otro cliente -> INQUIRY_CUSTOMER_MISMATCH', async () => {
+      const deps = buildDeps();
+      deps.rentals.findInquiryForRental.mockResolvedValueOnce({
+        id: 'inq-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', branchId: 'branch-1', customerId: 'cust-OTRO', status: 'COTIZADA', quotations: [],
+      });
+      await expect(create(deps, 'inq-1')).rejects.toBeInstanceOf(RentalInquiryCustomerMismatchError);
+      expect(deps.rentals.create).not.toHaveBeenCalled();
+    });
+
     it('inquiryId inexistente -> INQUIRY_NOT_FOUND', async () => {
       const deps = buildDeps();
       deps.rentals.findInquiryForRental.mockResolvedValueOnce(null);
@@ -305,7 +333,7 @@ describe('CreateRentalHandler', () => {
     it.each(['REGISTRADA', 'CONVERTIDA', 'CERRADA_SIN_CONVERSION'])('inquiryId en estado %s -> INQUIRY_NOT_TRANSITIONABLE', async (status) => {
       const deps = buildDeps();
       deps.rentals.findInquiryForRental.mockResolvedValueOnce({
-        id: 'inq-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', branchId: 'b', customerId: 'c', status, quotations: [],
+        id: 'inq-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', branchId: 'branch-1', customerId: 'cust-1', status, quotations: [],
       });
       await expect(create(deps, 'inq-1')).rejects.toBeInstanceOf(InquiryNotTransitionableError);
       expect(deps.rentals.create).not.toHaveBeenCalled();

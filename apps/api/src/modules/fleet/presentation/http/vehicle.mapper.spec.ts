@@ -40,6 +40,7 @@ describe('toVehicleResponse', () => {
       depositMinimum: null,
       passengerCapacity: null,
       fuelPrice: null,
+      thirdPathEligible: false,
       createdAt: '2026-09-28T10:00:00.000Z',
       updatedAt: '2026-09-28T10:00:00.000Z',
     });

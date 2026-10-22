@@ -7,7 +7,7 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { RentalStateConflictError } from '../../domain/rental-errors';
+import { NotaryEvaluationRequiredError, NotaryExceptionNotApplicableError, RentalStateConflictError } from '../../domain/rental-errors';
 import { ForbiddenException } from '@nestjs/common';
 import { testRole } from '../../../users/testing/role-fixtures';
 
@@ -37,6 +37,17 @@ describe('ApproveNotaryExceptionHandler', () => {
     updatedAt: new Date(),
     updatedBy: 'uid-user',
     version: 3,
+    // evaluate-notary persiste siempre la evaluacion (22-oct-2026); approve exige que exista y registra su tipo real.
+    notaryEvaluation: {
+      id: 'ne-1',
+      rentalId: 'rent-400',
+      policyVersion: 2,
+      result: 'THIRD_PATH_ELIGIBLE',
+      reason: 'Cliente antiguo con biometria y vehiculo de menor costo',
+      evaluatedAt: new Date('2026-10-22T10:00:00Z'),
+      approvedBy: null,
+      justification: null,
+    },
   };
 
   const fakeTx = {} as any;
@@ -120,13 +131,43 @@ describe('ApproveNotaryExceptionHandler', () => {
       fakeTx,
     );
     expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'NOTARY_EXCEPTION_APPROVED' }),
+      expect.objectContaining({ action: 'NOTARY_EXCEPTION_APPROVED', changes: expect.objectContaining({ exceptionType: 'THIRD_PATH_ELIGIBLE' }) }),
       fakeTx,
     );
     expect(deps.outboxRepository.publish).toHaveBeenCalledWith(
       expect.objectContaining({ eventType: 'ExcepcionNotarialAprobada.v1' }),
       fakeTx,
     );
+  });
+
+  it('MANUAL_REVIEW aprobado por Gerencia registra el tipo correcto (MANUAL_REVIEW), no lo sobrescribe como tercera via', async () => {
+    const deps = buildDeps('GERENCIA');
+    deps.rentals.findById.mockResolvedValue({ ...fakeRental, notaryEvaluation: { ...fakeRental.notaryEvaluation!, result: 'MANUAL_REVIEW' } });
+    const handler = new ApproveNotaryExceptionHandler(deps.rentals, deps.workContext, deps.matrixAuth, deps.transactionManager, deps.auditRepository, deps.outboxRepository);
+
+    await handler.execute(new ApproveNotaryExceptionCommand('rent-400', 'uid-gerencia', 'comp-1', 'branch-1', 3, 'Revision manual favorable, cliente conocido.'));
+
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ changes: expect.objectContaining({ exceptionType: 'MANUAL_REVIEW' }) }),
+      fakeTx,
+    );
+    expect(deps.outboxRepository.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ payload: expect.objectContaining({ exceptionType: 'MANUAL_REVIEW' }) }),
+      fakeTx,
+    );
+  });
+
+  it('sin evaluacion guardada -> 422 NOTARY_EVALUATION_REQUIRED; resultado que no admite excepcion (DOUBLE_DEPOSIT) -> 422 NOTARY_EXCEPTION_NOT_APPLICABLE', async () => {
+    const none = buildDeps('GERENCIA');
+    none.rentals.findById.mockResolvedValue({ ...fakeRental, notaryEvaluation: null });
+    const h1 = new ApproveNotaryExceptionHandler(none.rentals, none.workContext, none.matrixAuth, none.transactionManager, none.auditRepository, none.outboxRepository);
+    await expect(h1.execute(new ApproveNotaryExceptionCommand('rent-400', 'uid-gerencia', 'comp-1', 'branch-1', 3, 'Justificacion suficiente aqui.'))).rejects.toBeInstanceOf(NotaryEvaluationRequiredError);
+
+    const dd = buildDeps('GERENCIA');
+    dd.rentals.findById.mockResolvedValue({ ...fakeRental, notaryEvaluation: { ...fakeRental.notaryEvaluation!, result: 'DOUBLE_DEPOSIT' } });
+    const h2 = new ApproveNotaryExceptionHandler(dd.rentals, dd.workContext, dd.matrixAuth, dd.transactionManager, dd.auditRepository, dd.outboxRepository);
+    await expect(h2.execute(new ApproveNotaryExceptionCommand('rent-400', 'uid-gerencia', 'comp-1', 'branch-1', 3, 'Justificacion suficiente aqui.'))).rejects.toBeInstanceOf(NotaryExceptionNotApplicableError);
+    expect(dd.rentals.approveNotaryException).not.toHaveBeenCalled();
   });
 
   it('rol sin permiso: MatrixAuthorizationService lanza error de autorizacion', async () => {

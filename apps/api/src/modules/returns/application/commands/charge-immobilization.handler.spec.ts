@@ -1,6 +1,7 @@
 import { ChargeImmobilizationHandler } from './charge-immobilization.handler';
 import { ChargeImmobilizationCommand } from './charge-immobilization.command';
 import {
+  ImmobilizationClockNotStartedError,
   ImmobilizationPeriodNotElapsedError,
   InvalidImmobilizationChargeError,
   ReturnDamageNotFoundError,
@@ -18,14 +19,17 @@ import {
 import { ReturnRecord } from '../ports/return-repository.port';
 
 describe('ChargeImmobilizationHandler (DEV-07 / BR-DEV-011)', () => {
-  const RECEIVED_AT = new Date('2026-10-03T10:00:00.000Z');
+  // BR-DEV-011 (22-oct-2026): el reloj corre desde el CIERRE de la devolucion (closedAt), no desde la recepcion.
+  const RECEIVED_AT = new Date('2026-10-02T08:00:00.000Z');
+  const CLOSED_AT = new Date('2026-10-03T10:00:00.000Z');
 
   function build(overrides: Partial<ReturnRecord> = {}, nowIso = '2026-10-05T12:00:00.000Z') {
     const deps = buildDeps({ role: 'GERENCIA', now: new Date(nowIso) });
     const base = buildReturnRecord({
-      status: 'CON_DANOS',
+      status: 'CERRADA',
       custodyHolder: 'TALLER',
       receivedAt: RECEIVED_AT,
+      closedAt: CLOSED_AT,
       version: 8,
       vehicleDailyRate: 100,
       damages: [buildTechnicalDamage()],
@@ -140,11 +144,23 @@ describe('ChargeImmobilizationHandler (DEV-07 / BR-DEV-011)', () => {
     await expect(handler.execute(cmd(1))).rejects.toThrow(InvalidImmobilizationChargeError);
   });
 
-  it('estados fuera de CON_DANOS/CIERRE_FINANCIERO -> ReturnStateConflictError; CIERRE_FINANCIERO permitido', async () => {
+  it('devolución sin cerrar (CON_DANOS / CIERRE_FINANCIERO): el reloj no corre -> 422 IMMOBILIZATION_CLOCK_NOT_STARTED aunque pasen 24 h desde la recepción', async () => {
+    for (const status of ['CON_DANOS', 'CIERRE_FINANCIERO'] as const) {
+      const { deps, handler } = build({ status, closedAt: null });
+      const error = await handler.execute(cmd(1)).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ImmobilizationClockNotStartedError);
+      expect((error as ImmobilizationClockNotStartedError).code).toBe('IMMOBILIZATION_CLOCK_NOT_STARTED');
+      expect(deps.returns.update).not.toHaveBeenCalled();
+    }
+  });
+
+  it('el reloj cuenta desde el cierre, no desde la recepción: a 20 h del cierre (y > 24 h de la recepción) aún no procede', async () => {
+    const { handler } = build({}, '2026-10-04T06:00:00.000Z');
+    await expect(handler.execute(cmd(1))).rejects.toThrow(ImmobilizationPeriodNotElapsedError);
+  });
+
+  it('estados fuera de CON_DANOS/CIERRE_FINANCIERO/CERRADA -> ReturnStateConflictError', async () => {
     const blocked = build({ status: 'INSPECCION' });
     await expect(blocked.handler.execute(cmd(1))).rejects.toThrow(ReturnStateConflictError);
-
-    const allowed = build({ status: 'CIERRE_FINANCIERO' });
-    await expect(allowed.handler.execute(cmd(1))).resolves.toBeDefined();
   });
 });

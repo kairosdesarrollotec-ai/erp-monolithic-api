@@ -13,6 +13,7 @@ import { RentalsExtensionsController } from './rentals-extensions.controller';
 import { RentalDocumentsController } from './rental-documents.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
+import { EvaluateNotaryDto } from './dto/evaluate-notary.dto';
 import { ValidateDocumentsDto } from './dto/validate-documents.dto';
 import { RENTAL_EVIDENCE_ZONES } from './dto/request-evidence-upload-session.dto';
 import { RegisterAlcoholTestDto } from './dto/register-alcohol-test.dto';
@@ -201,7 +202,7 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     ['CreateRentalFromReservationRequest', CreateRentalFromReservationDto],
     ['ValidateDocumentsRequest', ValidateDocumentsDto],
     ['RegisterAlcoholTestRequest', RegisterAlcoholTestDto],
-    ['EvaluateNotaryRequest', CommandScopeDto],
+    ['EvaluateNotaryRequest', EvaluateNotaryDto],
     ['ApproveNotaryExceptionRequest', ApproveNotaryExceptionDto],
     ['RegisterAuthorizedDriverRequest', RegisterAuthorizedDriverDto],
     ['RegisterCompanionRequest', RegisterCompanionDto],
@@ -247,7 +248,7 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
   });
 
   it('DEC-ALQ-CAPWARN-001/002 (contrato 1.11.0): RentalResponse expone vehiclePassengerCapacity (nullable) y companionsCount (RESPONSIBLE)', () => {
-    expect(spec.info.version).toBe('1.13.0');
+    expect(spec.info.version).toBe('1.14.0');
     const contract = flatten(spec.components.schemas.RentalResponse);
     expect(contract.properties.vehiclePassengerCapacity.nullable).toBe(true);
     expect(contract.properties.vehiclePassengerCapacity.type).toBe('integer');

@@ -27,6 +27,7 @@ function toDomain(row: {
   passengerCapacity: number | null;
   fuelPrice: Prisma.Decimal | null;
   photoUrl: string | null;
+  thirdPathEligible: boolean;
   createdAt: Date;
   updatedAt: Date;
 }): FleetVehicle {
@@ -47,6 +48,7 @@ function toDomain(row: {
     passengerCapacity: row.passengerCapacity,
     fuelPrice: row.fuelPrice !== null ? Number(row.fuelPrice) : null,
     photoUrl: row.photoUrl,
+    thirdPathEligible: row.thirdPathEligible,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -204,6 +206,7 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
             ? new Prisma.Decimal(input.fuelPrice)
             : undefined,
         photoUrl: input.photoUrl ?? undefined,
+        thirdPathEligible: input.thirdPathEligible,
       },
     });
 

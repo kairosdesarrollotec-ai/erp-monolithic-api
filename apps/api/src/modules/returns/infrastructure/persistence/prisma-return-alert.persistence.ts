@@ -18,10 +18,16 @@ export class PrismaReturnAlertPersistence implements ReturnAlertRepositoryPort {
     if (filter.receivedBefore) {
       clauses.push({
         receivedAt: { not: null, lte: filter.receivedBefore },
-        OR: [
-          { status: 'SIN_DANOS' },
-          { status: { in: ['CON_DANOS', 'CIERRE_FINANCIERO'] }, damages: { some: { origin: 'TECHNICAL' } } },
-        ],
+        status: 'SIN_DANOS',
+      });
+    }
+    if (filter.closedBefore) {
+      // BR-DEV-011 (22-oct-2026): el reloj de paralizacion corre desde el cierre de la devolucion.
+      clauses.push({
+        status: 'CERRADA',
+        closedAt: { not: null, lte: filter.closedBefore },
+        damages: { some: { origin: 'TECHNICAL' } },
+        receivedAt: { not: null },
       });
     }
     if (filter.includeLateCharge) {

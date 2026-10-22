@@ -26,6 +26,8 @@ export interface VehicleResponse {
   passengerCapacity?: number | null;
   fuelPrice?: number | null;
   photoUrl?: string | null;
+  /** DEC-ALQ-THIRDPATH-001: elegible para la tercera via notarial (solo Gerencia lo cambia). */
+  thirdPathEligible: boolean;
   createdAt: string;
   updatedAt: string;
   /** Solo presente en GET /fleet/vehicles cuando se envian availableFrom y availableTo. */

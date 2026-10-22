@@ -12,6 +12,7 @@ import {
   Matches,
   MaxLength,
   Min,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { ATTENDANCE_EVIDENCE_KINDS } from '../../../application/commands/log-attendance.command';
@@ -73,6 +74,13 @@ export class LogAttendanceDto {
   @IsString()
   @MaxLength(1000)
   notes?: string | null;
+
+  /** 22-oct (#9): motivo del registro «a nombre de» otro colaborador; obligatorio en PRESENTE/TARDANZA (422 en el handler). */
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  reason?: string | null;
 
   @IsOptional()
   @ValidateNested()

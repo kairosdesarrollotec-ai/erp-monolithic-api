@@ -1,7 +1,7 @@
 import type { AttendanceStatus } from '@prisma/client';
 
 /** DEC-ADP-ATT-EVIDENCE-001: la asistencia NO es biometrica; se corrobora con una foto (reloj + hora + rostro) enviada al grupo de WhatsApp. */
-export const ATTENDANCE_EVIDENCE_KINDS = ['WHATSAPP_PHOTO'] as const;
+export const ATTENDANCE_EVIDENCE_KINDS = ['WHATSAPP_PHOTO', 'SELF_PHOTO'] as const;
 export type AttendanceEvidenceKind = (typeof ATTENDANCE_EVIDENCE_KINDS)[number];
 
 export interface AttendanceEvidenceInput {
@@ -34,5 +34,7 @@ export class LogAttendanceCommand {
     public readonly notes?: string | null,
     public readonly evidence?: AttendanceEvidenceInput | null,
     public readonly location?: AttendanceLocationInput | null,
+    /** 22-oct (#9): motivo del registro «a nombre de» otro colaborador; obligatorio en PRESENTE/TARDANZA. */
+    public readonly reason?: string | null,
   ) {}
 }

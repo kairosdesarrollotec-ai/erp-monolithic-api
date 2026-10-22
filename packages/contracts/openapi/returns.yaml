@@ -1,8 +1,18 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.9.0
+  version: 1.10.0
   description: >
+    1.10.0 - (22-oct-2026, G2) BR-DEV-011 RELOJ DE INMOVILIZACION DESDE EL CIERRE (respuesta de negocio del 22-oct): los dias de
+    paralizacion se cuentan desde que se CIERRA la devolucion (estado CERRADA, `closedAt`), ya no desde la recepcion (COMPORTAMIENTO
+    CAMBIADO). (1) `POST charge-immobilization`: solo procede con la devolucion CERRADA; en CON_DANOS / CIERRE_FINANCIERO (reloj aun sin
+    arrancar) responde 422 `IMMOBILIZATION_CLOCK_NOT_STARTED` (codigo nuevo); a menos de 24 h naturales del cierre sigue siendo 422
+    `IMMOBILIZATION_PERIOD_NOT_ELAPSED`. La formula de dias NO cambia (24 h de gracia y luego ceil(horas excedentes / 24)). (2) Alerta
+    IMMOBILIZATION (GET /returns/alerts, `alerts.immobilization` de GET /returns y /returns/{id}, y tablero): solo existe con la devolucion
+    CERRADA y > 24 h desde el cierre; `ImmobilizationAlert.since` pasa a ser el instante de CIERRE (antes la recepcion). Devolucion sin
+    cerrar = sin reloj = sin alerta. (3) PD-07 (ADITIVO): `GET|POST /returns/{id}/zone-marks` persisten las marcas por zona de DEV-05 y auditan `RETURN_ZONE_MARKED` y `RETURN_ROUTE_TAKEN`. PREGUNTA ABIERTA: la formula (ceil sobre el exceso de 24 h)
+    difiere de la redaccion del TDD; y como el cierre exige que todo dano tecnico ya tenga monto de informe, el cobro posterior al cierre
+    se anota como ajuste de garantia sin reabrir la liquidacion (confirmar con negocio).
     1.9.0 - (a) DEC-EVID-DELETE-002 (Respuestas 2026-10-20 #35, SDD 15.5): eliminar evidencia exige DOBLE APROBACION (contrato nuevo
     evidence.yaml). `DELETE /returns/{id}/evidence/{evidenceId}` queda DEPRECADO (header `Deprecation: true`) y CAMBIA su permiso:
     exige EVIDENCE.DELETE_DIRECT (v0: solo PLATFORM_ADMIN) en lugar de RETURN.UPLOAD_EVIDENCE -> 403 ROLE_NOT_ALLOWED para los demas
@@ -190,8 +200,8 @@ paths:
       description: >
         Calculadas con el reloj en cada consulta (sin estado propio). WARRANTY_RELEASE: devolución SIN_DANOS sin cierre financiero a la
         que le faltan 4 h o menos (DUE_SOON) o ya venció (OVERDUE) el plazo MÁXIMO de 24 h naturales desde la recepción (BR-DEV-001);
-        un daño suspende ese plazo. IMMOBILIZATION: más de 24 h naturales desde la recepción con daño TÉCNICO y días de paralización
-        aún sin cobrar (BR-DEV-011). SOLO ALERTAN: el reembolso y el cobro siguen siendo manuales (close-financial / charge-immobilization).
+        un daño suspende ese plazo. IMMOBILIZATION: más de 24 h naturales desde el cierre con daño TÉCNICO y días de paralización
+        aún sin cobrar (BR-DEV-011; desde 1.10.0 el reloj corre desde el CIERRE de la devolución, no desde la recepción: devolución sin cerrar = sin alerta). SOLO ALERTAN: el reembolso y el cobro siguen siendo manuales (close-financial / charge-immobilization).
         LATE_CHARGE (1.8.0): recibida con retraso mayor que la tolerancia de 30 min y sin cargo por retraso registrado; SUGERENCIA de
         registrarlo (sin monto: lo digita el usuario autorizado). Sin `type` devuelve todos los tipos. Solo lectura; no requiere If-Match.
       security: [{ bearerAuth: [] }]
@@ -295,6 +305,62 @@ paths:
           description: Devolución no encontrada o plantilla no configurada para la empresa
         '500':
           description: Error interno del servidor
+
+  /returns/{id}/zone-marks:
+    get:
+      operationId: listReturnZoneMarks
+      summary: Marcas por zona de DEV-05 persistidas en el servidor (PD-07)
+      description: >
+        Devuelve las marcas "Sin daño" / "Con daño" guardadas por zona y la ruta resultante (`route`): NO_DAMAGE (las 5 zonas sin daño ->
+        DEV-09), DAMAGE (al menos una con daño -> DEV-06) o null mientras falten zonas. Sirve para restaurar la pantalla Resultado tras
+        recargar o en otro dispositivo. Solo lectura.
+      tags: [returns]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/returnId'
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/branchId'
+      responses:
+        '200':
+          description: Marcas y ruta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnZoneMarksResponse' }
+        '401': { description: No autenticado }
+        '403': { description: No autorizado para el contexto o rol insuficiente }
+        '404': { description: Devolución no encontrada (RETURN_NOT_FOUND) }
+        '500': { description: Error interno del servidor }
+    post:
+      operationId: recordReturnZoneMarks
+      summary: Registrar las marcas por zona de DEV-05 y la ruta tomada (PD-07)
+      description: >
+        Upsert por zona (solo las zonas enviadas cambian; las 5 zonas: FRONTAL, LATERAL_IZQUIERDO, LATERAL_DERECHO, POSTERIOR, INTERIOR).
+        Cada marca nueva o cambiada emite el evento auditable RETURN_ZONE_MARKED; cuando las 5 zonas quedan marcadas por primera vez, o la
+        ruta resultante cambia, emite RETURN_ROUTE_TAKEN (route = NO_DAMAGE | DAMAGE, zonas con daño). La ruta "incidente" la audita el
+        módulo de Incidencias. Mismo permiso que completar la inspección. Solo con la devolución en RECEPCION_PROVISIONAL | INSPECCION
+        (resuelta ya la inspección -> 409 RETURN_STATE_CONFLICT). NO lleva If-Match (no cambia el agregado) y es idempotente
+        (repetir las mismas marcas no escribe ni audita). No bloquea ni condiciona complete-inspection.
+      tags: [returns]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/returnId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordReturnZoneMarksRequest' }
+      responses:
+        '200':
+          description: Marcas vigentes y ruta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnZoneMarksResponse' }
+        '401': { description: No autenticado }
+        '403': { description: No autorizado para el contexto o rol insuficiente }
+        '404': { description: Devolución no encontrada (RETURN_NOT_FOUND) }
+        '409': { description: Devolución fuera de RECEPCION_PROVISIONAL / INSPECCION (RETURN_STATE_CONFLICT) }
+        '422': { description: Zona o marca fuera del catálogo, zona repetida o lista vacía (INVALID_ZONE_MARK) }
+        '500': { description: Error interno del servidor }
 
   /returns/{id}/commands/register-alcohol-test:
     post:
@@ -496,11 +562,11 @@ paths:
         '404':
           description: Devolución (o damageId) no encontrada en la empresa/sede
         '409':
-          description: Estado incompatible (debe estar en CON_DANOS o CIERRE_FINANCIERO)
+          description: Estado incompatible (debe estar en CON_DANOS, CIERRE_FINANCIERO o CERRADA; solo CERRADA arranca el reloj)
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: No han transcurrido 24 horas naturales desde la recepción (IMMOBILIZATION_PERIOD_NOT_ELAPSED), no hay daño técnico, el vehículo no tiene dailyRate o los días exceden los pendientes de cobro (INVALID_IMMOBILIZATION_CHARGE)
+          description: La devolución aún no está cerrada, el reloj no corre (IMMOBILIZATION_CLOCK_NOT_STARTED), no han transcurrido 24 horas naturales desde el cierre (IMMOBILIZATION_PERIOD_NOT_ELAPSED), no hay daño técnico, el vehículo no tiene dailyRate o los días exceden los pendientes de cobro (INVALID_IMMOBILIZATION_CHARGE)
         '428':
           description: Falta header If-Match
         '500':
@@ -876,7 +942,7 @@ components:
       type: object
       required: [since, hoursElapsed, pendingDays, dailyRate, suggestedAmount]
       properties:
-        since: { type: string, format: date-time, description: Recepción del vehículo (inicio del reloj) }
+        since: { type: string, format: date-time, description: Cierre de la devolución (inicio del reloj de paralización, desde 1.10.0; antes la recepción) }
         hoursElapsed: { type: number }
         pendingDays: { type: integer, description: Días de paralización que el reloj justifica y aún no se cobraron }
         dailyRate: { type: number, nullable: true, description: dailyRate vigente del vehículo }
@@ -1203,6 +1269,45 @@ components:
         refundAmount: { type: number, minimum: 0 }
         retainedAmount: { type: number, minimum: 0 }
         notes: { type: string }
+
+    ReturnZoneMark:
+      type: object
+      required: [zone, mark, markedBy, markedAt]
+      properties:
+        zone: { type: string, enum: [FRONTAL, LATERAL_IZQUIERDO, LATERAL_DERECHO, POSTERIOR, INTERIOR] }
+        mark: { type: string, enum: [NO_DAMAGE, DAMAGE] }
+        markedBy: { type: string, description: Usuario que marcó por última vez }
+        markedAt: { type: string, format: date-time }
+
+    ReturnZoneMarksResponse:
+      type: object
+      required: [returnId, marks, complete, route]
+      properties:
+        returnId: { type: string, format: uuid }
+        marks: { type: array, items: { $ref: '#/components/schemas/ReturnZoneMark' } }
+        complete: { type: boolean, description: true = las 5 zonas tienen marca }
+        route:
+          type: string
+          nullable: true
+          enum: [NO_DAMAGE, DAMAGE, null]
+          description: NO_DAMAGE = las 5 sin daño (DEV-09); DAMAGE = al menos una con daño (DEV-06); null = faltan zonas
+
+    RecordReturnZoneMarksRequest:
+      type: object
+      required: [companyId, branchId, marks]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        marks:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: object
+            required: [zone, mark]
+            properties:
+              zone: { type: string, enum: [FRONTAL, LATERAL_IZQUIERDO, LATERAL_DERECHO, POSTERIOR, INTERIOR] }
+              mark: { type: string, enum: [NO_DAMAGE, DAMAGE] }
 
     CloseReturnRequest:
       type: object

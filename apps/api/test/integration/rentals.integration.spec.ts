@@ -87,6 +87,39 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     } as any;
   }
 
+  /** BR-CON-003: un alquiler nace siempre de una Consulta COTIZADA (con Quotation vigente) del mismo cliente y vehiculo. */
+  async function quotedInquiry(vehicleId: string): Promise<string> {
+    const inquiry = await prisma.inquiry.create({
+      data: {
+        organizationId: org,
+        operatingCompanyId: company,
+        branchId: branch,
+        customerId: customer,
+        channel: 'WHATSAPP',
+        touristUse: true,
+        destination: 'Vilcashuaman',
+        estimatedDays: 5,
+        status: 'COTIZADA',
+        version: 2,
+        createdBy: 'seed-it',
+      },
+    });
+    await prisma.quotation.create({
+      data: {
+        inquiryId: inquiry.id,
+        operatingCompanyId: company,
+        vehicleId,
+        rateCardVersionId: 'RC-IT',
+        destination: 'Vilcashuaman',
+        estimatedDays: 5,
+        amount: '500.00',
+        currency: 'PEN',
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+    return inquiry.id;
+  }
+
   beforeAll(async () => {
     db = await getTestDatabase();
     prisma = db.prisma;
@@ -155,6 +188,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       audit,
       outbox,
       new RentalCreationGuard(rentalRepo, new SystemClock()),
+      new SystemClock(),
     );
     // Periodo relativo para que la constraint rental_period_check siga siendo
     // valida independientemente de la fecha en que se ejecute la integracion.
@@ -170,6 +204,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
         'NORMAL',
         startAt,
         expectedEndAt,
+        await quotedInquiry(vehicle),
       ),
     );
     expect(rental.status).toBe('DRAFT');
@@ -180,6 +215,8 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     const validated = await validateHandler.execute(
       new ValidateDocumentsCommand(rentalId, UID, company, branch, rental.version, {
         identityDocumentValid: true,
+        passportValid: false,
+        foreignerCardValid: false,
         driverLicenseValid: true,
         addressOrStayProofValid: true,
       }),
@@ -194,6 +231,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       txManager,
       audit,
       outbox,
+      evidenceRepository,
     );
     const alcoholed = await alcoholHandler.execute(
       new RegisterAlcoholTestCommand(rentalId, UID, company, branch, validated.version, 'FAVORABLE'),
@@ -260,6 +298,15 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
         `doc-ref-it-${randomUUID().slice(0, 8)}`,
         '500.00',
         'PEN',
+        undefined,
+        undefined,
+        {
+          method: 'EFECTIVO',
+          operationNumber: 'REC-IT-0001',
+          payerName: 'Cliente de integracion',
+          payerIsExternalAgent: false,
+          externalAgentVerified: false,
+        },
       ),
     );
     expect(formalized.status).toBe('PENDING_DELIVERY');
@@ -346,7 +393,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       outbox,
 
       new RentalCreationGuard(rentalRepo, new SystemClock()),
-
+      new SystemClock(),
     );
     const rental = await createHandler.execute(
       new CreateRentalCommand(
@@ -358,6 +405,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
         'NORMAL',
         new Date('2026-11-01T09:00:00Z'),
         new Date('2026-11-05T09:00:00Z'),
+        await quotedInquiry(vehicle2),
       ),
     );
 
@@ -365,6 +413,8 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
     const validated = await validateHandler.execute(
       new ValidateDocumentsCommand(rental.id, UID, company, branch, rental.version, {
         identityDocumentValid: true,
+        passportValid: false,
+        foreignerCardValid: false,
         driverLicenseValid: true,
         addressOrStayProofValid: true,
       }),

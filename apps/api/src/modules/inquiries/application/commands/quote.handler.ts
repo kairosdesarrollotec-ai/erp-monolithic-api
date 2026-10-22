@@ -5,7 +5,7 @@ import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
-import { InquiryNotTransitionableError, VehicleNotEligibleError } from '../../domain/inquiry-errors';
+import { InquiryNotTouristUseError, InquiryNotTransitionableError, VehicleNotEligibleError } from '../../domain/inquiry-errors';
 import { QuoteCommand } from './quote.command';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
@@ -92,6 +92,10 @@ export class QuoteHandler {
     if (existing.status !== 'REGISTRADA' && existing.status !== 'COTIZADA') {
       throw new InquiryNotTransitionableError(existing.status);
     }
+    // P-05 (DT-CON-03): sin uso turistico no se cotiza; solo queda cerrar con motivo.
+    if (!existing.touristUse) {
+      throw new InquiryNotTouristUseError();
+    }
 
     const eligibility = await this.fleet.checkEligibility({
       ...scope,
@@ -123,6 +127,12 @@ export class QuoteHandler {
         currency: 'PEN',
         rateCardVersionId: PRICE_SOURCE_MARKER,
         validUntil,
+        // P-06: historial append-only.
+        interaction: {
+          channel: existing.channel,
+          outcome: 'COTIZADA',
+          note: `Cotizacion ${amount} PEN por ${command.estimatedDays} dia(s), vehiculo ${eligibility.vehicleId}.`,
+        },
       },
       ['REGISTRADA', 'COTIZADA'],
     );

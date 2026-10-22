@@ -23,6 +23,7 @@ import { CreateReservationHandler } from '../../application/commands/create-rese
 import { CreateReservationCommand } from '../../application/commands/create-reservation.command';
 import { RegisterPaymentHandler } from '../../application/commands/register-payment.handler';
 import { RegisterPaymentCommand } from '../../application/commands/register-payment.command';
+import { RegisterPaymentDto } from './dto/register-payment.dto';
 import { RegisterDocumentsHandler } from '../../application/commands/register-documents.handler';
 import { RegisterDocumentsCommand } from '../../application/commands/register-documents.command';
 import { ConfirmReservationHandler } from '../../application/commands/confirm-reservation.handler';
@@ -57,7 +58,6 @@ import { ListReservationDocumentsHandler } from '../../application/queries/list-
 import { RequestReservationDocumentUploadSessionDto } from './dto/request-reservation-document-upload-session.dto';
 import { RecordReservationDocumentDto } from './dto/record-reservation-document.dto';
 import { ReservationDocumentRecord } from '../../application/ports/reservation-document-repository.port';
-import { parseBusinessInstant } from '../../../../common/time/lima-time';
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
@@ -85,29 +85,19 @@ export class ReservationsController {
     private readonly listDocuments: ListReservationDocumentsHandler,
   ) {}
 
+  /**
+   * Russbel 22-oct-2026 (decision 1): ya no crea reservas. Consulta es el unico punto de entrada; siempre responde
+   * 422 INQUIRY_REQUIRED (sin inquiryId) o 409 INQUIRY_CONVERSION_REQUIRED (con inquiryId). DEPRECADO.
+   */
   @Post()
   @UseInterceptors(IdempotencyInterceptor)
   async create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateReservationDto,
   ): Promise<ReservationResponse> {
-    const created = await this.createReservation.execute(
-      new CreateReservationCommand(
-        req.firebaseUid!,
-        dto.companyId,
-        dto.branchId,
-        dto.customerId,
-        dto.vehicleId,
-        dto.channelMode,
-        parseBusinessInstant(dto.startAt),
-        parseBusinessInstant(dto.endAt),
-        dto.requiredPaymentAmount,
-        dto.currency,
-        dto.paymentPolicyVersion,
-        dto.inquiryId,
-      ),
+    return this.createReservation.execute(
+      new CreateReservationCommand(req.firebaseUid!, dto.companyId, dto.branchId, dto.inquiryId),
     );
-    return toReservationResponse(created);
   }
 
   /**
@@ -177,7 +167,7 @@ export class ReservationsController {
   async registerPaymentCommand(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CommandScopeDto,
+    @Body() dto: RegisterPaymentDto,
     @Headers('if-match') ifMatch: string,
   ): Promise<ReservationResponse> {
     const updated = await this.registerPayment.execute(
@@ -187,6 +177,11 @@ export class ReservationsController {
         dto.companyId,
         dto.branchId,
         parseVersionIfMatch(ifMatch),
+        dto.amount,
+        dto.method,
+        dto.payerName,
+        dto.operationNumber,
+        dto.voucherDocumentId,
       ),
     );
     return toReservationResponse(updated);

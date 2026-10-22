@@ -14,7 +14,8 @@ export interface EmployeeResponse {
   branchId: string;
   candidateId: string | null;
   documentType: string;
-  documentNumber: string;
+  /** HU-35: null si el rol no tiene HR_ADMINISTRATION.VIEW_EMPLOYEE_DOCUMENT (ver restrictedFields). */
+  documentNumber: string | null;
   fullName: string;
   email: string | null;
   phone: string | null;
@@ -33,7 +34,10 @@ export interface EmployeeResponse {
   terminationNoticeDays: number | null;
   fieldTripLateCount: number;
   isFieldTripObserved: boolean;
+  /** null = pendiente O restringido (solo MANAGE_SALARY lo ve; ver restrictedFields). */
   baseSalary: number | null;
+  /** HU-35: campos enmascarados para el rol del solicitante. */
+  restrictedFields: Array<'documentNumber' | 'baseSalary'>;
   /** DEC-ADP-LINK-EMAIL-001: la ficha está vinculada a una cuenta de usuario (por correo). */
   accountLinked: boolean;
   /** DEC-ADP-EDIT-ETAG-001: versión optimista; viaja también en el header ETag y se devuelve en If-Match. */
@@ -112,7 +116,53 @@ export interface AttendanceRecordResponse {
   evidenceMissing: boolean;
   /** Memo de advertencia generado automáticamente por esta operación (reiteración de faltas), si corresponde. */
   memo: HrMemoResponse | null;
+  /** 22-oct (#9): origen (SELF = marca propia; ON_BEHALF = registrada por Personal), geocerca y revision. */
+  source: 'SELF' | 'ON_BEHALF';
+  onBehalfReason: string | null;
+  capturedAt: string | null;
+  outsideGeofence: boolean;
+  distanceMeters: number | null;
+  geofenceRadiusMeters: number | null;
+  reviewStatus: 'PENDING' | 'APPROVED' | 'CORRECTED' | null;
+  requiresReview: boolean;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+  checkOut: AttendanceCheckOutResponse | null;
   createdAt: string;
+}
+
+export interface AttendanceCheckOutResponse {
+  capturedAt: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy: number | null;
+  outsideGeofence: boolean;
+  distanceMeters: number | null;
+}
+
+export interface GeofenceInfoResponse {
+  configured: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  radiusMeters: number | null;
+}
+
+export interface MyAttendanceResponse {
+  employeeId: string;
+  geofence: GeofenceInfoResponse;
+  items: AttendanceRecordResponse[];
+}
+
+export interface BranchGeofenceResponse {
+  branchId: string;
+  branchName: string;
+  configured: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  radiusMeters: number | null;
+  updatedAt: string | null;
+  updatedBy: string | null;
 }
 
 export interface HrMemoResponse {
@@ -225,6 +275,14 @@ export interface VacationRequestResponse {
   approvedById: string | null;
   approvedAt: string | null;
   notes: string | null;
+  /** #10 (22-oct): fechas antes de la primera reprogramacion (null si nunca se reprogramo). */
+  originalStartDate: string | null;
+  originalEndDate: string | null;
+  rescheduleCount: number;
+  /** Motivo de la ultima reprogramacion o cancelacion. */
+  statusReason: string | null;
+  statusChangedAt: string | null;
+  statusChangedById: string | null;
   createdAt: string;
 }
 

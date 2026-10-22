@@ -18,6 +18,11 @@ export interface VacancyResponse {
   isMechanic: boolean;
   version: number;
   createdAt: string;
+  originTerminationId: string | null;
+  originEmployeeId: string | null;
+  cancelReason: string | null;
+  cancelledAt: string | null;
+  cancelledBy: string | null;
 }
 
 export interface VacancyDetailResponse extends VacancyResponse {

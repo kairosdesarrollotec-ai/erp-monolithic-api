@@ -32,6 +32,11 @@ export interface NotaryEvaluationRecord {
   evaluatedAt: Date;
   approvedBy: string | null;
   justification: string | null;
+  /** DEC-ALQ-THIRDPATH-001: casilla de biometrico registrada por el personal. */
+  biometricVerified?: boolean;
+  biometricVerifiedBy?: string | null;
+  /** Alquileres previos (CLOSED) del cliente usados en la decision. */
+  previousRentalsCount?: number | null;
 }
 
 export interface RentalContractRecord {
@@ -62,7 +67,21 @@ export interface RentalDepositRecord {
   reservationCreditAmount?: string;
   /** DEC-ALQ-RESCREDIT-002: excedente del monto de reserva sobre la garantia (saldo a favor, sin reembolso automatico). */
   reservationCreditExcess?: string;
+  /** Decision 8 (22-oct-2026, ALQ P-01 / BR-ALQ-011): comprobante del cobro de la garantia (null si no hubo cobro o es previo). */
+  payment?: RentalDepositPaymentRecord | null;
   createdAt: Date;
+}
+
+export interface RentalDepositPaymentRecord {
+  amount: string;
+  method: string;
+  operationNumber: string | null;
+  payerName: string;
+  payerDocumentNumber: string | null;
+  payerIsExternalAgent: boolean;
+  externalAgentVerifiedBy: string | null;
+  voucherDocumentId: string | null;
+  registeredBy: string | null;
 }
 
 export interface RentalRecord {
@@ -80,6 +99,12 @@ export interface RentalRecord {
   vehicleBrand: string;
   vehicleModel: string;
   vehicleDepositMinimum: number | null;
+  /** DEC-ALQ-THIRDPATH-001: vehiculo marcado por Gerencia como elegible para la tercera via. */
+  vehicleThirdPathEligible?: boolean;
+  /** BR-CON-004: nacionalidad del cliente (null en clientes antiguos sin dato). */
+  customerNationality?: 'PERUANO' | 'EXTRANJERO' | null;
+  customerDocumentType?: string;
+  customerCountryEntryDate?: Date | null;
   planCode: string;
   status: RentalStatus;
   startAt: Date | null;
@@ -111,6 +136,8 @@ export interface RentalRecord {
   vehicleFuelPrice?: number | null;
   /** DEC-ALQ-DRIVERRATE-001: tarifa diaria manual del conductor de la empresa ("0.00" formato 2 decimales; null = sin valor manual). */
   companyDriverDailyRate?: string | null;
+  /** DEC-ALQ-CANCEL-001: datos de la cancelacion manual (null si no fue cancelado manualmente). */
+  cancellation?: { reason: string; note: string | null; cancelledAt: Date; cancelledBy: string } | null;
   /** Solo en el detalle (GET) y tras fijar la tarifa, en alquileres con conductor de la empresa: tarifa diaria x dias (no se persiste). */
   companyDriverCharge?: CompanyDriverCharge | null;
 }
@@ -151,6 +178,9 @@ export interface SaveNotaryEvaluationInput {
   reason: string;
   approvedBy?: string;
   justification?: string;
+  biometricVerified?: boolean;
+  biometricVerifiedBy?: string;
+  previousRentalsCount?: number;
 }
 
 export interface ApproveNotaryExceptionInput {
@@ -202,6 +232,30 @@ export interface FormalizeContractInput {
   contractVariant?: string;
   updatedBy: string;
   signatureData?: string;
+  /** Decision 8: comprobante del cobro de la garantia (solo si hubo cobro > 0). */
+  payment?: FormalizeContractPaymentInput;
+}
+
+export interface FormalizeContractPaymentInput {
+  amount: string;
+  method: string;
+  operationNumber?: string;
+  payerName: string;
+  payerDocumentNumber?: string;
+  payerIsExternalAgent: boolean;
+  externalAgentVerifiedBy?: string;
+  voucherDocumentId?: string;
+  registeredBy: string;
+}
+
+export interface CancelRentalInput {
+  id: string;
+  scope: RentalScope;
+  expectedVersion: number;
+  reason: string;
+  note?: string;
+  cancelledBy: string;
+  cancelledAt: Date;
 }
 
 export interface CompleteDeliveryInput {
@@ -305,6 +359,8 @@ export abstract class RentalRepositoryPort {
     documentType?: string;
     /** Semaforo de riesgo: NORMAL | ROJO (el ambar no tiene columna propia). */
     status: string;
+    nationality?: 'PERUANO' | 'EXTRANJERO' | null;
+    countryEntryDate?: Date | null;
     isBiometricVerified?: boolean;
   } | null>;
   abstract findVehicleById(id: string, tx?: Prisma.TransactionClient): Promise<{
@@ -317,6 +373,9 @@ export abstract class RentalRepositoryPort {
     brand: string;
     model: string;
     status: string;
+    /** Garantia del vehiculo (Flota, `deposit_minimum`); null = no definida. */
+    depositMinimum?: number | null;
+    thirdPathEligible?: boolean;
   } | null>;
   abstract findInquiryForRental(id: string, organizationId: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null>;
   /**
@@ -378,6 +437,29 @@ export abstract class RentalRepositoryPort {
     reservationId: string,
     tx?: Prisma.TransactionClient,
   ): Promise<ReservationCreditSource | null>;
+  /**
+   * Decision 1 (22-oct-2026): marca la consulta COTIZADA -> CONVERTIDA en la transaccion de `POST /rentals`
+   * (updateMany con scope + estado COTIZADA; version++). false si otra operacion se adelanto.
+   */
+  abstract markInquiryConverted(
+    inquiryId: string,
+    scope: RentalScope,
+    tx: Prisma.TransactionClient,
+  ): Promise<boolean>;
+  /** Documento del alquiler por id (para validar el comprobante del cobro de la garantia). */
+  abstract findRentalDocumentById(
+    documentId: string,
+    rentalId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<{ id: string; documentType: string } | null>;
+  /** Cantidad de documentos de un tipo subidos al alquiler (p. ej. RESPONSIBILITY_DOCUMENT de la tercera via). */
+  abstract countRentalDocumentsByType(
+    rentalId: string,
+    documentType: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number>;
+  /** DEC-ALQ-CANCEL-001: cancela el alquiler (estado + motivo) y libera su compromiso de vehiculo. */
+  abstract cancel(input: CancelRentalInput, tx: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number>;
   abstract list(filter: ListRentalsFilter): Promise<RentalRecord[]>;
   abstract transitionStatus(

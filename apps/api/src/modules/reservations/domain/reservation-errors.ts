@@ -142,3 +142,82 @@ export class InquiryConversionRequiredError extends DomainConflictError {
     super(`Las reservas se crean convirtiendo la consulta: POST /inquiries/${inquiryId}/commands/convert-to-reservation.`);
   }
 }
+
+/**
+ * DEC-CON-001-FINAL + Russbel 22-oct-2026 (decision 1): Consulta es el unico punto de entrada. `POST /reservations`
+ * sin `inquiryId` ya no crea nada: 422 INQUIRY_REQUIRED (BR-CON-003, EX-CON-001).
+ */
+export class InquiryRequiredError extends DomainUnprocessableError {
+  readonly code = 'INQUIRY_REQUIRED';
+
+  constructor() {
+    super(
+      'Una reserva nace siempre de una Consulta (BR-CON-003): registra y cotiza la consulta y conviertela con ' +
+        'POST /inquiries/{id}/commands/convert-to-reservation.',
+    );
+  }
+}
+
+/** Decision 8 (22-oct-2026): el monto pagado no alcanza (o excede) el monto que la politica vigente exige para la reserva. */
+export class InvalidDepositAmountError extends DomainUnprocessableError {
+  readonly code = 'INVALID_DEPOSIT_AMOUNT';
+
+  constructor(paid: string, required: string, reason: 'BELOW_REQUIRED' | 'ABOVE_REQUIRED') {
+    super(
+      reason === 'BELOW_REQUIRED'
+        ? `El monto pagado (${paid}) es menor que el monto de reserva exigido por la politica vigente (${required}).`
+        : `El monto pagado (${paid}) supera el monto de reserva exigido (${required}); la reserva se cobra por el monto exacto y no genera saldo a favor.`,
+      { paidAmount: paid, requiredAmount: required },
+    );
+  }
+}
+
+/** Decision 8 (propuesta): todo pago exige comprobante; en EFECTIVO basta el nº de recibo o el comprobante. */
+export class PaymentProofRequiredError extends DomainUnprocessableError {
+  readonly code = 'PAYMENT_PROOF_REQUIRED';
+
+  constructor(missing: string[]) {
+    super(`Falta el comprobante del pago: ${missing.join(', ')}.`, { missing });
+  }
+}
+
+/** El `voucherDocumentId` indicado no es un comprobante (PAYMENT_VOUCHER) subido a esta reserva. */
+export class PaymentVoucherNotFoundError extends DomainUnprocessableError {
+  readonly code = 'PAYMENT_VOUCHER_NOT_FOUND';
+
+  constructor() {
+    super('El comprobante indicado no existe entre los documentos de esta reserva (suba primero un documento PAYMENT_VOUCHER).');
+  }
+}
+
+/** register-documents exige documentos realmente subidos (distintos del comprobante de pago). */
+export class DocumentsNotUploadedError extends DomainUnprocessableError {
+  readonly code = 'DOCUMENTS_NOT_UPLOADED';
+
+  constructor() {
+    super('No hay documentos del cliente subidos a la reserva: suba al menos un documento (ID_DOCUMENT u OTHER) antes de marcarlos como completos.');
+  }
+}
+
+export class InvalidReservationPeriodError extends DomainBadRequestError {
+  readonly code = 'INVALID_PERIOD';
+
+  constructor() {
+    super('La fecha de inicio de la reserva debe ser anterior a la fecha de fin.');
+  }
+}
+
+/**
+ * RES PEND-08 / BR-RES-005 / SC-RES-007 (modalidad por ubicacion): una reserva PRESENCIAL exige un cliente que se pueda
+ * acercar a la oficina (en Ayacucho). Si el cliente esta fuera o no puede acercarse, la modalidad debe ser VIRTUAL.
+ */
+export class ChannelModeMismatchError extends DomainUnprocessableError {
+  readonly code = 'CHANNEL_MODE_MISMATCH';
+
+  constructor() {
+    super(
+      'Una reserva PRESENCIAL requiere que el cliente se encuentre en Ayacucho y pueda acercarse a la oficina; ' +
+        'si esta fuera o no puede acercarse, la modalidad es VIRTUAL.',
+    );
+  }
+}

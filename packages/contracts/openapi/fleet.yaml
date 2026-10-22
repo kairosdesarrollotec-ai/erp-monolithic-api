@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.7.0
+  version: 0.8.0
   description: >
+    0.8.0 — DEC-ALQ-THIRDPATH-001 (Russbel 22-oct-2026, ADITIVO): el vehiculo suma `thirdPathEligible` (boolean, default false;
+    "vehiculo de menor costo" elegible para la tercera via notarial). VehicleResponse lo devuelve siempre; UpdateVehicleRequest lo acepta
+    opcional y SOLO Gerencia puede cambiarlo (permiso nuevo FLEET.MANAGE_THIRD_PATH, 403 ROLE_NOT_ALLOWED para los demas roles).
     0.7.0 — Respuestas de Russbel (2026-10-20 #3/#4). Sin cambios de forma. La capacidad de pasajeros es SIEMPRE > 0: en el alta
     (POST) ausente, null, 0, negativa, no entera o > 60 responde 400 PASSENGER_CAPACITY_REQUIRED; en la edición (PATCH /fleet/vehicles/{id},
     permiso FLEET.WRITE; es el botón EDITAR de Flota, también para completar la capacidad de vehículos antiguos) omitirla no la cambia y
@@ -629,6 +632,9 @@ components:
           minimum: 0
           nullable: true
           description: Monto mínimo de garantía (PEN). Si se omite, el valor existente no cambia.
+        thirdPathEligible:
+          type: boolean
+          description: 'Marca de tercera via notarial (BR-ALQ-004). Requiere FLEET.MANAGE_THIRD_PATH (solo Gerencia). Si se omite no cambia.'
         passengerCapacity:
           type: integer
           minimum: 1
@@ -717,6 +723,9 @@ components:
           type: number
           nullable: true
           description: Monto mínimo de garantía configurado para este vehículo (PEN).
+        thirdPathEligible:
+          type: boolean
+          description: 'Vehiculo de menor costo elegible para tercera via notarial (marca de Gerencia).'
         passengerCapacity:
           type: integer
           nullable: true

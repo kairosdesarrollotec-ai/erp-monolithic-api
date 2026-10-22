@@ -6,8 +6,9 @@ import { assertIncidentRoleAllowed, IncidentAction } from '../../incidents/appli
 import { assertRecruitmentRoleAllowed, RecruitmentAction } from '../../recruitment/application/policies/recruitment-role-policy';
 import { assertHrAdministrationRoleAllowed, HrAdministrationAction } from '../../hr-administration/application/policies/hr-administration-role-policy';
 import { assertAdminRoleAllowed, AdminAction } from '../application/policies/admin-role-policy';
+import { isSyncRoleAllowed, type SyncRoleAction } from '../../sync-conflicts/application/policies/sync-role-policy';
 import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application/policies/return-role-policy';
-import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../../fleet/application/policies/fleet-role.policy';
+import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission, assertFleetManageThirdPath } from '../../fleet/application/policies/fleet-role.policy';
 import { assertCustomerWrite, assertCustomerRead } from '../../customers/application/policies/customer-role.policy';
 import { isPaymentRoleAllowed, type PaymentAction } from '../../payments/application/policies/payment-role-policy';
 import { isNotificationRoleAllowed, type NotificationAction } from '../../notifications/application/policies/notification-role-policy';
@@ -66,6 +67,7 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
     } else if (module === 'FLEET') {
       if (action === 'WRITE') assertFleetWrite(role);
       else if (action === 'READ') assertFleetRead(role);
+      else if (action === 'MANAGE_THIRD_PATH') assertFleetManageThirdPath(role);
       else assertFleetCrossBranchPermission(role);
     } else if (module === 'CUSTOMER') {
       if (action === 'WRITE') assertCustomerWrite(role);
@@ -80,6 +82,8 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       return isPaymentRoleAllowed(role, action as PaymentAction);
     } else if (module === 'NOTIFICATIONS') {
       return isNotificationRoleAllowed(role, action as NotificationAction);
+    } else if (module === 'SYNC') {
+      return isSyncRoleAllowed(role, action as SyncRoleAction);
     } else if (module === 'EVIDENCE') {
       return isEvidenceRoleAllowed(role, action as EvidenceAction);
     } else if (module === 'REPORT') {

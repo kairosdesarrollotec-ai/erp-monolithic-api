@@ -33,4 +33,18 @@ export class PrismaEmploymentTerminationRepository implements EmploymentTerminat
     const client = tx ?? this.prisma;
     return client.employmentTermination.findUnique({ where: { employeeId } });
   }
+
+  async findCreatedVacancyId(
+    terminationId: string,
+    candidateId?: string | null,
+    tx?: Prisma.TransactionClient,
+  ): Promise<string | null> {
+    const client = tx ?? this.prisma;
+    const found = await client.vacancy.findFirst({
+      where: { OR: [{ originTerminationId: terminationId }, ...(candidateId ? [{ originCandidateId: candidateId }] : [])] },
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    return found?.id ?? null;
+  }
 }

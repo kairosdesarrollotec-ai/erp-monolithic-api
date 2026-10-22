@@ -18,6 +18,7 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
  *   - AUDITORIA: Lectura de expedientes de colaboradores (`VIEW_EMPLOYEES`).
  *   - FINANZAS: Consulta de colaboradores y acceso a asistencias para cálculo de nómina y deducciones.
  *   - PLATFORM_ADMIN: todo permitido vía fila sembrada en la matriz dinámica.
+ *   - 22-oct (Respuestas #9 y HU-35): LOG_OWN_ATTENDANCE / REVIEW_ATTENDANCE / MANAGE_GEOFENCE / VIEW_EMPLOYEE_DOCUMENT.
  */
 export const HR_ADMINISTRATION_ACTIONS = [
   'VIEW_EMPLOYEES',
@@ -32,6 +33,10 @@ export const HR_ADMINISTRATION_ACTIONS = [
   'REGISTER_TRAINING',
   'MANAGE_AREAS',
   'MANAGE_SALARY',
+  'LOG_OWN_ATTENDANCE',
+  'REVIEW_ATTENDANCE',
+  'MANAGE_GEOFENCE',
+  'VIEW_EMPLOYEE_DOCUMENT',
 ] as const;
 
 export type HrAdministrationAction = (typeof HR_ADMINISTRATION_ACTIONS)[number];
@@ -53,6 +58,15 @@ const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, Rea
   MANAGE_AREAS: new Set(['GERENCIA']),
   // Respuestas 2026-10-20 #19: el sueldo base de la ficha solo lo edita Gerencia; el resto de la ficha, MANAGE_EMPLOYEES.
   MANAGE_SALARY: new Set(['GERENCIA']),
+  // Respuestas 2026-10-22 #9 (asistencia con autoservicio): el colaborador con ficha vinculada marca desde su cuenta
+  // (`POST /me/attendance`). v0 = todos los roles de colaborador (PLATFORM_ADMIN es administrador, no colaborador).
+  LOG_OWN_ATTENDANCE: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE']),
+  // #9: aprobar o corregir las marcas fuera de la geocerca de la sede.
+  REVIEW_ATTENDANCE: new Set(['GERENCIA', 'ADMINISTRACION']),
+  // #9: configurar coordenadas y radio de la geocerca por sede.
+  MANAGE_GEOFENCE: new Set(['GERENCIA', 'ADMINISTRACION']),
+  // HU-35: el DNI/documento del colaborador es dato personal sensible; AUDITORIA y FINANZAS no lo ven salvo que la matriz lo conceda.
+  VIEW_EMPLOYEE_DOCUMENT: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
 };
 
 export function isHrAdministrationRoleAllowed(role: WorkerRole, action: HrAdministrationAction): boolean {

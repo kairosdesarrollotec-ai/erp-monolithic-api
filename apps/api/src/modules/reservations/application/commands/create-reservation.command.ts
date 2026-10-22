@@ -1,23 +1,12 @@
-import { ChannelMode } from '../../domain/channel-mode';
-
 /**
- * CONFLICT-CON-001 (resuelto): inquiryId es opcional para el caso de
- * creacion directa sin consulta previa. Cuando se provee, el handler valida
- * que la consulta pertenezca a la empresa del contexto.
+ * Russbel 22-oct-2026 (decision 1): `POST /reservations` ya no crea reservas (Consulta es el unico punto de entrada).
+ * El comando solo transporta lo necesario para autorizar y para responder el error correcto.
  */
 export class CreateReservationCommand {
   constructor(
     public readonly firebaseUid: string,
     public readonly companyId: string,
     public readonly branchId: string,
-    public readonly customerId: string,
-    public readonly vehicleId: string,
-    public readonly channelMode: ChannelMode,
-    public readonly startAt: Date,
-    public readonly endAt: Date,
-    public readonly requiredPaymentAmount: string,
-    public readonly currency: string,
-    public readonly paymentPolicyVersion: number,
     public readonly inquiryId?: string,
   ) {}
 }

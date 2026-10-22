@@ -80,6 +80,39 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
     } as any;
   }
 
+  /** BR-CON-003: un alquiler nace siempre de una Consulta COTIZADA (con Quotation vigente) del mismo cliente y vehiculo. */
+  async function quotedInquiry(companyId: string, branchId: string, customerId: string, vehicleId: string): Promise<string> {
+    const inquiry = await prisma.inquiry.create({
+      data: {
+        organizationId: org,
+        operatingCompanyId: companyId,
+        branchId,
+        customerId,
+        channel: 'WHATSAPP',
+        touristUse: true,
+        destination: 'Vilcashuaman',
+        estimatedDays: 5,
+        status: 'COTIZADA',
+        version: 2,
+        createdBy: 'seed-it',
+      },
+    });
+    await prisma.quotation.create({
+      data: {
+        inquiryId: inquiry.id,
+        operatingCompanyId: companyId,
+        vehicleId,
+        rateCardVersionId: 'RC-IT',
+        destination: 'Vilcashuaman',
+        estimatedDays: 5,
+        amount: '500.00',
+        currency: 'PEN',
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+    return inquiry.id;
+  }
+
   beforeAll(async () => {
     db = await getTestDatabase();
     prisma = db.prisma;
@@ -161,6 +194,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
       audit,
       outbox,
       new RentalCreationGuard(rentalRepo, new SystemClock()),
+      new SystemClock(),
     );
     const rentalA = await createHandler.execute(
       new CreateRentalCommand(
@@ -172,6 +206,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
         'NORMAL',
         new Date('2026-10-20T09:00:00Z'),
         new Date('2026-10-25T09:00:00Z'),
+        await quotedInquiry(companyA, branchA, customerA, vehicleA),
       ),
     );
     expect(rentalA.status).toBe('DRAFT');
@@ -204,6 +239,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
       audit,
       outbox,
       new RentalCreationGuard(rentalRepo, new SystemClock()),
+      new SystemClock(),
     );
     await createHandler.execute(
       new CreateRentalCommand(
@@ -215,6 +251,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
         'NORMAL',
         new Date('2026-11-10T09:00:00Z'),
         new Date('2026-11-15T09:00:00Z'),
+        await quotedInquiry(companyA, branchA, customerA, vehicleA),
       ),
     );
 
@@ -245,6 +282,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
       audit,
       outbox,
       new RentalCreationGuard(rentalRepo, new SystemClock()),
+      new SystemClock(),
     );
     const rentalA = await createHandler.execute(
       new CreateRentalCommand(
@@ -256,6 +294,7 @@ describe('Rentals — aislamiento multiempresa (Postgres real)', () => {
         'NORMAL',
         new Date('2026-12-01T09:00:00Z'),
         new Date('2026-12-05T09:00:00Z'),
+        await quotedInquiry(companyA, branchA, customerA, vehicleA),
       ),
     );
 

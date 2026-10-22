@@ -21,6 +21,8 @@ export interface EmployeeDetailResult {
   recentVacations: VacationRequest[];
   recentFieldTrips: FieldTripWithEmployee[];
   termination: EmploymentTermination | null;
+  /** Vacante que Reclutamiento creo a partir de la terminacion (null mientras no se haya consumido el evento o sin terminacion). */
+  terminationVacancyCreatedId: string | null;
   /** Memorandos de advertencia generados por el sistema por reincidencia (ADP-P03 / BR-ADP-005). */
   recentMemos: HrMemo[];
   /** Historial de capacitación interna (DAT-ADP-009). */
@@ -72,6 +74,10 @@ export class GetEmployeeDetailHandler {
       this.trainings.findByEmployee(employee.id, EMPLOYEE_DETAIL_RECENT_LIMIT),
     ]);
 
+    const terminationVacancyCreatedId = termination
+      ? await this.terminations.findCreatedVacancyId(termination.id, employee.candidateId)
+      : null;
+
     return {
       employee,
       attendanceSummary,
@@ -79,6 +85,7 @@ export class GetEmployeeDetailHandler {
       recentVacations,
       recentFieldTrips,
       termination,
+      terminationVacancyCreatedId,
       recentMemos,
       recentTrainings,
     };

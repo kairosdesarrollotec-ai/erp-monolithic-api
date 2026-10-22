@@ -5,7 +5,7 @@
  * incident-role-policy.ts, admin-role-policy.ts). No se inventan acciones nuevas: la matriz de
  * ADM-02 solo puede administrar lo que el sistema ya sabe distinguir.
  */
-export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION', 'PAYMENT', 'REPORT', 'NOTIFICATIONS', 'EVIDENCE'] as const;
+export const PERMISSION_MODULES = ['RESERVATION', 'INQUIRY', 'ADMIN', 'RENTAL', 'INCIDENT', 'RETURN', 'FLEET', 'CUSTOMER', 'RECRUITMENT', 'TEMPLATE', 'HR_ADMINISTRATION', 'PAYMENT', 'REPORT', 'NOTIFICATIONS', 'EVIDENCE', 'SYNC'] as const;
 
 /** Modulos cuyas acciones administra la matriz ADM-02 (unica definicion; antes estaba repetida en ~6 sitios). */
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
@@ -48,6 +48,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RENTAL', action: 'REJECT_EXTENSION', label: 'Alquiler: rechazar ampliacion' },
   { module: 'RENTAL', action: 'MANAGE_CONTRACT_TEMPLATES', label: 'Alquiler: gestionar plantillas de contrato' },
   { module: 'RENTAL', action: 'REPORT_EXTENSION_BREACH', label: 'Alquiler: registrar falta grave de ampliacion' },
+  { module: 'RENTAL', action: 'CANCEL', label: 'Alquiler: cancelar antes de la entrega (documentos invalidos / cliente rechaza notaria)' },
   { module: 'INCIDENT', action: 'VIEW', label: 'Incidencia: ver bandeja y detalle' },
   { module: 'INCIDENT', action: 'CREATE', label: 'Incidencia: registrar' },
   { module: 'INCIDENT', action: 'ADD_ACTION', label: 'Incidencia: agregar acción al historial' },
@@ -75,6 +76,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'FLEET', action: 'READ', label: 'Flota: consultar vehículos' },
   { module: 'FLEET', action: 'WRITE', label: 'Flota: crear/editar vehículos' },
   { module: 'FLEET', action: 'CROSS_BRANCH', label: 'Flota: operar en sedes distintas' },
+  { module: 'FLEET', action: 'MANAGE_THIRD_PATH', label: 'Flota: marcar vehiculo de menor costo elegible para la tercera via notarial (solo Gerencia)' },
   // CUSTOMER (2 acciones — customer-role.policy.ts)
   { module: 'CUSTOMER', action: 'READ', label: 'Clientes: consultar' },
   { module: 'CUSTOMER', action: 'WRITE', label: 'Clientes: crear/editar' },
@@ -91,6 +93,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RECRUITMENT', action: 'EVALUATE_PROBATION', label: 'Reclutamiento: evaluar periodo de prueba' },
   { module: 'RECRUITMENT', action: 'DECIDE_NO_ADVANCE', label: 'Reclutamiento: decidir «No avanza» tras la entrevista (solo Gerencia)' },
   { module: 'RECRUITMENT', action: 'TERMINATE_PROBATION', label: 'Reclutamiento: registrar término tras prueba negativa (solo Gerencia)' },
+  { module: 'RECRUITMENT', action: 'CANCEL_VACANCY', label: 'Reclutamiento: cancelar vacante (motivo obligatorio)' },
   // TEMPLATE (2 acciones — TDD-KAIROS-MVP-002-TPL TDD-TPL-ADR-004)
   { module: 'TEMPLATE', action: 'VIEW', label: 'Plantillas: consultar' },
   { module: 'TEMPLATE', action: 'MANAGE', label: 'Plantillas: crear/activar/retirar' },
@@ -107,6 +110,11 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'HR_ADMINISTRATION', action: 'REGISTER_TRAINING', label: 'Personal: registrar capacitaciones internas' },
   { module: 'HR_ADMINISTRATION', action: 'MANAGE_AREAS', label: 'Personal: dar de alta y desactivar áreas (solo Gerencia)' },
   { module: 'HR_ADMINISTRATION', action: 'MANAGE_SALARY', label: 'Personal: editar el sueldo base de la ficha (solo Gerencia)' },
+  // Respuestas 2026-10-22 #9 (asistencia con autoservicio y control) y HU-35 (dato personal)
+  { module: 'HR_ADMINISTRATION', action: 'LOG_OWN_ATTENDANCE', label: 'Personal: marcar la propia asistencia desde la cuenta personal (foto y ubicación)' },
+  { module: 'HR_ADMINISTRATION', action: 'REVIEW_ATTENDANCE', label: 'Personal: aprobar o corregir marcas de asistencia fuera de la geocerca' },
+  { module: 'HR_ADMINISTRATION', action: 'MANAGE_GEOFENCE', label: 'Personal: configurar la geocerca (coordenadas y radio) de cada sede' },
+  { module: 'HR_ADMINISTRATION', action: 'VIEW_EMPLOYEE_DOCUMENT', label: 'Personal: ver el número de documento (DNI) del colaborador' },
   // PAYMENT (5 acciones — BDD-PAG-001 / SDD-PAG-001 / TDD-PAG-001)
   { module: 'PAYMENT', action: 'READ_LIST', label: 'Pagos: listar garantías de alquiler' },
   { module: 'PAYMENT', action: 'READ_DETAIL', label: 'Pagos: ver detalle de garantía y ajustes' },
@@ -119,10 +127,15 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'REPORT', action: 'EXPORT', label: 'Reportes: exportar datos (CSV)' },
   // NOTIFICATIONS (1 accion — Respuestas 2026-10-20 #8: alertas de devolucion a quien tenga permiso de notificacion, no solo Finanzas)
   { module: 'NOTIFICATIONS', action: 'RECEIVE_RETURN_ALERTS', label: 'Notificaciones: recibir alertas de devolución en el tablero (garantía 24 h, cargo por retraso, inmovilización)' },
+  // Respuestas 2026-10-22 #4: la cascada de salidas a campo y las terminaciones/vacantes las recibe Gerencia General (editable en ADM-02)
+  { module: 'NOTIFICATIONS', action: 'RECEIVE_FIELD_TRIP_ALERTS', label: 'Notificaciones: recibir alertas de salidas a campo (solicitud, escalada de nivel, nadie autorizó)' },
+  { module: 'NOTIFICATIONS', action: 'RECEIVE_HR_ALERTS', label: 'Notificaciones: recibir alertas de Talento Humano (terminación laboral, vacante creada, paso a planilla)' },
   // EVIDENCE (3 acciones — DEC-EVID-DELETE-002, Respuestas 2026-10-20 #35: doble aprobación para eliminar evidencia, SDD §15.5)
   { module: 'EVIDENCE', action: 'REQUEST_DELETION', label: 'Evidencia: solicitar eliminación (motivo obligatorio)' },
   { module: 'EVIDENCE', action: 'APPROVE_DELETION', label: 'Evidencia: aprobar o rechazar solicitudes de eliminación' },
   { module: 'EVIDENCE', action: 'DELETE_DIRECT', label: 'Evidencia: eliminar directo sin doble aprobación (DEPRECADO, solo administrador de plataforma)' },
+  // SYNC (1 accion — Respuesta de negocio 2026-10-22: supervisor de sincronizacion = Administracion + Gerencia)
+  { module: 'SYNC', action: 'SUPERVISE_CONFLICTS', label: 'Sincronización: resolver conflictos de checklists offline (supervisor: Administración y Gerencia)' },
 ];
 
 /**
