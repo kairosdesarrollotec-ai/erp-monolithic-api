@@ -202,3 +202,30 @@ export class CandidateStateTransitionError extends DomainUnprocessableError {
     );
   }
 }
+
+/** Respuestas 2026-10-20 #16: la incorporacion ya se completo (el candidato ya esta INGRESADO / PERIODO_PRUEBA / PLANILLA / TERMINADO). */
+export class OnboardingAlreadyCompletedError extends DomainConflictError {
+  readonly code = 'ONBOARDING_ALREADY_COMPLETED';
+
+  constructor(currentState: string) {
+    super(`La incorporación de este candidato ya se completó (estado actual: ${currentState}).`);
+  }
+}
+
+/** Respuestas 2026-10-20 #14: rechazar a un candidato ya entrevistado (Descartado) exige el motivo. */
+export class DecisionReasonRequiredError extends DomainUnprocessableError {
+  readonly code = 'DECISION_REASON_REQUIRED';
+
+  constructor() {
+    super('Indica el motivo: el rechazo de un candidato ya entrevistado (Descartado) exige decisionNotes.');
+  }
+}
+
+/** Respuestas 2026-10-20 #12/#13: la accion la decide solo Gerencia General (permiso especifico). */
+export class GerenciaDecisionRequiredError extends DomainForbiddenError {
+  readonly code = 'ROLE_NOT_ALLOWED';
+
+  constructor(what: string) {
+    super(`${what} lo decide solo Gerencia General.`);
+  }
+}

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Header,
   Get,
   Param,
   ParseUUIDPipe,
@@ -106,6 +107,8 @@ export class RentalsEvidenceController {
   }
 
   @Delete(':id/evidence/:evidenceId')
+  // DEPRECADO (DEC-EVID-DELETE-002): usar POST /evidence/deletion-requests (doble aprobacion). Exige EVIDENCE.DELETE_DIRECT.
+  @Header('Deprecation', 'true')
   @HttpCode(204)
   async deleteEvidence(
     @Req() req: AuthenticatedRequest,

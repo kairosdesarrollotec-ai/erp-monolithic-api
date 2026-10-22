@@ -5,6 +5,7 @@ import {
 } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import type { ReturnAction } from '../policies/return-role-policy';
+import type { EvidenceAction } from '../../../evidence/application/policies/evidence-role-policy';
 import { ReturnScope } from '../ports/return-repository.port';
 
 export interface ReturnAccess {
@@ -41,6 +42,23 @@ export class ReturnAccessService {
         operatingCompanyId: input.companyId,
         branchId: input.branchId,
       },
+    };
+  }
+
+  /** Igual que `authorize` pero contra el modulo EVIDENCE de la matriz (borrado directo DEPRECADO, DEC-EVID-DELETE-002). */
+  async authorizeEvidence(
+    input: { firebaseUid: string; companyId: string; branchId: string },
+    action: EvidenceAction,
+  ): Promise<ReturnAccess> {
+    const context = await this.workContext.authorize({
+      firebaseUid: input.firebaseUid,
+      companyId: input.companyId,
+      branchId: input.branchId,
+    });
+    await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'EVIDENCE', action, { companyId: context.companyId, branchId: context.branchId });
+    return {
+      context,
+      scope: { organizationId: context.organizationId, operatingCompanyId: input.companyId, branchId: input.branchId },
     };
   }
 }

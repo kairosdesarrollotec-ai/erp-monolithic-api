@@ -370,6 +370,16 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       }),
     );
 
+    // Respuestas 2026-10-20 #10: DESFAVORABLE exige la foto de la prueba (zona ALCOHOL_TEST, sin hora) con el alquiler en VALIDATION.
+    const alcoholEvidenceRepository = new PrismaRentalEvidenceRepository(ps);
+    await alcoholEvidenceRepository.record({
+      rentalId: rental.id,
+      scope: { organizationId: org, operatingCompanyId: company, branchId: branch },
+      type: 'PHOTO',
+      zone: 'ALCOHOL_TEST',
+      objectUrl: 'https://storage.test/alcohol-test-photo.jpg',
+      uploadedBy: UID,
+    });
     const alcoholHandler = new RegisterAlcoholTestHandler(
       rentalRepo,
       workContext,
@@ -377,6 +387,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       txManager,
       audit,
       outbox,
+      alcoholEvidenceRepository,
     );
     const cancelled = await alcoholHandler.execute(
       new RegisterAlcoholTestCommand(rental.id, UID, company, branch, validated.version, 'DESFAVORABLE'),

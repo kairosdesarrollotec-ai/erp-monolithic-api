@@ -2,6 +2,8 @@ import type { Prisma, VacationRequest, VacationStatus } from '@prisma/client';
 
 export interface CreateVacationData {
   employeeId: string;
+  /** Empresa del colaborador: el cupo de BR-ADP-002 (1 persona por area) se evalua POR EMPRESA. */
+  operatingCompanyId: string;
   areaId: string;
   startDate: Date;
   endDate: Date;

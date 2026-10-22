@@ -10,6 +10,8 @@ import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application
 import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../../fleet/application/policies/fleet-role.policy';
 import { assertCustomerWrite, assertCustomerRead } from '../../customers/application/policies/customer-role.policy';
 import { isPaymentRoleAllowed, type PaymentAction } from '../../payments/application/policies/payment-role-policy';
+import { isNotificationRoleAllowed, type NotificationAction } from '../../notifications/application/policies/notification-role-policy';
+import { isEvidenceRoleAllowed, type EvidenceAction } from '../../evidence/application/policies/evidence-role-policy';
 import { assertTemplateRoleAllowed, type TemplateAction } from '../../templates/application/policies/template-role-policy';
 import { PERMISSION_ACTION_CATALOG, type PermissionModule } from './permission-action-catalog';
 import { PLATFORM_ADMIN_KEY } from './system-roles';
@@ -76,6 +78,10 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       assertHrAdministrationRoleAllowed(role, action as HrAdministrationAction);
     } else if (module === 'PAYMENT') {
       return isPaymentRoleAllowed(role, action as PaymentAction);
+    } else if (module === 'NOTIFICATIONS') {
+      return isNotificationRoleAllowed(role, action as NotificationAction);
+    } else if (module === 'EVIDENCE') {
+      return isEvidenceRoleAllowed(role, action as EvidenceAction);
     } else if (module === 'REPORT') {
       // Sin policy estatica ni regla documentada por rol (REP-01 solo dice "segun permiso"): v0 = denegado; se otorga desde ADM-02.
       return false;

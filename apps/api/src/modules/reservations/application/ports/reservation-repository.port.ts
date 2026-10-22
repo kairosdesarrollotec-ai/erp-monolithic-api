@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { VehicleDataWarning } from '../../../../common/domain/vehicle-data-warnings';
 import { ReservationStatus } from '../../domain/reservation-status';
 import { ChannelMode } from '../../domain/channel-mode';
 
@@ -13,6 +14,8 @@ export interface ReservationRecord {
   vehicleId: string;
   vehiclePlate: string;
   vehicleLabel: string;
+  /** DEC-ALQ-VEHDATA-001: avisos por datos faltantes del vehiculo (capacidad, garantia, combustible). */
+  vehicleWarnings?: VehicleDataWarning[];
   status: ReservationStatus;
   channelMode: ChannelMode;
   startAt: Date;

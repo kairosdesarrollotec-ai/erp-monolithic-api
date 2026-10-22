@@ -44,6 +44,9 @@ export class PrismaAttendanceRepository implements AttendanceRepositoryPort {
         deductionAmount: data.deductionAmount ?? 0,
         notes: data.notes ?? null,
         createdById: data.createdById,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        accuracy: data.accuracy ?? null,
         ...(data.evidence
           ? {
               evidenceKind: data.evidence.kind,

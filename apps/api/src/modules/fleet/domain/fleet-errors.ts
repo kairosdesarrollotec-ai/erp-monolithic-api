@@ -13,6 +13,11 @@ export class VehiclePlateAlreadyExistsError extends DomainConflictError {
  * vaciarse al editar. Los vehiculos existentes sin capacidad (NULL) siguen editables mientras no se envie
  * `passengerCapacity: null` de forma explicita.
  */
+/** Respuestas 2026-10-20 #3: la capacidad es siempre > 0 (entero 1..60); 0 y negativos tampoco son validos. */
+export function isValidPassengerCapacity(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 60;
+}
+
 export class VehiclePassengerCapacityRequiredError extends DomainBadRequestError {
   readonly code = 'PASSENGER_CAPACITY_REQUIRED';
 

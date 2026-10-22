@@ -1,0 +1,299 @@
+openapi: 3.1.0
+info:
+  title: KAIROS ERP - Evidence Deletion API (doble aprobacion)
+  version: 1.0.0
+  description: >
+    1.0.0 - DEC-EVID-DELETE-002 (Respuestas de negocio 2026-10-20 #35, SDD-KAIROS-TRANSVERSAL 15.5): eliminar evidencia (foto/video
+    del checklist de ENTREGA o de RECEPCION) exige DOBLE APROBACION de personas distintas. Contrato NUEVO (yaml nuevo, 1.0.0).
+
+
+    Flujo: POST /evidence/deletion-requests (motivo obligatorio) -> PENDING; POST .../approve (1a aprobacion) -> APPROVED_1;
+    POST .../approve (2a aprobacion, de una persona distinta del solicitante Y del primer aprobador) -> EXECUTED y en la MISMA
+    transaccion se borra la evidencia (la misma regla de estado que el borrado directo historico: alquiler en PENDING_DELIVERY /
+    devolucion en RECEPCION_PROVISIONAL, INSPECCION o CON_DANOS). POST .../reject (motivo obligatorio) -> REJECTED. Una solicitud
+    abierta que no se completa en EVIDENCE_DELETION_TTL_DAYS (7 por defecto) pasa a EXPIRED. Una sola solicitud abierta por evidencia.
+    El estado informado es el EFECTIVO: una solicitud abierta vencida se informa EXPIRED aunque el job aun no la marque.
+
+
+    Permisos (ADM-02, modulo nuevo EVIDENCE): REQUEST_DELETION (solicitar), APPROVE_DELETION (aprobar y rechazar); v0 = Gerencia y
+    Administracion (+ PLATFORM_ADMIN). Consultar (lista/detalle) exige cualquiera de los dos. DELETE_DIRECT (v0: solo PLATFORM_ADMIN)
+    protege el DELETE directo DEPRECADO de rentals / returns (que ya no sirve a los demas roles). Cada paso se audita
+    (entityType evidence_deletion_request).
+
+
+    Errores `{ statusCode, code, detail }`. Todos los POST aceptan `Idempotency-Key`. Los instantes viajan en ISO-8601 UTC.
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+paths:
+  /evidence/deletion-requests:
+    post:
+      operationId: requestEvidenceDeletion
+      summary: Solicita eliminar una evidencia (no borra nada todavia)
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestEvidenceDeletionRequest' }
+      responses:
+        '201':
+          description: Solicitud creada en estado PENDING
+          content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceDeletionRequest' } } }
+        '400':
+          description: Payload invalido o falta el motivo (EVIDENCE_DELETION_REASON_REQUIRED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Contexto no autorizado o rol sin EVIDENCE.REQUEST_DELETION (ROLE_NOT_ALLOWED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '404':
+          description: Alquiler/devolucion o evidencia no encontrados en la empresa/sede
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '409':
+          description: >
+            Ya existe una solicitud abierta para esa evidencia (EVIDENCE_DELETION_ALREADY_REQUESTED) o el expediente ya no admite
+            eliminar evidencia (alquiler/devolucion fuera de los estados permitidos)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+    get:
+      operationId: listEvidenceDeletionRequests
+      summary: Lista las solicitudes de la empresa (mas recientes primero)
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/EvidenceDeletionStatus' } }
+        - { name: targetKind, in: query, required: false, schema: { $ref: '#/components/schemas/EvidenceDeletionTargetKind' } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Solicitudes (estado efectivo)
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/EvidenceDeletionRequest' } }
+        '400':
+          description: Parametros invalidos
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Rol sin EVIDENCE.REQUEST_DELETION ni EVIDENCE.APPROVE_DELETION (ROLE_NOT_ALLOWED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+  /evidence/deletion-requests/{id}:
+    get:
+      operationId: getEvidenceDeletionRequest
+      summary: Detalle de una solicitud
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Solicitud (estado efectivo) y lo que puede hacer el usuario que consulta
+          content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceDeletionRequest' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Rol sin EVIDENCE.REQUEST_DELETION ni EVIDENCE.APPROVE_DELETION (ROLE_NOT_ALLOWED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '404':
+          description: Solicitud no encontrada (EVIDENCE_DELETION_REQUEST_NOT_FOUND)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+  /evidence/deletion-requests/{id}/approve:
+    post:
+      operationId: approveEvidenceDeletion
+      summary: Aprueba la solicitud (1a aprobacion -> APPROVED_1; 2a aprobacion -> EXECUTED y borra la evidencia)
+      description: >
+        El solicitante NUNCA aprueba (403 EVIDENCE_DELETION_SELF_APPROVAL); el segundo aprobador debe ser distinto del primero
+        (403 EVIDENCE_DELETION_SAME_APPROVER). Si al ejecutar el expediente ya no admite eliminar evidencia, nada se aplica y la
+        solicitud sigue APPROVED_1 (409 del modulo dueno) hasta que se rechace o venza.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApproveEvidenceDeletionRequest' }
+      responses:
+        '200':
+          description: Solicitud actualizada (APPROVED_1 o EXECUTED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceDeletionRequest' } } }
+        '400':
+          description: Payload invalido
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Rol sin EVIDENCE.APPROVE_DELETION (ROLE_NOT_ALLOWED), solicitante aprobando (EVIDENCE_DELETION_SELF_APPROVAL) o mismo aprobador dos veces (EVIDENCE_DELETION_SAME_APPROVER)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '404':
+          description: Solicitud no encontrada (EVIDENCE_DELETION_REQUEST_NOT_FOUND) o evidencia ya inexistente al ejecutar
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '409':
+          description: >
+            La solicitud ya no esta abierta o cambio mientras se resolvia (EVIDENCE_DELETION_INVALID_STATE), vencio
+            (EVIDENCE_DELETION_REQUEST_EXPIRED) o el expediente ya no admite eliminar evidencia
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+  /evidence/deletion-requests/{id}/reject:
+    post:
+      operationId: rejectEvidenceDeletion
+      summary: Rechaza una solicitud abierta (PENDING o APPROVED_1) con motivo
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectEvidenceDeletionRequest' }
+      responses:
+        '200':
+          description: Solicitud REJECTED (la evidencia no se toca)
+          content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceDeletionRequest' } } }
+        '400':
+          description: Payload invalido o falta el motivo (EVIDENCE_DELETION_REASON_REQUIRED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '401':
+          description: Token de autenticacion ausente o invalido
+        '403':
+          description: Rol sin EVIDENCE.APPROVE_DELETION (ROLE_NOT_ALLOWED) o el solicitante intentando rechazar la suya (EVIDENCE_DELETION_SELF_APPROVAL)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '404':
+          description: Solicitud no encontrada (EVIDENCE_DELETION_REQUEST_NOT_FOUND)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '409':
+          description: La solicitud ya no esta abierta (EVIDENCE_DELETION_INVALID_STATE) o vencio (EVIDENCE_DELETION_REQUEST_EXPIRED)
+          content: { application/json: { schema: { $ref: '#/components/schemas/DomainErrorResponse' } } }
+        '500':
+          description: Error interno del servidor
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: ID token de Firebase Authentication, enviado como "Authorization Bearer <idToken>"
+  schemas:
+    DomainErrorResponse:
+      type: object
+      required: [statusCode, code, detail]
+      properties:
+        statusCode: { type: integer }
+        code:
+          type: string
+          description: >
+            EVIDENCE_DELETION_REQUEST_NOT_FOUND, EVIDENCE_DELETION_REASON_REQUIRED, EVIDENCE_DELETION_ALREADY_REQUESTED,
+            EVIDENCE_DELETION_SELF_APPROVAL, EVIDENCE_DELETION_SAME_APPROVER, EVIDENCE_DELETION_INVALID_STATE,
+            EVIDENCE_DELETION_REQUEST_EXPIRED, ROLE_NOT_ALLOWED
+        detail: { type: string }
+    EvidenceDeletionTargetKind:
+      type: string
+      description: RENTAL = evidencia de la entrega de un alquiler; RETURN = evidencia de la recepcion de una devolucion.
+      enum: [RENTAL, RETURN]
+    EvidenceDeletionStatus:
+      type: string
+      enum: [PENDING, APPROVED_1, EXECUTED, REJECTED, EXPIRED]
+    RequestEvidenceDeletionRequest:
+      type: object
+      required: [companyId, branchId, targetKind, targetId, evidenceId, reason]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        targetKind: { $ref: '#/components/schemas/EvidenceDeletionTargetKind' }
+        targetId: { type: string, format: uuid, description: rentalId (RENTAL) o returnId (RETURN) }
+        evidenceId: { type: string, format: uuid }
+        reason: { type: string, minLength: 5, maxLength: 500 }
+    ApproveEvidenceDeletionRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        note: { type: string, maxLength: 500 }
+    RejectEvidenceDeletionRequest:
+      type: object
+      required: [companyId, branchId, reason]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        reason: { type: string, minLength: 5, maxLength: 500 }
+    EvidenceDeletionEvidence:
+      type: object
+      description: Foto fija del registro al solicitar (el archivo/URL no se expone aqui).
+      required: [type, zone, uploadedBy, uploadedAt]
+      properties:
+        type: { type: string, description: PHOTO | VIDEO }
+        zone: { type: string }
+        uploadedBy: { type: string }
+        uploadedAt: { type: string, format: date-time }
+    EvidenceDeletionViewer:
+      type: object
+      description: Lo que puede hacer el usuario que consulta (para pintar botones); la autoridad sigue siendo el backend.
+      required: [canApprove, canReject]
+      properties:
+        canApprove: { type: boolean }
+        canReject: { type: boolean }
+    EvidenceDeletionRequest:
+      type: object
+      required:
+        - id
+        - companyId
+        - branchId
+        - targetKind
+        - targetId
+        - evidenceId
+        - evidence
+        - reason
+        - status
+        - requestedBy
+        - requestedAt
+        - firstApprovedBy
+        - firstApprovedAt
+        - firstApprovalNote
+        - secondApprovedBy
+        - secondApprovedAt
+        - secondApprovalNote
+        - rejectedBy
+        - rejectedAt
+        - rejectionReason
+        - executedAt
+        - expiredAt
+        - expiresAt
+        - version
+        - viewer
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        targetKind: { $ref: '#/components/schemas/EvidenceDeletionTargetKind' }
+        targetId: { type: string, format: uuid }
+        evidenceId: { type: string, format: uuid }
+        evidence: { $ref: '#/components/schemas/EvidenceDeletionEvidence' }
+        reason: { type: string }
+        status: { $ref: '#/components/schemas/EvidenceDeletionStatus' }
+        requestedBy: { type: string, description: firebaseUid del solicitante }
+        requestedAt: { type: string, format: date-time }
+        firstApprovedBy: { type: [string, 'null'] }
+        firstApprovedAt: { type: [string, 'null'], format: date-time }
+        firstApprovalNote: { type: [string, 'null'] }
+        secondApprovedBy: { type: [string, 'null'] }
+        secondApprovedAt: { type: [string, 'null'], format: date-time }
+        secondApprovalNote: { type: [string, 'null'] }
+        rejectedBy: { type: [string, 'null'] }
+        rejectedAt: { type: [string, 'null'], format: date-time }
+        rejectionReason: { type: [string, 'null'] }
+        executedAt: { type: [string, 'null'], format: date-time }
+        expiredAt: { type: [string, 'null'], format: date-time }
+        expiresAt: { type: string, format: date-time }
+        version: { type: integer }
+        viewer: { $ref: '#/components/schemas/EvidenceDeletionViewer' }

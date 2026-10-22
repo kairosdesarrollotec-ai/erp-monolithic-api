@@ -1,3 +1,4 @@
+import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateVehicleHandler } from './update-vehicle.handler';
 import { UpdateVehicleCommand } from './update-vehicle.command';
@@ -10,12 +11,15 @@ import {
   buildFleetAccessService,
 } from '../../testing/fleet-test-fixtures';
 
+const buildAudit = () =>
+  ({ recordFleetEvent: jest.fn().mockResolvedValue(undefined) }) as unknown as jest.Mocked<AuditEventRepositoryPort>;
+
 describe('UpdateVehicleHandler', () => {
   it('actualiza los datos editables de un vehículo existente', async () => {
     const vehicle = buildFleetVehicle();
     const repository = buildFleetVehicleRepository(vehicle);
     const { access, workContext } = buildFleetAccessService('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, access);
+    const handler = new UpdateVehicleHandler(repository, access, buildAudit());
 
     const command = new UpdateVehicleCommand(
       'uid-1',
@@ -65,10 +69,39 @@ describe('UpdateVehicleHandler', () => {
     expect(result.brand).toBe('Hyundai');
   });
 
+  it('B7: audita VEHICLE_UPDATED con actor y diff de campos cambiados', async () => {
+    const vehicle = buildFleetVehicle();
+    const repository = buildFleetVehicleRepository(vehicle);
+    const { access } = buildFleetAccessService('CAMPO');
+    const audit = buildAudit();
+    const handler = new UpdateVehicleHandler(repository, access, audit);
+
+    await handler.execute(
+      new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, 'Hyundai', 'Tucson', 2023, 'Negro', 'SUV', 190, 600, 7, 5.2, null as never),
+    );
+
+    expect(audit.recordFleetEvent).toHaveBeenCalledTimes(1);
+    const call = audit.recordFleetEvent.mock.calls[0][0];
+    expect(call).toMatchObject({ organizationId: ORG, actorUserId: 'uid-1', vehicleId: 'veh-1', action: 'VEHICLE_UPDATED' });
+    expect(call.changes).toHaveProperty('brand', { from: vehicle.brand, to: 'Hyundai' });
+  });
+
+  it('B7: no audita si el vehiculo no existe', async () => {
+    const repository = buildFleetVehicleRepository(null);
+    const { access } = buildFleetAccessService('CAMPO');
+    const audit = buildAudit();
+    const handler = new UpdateVehicleHandler(repository, access, audit);
+
+    await expect(
+      handler.execute(new UpdateVehicleCommand('uid-1', 'veh-x', COMPANY, BRANCH, 'A', 'B', 2020, 'N', 'SUV', 100, 100, 5, 4, undefined as never)),
+    ).rejects.toThrow(NotFoundException);
+    expect(audit.recordFleetEvent).not.toHaveBeenCalled();
+  });
+
   it('lanza NotFoundException si el vehículo no existe en la empresa', async () => {
     const repository = buildFleetVehicleRepository(null);
     const { access } = buildFleetAccessService('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, access);
+    const handler = new UpdateVehicleHandler(repository, access, buildAudit());
 
     const command = new UpdateVehicleCommand(
       'uid-1',
@@ -87,7 +120,7 @@ describe('UpdateVehicleHandler', () => {
     const vehicle = buildFleetVehicle({ brand: 'Toyota', model: 'Hilux' });
     const repository = buildFleetVehicleRepository(vehicle);
     const { access } = buildFleetAccessService('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, access);
+    const handler = new UpdateVehicleHandler(repository, access, buildAudit());
 
     const command = new UpdateVehicleCommand(
       'uid-1',
@@ -112,7 +145,7 @@ describe('UpdateVehicleHandler', () => {
     const vehicle = buildFleetVehicle({ plate: 'ABC-123' });
     const repository = buildFleetVehicleRepository(vehicle);
     const { access } = buildFleetAccessService('CAMPO');
-    const handler = new UpdateVehicleHandler(repository, access);
+    const handler = new UpdateVehicleHandler(repository, access, buildAudit());
 
     const command = new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, 'Toyota', 'Hilux');
 
@@ -126,7 +159,7 @@ describe('UpdateVehicleHandler', () => {
       const vehicle = buildFleetVehicle({ passengerCapacity: null });
       const repository = buildFleetVehicleRepository(vehicle);
       const { access } = buildFleetAccessService('CAMPO');
-      const handler = new UpdateVehicleHandler(repository, access);
+      const handler = new UpdateVehicleHandler(repository, access, buildAudit());
 
       await handler.execute(new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, 'Toyota', 'Hilux', 2022));
 
@@ -141,7 +174,7 @@ describe('UpdateVehicleHandler', () => {
       const vehicle = buildFleetVehicle({ passengerCapacity: null });
       const repository = buildFleetVehicleRepository(vehicle);
       const { access } = buildFleetAccessService('CAMPO');
-      const handler = new UpdateVehicleHandler(repository, access);
+      const handler = new UpdateVehicleHandler(repository, access, buildAudit());
 
       await handler.execute(
         new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 7),
@@ -157,11 +190,24 @@ describe('UpdateVehicleHandler', () => {
     it('rechaza con 400 PASSENGER_CAPACITY_REQUIRED si se envia la capacidad vacia (null) de forma explicita', async () => {
       const repository = buildFleetVehicleRepository(buildFleetVehicle({ passengerCapacity: 5 }));
       const { access } = buildFleetAccessService('CAMPO');
-      const handler = new UpdateVehicleHandler(repository, access);
+      const handler = new UpdateVehicleHandler(repository, access, buildAudit());
 
       await expect(
         handler.execute(
           new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, undefined, undefined, undefined, undefined, undefined, undefined, undefined, null),
+        ),
+      ).rejects.toMatchObject({ code: 'PASSENGER_CAPACITY_REQUIRED', httpStatus: 400 });
+      expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    it.each([[0], [-3], [61], [2.5]])('rechaza con 400 PASSENGER_CAPACITY_REQUIRED si la capacidad es %s', async (cap) => {
+      const repository = buildFleetVehicleRepository(buildFleetVehicle({ passengerCapacity: 5 }));
+      const { access } = buildFleetAccessService('CAMPO');
+      const handler = new UpdateVehicleHandler(repository, access, buildAudit());
+
+      await expect(
+        handler.execute(
+          new UpdateVehicleCommand('uid-1', 'veh-1', COMPANY, BRANCH, undefined, undefined, undefined, undefined, undefined, undefined, undefined, cap),
         ),
       ).rejects.toMatchObject({ code: 'PASSENGER_CAPACITY_REQUIRED', httpStatus: 400 });
       expect(repository.update).not.toHaveBeenCalled();

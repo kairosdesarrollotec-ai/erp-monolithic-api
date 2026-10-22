@@ -48,5 +48,5 @@ export abstract class RentalEvidenceRepositoryPort {
   abstract list(rentalId: string, scope: RentalScope): Promise<RentalEvidenceRecord[]>;
 
   /** Elimina una evidencia del alquiler dentro del scope; devuelve false si no existia. */
-  abstract delete(rentalId: string, evidenceId: string, scope: RentalScope): Promise<boolean>;
+  abstract delete(rentalId: string, evidenceId: string, scope: RentalScope, tx?: Prisma.TransactionClient): Promise<boolean>;
 }

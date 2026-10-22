@@ -55,6 +55,15 @@ export interface RecordRentalEventInput {
   changes: Record<string, unknown>;
 }
 
+export interface RecordFleetEventInput {
+  organizationId: string;
+  actorUserId: string;
+  vehicleId: string;
+  /** VEHICLE_CREATED | VEHICLE_UPDATED (quien y cuando = actorUserId + created_at). */
+  action: string;
+  changes: Record<string, unknown>;
+}
+
 export interface RecordIncidentEventInput {
   organizationId: string;
   actorUserId: string;
@@ -75,7 +84,7 @@ export interface RecordRecruitmentEventInput {
 export interface RecordHrAdministrationEventInput {
   organizationId: string;
   actorUserId: string;
-  entityType: 'employee' | 'attendance' | 'leave' | 'vacation' | 'field_trip' | 'termination' | 'memo' | 'training';
+  entityType: 'employee' | 'attendance' | 'leave' | 'vacation' | 'field_trip' | 'termination' | 'memo' | 'training' | 'hr_area';
   entityId: string;
   action: string;
   changes: Record<string, unknown>;
@@ -85,6 +94,16 @@ export interface RecordPaymentEventInput {
   organizationId: string;
   actorUserId: string;
   depositId: string;
+  action: string;
+  changes: Record<string, unknown>;
+}
+
+export interface RecordEvidenceDeletionEventInput {
+  organizationId: string;
+  /** Usuario que ejecuta el paso; null = proceso del sistema (vencimiento). */
+  actorUserId: string | null;
+  requestId: string;
+  /** EVIDENCE_DELETION_REQUESTED | _APPROVED_1 | _APPROVED_2 | _EXECUTED | _REJECTED | _EXPIRED */
   action: string;
   changes: Record<string, unknown>;
 }
@@ -154,6 +173,12 @@ export abstract class AuditEventRepositoryPort {
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 
+  /** Flota: auditoria (quien/cuando) del alta y edicion de vehiculos (entityType 'vehicle'). */
+  abstract recordFleetEvent(
+    input: RecordFleetEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
   /**
    * INC-01/INC-02 (Incidencias) - registro, accion agregada, resolucion, cierre y derivacion a via legal.
    * `tx` opcional para atomicidad con la mutacion (mismo criterio que recordRentalEvent).
@@ -187,6 +212,15 @@ export abstract class AuditEventRepositoryPort {
    */
   abstract recordPaymentEvent(
     input: RecordPaymentEventInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void>;
+
+  /**
+   * DEC-EVID-DELETE-002 - cada paso de la doble aprobacion para eliminar evidencia (entityType 'evidence_deletion_request').
+   * `tx` opcional para atomicidad con la mutacion.
+   */
+  abstract recordEvidenceDeletionEvent(
+    input: RecordEvidenceDeletionEventInput,
     tx?: Prisma.TransactionClient,
   ): Promise<void>;
 }

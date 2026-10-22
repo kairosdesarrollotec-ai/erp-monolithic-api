@@ -8,7 +8,9 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { FleetVehicleRepositoryPort } from '../../../fleet/application/ports/fleet-vehicle-repository.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
-import { RentalStateConflictError, MissingDeliveryEvidenceError } from '../../domain/rental-errors';
+import { RentalStateConflictError, MissingDeliveryEvidenceError, CompanyDriverRateRequiredError } from '../../domain/rental-errors';
+import { isCompanyDriverVariantCode } from '../../domain/contract-variant';
+import { normalizeManualDailyRate } from '../../domain/company-driver-charge';
 import { RentalCreationGuard } from '../services/rental-creation.guard';
 import { SyncClosureGatePort } from '../../../sync-conflicts/application/ports/sync-closure-gate.port';
 import { CompleteDeliveryCommand } from './complete-delivery.command';
@@ -17,6 +19,16 @@ export const REQUIRED_DELIVERY_PHOTOS = 35;
 export const REQUIRED_DELIVERY_VIDEOS = 3;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * DEC-ALQ-DRIVERRATE-002 (Respuestas 2026-10-20 #2): con conductor de la empresa la tarifa diaria es obligatoria
+ * (digitada a mano en el alquiler) para terminar el proceso de alquiler -> 422 COMPANY_DRIVER_RATE_REQUIRED.
+ */
+function assertCompanyDriverRateDefined(rental: RentalRecord): void {
+  if (isCompanyDriverVariantCode(rental.contract?.contractVariant) && !normalizeManualDailyRate(rental.companyDriverDailyRate)) {
+    throw new CompanyDriverRateRequiredError();
+  }
+}
 
 /**
  * ALQ-09 / BR-INS-003 / BR-INS-004 - Entrega formal del vehículo.
@@ -84,6 +96,8 @@ export class CompleteDeliveryHandler {
       throw new RentalStateConflictError('completar entrega en', existing.status);
     }
 
+    assertCompanyDriverRateDefined(existing);
+
     await this.syncGate?.assertSynced('ENTREGA', command.id, scope);
 
     const evidenceCounts = await this.evidenceRepository.countByType(command.id, scope);
@@ -110,6 +124,7 @@ export class CompleteDeliveryHandler {
       if (current.status !== 'PENDING_DELIVERY') {
         throw new RentalStateConflictError('completar entrega en', current.status);
       }
+      assertCompanyDriverRateDefined(current);
       await this.syncGate?.assertSynced('ENTREGA', command.id, scope, tx);
 
       const deliveredAt = this.clock.now();

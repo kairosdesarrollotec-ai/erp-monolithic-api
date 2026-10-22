@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ProcessDueFieldTripTimeoutsHandler } from '../../application/commands/process-due-field-trip-timeouts.handler';
+import { isEnvFlagEnabled } from '../../../../common/config/env-flag';
 
 /** NFR-BIZ-008: la cascada se revisa cada minuto (cada nivel dura 5 min; el desfase máximo es de 1 min). */
 export const DEFAULT_FIELD_TRIP_CASCADE_INTERVAL_MS = 60_000;
@@ -20,7 +21,7 @@ export class FieldTripCascadeScheduler implements OnModuleInit, OnModuleDestroy 
   constructor(private readonly processDue: ProcessDueFieldTripTimeoutsHandler) {}
 
   onModuleInit(): void {
-    if (process.env.HR_FIELD_TRIP_CASCADE_SCHEDULER === 'off' || process.env.JEST_WORKER_ID !== undefined) {
+    if (!isEnvFlagEnabled(process.env.HR_FIELD_TRIP_CASCADE_SCHEDULER) || process.env.JEST_WORKER_ID !== undefined) {
       return;
     }
     const configured = Number(process.env.HR_FIELD_TRIP_CASCADE_INTERVAL_MS);

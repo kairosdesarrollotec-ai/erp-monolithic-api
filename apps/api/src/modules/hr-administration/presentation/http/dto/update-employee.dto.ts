@@ -1,4 +1,5 @@
 import { EmployeeStatus } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
@@ -24,7 +25,9 @@ export class UpdateEmployeeDto {
   @MaxLength(200)
   fullName?: string;
 
+  /** Vaciar el correo ("" o null) DESVINCULA la ficha de su cuenta sin error (Respuestas 2026-10-20 #19). */
   @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' && value.trim() === '' ? null : value))
   @IsEmail()
   @MaxLength(150)
   email?: string | null;
@@ -59,6 +62,7 @@ export class UpdateEmployeeDto {
   @MaxLength(150)
   jobTitle?: string;
 
+  /** Solo Gerencia puede cambiarlo (HR_ADMINISTRATION.MANAGE_SALARY); otro rol con un valor distinto -> 403 EMPLOYEE_SALARY_GERENCIA_ONLY. */
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)

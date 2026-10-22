@@ -319,4 +319,50 @@ describe('CompleteDeliveryHandler', () => {
       expect(deps.fleetVehicles.updateStatus).not.toHaveBeenCalled();
     });
   });
+
+  describe('DEC-ALQ-DRIVERRATE-002 (Respuestas 2026-10-20 #2): tarifa del conductor de la empresa obligatoria para completar la entrega', () => {
+    const withDriver = (rate: string | null | undefined): RentalRecord =>
+      ({
+        ...fakeRental,
+        companyDriverDailyRate: rate,
+        contract: { id: 'c', rentalId: 'rent-1', templateId: null, documentRef: 'd', status: 'SIGNED', signedAt: null, contractVariant: 'NATURAL_WITH_DRIVER', createdAt: new Date() },
+      }) as unknown as RentalRecord;
+    const run = (deps: ReturnType<typeof buildDeps>) =>
+      new CompleteDeliveryHandler(
+        deps.rentals,
+        deps.fleetVehicles,
+        deps.workContext,
+        deps.matrixAuth,
+        deps.transactionManager,
+        deps.auditRepository,
+        deps.outboxRepository,
+        deps.evidenceRepository,
+        deps.creationGuard,
+        deps.clock,
+      ).execute(new CompleteDeliveryCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 4, 35, 3));
+
+    it.each([[null], [undefined], ['0.00']])('con conductor de la empresa y tarifa %p -> 422 COMPANY_DRIVER_RATE_REQUIRED', async (rate) => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue(withDriver(rate as any));
+
+      await expect(run(deps)).rejects.toMatchObject({ code: 'COMPANY_DRIVER_RATE_REQUIRED', httpStatus: 422 });
+      expect(deps.rentals.completeDelivery).not.toHaveBeenCalled();
+      expect(deps.fleetVehicles.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('con conductor de la empresa y tarifa digitada: completa la entrega', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue(withDriver('120.00'));
+      await expect(run(deps)).resolves.toMatchObject({ status: 'ACTIVE' });
+    });
+
+    it('sin conductor de la empresa no exige tarifa', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue({
+        ...fakeRental,
+        contract: { id: 'c', rentalId: 'rent-1', templateId: null, documentRef: 'd', status: 'SIGNED', signedAt: null, contractVariant: 'NATURAL_NO_DRIVER', createdAt: new Date() },
+      } as unknown as RentalRecord);
+      await expect(run(deps)).resolves.toMatchObject({ status: 'ACTIVE' });
+    });
+  });
 });

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { InterviewResult } from '@prisma/client';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
@@ -6,7 +7,7 @@ import { RecruitmentAccessService } from '../services/recruitment-access.service
 import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { CandidateInterviewRecord, InterviewRepositoryPort } from '../ports/interview-repository.port';
 import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
-import { CandidateNotFoundError, InterviewNotFoundError } from '../../domain/recruitment-errors';
+import { CandidateNotFoundError, GerenciaDecisionRequiredError, InterviewNotFoundError } from '../../domain/recruitment-errors';
 import { CandidateProcessState, VacancyStatus } from '../../domain/recruitment-domain-types';
 import { advanceVacancyProgress, transitionCandidateProcess } from '../services/recruitment-progress';
 import { assertCandidateNotDecided } from '../../domain/recruitment-rules';
@@ -33,6 +34,11 @@ export class RecordInterviewResultHandler {
       },
       'MANAGE_INTERVIEW',
     );
+
+    // Respuestas 2026-10-20 #12: registrar «No avanza» tras la entrevista es una decision de Gerencia General.
+    if (command.result === InterviewResult.NO_AVANZA && !(await this.access.isActionAllowed(context, 'DECIDE_NO_ADVANCE'))) {
+      throw new GerenciaDecisionRequiredError('Registrar «No avanza» tras la entrevista');
+    }
 
     return this.transactionManager.run(async (tx) => {
       const interview = await this.interviews.findScopedById(command.id, scope, tx);

@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { ReservationRecord } from '../../application/ports/reservation-repository.port';
+import { buildVehicleDataWarnings } from '../../../../common/domain/vehicle-data-warnings';
 
 /**
  * Hallazgo MEDIO de revision PR#6 ("as unknown as ocultan la
@@ -28,6 +29,11 @@ export function toReservationRecord(row: ReservationWithRelations): ReservationR
     vehicleId: row.vehicleId,
     vehiclePlate: row.vehicle.plate,
     vehicleLabel: `${row.vehicle.brand} ${row.vehicle.model} - ${row.vehicle.plate}`,
+    vehicleWarnings: buildVehicleDataWarnings({
+      passengerCapacity: row.vehicle.passengerCapacity,
+      depositMinimum: row.vehicle.depositMinimum != null ? Number(row.vehicle.depositMinimum) : null,
+      fuelPrice: row.vehicle.fuelPrice != null ? Number(row.vehicle.fuelPrice) : null,
+    }),
     status: row.status,
     channelMode: row.channelMode,
     startAt: row.startAt,

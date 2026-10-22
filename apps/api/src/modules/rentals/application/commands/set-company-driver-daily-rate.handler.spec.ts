@@ -99,11 +99,12 @@ describe('SetCompanyDriverDailyRateHandler (DEC-ALQ-DRIVERRATE-001, F-02)', () =
     expect(result.companyDriverCharge).toMatchObject({ source: 'MANUAL', dailyRate: '100.00', total: '300.00' });
   });
 
-  it.each(['PENDING_DELIVERY', 'ACTIVE', 'EXTENSION_PENDING', 'RETURN_IN_PROGRESS'] as const)('estado %s: editable', async (status) => {
-    await expect(build({ ...baseRental, status }).handler.execute(cmd())).resolves.toBeDefined();
+  it('PENDING_DELIVERY (contrato formalizado, entrega sin completar): editable', async () => {
+    await expect(build({ ...baseRental, status: 'PENDING_DELIVERY' }).handler.execute(cmd())).resolves.toBeDefined();
   });
 
-  it.each(['CLOSED', 'CANCELLED'] as const)('estado %s -> 409 COMPANY_DRIVER_RATE_CLOSED', async (status) => {
+  // Respuestas 2026-10-20 #2: editable hasta que termina el proceso de alquiler (completar entrega); la devolucion es otro proceso.
+  it.each(['ACTIVE', 'EXTENSION_PENDING', 'RETURN_IN_PROGRESS', 'CLOSED', 'CANCELLED'] as const)('estado %s (proceso de alquiler terminado) -> 409 COMPANY_DRIVER_RATE_CLOSED', async (status) => {
     const d = build({ ...baseRental, status });
     await expect(d.handler.execute(cmd())).rejects.toMatchObject({ code: 'COMPANY_DRIVER_RATE_CLOSED', httpStatus: 409 });
     expect(d.rentals.setCompanyDriverDailyRate).not.toHaveBeenCalled();

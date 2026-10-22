@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { isEvidenceRoleAllowed, type EvidenceAction } from '../../evidence/application/policies/evidence-role-policy';
 import type { Prisma } from '@prisma/client';
 import { ClockPort } from '../../../common/application/ports/clock.port';
 import { TransactionManagerPort } from '../../../common/application/ports/transaction-manager.port';
@@ -239,6 +240,8 @@ export function buildDeps(
       try {
         if (module === 'RETURN') {
           assertReturnRoleAllowed(r, action as ReturnAction);
+        } else if (module === 'EVIDENCE') {
+          if (!isEvidenceRoleAllowed(r, action as EvidenceAction)) throw new Error('evidence not allowed');
         }
       } catch {
         const { ForbiddenException } = await import('@nestjs/common');
@@ -323,6 +326,8 @@ export function buildDeps(
     recordRecruitmentEvent: jest.fn().mockResolvedValue(undefined),
     recordHrAdministrationEvent: jest.fn().mockResolvedValue(undefined),
     recordPaymentEvent: jest.fn().mockResolvedValue(undefined),
+    recordFleetEvent: jest.fn().mockResolvedValue(undefined),
+    recordEvidenceDeletionEvent: jest.fn().mockResolvedValue(undefined),
   };
 
   const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {

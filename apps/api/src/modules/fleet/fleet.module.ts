@@ -12,10 +12,11 @@ import { PrismaFleetVehicleRepository } from './infrastructure/persistence/prism
 import { GcsVehiclePhotoService } from './infrastructure/storage/gcs-vehicle-photo.service';
 import { FleetAccessService } from './application/services/fleet-access.service';
 import { UsersModule } from '../users/users.module';
+import { AuditModule } from '../audit/audit.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 
 @Module({
-  imports: [UsersModule, AuthorizationModule],
+  imports: [UsersModule, AuthorizationModule, AuditModule],
   controllers: [FleetController],
   providers: [
     FleetAccessService,

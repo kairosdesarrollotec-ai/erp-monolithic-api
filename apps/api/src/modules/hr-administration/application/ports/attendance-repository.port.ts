@@ -10,6 +10,10 @@ export interface CreateAttendanceData {
   deductionAmount?: number;
   notes?: string | null;
   createdById: string;
+  /** HU-29: ubicacion automatica opcional. */
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
   /** DEC-ADP-ATT-EVIDENCE-001 */
   evidence?: {
     kind: string;

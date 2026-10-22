@@ -107,6 +107,8 @@ export interface RentalRecord {
    * (requiere migracion en Flota); mientras no se complete no se valida el maximo de acompanantes.
    */
   vehiclePassengerCapacity?: number | null;
+  /** DEC-ALQ-VEHDATA-001: precio del combustible del vehiculo (null = no registrado). */
+  vehicleFuelPrice?: number | null;
   /** DEC-ALQ-DRIVERRATE-001: tarifa diaria manual del conductor de la empresa ("0.00" formato 2 decimales; null = sin valor manual). */
   companyDriverDailyRate?: string | null;
   /** Solo en el detalle (GET) y tras fijar la tarifa, en alquileres con conductor de la empresa: tarifa diaria x dias (no se persiste). */

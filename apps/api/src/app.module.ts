@@ -24,6 +24,7 @@ import { ReportingModule } from './modules/reporting/reporting.module';
 import { SearchModule } from './modules/search/search.module';
 import { PrismaModule } from './common/persistence/prisma.module';
 import { RetentionModule } from './modules/retention/retention.module';
+import { EvidenceModule } from './modules/evidence/evidence.module';
 import { SyncConflictsModule } from './modules/sync-conflicts/sync-conflicts.module';
 import { IdempotencyModule } from './common/http/idempotency.module';
 
@@ -58,6 +59,7 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     SearchModule,
     RetentionModule,
     SyncConflictsModule,
+    EvidenceModule,
   ],
   providers: [
     // Guard global de throttling: aplica a todos los endpoints.

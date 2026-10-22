@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.8.3
+  version: 0.9.0
   description: >
+    0.9.0 — DEC-ALQ-VEHDATA-001 (Respuestas de Russbel 2026-10-20 #5). Aditivo: `ReservationResponse.vehicleWarnings[]` (un
+    `VehicleDataWarning` por cada dato faltante del vehículo: capacidad de pasajeros, garantía, precio del combustible). No bloquea; el
+    front pide completarlo en Flota (PATCH /fleet/vehicles/{id}).
     0.8.2 — Regla de negocio (Fiorella, 16-oct-2026): "la reserva nunca superará la garantía".
     confirm responde 422 RESERVATION_EXCEEDS_GUARANTEE si requiredPaymentAmount supera la garantía
     del vehículo (Vehicle.depositMinimum, Flota); si el vehículo no tiene garantía definida no se valida.
@@ -502,9 +505,25 @@ components:
         refundStatus: { type: string, enum: [PENDING_TRANSFER], nullable: true, description: 'Solo REJECTED: Gerencia debe transferir la devolucion inmediata (sin integracion de pagos)' }
         resolutionNote: { type: string, nullable: true }
         resolvedAt: { type: string, format: date-time, nullable: true }
+    VehicleDataWarning:
+      type: object
+      description: >
+        DEC-ALQ-VEHDATA-001 (Respuestas 2026-10-20 #5). Aviso estructurado por cada dato del vehículo que falta en Flota
+        (capacidad de pasajeros, garantía, precio del combustible). NO bloquea; el front pide completarlo con
+        PATCH /fleet/vehicles/{id}.
+      required: [code, field, message]
+      properties:
+        code:
+          type: string
+          enum: [VEHICLE_PASSENGER_CAPACITY_MISSING, VEHICLE_DEPOSIT_MINIMUM_MISSING, VEHICLE_FUEL_PRICE_MISSING]
+        field:
+          type: string
+          enum: [passengerCapacity, depositMinimum, fuelPrice]
+        message: { type: string }
+
     ReservationResponse:
       type: object
-      required: [id, status, channelMode, version, customer, vehicle, startAt, endAt, requiredPayment, requirements, createdAt, startDatePassed]
+      required: [id, status, channelMode, version, customer, vehicle, vehicleWarnings, startAt, endAt, requiredPayment, requirements, createdAt, startDatePassed]
       properties:
         id: { type: string, format: uuid }
         status: { $ref: '#/components/schemas/ReservationStatus' }
@@ -518,6 +537,10 @@ components:
           type: object
           required: [id, plate, label]
           properties: { id: { type: string, format: uuid }, plate: { type: string }, label: { type: string } }
+        vehicleWarnings:
+          type: array
+          items: { $ref: '#/components/schemas/VehicleDataWarning' }
+          description: Un aviso por cada dato del vehículo que falta (capacidad, garantía, combustible). Vacío si está completo. No bloquea.
         startAt: { type: string, format: date-time }
         endAt: { type: string, format: date-time }
         requiredPayment:

@@ -231,7 +231,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('1.7.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
-    expect(spec.info.version).toBe('1.8.0');
+    expect(spec.info.version).toBe('1.9.0');
     const alcohol: Operation = spec.paths['/returns/{id}/commands/register-alcohol-test'].post;
     expect(JSON.stringify(alcohol.responses['422'])).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
     const op: Operation = spec.paths['/returns/{id}/commands/register-late-charge'].post;
@@ -578,6 +578,6 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('contrato 1.8.0', () => {
-    expect(spec.info.version).toBe('1.8.0');
+    expect(spec.info.version).toBe('1.9.0');
   });
 });

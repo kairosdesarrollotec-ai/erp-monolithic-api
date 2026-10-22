@@ -292,7 +292,29 @@ export class CompanyDriverRateNotApplicableError extends DomainUnprocessableErro
   }
 }
 
-/** DEC-ALQ-DRIVERRATE-001: la tarifa diaria ya no se edita con el alquiler cerrado o cancelado. */
+/** ENTREGA-02 (Respuestas 2026-10-20 #10): alcolimetro desfavorable/rechazado = check "no cumple rango" + foto obligatoria. */
+export class AlcoholTestPhotoRequiredError extends DomainUnprocessableError {
+  readonly code = 'ALCOHOL_TEST_PHOTO_REQUIRED';
+
+  constructor() {
+    super(
+      'Un alcolimetro desfavorable o rechazado exige la foto de la prueba como evidencia (zona ALCOHOL_TEST). Subala antes de registrar el resultado.',
+    );
+  }
+}
+
+/** DEC-ALQ-DRIVERRATE-002 (Respuestas 2026-10-20 #2): sin tarifa digitada no termina el proceso de alquiler. */
+export class CompanyDriverRateRequiredError extends DomainUnprocessableError {
+  readonly code = 'COMPANY_DRIVER_RATE_REQUIRED';
+
+  constructor() {
+    super(
+      'Falta la tarifa diaria del conductor de la empresa. Digitela (set-company-driver-daily-rate) antes de completar la entrega.',
+    );
+  }
+}
+
+/** DEC-ALQ-DRIVERRATE-001/002: la tarifa diaria solo se edita hasta completar la entrega (fin del proceso de alquiler). */
 export class CompanyDriverRateClosedError extends DomainConflictError {
   readonly code = 'COMPANY_DRIVER_RATE_CLOSED';
 

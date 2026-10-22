@@ -1,6 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { DeleteEvidenceHandler } from './delete-evidence.handler';
 import { DeleteEvidenceCommand } from './delete-evidence.command';
+import { RentalEvidenceRemovalService } from '../services/rental-evidence-removal.service';
 import { RentalStateConflictError } from '../../domain/rental-errors';
 import { testRole } from '../../../users/testing/role-fixtures';
 
@@ -16,7 +17,8 @@ function build(status = 'PENDING_DELIVERY', removed = true, rentalExists = true)
     }),
   };
   const matrixAuth = { assertAllowed: jest.fn().mockResolvedValue(undefined) };
-  const handler = new DeleteEvidenceHandler(evidence as any, rentals as any, workContext as any, matrixAuth as any);
+  const removal = new RentalEvidenceRemovalService(evidence as any, rentals as any);
+  const handler = new DeleteEvidenceHandler(removal, workContext as any, matrixAuth as any);
   return { evidence, rentals, matrixAuth, handler };
 }
 
@@ -26,15 +28,23 @@ describe('DeleteEvidenceHandler', () => {
   it('elimina la evidencia dentro del scope cuando el alquiler esta PENDING_DELIVERY', async () => {
     const { evidence, matrixAuth, handler } = build();
     await handler.execute(cmd());
-    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', expect.anything(), 'RENTAL', 'UPLOAD_EVIDENCE', {
+    expect(matrixAuth.assertAllowed).toHaveBeenCalledWith('org-1', expect.anything(), 'EVIDENCE', 'DELETE_DIRECT', {
       companyId: 'comp-1',
       branchId: 'branch-1',
     });
-    expect(evidence.delete).toHaveBeenCalledWith('rent-1', 'ev-1', {
-      organizationId: 'org-1',
-      operatingCompanyId: 'comp-1',
-      branchId: 'branch-1',
-    });
+    expect(evidence.delete).toHaveBeenCalledWith(
+      'rent-1',
+      'ev-1',
+      { organizationId: 'org-1', operatingCompanyId: 'comp-1', branchId: 'branch-1' },
+      undefined,
+    );
+  });
+
+  it('sin EVIDENCE.DELETE_DIRECT (borrado directo DEPRECADO) -> rechaza y no borra', async () => {
+    const { evidence, matrixAuth, handler } = build();
+    matrixAuth.assertAllowed.mockRejectedValueOnce(new ForbiddenException());
+    await expect(handler.execute(cmd())).rejects.toThrow(ForbiddenException);
+    expect(evidence.delete).not.toHaveBeenCalled();
   });
 
   it('alquiler inexistente -> NotFoundException y no borra', async () => {

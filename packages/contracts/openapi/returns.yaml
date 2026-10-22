@@ -1,8 +1,15 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.8.0
+  version: 1.9.0
   description: >
+    1.9.0 - (a) DEC-EVID-DELETE-002 (Respuestas 2026-10-20 #35, SDD 15.5): eliminar evidencia exige DOBLE APROBACION (contrato nuevo
+    evidence.yaml). `DELETE /returns/{id}/evidence/{evidenceId}` queda DEPRECADO (header `Deprecation: true`) y CAMBIA su permiso:
+    exige EVIDENCE.DELETE_DIRECT (v0: solo PLATFORM_ADMIN) en lugar de RETURN.UPLOAD_EVIDENCE -> 403 ROLE_NOT_ALLOWED para los demas
+    roles (COMPORTAMIENTO CAMBIADO). (b) P3 (sin cambio de contrato HTTP): ademas de la garantia de 24 h, la sugerencia de cargo por
+    retraso (LATE_CHARGE) y la inmovilizacion > 24 h por dano tecnico (IMMOBILIZATION) se proyectan a dashboard_items (type ALERT,
+    sourceType RETURN, deepLink /devoluciones/{id}) para los roles con NOTIFICATIONS.RECEIVE_RETURN_ALERTS; se descartan al
+    resolverse (cargo registrado / dias cobrados). El cobro sigue siendo manual.
     1.8.0 — DEC-DEVREM-003 (sugerencia por tardanza): GET /returns/alerts admite type=LATE_CHARGE y ReturnAlertItem.lateCharge
     {lateMinutes, lateToleranceMinutes}: devolución recibida con retraso > 30 min (BR-DEV-003) y SIN cargo por retraso registrado ->
     el sistema SUGIERE registrarlo con register-late-charge (F-03: SIN monto; lo digita el usuario autorizado, sin cálculo
@@ -756,11 +763,12 @@ paths:
   /returns/{id}/evidence/{evidenceId}:
     delete:
       operationId: deleteReturnEvidence
+      deprecated: true
       summary: Eliminar una evidencia de recepción registrada por error (DEV-04)
       description: >
-        Solo en los estados que admiten evidencia (RECEPCION_PROVISIONAL, INSPECCION o
-        CON_DANOS) y con la misma acción de matriz que subirla (UPLOAD_EVIDENCE).
-        Se elimina el registro; el archivo del bucket no se toca.
+        DEPRECADO (DEC-EVID-DELETE-002): usar POST /evidence/deletion-requests (doble aprobación, evidence.yaml). Este atajo exige
+        EVIDENCE.DELETE_DIRECT (v0: solo PLATFORM_ADMIN) y responde con el header `Deprecation: true`. Solo en los estados que
+        admiten evidencia (RECEPCION_PROVISIONAL, INSPECCION o CON_DANOS). Se elimina el registro; el archivo del bucket no se toca.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }

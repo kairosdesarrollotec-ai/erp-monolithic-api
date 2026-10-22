@@ -8,8 +8,8 @@ import {
 import { WORKER_ROLES } from '../../../users/domain/worker-role';
 
 describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
-  it('define las 10 acciones canónicas de Administración de Personal', () => {
-    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(10);
+  it('define las 12 acciones canónicas de Administración de Personal', () => {
+    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(12);
     expect(HR_ADMINISTRATION_ACTIONS).toEqual([
       'VIEW_EMPLOYEES',
       'MANAGE_EMPLOYEES',
@@ -21,11 +21,13 @@ describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
       'EVALUATE_FIELD_TRIP_RETURN',
       'TERMINATE_EMPLOYMENT',
       'REGISTER_TRAINING',
+      'MANAGE_AREAS',
+      'MANAGE_SALARY',
     ]);
   });
 
   describe('Permisos de Gerencia y RRHH (control total)', () => {
-    it.each(HR_ADMINISTRATION_ACTIONS)('permite la acción %s a GERENCIA y RRHH', (action) => {
+    it.each(HR_ADMINISTRATION_ACTIONS.filter((a) => a !== 'MANAGE_AREAS' && a !== 'MANAGE_SALARY'))('permite la acción %s a GERENCIA y RRHH', (action) => {
       expect(isHrAdministrationRoleAllowed('GERENCIA', action)).toBe(true);
       expect(isHrAdministrationRoleAllowed('RRHH', action)).toBe(true);
       expect(() => assertHrAdministrationRoleAllowed('GERENCIA', action)).not.toThrow();
@@ -88,5 +90,14 @@ describe('REGISTER_TRAINING (ADP-10)', () => {
     expect(isHrAdministrationRoleAllowed('RRHH', 'REGISTER_TRAINING')).toBe(true);
     expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'REGISTER_TRAINING')).toBe(false);
     expect(isHrAdministrationRoleAllowed('CAMPO', 'REGISTER_TRAINING')).toBe(false);
+  });
+});
+
+describe('MANAGE_AREAS y MANAGE_SALARY (Respuestas 2026-10-20 #17 y #19)', () => {
+  it.each(['MANAGE_AREAS', 'MANAGE_SALARY'] as const)('%s solo lo permite GERENCIA', (action) => {
+    expect(isHrAdministrationRoleAllowed('GERENCIA', action)).toBe(true);
+    for (const role of ['RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, action)).toBe(false);
+    }
   });
 });

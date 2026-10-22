@@ -4,7 +4,12 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
-import { EmployeeNotFoundError, EmployeeTerminatedError, EmployeeVersionConflictError } from '../../domain/hr-administration-errors';
+import {
+  EmployeeNotFoundError,
+  EmployeeSalaryGerenciaOnlyError,
+  EmployeeTerminatedError,
+  EmployeeVersionConflictError,
+} from '../../domain/hr-administration-errors';
 import { assertEmployeeStatusEditable } from '../../domain/hr-administration-rules';
 import { EmployeeAccountLinkService } from '../services/employee-account-link.service';
 import { HrAreaResolverService } from '../services/hr-area-resolver.service';
@@ -19,6 +24,12 @@ export interface UpdateEmployeeResult {
   accountRelink: AccountRelinkOutcome | null;
   /** Correo de la ficha antes de la edición (para el aviso de re-vinculación). */
   previousEmail: string | null;
+}
+
+/** true si el sueldo pedido difiere del vigente (null y 0 son distintos: null = sin sueldo definido). */
+function salaryChanged(current: Employee['baseSalary'], requested: number | null): boolean {
+  const cur = current === null || current === undefined ? null : Number(current);
+  return cur !== requested;
 }
 
 @Injectable()
@@ -51,6 +62,14 @@ export class UpdateEmployeeHandler {
       },
       'MANAGE_EMPLOYEES',
     );
+
+    // Respuestas 2026-10-20 #19: el sueldo base solo lo cambia Gerencia (MANAGE_SALARY). Un baseSalary igual al vigente (el front
+    // suele reenviar la ficha completa) no cuenta como cambio; uno distinto sin el permiso -> 403 EMPLOYEE_SALARY_GERENCIA_ONLY.
+    if (command.data.baseSalary !== undefined && salaryChanged(found.baseSalary, command.data.baseSalary)) {
+      if (!(await this.access.isActionAllowed(context, 'MANAGE_SALARY'))) {
+        throw new EmployeeSalaryGerenciaOnlyError();
+      }
+    }
 
     let data =
       command.data.email === undefined ? command.data : { ...command.data, email: normalizeEmail(command.data.email) };

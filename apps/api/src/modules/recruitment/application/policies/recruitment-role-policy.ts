@@ -31,6 +31,8 @@ export const RECRUITMENT_ACTIONS = [
   'DECIDE_CANDIDATE',
   'MANAGE_ONBOARDING',
   'EVALUATE_PROBATION',
+  'DECIDE_NO_ADVANCE',
+  'TERMINATE_PROBATION',
 ] as const;
 
 export type RecruitmentAction = (typeof RECRUITMENT_ACTIONS)[number];
@@ -48,6 +50,10 @@ const RECRUITMENT_ROLE_POLICY: Readonly<Record<RecruitmentAction, ReadonlySet<Wo
   DECIDE_CANDIDATE: ALL_ROLES, // Exclusivo Gerencia / RRHH (BR-REC-003, DR-REC-002)
   MANAGE_ONBOARDING: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   EVALUATE_PROBATION: ALL_ROLES,
+  // Respuestas 2026-10-20 #12: «No avanza» tras la entrevista lo decide solo Gerencia General.
+  DECIDE_NO_ADVANCE: new Set(['GERENCIA']),
+  // Respuestas 2026-10-20 #13: el término tras una prueba negativa lo registra Gerencia General.
+  TERMINATE_PROBATION: new Set(['GERENCIA']),
 };
 
 export function isRecruitmentRoleAllowed(role: WorkerRole, action: RecruitmentAction): boolean {

@@ -131,6 +131,7 @@ export function toRentalRecord(row: RentalWithRelations): RentalRecord {
     vehicleModel: row.vehicle.model,
     vehicleDepositMinimum: row.vehicle.depositMinimum != null ? Number(row.vehicle.depositMinimum) : null,
     vehiclePassengerCapacity: row.vehicle.passengerCapacity ?? null,
+    vehicleFuelPrice: row.vehicle.fuelPrice != null ? Number(row.vehicle.fuelPrice) : null,
     planCode: row.planCode,
     status: row.status as RentalStatus,
     startAt: row.startAt,

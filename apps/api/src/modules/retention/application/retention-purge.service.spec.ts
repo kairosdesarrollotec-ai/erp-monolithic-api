@@ -32,8 +32,11 @@ describe('RetentionPurgeService (L-02)', () => {
   it('usa 365 d por defecto y calcula el corte contra el reloj', async () => {
     const { service, calls } = setup();
     await service.run();
-    expect(calls.map((c) => c.target)).toEqual(['IDEMPOTENCY_KEYS', 'OUTBOX_PROCESSED', 'OUTBOX_DEAD_LETTER']);
-    for (const c of calls) expect(c.cutoff.getTime()).toBe(NOW.getTime() - 365 * DAY);
+    expect(calls.map((c) => c.target)).toEqual(['IDEMPOTENCY_KEYS', 'OUTBOX_PROCESSED', 'OUTBOX_DEAD_LETTER', 'DASHBOARD_ITEMS_SEEN']);
+    for (const c of calls.filter((x) => x.target !== 'DASHBOARD_ITEMS_SEEN')) expect(c.cutoff.getTime()).toBe(NOW.getTime() - 365 * DAY);
+    // Items de tablero ya vistos: corte a 30 d; nada de evidencia se purga jamas.
+    expect(calls.find((x) => x.target === 'DASHBOARD_ITEMS_SEEN')!.cutoff.getTime()).toBe(NOW.getTime() - 30 * DAY);
+    expect(calls.some((x) => /EVIDENCE/.test(x.target))).toBe(false);
   });
 
   it('respeta plazos configurables por entorno', async () => {
@@ -43,7 +46,7 @@ describe('RetentionPurgeService (L-02)', () => {
       RETENTION_OUTBOX_DEAD_LETTER_DAYS: '90',
     });
     await service.run();
-    expect(calls.map((c) => NOW.getTime() - c.cutoff.getTime())).toEqual([30 * DAY, 60 * DAY, 90 * DAY]);
+    expect(calls.map((c) => NOW.getTime() - c.cutoff.getTime())).toEqual([30 * DAY, 60 * DAY, 90 * DAY, 30 * DAY]);
   });
 
   it('borra por lotes hasta que un lote vuelve incompleto (nunca un DELETE gigante)', async () => {
@@ -74,7 +77,7 @@ describe('RetentionPurgeService (L-02)', () => {
     const results = await service.run();
     expect(results[0].error).toBe('db down');
     expect(results[1].error).toBeUndefined();
-    expect(port.purgeBatch).toHaveBeenCalledTimes(3);
+    expect(port.purgeBatch).toHaveBeenCalledTimes(4);
   });
 
   it('el log estructurado trae solo conteos/plazos (sin datos personales) y hora de Lima', async () => {

@@ -4,7 +4,12 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
-import { CandidateAlreadyEmployeeError, DuplicateEmployeeDocumentError, HrAreaRequiredError } from '../../domain/hr-administration-errors';
+import {
+  CandidateAlreadyEmployeeError,
+  DuplicateEmployeeDocumentError,
+  EmployeeSalaryGerenciaOnlyError,
+  HrAreaRequiredError,
+} from '../../domain/hr-administration-errors';
 import { HrAreaResolverService } from '../services/hr-area-resolver.service';
 import { EmployeeAccountLinkService } from '../services/employee-account-link.service';
 import { normalizeEmail } from '../../domain/hr-administration-rules';
@@ -40,6 +45,14 @@ export class CreateEmployeeHandler {
       },
       'MANAGE_EMPLOYEES',
     );
+
+    // Respuestas 2026-10-20 #19 (P2 del 21-oct): igual que en la edicion, el sueldo base solo lo fija Gerencia
+    // (MANAGE_SALARY). Quien no lo tiene puede crear la ficha SIN sueldo (omitido o null = «pendiente», baseSalary queda
+    // NULL y Gerencia lo completa despues con PATCH); si envia un valor -> 403 EMPLOYEE_SALARY_GERENCIA_ONLY, sin crear nada.
+    const requestedSalary = command.baseSalary ?? null;
+    if (requestedSalary !== null && !(await this.access.isActionAllowed(context, 'MANAGE_SALARY'))) {
+      throw new EmployeeSalaryGerenciaOnlyError();
+    }
 
     const documentNumber = command.documentNumber.trim();
 
@@ -80,7 +93,7 @@ export class CreateEmployeeHandler {
             areaName,
             jobTitle: command.jobTitle.trim(),
             hireDate: command.hireDate,
-            baseSalary: command.baseSalary ?? null,
+            baseSalary: requestedSalary,
           },
           tx,
         );

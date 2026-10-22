@@ -17,6 +17,7 @@ export class PrismaVacationRepository implements VacationRepositoryPort {
     return client.vacationRequest.create({
       data: {
         employeeId: data.employeeId,
+        operatingCompanyId: data.operatingCompanyId,
         areaId: data.areaId,
         startDate: data.startDate,
         endDate: data.endDate,
@@ -46,6 +47,7 @@ export class PrismaVacationRepository implements VacationRepositoryPort {
     return client.vacationRequest.findMany({
       where: {
         areaId,
+        operatingCompanyId: companyId,
         employee: { operatingCompanyId: companyId },
         status: { in: [...VACATION_CAPACITY_STATUSES] },
       },

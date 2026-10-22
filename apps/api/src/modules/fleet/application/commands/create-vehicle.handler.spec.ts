@@ -1,3 +1,4 @@
+import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { ForbiddenException } from '@nestjs/common';
 import { CreateVehicleHandler } from './create-vehicle.handler';
 import { CreateVehicleCommand } from './create-vehicle.command';
@@ -11,11 +12,14 @@ import {
   buildFleetAccessService,
 } from '../../testing/fleet-test-fixtures';
 
+const buildAudit = () =>
+  ({ recordFleetEvent: jest.fn().mockResolvedValue(undefined) }) as unknown as jest.Mocked<AuditEventRepositoryPort>;
+
 describe('CreateVehicleHandler', () => {
   it('registra un nuevo vehículo con placa sanitizada y datos completos', async () => {
     const repository = buildFleetVehicleRepository();
     const { access, workContext } = buildFleetAccessService('CAMPO');
-    const handler = new CreateVehicleHandler(repository, access);
+    const handler = new CreateVehicleHandler(repository, access, buildAudit());
 
     const command = new CreateVehicleCommand(
       'uid-1',
@@ -64,13 +68,47 @@ describe('CreateVehicleHandler', () => {
     expect(result.plate).toBe('XYZ-789');
   });
 
+  it('B7: audita VEHICLE_CREATED con actor, organizacion y vehiculo', async () => {
+    const repository = buildFleetVehicleRepository();
+    const { access } = buildFleetAccessService('CAMPO');
+    const audit = buildAudit();
+    const handler = new CreateVehicleHandler(repository, access, audit);
+
+    const result = await handler.execute(
+      new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'XYZ-789', 'Hyundai', 'Tucson', 5, 2023, 'Negro', 'SUV', 'AVAILABLE', 190),
+    );
+
+    expect(audit.recordFleetEvent).toHaveBeenCalledTimes(1);
+    expect(audit.recordFleetEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: ORG,
+        actorUserId: 'uid-1',
+        vehicleId: result.id,
+        action: 'VEHICLE_CREATED',
+      }),
+    );
+  });
+
+  it('B7: no audita si la placa ya existe (no hay alta)', async () => {
+    const repository = buildFleetVehicleRepository();
+    repository.findByPlate.mockResolvedValue(buildFleetVehicle({ plate: 'XYZ-789' }));
+    const { access } = buildFleetAccessService('CAMPO');
+    const audit = buildAudit();
+    const handler = new CreateVehicleHandler(repository, access, audit);
+
+    await expect(
+      handler.execute(new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'XYZ-789', 'Hyundai', 'Tucson', 5, 2023, 'Negro', 'SUV', 'AVAILABLE', 190)),
+    ).rejects.toThrow();
+    expect(audit.recordFleetEvent).not.toHaveBeenCalled();
+  });
+
   it('lanza VehiclePlateAlreadyExistsError si la placa ya existe', async () => {
     const existing = buildFleetVehicle({ plate: 'XYZ-789' });
     const repository = buildFleetVehicleRepository();
     repository.findByPlate.mockResolvedValue(existing);
 
     const { access } = buildFleetAccessService('CAMPO');
-    const handler = new CreateVehicleHandler(repository, access);
+    const handler = new CreateVehicleHandler(repository, access, buildAudit());
 
     const command = new CreateVehicleCommand(
       'uid-1',
@@ -89,7 +127,7 @@ describe('CreateVehicleHandler', () => {
   it('rechaza con ForbiddenException si el rol no puede escribir flota', async () => {
     const repository = buildFleetVehicleRepository(null);
     const { access } = buildFleetAccessService('FRONT_OFFICE');
-    const handler = new CreateVehicleHandler(repository, access);
+    const handler = new CreateVehicleHandler(repository, access, buildAudit());
 
     const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'AAA-000', 'Kia', 'Sportage', 5);
 
@@ -101,7 +139,7 @@ describe('CreateVehicleHandler', () => {
     const repository = buildFleetVehicleRepository(null);
     repository.findByPlate.mockResolvedValue(null);
     const { access } = buildFleetAccessService('CAMPO');
-    const handler = new CreateVehicleHandler(repository, access);
+    const handler = new CreateVehicleHandler(repository, access, buildAudit());
 
     const command = new CreateVehicleCommand(
       'uid-1', COMPANY, BRANCH, 'BBB-111', 'Nissan', 'Frontier', 5,
@@ -112,11 +150,11 @@ describe('CreateVehicleHandler', () => {
     expect(repository.create).not.toHaveBeenCalled();
   });
   describe('DEC-FLT-CAP-001: capacidad de pasajeros obligatoria al registrar (G-05)', () => {
-    it.each([[undefined], [null]])('rechaza con 400 PASSENGER_CAPACITY_REQUIRED si la capacidad es %s', async (cap) => {
+    it.each([[undefined], [null], [0], [-1], [61]])('rechaza con 400 PASSENGER_CAPACITY_REQUIRED si la capacidad es %s', async (cap) => {
       const repository = buildFleetVehicleRepository(null);
       repository.findByPlate.mockResolvedValue(null);
       const { access } = buildFleetAccessService('CAMPO');
-      const handler = new CreateVehicleHandler(repository, access);
+      const handler = new CreateVehicleHandler(repository, access, buildAudit());
 
       const command = new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'CCC-222', 'Kia', 'Rio', cap);
 
@@ -131,7 +169,7 @@ describe('CreateVehicleHandler', () => {
       const repository = buildFleetVehicleRepository(null);
       repository.findByPlate.mockResolvedValue(null);
       const { access } = buildFleetAccessService('CAMPO');
-      const handler = new CreateVehicleHandler(repository, access);
+      const handler = new CreateVehicleHandler(repository, access, buildAudit());
 
       await handler.execute(new CreateVehicleCommand('uid-1', COMPANY, BRANCH, 'DDD-333', 'Kia', 'Rio', 5));
 

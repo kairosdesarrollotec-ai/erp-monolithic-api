@@ -895,6 +895,7 @@ model DashboardItem {
   @@unique([sourceEventId, itemType])
   @@index([organizationId, operatingCompanyId, branchId, role, dismissedAt, priority])
   @@index([sourceType, dismissedAt], map: "idx_dashboard_items_source_active")
+  @@index([dismissedAt], map: "dashboard_items_dismissed_at_idx")
   @@map("dashboard_items")
 }
 
@@ -1855,6 +1856,11 @@ model AttendanceRecord {
   evidenceNote               String?   @map("evidence_note") @db.Text
   evidenceCorroboratedById   String?   @map("evidence_corroborated_by_id")
   evidenceCorroboratedAt     DateTime? @map("evidence_corroborated_at")
+  /// HU-29 (Respuestas 2026-10-20 #20): ubicacion automatica opcional (WGS84) al registrar la asistencia; nunca bloquea el registro.
+  latitude           Float?
+  longitude          Float?
+  /// Precision horizontal reportada por el dispositivo, en metros.
+  accuracy           Float?           @map("accuracy_meters")
   createdById        String           @map("created_by_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
@@ -1896,6 +1902,8 @@ model LeaveRequest {
 model VacationRequest {
   id          String         @id @default(uuid())
   employeeId  String         @map("employee_id")
+  /// BR-ADP-002 por EMPRESA (Respuestas 2026-10-20 #18): empresa del colaborador, desnormalizada para la EXCLUDE.
+  operatingCompanyId String  @map("operating_company_id")
   areaId      String         @map("area_id") @db.VarChar(100)
   startDate   DateTime       @map("start_date") @db.Date
   endDate     DateTime       @map("end_date") @db.Date
@@ -1909,9 +1917,10 @@ model VacationRequest {
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  // BR-ADP-002: EXCLUDE USING gist (area_id WITH =, daterange(start_date, end_date, '[]') WITH &&)
-  // WHERE status IN ('PROGRAMADA','REPROGRAMADA') — gestionado en migration 20261008000001.
+  // BR-ADP-002: EXCLUDE USING gist (operating_company_id WITH =, area_id WITH =, daterange(start_date, end_date, '[]') WITH &&)
+  // WHERE status IN ('PROGRAMADA','REPROGRAMADA') — creada en 20261008000001 y hecha POR EMPRESA en 20261021010002.
   @@index([areaId, status, startDate, endDate], map: "vacation_requests_area_status_dates_idx")
+  @@index([operatingCompanyId, areaId, status, startDate, endDate], map: "vacation_requests_company_area_status_idx")
   @@index([employeeId, status], map: "vacation_requests_employee_status_idx")
   @@map("vacation_requests")
 }
@@ -2128,4 +2137,47 @@ model HrArea {
   @@unique([operatingCompanyId, code], map: "hr_areas_company_code_key")
   @@index([organizationId, operatingCompanyId, isActive], map: "hr_areas_scope_active_idx")
   @@map("hr_areas")
+}
+
+/// DEC-EVID-DELETE-002 (Respuestas 2026-10-20 #35, SDD-KAIROS-TRANSVERSAL 15.5): eliminar evidencia exige DOBLE APROBACION
+/// (solicitante y aprobadores = personas distintas). Una solicitud por evidencia a la vez: PENDING -> APPROVED_1 -> EXECUTED
+/// (+ REJECTED, EXPIRED). La segunda aprobacion ejecuta el borrado en la misma transaccion. `evidence_snapshot` conserva la
+/// foto fija del registro (tipo, zona, objeto, quien lo subio) porque el registro original deja de existir al ejecutarse.
+/// `target_kind` = RENTAL (parent_id = rentalId) | RETURN (parent_id = returnId); sin FK a proposito (el borrado de la evidencia
+/// no debe depender de esta tabla ni al reves, y la solicitud es historial de auditoria). La separacion de funciones tambien se
+/// impone en la base con CHECK. Indice unico parcial `uq_evidence_deletion_open_evidence` (solo SQL): una solicitud abierta por evidencia.
+model EvidenceDeletionRequest {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  operatingCompanyId String    @map("operating_company_id")
+  branchId           String    @map("branch_id")
+  targetKind         String    @map("target_kind")
+  parentId           String    @map("parent_id")
+  evidenceId         String    @map("evidence_id")
+  evidenceSnapshot   Json      @map("evidence_snapshot")
+  reason             String
+  /// PENDING | APPROVED_1 | EXECUTED | REJECTED | EXPIRED
+  status             String    @default("PENDING")
+  requestedBy        String    @map("requested_by")
+  requestedAt        DateTime  @default(now()) @map("requested_at")
+  firstApprovedBy    String?   @map("first_approved_by")
+  firstApprovedAt    DateTime? @map("first_approved_at")
+  firstApprovalNote  String?   @map("first_approval_note")
+  secondApprovedBy   String?   @map("second_approved_by")
+  secondApprovedAt   DateTime? @map("second_approved_at")
+  secondApprovalNote String?   @map("second_approval_note")
+  rejectedBy         String?   @map("rejected_by")
+  rejectedAt         DateTime? @map("rejected_at")
+  rejectionReason    String?   @map("rejection_reason")
+  executedAt         DateTime? @map("executed_at")
+  expiredAt          DateTime? @map("expired_at")
+  expiresAt          DateTime  @map("expires_at")
+  version            Int       @default(1)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([organizationId, operatingCompanyId, status, requestedAt(sort: Desc)], map: "idx_evidence_deletion_scope_status")
+  @@index([targetKind, evidenceId], map: "idx_evidence_deletion_target")
+  @@index([status, expiresAt], map: "idx_evidence_deletion_expiry")
+  @@map("evidence_deletion_requests")
 }

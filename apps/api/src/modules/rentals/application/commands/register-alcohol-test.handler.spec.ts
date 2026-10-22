@@ -6,6 +6,7 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
+import { RentalEvidenceRepositoryPort } from '../ports/rental-evidence-repository.port';
 import { RentalStateConflictError } from '../../domain/rental-errors';
 import { testRole } from '../../../users/testing/role-fixtures';
 
@@ -85,7 +86,12 @@ describe('RegisterAlcoholTestHandler', () => {
       publish: jest.fn().mockResolvedValue(undefined),
     };
 
-    return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository };
+    const alcoholPhoto = { id: 'ev-alc', rentalId: 'rent-1', type: 'PHOTO', zone: 'ALCOHOL_TEST', objectUrl: 'https://storage.googleapis.com/b/x.jpg', uploadedBy: 'u', uploadedAt: new Date() };
+    const evidenceRepository = {
+      list: jest.fn().mockResolvedValue([alcoholPhoto]),
+    } as unknown as jest.Mocked<RentalEvidenceRepositoryPort>;
+
+    return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository, evidenceRepository };
   }
 
   it('resultado FAVORABLE transiciona a NOTARY_EVALUATION y publica AlcoholTestPassed.v1', async () => {
@@ -97,6 +103,7 @@ describe('RegisterAlcoholTestHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     const result = await handler.execute(
@@ -124,6 +131,7 @@ describe('RegisterAlcoholTestHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     const result = await handler.execute(
@@ -151,6 +159,7 @@ describe('RegisterAlcoholTestHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     const result = await handler.execute(
@@ -172,10 +181,60 @@ describe('RegisterAlcoholTestHandler', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      deps.evidenceRepository,
     );
 
     await expect(
       handler.execute(new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE')),
     ).rejects.toThrow(RentalStateConflictError);
+  });
+
+  describe('ENTREGA-02 (Respuestas 2026-10-20 #10): foto de la prueba obligatoria si no es favorable, sin hora', () => {
+    const mk = (deps: ReturnType<typeof buildDeps>) =>
+      new RegisterAlcoholTestHandler(
+        deps.rentals,
+        deps.workContext,
+        deps.matrixAuth,
+        deps.transactionManager,
+        deps.auditRepository,
+        deps.outboxRepository,
+        deps.evidenceRepository,
+      );
+
+    it.each(['DESFAVORABLE', 'RECHAZADO'] as const)('%s sin foto ALCOHOL_TEST -> 422 ALCOHOL_TEST_PHOTO_REQUIRED y no guarda', async (result) => {
+      const deps = buildDeps();
+      deps.evidenceRepository.list.mockResolvedValue([
+        { id: 'e1', rentalId: 'rent-1', type: 'PHOTO', zone: 'FRONTAL', objectUrl: 'x', uploadedBy: 'u', uploadedAt: new Date() },
+        { id: 'e2', rentalId: 'rent-1', type: 'VIDEO', zone: 'ALCOHOL_TEST', objectUrl: 'x', uploadedBy: 'u', uploadedAt: new Date() },
+      ]);
+
+      await expect(
+        mk(deps).execute(new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, result)),
+      ).rejects.toMatchObject({ code: 'ALCOHOL_TEST_PHOTO_REQUIRED', httpStatus: 422 });
+      expect(deps.rentals.saveAlcoholTest).not.toHaveBeenCalled();
+      expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+    });
+
+    it.each(['DESFAVORABLE', 'RECHAZADO'] as const)('%s con la foto: cancela y deja el id de la evidencia en auditoria y evento', async (result) => {
+      const deps = buildDeps();
+      await mk(deps).execute(new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, result));
+
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ changes: expect.objectContaining({ alcoholPhotoEvidenceId: 'ev-alc' }) }),
+        fakeTx,
+      );
+      expect(deps.outboxRepository.publish).toHaveBeenCalledWith(
+        expect.objectContaining({ payload: expect.objectContaining({ alcoholPhotoEvidenceId: 'ev-alc' }) }),
+        fakeTx,
+      );
+    });
+
+    it('FAVORABLE no exige foto ni consulta evidencias', async () => {
+      const deps = buildDeps();
+      deps.evidenceRepository.list.mockResolvedValue([]);
+      await mk(deps).execute(new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE'));
+      expect(deps.evidenceRepository.list).not.toHaveBeenCalled();
+      expect(deps.rentals.saveAlcoholTest).toHaveBeenCalled();
+    });
   });
 });

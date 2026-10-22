@@ -9,10 +9,12 @@ import {
   RecordInquiryEventInput,
   RecordAdminEventInput,
   RecordRentalEventInput,
+  RecordFleetEventInput,
   RecordIncidentEventInput,
   RecordRecruitmentEventInput,
   RecordHrAdministrationEventInput,
   RecordPaymentEventInput,
+  RecordEvidenceDeletionEventInput,
 } from '../../application/ports/audit-event-repository.port';
 import {
   AuditEventQueryPort,
@@ -112,6 +114,20 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
     });
   }
 
+  async recordFleetEvent(input: RecordFleetEventInput, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.auditEvent.create({
+      data: {
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        entityType: 'vehicle',
+        entityId: input.vehicleId,
+        action: input.action,
+        changes: input.changes as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
   async recordIncidentEvent(input: RecordIncidentEventInput, tx?: Prisma.TransactionClient): Promise<void> {
     const client = tx ?? this.prisma;
     await client.auditEvent.create({
@@ -148,6 +164,20 @@ export class PrismaAuditEventRepository implements AuditEventRepositoryPort, Aud
         actorUserId: input.actorUserId,
         entityType: input.entityType,
         entityId: input.entityId,
+        action: input.action,
+        changes: input.changes as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  async recordEvidenceDeletionEvent(input: RecordEvidenceDeletionEventInput, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.auditEvent.create({
+      data: {
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        entityType: 'evidence_deletion_request',
+        entityId: input.requestId,
         action: input.action,
         changes: input.changes as unknown as Prisma.InputJsonValue,
       },

@@ -78,6 +78,7 @@ export class CreateEmployeeDto {
   @IsISO8601({ strict: true })
   hireDate!: string;
 
+  /** Solo Gerencia (HR_ADMINISTRATION.MANAGE_SALARY) puede fijarlo al crear; otro rol con un valor -> 403 EMPLOYEE_SALARY_GERENCIA_ONLY. Omitido o null = pendiente. */
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)

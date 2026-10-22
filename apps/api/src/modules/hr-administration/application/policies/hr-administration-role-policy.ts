@@ -30,6 +30,8 @@ export const HR_ADMINISTRATION_ACTIONS = [
   'EVALUATE_FIELD_TRIP_RETURN',
   'TERMINATE_EMPLOYMENT',
   'REGISTER_TRAINING',
+  'MANAGE_AREAS',
+  'MANAGE_SALARY',
 ] as const;
 
 export type HrAdministrationAction = (typeof HR_ADMINISTRATION_ACTIONS)[number];
@@ -47,6 +49,10 @@ const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, Rea
   EVALUATE_FIELD_TRIP_RETURN: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   TERMINATE_EMPLOYMENT: LEADERSHIP_ROLES, // Exclusivo Gerencia / RRHH (BR-ADP-006, ADR-KAI-006)
   REGISTER_TRAINING: LEADERSHIP_ROLES, // ADP-10: talleres internos informales (BR-ADP-008), RR.HH.
+  // Respuestas 2026-10-20 #17: solo Gerencia General da de alta/desactiva areas (por permiso, nunca por nombre de persona).
+  MANAGE_AREAS: new Set(['GERENCIA']),
+  // Respuestas 2026-10-20 #19: el sueldo base de la ficha solo lo edita Gerencia; el resto de la ficha, MANAGE_EMPLOYEES.
+  MANAGE_SALARY: new Set(['GERENCIA']),
 };
 
 export function isHrAdministrationRoleAllowed(role: WorkerRole, action: HrAdministrationAction): boolean {
