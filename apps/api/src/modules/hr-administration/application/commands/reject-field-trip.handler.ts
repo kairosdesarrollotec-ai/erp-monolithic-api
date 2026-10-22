@@ -5,6 +5,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
+import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { UserDisplayNamePort } from '../ports/user-display-name.port';
 import { FieldTripNotFoundError } from '../../domain/hr-administration-errors';
@@ -25,6 +26,7 @@ export class RejectFieldTripHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly alerts: FieldTripAlertPublisher,
   ) {}
 
   async execute(command: RejectFieldTripCommand): Promise<FieldTripRequest> {
@@ -76,6 +78,9 @@ export class RejectFieldTripHandler {
         },
         tx,
       );
+
+      // 22-oct #4: rechazada explicitamente por un autorizador -> se retiran los avisos pendientes (no es «nadie autorizo»).
+      await this.alerts.publish('RESOLVED', rejected, found.employee, tx, { outcome: 'RECHAZADA' });
 
       return rejected;
     });

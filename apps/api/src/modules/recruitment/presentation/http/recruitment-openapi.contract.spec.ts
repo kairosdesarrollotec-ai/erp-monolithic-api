@@ -20,7 +20,7 @@ describe('recruitment.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Recruitment & Selection API');
-    expect(spec.info.version).toBe('0.5.0');
+    expect(spec.info.version).toBe('0.6.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -72,6 +72,7 @@ describe('recruitment.yaml contract specification', () => {
       '/vacancies',
       '/vacancies/{id}',
       '/vacancies/{id}/candidates',
+      '/vacancies/{id}/commands/cancel',
       '/vacancies/{id}/commands/pause',
       '/vacancies/{id}/commands/publish',
       '/vacancies/{id}/commands/resume',
@@ -270,5 +271,40 @@ describe('recruitment.yaml 0.4.0 (Respuestas de negocio 2026-10-20, frente B)', 
   it('No avanza y termino tras prueba negativa documentan sus permisos solo-Gerencia', () => {
     expect(spec.paths['/interviews/{id}/commands/record-result']?.post?.responses?.['403']?.description ?? raw).toContain('DECIDE_NO_ADVANCE');
     expect(raw).toContain('TERMINATE_PROBATION');
+  });
+
+  it('v0.6.0: cancelar vacante exige If-Match, motivo (5-500) y permiso CANCEL_VACANCY; la vacante expone origen y cancelacion', () => {
+    const op = spec.paths['/vacancies/{id}/commands/cancel'].post;
+    expect(op.operationId).toBe('cancelVacancy');
+    const ifMatch = op.parameters.find((p: any) => p.name === 'If-Match' && p.in === 'header');
+    expect(ifMatch.required).toBe(true);
+    expect(op.responses['403'].description).toContain('CANCEL_VACANCY');
+    expect(op.responses['422'].description).toContain('VACANCY_NOT_CANCELLABLE');
+    const request = spec.components.schemas.CancelVacancyRequest;
+    expect(request.required).toEqual(expect.arrayContaining(['companyId', 'branchId', 'reason']));
+    expect(request.properties.reason.minLength).toBe(5);
+    expect(request.properties.reason.maxLength).toBe(500);
+    expect(RECRUITMENT_ACTIONS).toContain('CANCEL_VACANCY');
+    expect(PERMISSION_ACTION_CATALOG.some((a) => a.module === 'RECRUITMENT' && a.action === 'CANCEL_VACANCY')).toBe(true);
+    const vacancy = spec.components.schemas.VacancyResponse.properties;
+    for (const field of ['originTerminationId', 'originEmployeeId', 'cancelReason', 'cancelledAt', 'cancelledBy']) {
+      expect(vacancy[field]).toBeDefined();
+    }
+  });
+
+  it('v0.6.0: decide / complete-onboarding / evaluate-probation aceptan Idempotency-Key opcional', () => {
+    for (const path of [
+      '/candidates/{id}/commands/decide',
+      '/candidates/{id}/commands/complete-onboarding',
+      '/candidates/{id}/commands/evaluate-probation',
+    ]) {
+      const header = spec.paths[path].post.parameters.find((p: any) => p.name === 'Idempotency-Key' && p.in === 'header');
+      expect(header).toBeDefined();
+      expect(header.required).toBe(false);
+    }
+  });
+
+  it('v0.6.0: registrar vacante documenta el 422 VACANCY_AREA_NOT_FOUND', () => {
+    expect(spec.paths['/vacancies'].post.responses['422'].description).toContain('VACANCY_AREA_NOT_FOUND');
   });
 });

@@ -29,6 +29,11 @@ export function toVacancyResponse(record: VacancyRecord): VacancyResponse {
     isMechanic: record.isMechanic,
     version: record.version,
     createdAt: record.createdAt.toISOString(),
+    originTerminationId: record.originTerminationId,
+    originEmployeeId: record.originEmployeeId,
+    cancelReason: record.cancelReason,
+    cancelledAt: record.cancelledAt ? record.cancelledAt.toISOString() : null,
+    cancelledBy: record.cancelledBy,
   };
 }
 

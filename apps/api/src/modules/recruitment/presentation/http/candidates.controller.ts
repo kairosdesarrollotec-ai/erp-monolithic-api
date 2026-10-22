@@ -146,6 +146,7 @@ export class CandidatesController {
 
   @Post(':id/commands/decide')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(IdempotencyInterceptor)
   async decide(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
@@ -171,6 +172,7 @@ export class CandidatesController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(RecentAuthGuard)
   @RecentAuth(300)
+  @UseInterceptors(IdempotencyInterceptor)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
@@ -194,6 +196,7 @@ export class CandidatesController {
 
   @Post(':id/commands/evaluate-probation')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(IdempotencyInterceptor)
   async evaluate(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,

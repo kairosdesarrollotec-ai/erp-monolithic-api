@@ -1,4 +1,5 @@
 import { DomainUnprocessableError } from '../../../common/domain/domain-errors';
+import { ReservationCreditExceedsGuaranteeError } from './rental-errors';
 
 /**
  * BR-ALQ-020 (BDD-KAIROS-MVP-002-ALQ v1.8, aprobado 2026-10-13):
@@ -73,9 +74,9 @@ export interface DepositBreakdown {
   /** Parte del monto de la reserva que cubre la garantia (<= totalAmount). */
   reservationCreditAmount: string;
   /**
-   * DEC-ALQ-RESCREDIT-002: excedente del monto de la reserva sobre la garantia
-   * ("0.00" si no hay). Saldo a favor del cliente solo visible: sin reembolso
-   * ni calculo automatico (pregunta abierta a Finanzas).
+   * DEPRECADO (Russbel 22-oct-2026, decision 2): ya no se genera excedente ni saldo a favor (el monto de la reserva
+   * nunca supera la garantia, F-01 / DEC-RES-GUARANTEE-CAP-001). Siempre "0.00"; la columna se conserva sin uso.
+   * DEC-ALQ-RESCREDIT-002 queda superada.
    */
   reservationCreditExcess: string;
   /** Diferencia que se cobra al formalizar. */
@@ -95,10 +96,12 @@ export class ReservationCreditCurrencyMismatchError extends DomainUnprocessableE
 }
 
 /**
- * Calcula el desglose de la garantia. Lanza si la moneda difiere. Si el monto
- * de la reserva supera la garantia NO es error: se aplica hasta cubrirla y el
- * excedente se informa en `reservationCreditExcess` (nunca se pierde en
- * silencio).
+ * Calcula el desglose de la garantia. Lanza si la moneda difiere.
+ *
+ * Russbel 22-oct-2026 (decision 2; Catalogo G-01/F-01, SDD-RES-001 v2.2 UC-RES-005): el monto de la reserva se traslada
+ * INTEGRO a la garantia y se cobra solo la diferencia; NO hay saldo a favor. Validacion defensiva: si el monto de la
+ * reserva supera la garantia del alquiler -> 422 RESERVATION_EXCEEDS_GUARANTEE (la reserva ya no puede superar la
+ * garantia del vehiculo, asi que solo ocurriria por datos antiguos o por cambio de la tarifa de Flota).
  */
 export function computeDepositBreakdown(
   totalAmount: string,
@@ -119,31 +122,37 @@ export function computeDepositBreakdown(
     throw new ReservationCreditCurrencyMismatchError(credit.currency ?? '?', currency);
   }
   const creditCents = toCents(credit.amount);
-  // El monto de la reserva es un acuerdo con el cliente: puede superar la
-  // garantia (y los S/ 300 vigentes). Se aplica hasta cubrirla y el resto
-  // queda como excedente visible, sin error.
-  const appliedCents = Math.min(creditCents, totalCents);
+  if (creditCents > totalCents) {
+    throw new ReservationCreditExceedsGuaranteeError(fromCents(creditCents), fromCents(totalCents));
+  }
   return {
     totalAmount: fromCents(totalCents),
-    reservationCreditAmount: fromCents(appliedCents),
-    reservationCreditExcess: fromCents(creditCents - appliedCents),
-    amountToCollect: fromCents(totalCents - appliedCents),
+    reservationCreditAmount: fromCents(creditCents),
+    reservationCreditExcess: '0.00',
+    amountToCollect: fromCents(totalCents - creditCents),
     currency,
   };
 }
 
 /**
  * DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa NO hay garantia (Ficha AS-IS 5-ago: se omite el proceso de
- * garantia; la responsabilidad recae en el conductor). Si el alquiler viene de una reserva con credito pagado, ese
- * credito no tiene garantia a la cual aplicarse: va completo como saldo a favor (`reservationCreditExcess`) sin
- * reembolso ni calculo automatico (pregunta abierta a Finanzas, igual que DEC-ALQ-RESCREDIT-002).
+ * garantia; la responsabilidad recae en el conductor). Russbel 22-oct-2026 (decision 2): ya NO se escribe saldo a favor
+ * (`reservationCreditExcess` queda en "0.00"). Si el alquiler viene de una reserva con pago validado, el monto no tiene
+ * garantia a la cual aplicarse: se informa en `unappliedReservationAmount` (solo auditoria/outbox) para que Finanzas lo
+ * resuelva fuera del sistema (pregunta abierta, PROPUESTO).
  */
 export interface NoDepositBreakdown {
   reservationCreditExcess: string;
+  /** Monto de reserva pagado que no se aplico a ninguna garantia ("0.00" si no hay). */
+  unappliedReservationAmount: string;
   currency: string | null;
 }
 
 export function computeNoDepositBreakdown(credit: ReservationCreditResolution): NoDepositBreakdown {
-  if (!credit.applicable) return { reservationCreditExcess: '0.00', currency: null };
-  return { reservationCreditExcess: fromCents(toCents(credit.amount)), currency: credit.currency };
+  if (!credit.applicable) return { reservationCreditExcess: '0.00', unappliedReservationAmount: '0.00', currency: null };
+  return {
+    reservationCreditExcess: '0.00',
+    unappliedReservationAmount: fromCents(toCents(credit.amount)),
+    currency: credit.currency,
+  };
 }

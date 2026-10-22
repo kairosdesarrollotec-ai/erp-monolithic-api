@@ -5,6 +5,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
+import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { FieldTripNotFoundError } from '../../domain/hr-administration-errors';
 import { AdvanceFieldTripTimeoutCommand } from './advance-field-trip-timeout.command';
@@ -28,6 +29,7 @@ export class AdvanceFieldTripTimeoutHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly alerts: FieldTripAlertPublisher,
   ) {}
 
   async execute(command: AdvanceFieldTripTimeoutCommand): Promise<AdvanceFieldTripTimeoutResult> {
@@ -67,6 +69,15 @@ export class AdvanceFieldTripTimeoutHandler {
           },
         },
         tx,
+      );
+
+      // 22-oct #4: escalada de nivel o «nadie autorizo» (NO_AUTORIZADA) -> alerta de la cascada.
+      await this.alerts.publish(
+        result.fieldTrip.status === 'NO_AUTORIZADA' ? 'NOT_AUTHORIZED' : 'ESCALATED',
+        result.fieldTrip,
+        found.employee,
+        tx,
+        { previousStatus: found.status, automatic: false },
       );
 
       return result;

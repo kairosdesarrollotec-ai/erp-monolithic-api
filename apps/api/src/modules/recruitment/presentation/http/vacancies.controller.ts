@@ -26,6 +26,9 @@ import { PauseVacancyHandler } from '../../application/commands/pause-vacancy.ha
 import { PauseVacancyCommand } from '../../application/commands/pause-vacancy.command';
 import { ResumeVacancyHandler } from '../../application/commands/resume-vacancy.handler';
 import { ResumeVacancyCommand } from '../../application/commands/resume-vacancy.command';
+import { CancelVacancyHandler } from '../../application/commands/cancel-vacancy.handler';
+import { CancelVacancyCommand } from '../../application/commands/cancel-vacancy.command';
+import { CancelVacancyDto } from './dto/cancel-vacancy.dto';
 import { PauseVacancyDto } from './dto/pause-vacancy.dto';
 import { ResumeVacancyDto } from './dto/resume-vacancy.dto';
 import { RegisterCandidateHandler } from '../../application/commands/register-candidate.handler';
@@ -61,6 +64,7 @@ export class VacanciesController {
     private readonly publishVacancy: PublishVacancyHandler,
     private readonly pauseVacancy: PauseVacancyHandler,
     private readonly resumeVacancy: ResumeVacancyHandler,
+    private readonly cancelVacancy: CancelVacancyHandler,
     private readonly listVacancies: ListVacanciesHandler,
     private readonly getVacancyDetail: GetVacancyDetailHandler,
     private readonly registerCandidate: RegisterCandidateHandler,
@@ -186,6 +190,21 @@ export class VacanciesController {
       new ResumeVacancyCommand(req.firebaseUid!, id, dto.companyId, dto.branchId, expectedVersion),
     );
     return toVacancyDetailResponse(resumed);
+  }
+
+  @Post(':id/commands/cancel')
+  @HttpCode(HttpStatus.OK)
+  async cancel(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Body() dto: CancelVacancyDto,
+  ): Promise<VacancyDetailResponse> {
+    const expectedVersion = parseVersionIfMatch(ifMatch);
+    const cancelled = await this.cancelVacancy.execute(
+      new CancelVacancyCommand(req.firebaseUid!, id, dto.companyId, dto.branchId, expectedVersion, dto.reason),
+    );
+    return toVacancyDetailResponse(cancelled);
   }
 
   @Post(':id/candidates')

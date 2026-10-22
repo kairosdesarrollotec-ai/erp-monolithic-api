@@ -25,13 +25,20 @@ export class PrismaRentalNotaryContractPersistence {
         reason: input.reason,
         approvedBy: input.approvedBy,
         justification: input.justification,
+        biometricVerified: input.biometricVerified ?? false,
+        biometricVerifiedBy: input.biometricVerifiedBy,
+        previousRentalsCount: input.previousRentalsCount,
       },
       update: {
         policyVersion: input.policyVersion,
         result: input.result,
         reason: input.reason,
-        approvedBy: input.approvedBy,
-        justification: input.justification,
+        // Una re-evaluacion invalida cualquier aprobacion anterior.
+        approvedBy: input.approvedBy ?? null,
+        justification: input.justification ?? null,
+        biometricVerified: input.biometricVerified ?? false,
+        biometricVerifiedBy: input.biometricVerifiedBy ?? null,
+        previousRentalsCount: input.previousRentalsCount,
       },
     });
   }
@@ -41,18 +48,11 @@ export class PrismaRentalNotaryContractPersistence {
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
     const client = tx ?? this.prisma;
-    await client.notaryEvaluation.upsert({
+    // Russbel 22-oct-2026: la aprobacion NO reescribe el tipo (THIRD_PATH_ELIGIBLE o MANUAL_REVIEW): solo anota quien y por que.
+    // La evaluacion siempre existe (se persiste en evaluate-notary aunque requiera aprobacion; el handler lo exige).
+    await client.notaryEvaluation.update({
       where: { rentalId: input.id },
-      create: {
-        rentalId: input.id,
-        policyVersion: 1,
-        result: 'THIRD_PATH_ELIGIBLE',
-        reason: 'Excepción notarial autorizada por Gerencia',
-        approvedBy: input.approvedBy,
-        justification: input.justification,
-      },
-      update: {
-        result: 'THIRD_PATH_ELIGIBLE',
+      data: {
         approvedBy: input.approvedBy,
         justification: input.justification,
       },
@@ -95,6 +95,22 @@ export class PrismaRentalNotaryContractPersistence {
     // DEC-ALQ-COMPANY-DRIVER-004: con conductor de la empresa no se crea garantia.
     if (!input.depositRequired) return;
 
+    // Decision 8 (22-oct-2026): comprobante del cobro (solo si hubo cobro; si la reserva cubre toda la garantia no hay pago).
+    const payment = input.payment;
+    const paymentData = payment
+      ? {
+          paymentAmount: new Prisma.Decimal(payment.amount),
+          paymentMethod: payment.method,
+          paymentOperationNumber: payment.operationNumber?.trim() || null,
+          payerName: payment.payerName.trim(),
+          payerDocumentNumber: payment.payerDocumentNumber?.trim() || null,
+          payerIsExternalAgent: payment.payerIsExternalAgent,
+          externalAgentVerifiedBy: payment.externalAgentVerifiedBy ?? null,
+          paymentVoucherDocumentId: payment.voucherDocumentId ?? null,
+          paymentRegisteredBy: payment.registeredBy,
+        }
+      : {};
+
     await client.rentalDeposit.upsert({
       where: { rentalId: input.rentalId },
       create: {
@@ -104,6 +120,7 @@ export class PrismaRentalNotaryContractPersistence {
         reservationCreditAmount: new Prisma.Decimal(input.reservationCreditAmount),
         reservationCreditExcess: new Prisma.Decimal(input.reservationCreditExcess),
         status: 'HELD',
+        ...paymentData,
       },
       update: {
         originalAmount: new Prisma.Decimal(input.depositAmount),
@@ -111,6 +128,7 @@ export class PrismaRentalNotaryContractPersistence {
         reservationCreditAmount: new Prisma.Decimal(input.reservationCreditAmount),
         reservationCreditExcess: new Prisma.Decimal(input.reservationCreditExcess),
         status: 'HELD',
+        ...paymentData,
       },
     });
   }

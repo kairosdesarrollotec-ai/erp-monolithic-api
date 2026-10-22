@@ -66,8 +66,8 @@ function routes() {
 }
 
 describe('Contrato OpenAPI sync.yaml vs backend', () => {
-  it('version del contrato 1.1.0 (aditiva)', () => {
-    expect(spec.info.version).toBe('1.1.0');
+  it('version del contrato 1.2.0 (aditiva)', () => {
+    expect(spec.info.version).toBe('1.2.0');
   });
 
   it('1.1.0 aditivo: slot opcional, fieldRevisions/evidenceSlots en la respuesta; los obligatorios de 1.0.0 siguen', () => {

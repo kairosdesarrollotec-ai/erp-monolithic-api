@@ -4,7 +4,7 @@ import { QuoteHandler } from './quote.handler';
 import { QuoteCommand } from './quote.command';
 import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
-import { InquiryNotTransitionableError, VehicleNotEligibleError } from '../../domain/inquiry-errors';
+import { InquiryNotTouristUseError, InquiryNotTransitionableError, VehicleNotEligibleError } from '../../domain/inquiry-errors';
 import {
   BRANCH,
   COMPANY,
@@ -66,9 +66,18 @@ describe('QuoteHandler', () => {
         currency: 'PEN',
         rateCardVersionId: 'FLEET-DAILY-RATE',
         validUntil: new Date('2026-09-26T15:00:00Z'),
+        interaction: { channel: 'WHATSAPP', outcome: 'COTIZADA', note: expect.stringContaining('300.00') },
       },
       ['REGISTRADA', 'COTIZADA'],
     );
+  });
+
+  it('P-05: touristUse=false -> 422 INQUIRY_NOT_TOURIST_USE; no consulta Flota ni cotiza', async () => {
+    const { handler, inquiries, fleet } = build({ existing: buildInquiry({ touristUse: false }) });
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(InquiryNotTouristUseError);
+    expect(fleet.checkEligibility).not.toHaveBeenCalled();
+    expect(inquiries.quote).not.toHaveBeenCalled();
   });
 
   it('consulta la elegibilidad en Flota (FleetAvailabilityPort) con el scope autorizado, destino y dias', async () => {

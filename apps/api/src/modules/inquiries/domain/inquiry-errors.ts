@@ -72,3 +72,17 @@ export class InquiryAlreadyConvertedError extends DomainConflictError {
     super('La consulta ya tiene una reserva asociada.');
   }
 }
+
+/**
+ * CON-P03 / DT-CON-03 (hallazgo CON P-05) - la consulta declara que el uso NO
+ * es turistico: no se cotiza ni se convierte; el unico camino es cerrarla sin
+ * conversion con motivo (`POST /inquiries/{id}/commands/close`, motivo sugerido
+ * SIN_USO_TURISTICO).
+ */
+export class InquiryNotTouristUseError extends DomainUnprocessableError {
+  readonly code = 'INQUIRY_NOT_TOURIST_USE';
+
+  constructor() {
+    super('La consulta no tiene uso turistico: no se puede cotizar ni convertir. Cierrala sin conversion indicando el motivo.');
+  }
+}

@@ -65,3 +65,26 @@ export function areaAliasCode(value: string): string | undefined {
 export function areaFilterCode(value: string): string {
   return areaAliasCode(value) ?? areaCodeFromText(value);
 }
+
+export interface CatalogAreaLike {
+  code: string;
+  name: string;
+}
+
+/**
+ * 22-oct: busca en el catalogo ACTIVO de una empresa el area que corresponde a un texto libre: por nombre oficial, por codigo
+ * (derivado del texto) o por alias conocido («RRHH» -> Talento Humano), sin distinguir mayusculas ni tildes. Devuelve `undefined` si
+ * no hay coincidencia. Misma regla de emparejamiento que `HrAreaResolverService`; la usa Reclutamiento para validar el area de la vacante.
+ */
+export function matchAreaInCatalog<T extends CatalogAreaLike>(catalog: readonly T[], text: string): T | undefined {
+  const trimmed = text.trim();
+  if (!trimmed) return undefined;
+  const nameKey = normalizeAreaText(trimmed);
+  const codeKey = areaCodeFromText(trimmed);
+  const aliasCode = areaAliasCode(trimmed);
+  return (
+    catalog.find((a) => normalizeAreaText(a.name) === nameKey) ??
+    catalog.find((a) => a.code === codeKey) ??
+    (aliasCode ? catalog.find((a) => a.code === aliasCode) : undefined)
+  );
+}

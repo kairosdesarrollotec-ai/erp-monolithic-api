@@ -21,6 +21,13 @@ export interface NotaryEvaluationResponse {
   evaluatedAt: string;
   approvedBy: string | null;
   justification: string | null;
+  /** DEC-ALQ-THIRDPATH-001: casilla de biometrico registrada por el personal en la evaluacion. */
+  biometricVerified: boolean;
+  biometricVerifiedBy: string | null;
+  /** Alquileres previos (CERRADOS) del cliente usados en la decision (cliente antiguo = mas de 2). */
+  previousRentalsCount: number | null;
+  /** true = falta aprobacion de Gerencia (THIRD_PATH_ELIGIBLE / MANUAL_REVIEW sin approvedBy). */
+  pendingApproval: boolean;
 }
 
 export interface RentalContractResponse {
@@ -50,7 +57,44 @@ export interface RentalDepositResponse {
   reservationCreditExcess: string;
   /** Diferencia cobrada al formalizar = originalAmount - reservationCreditAmount. */
   amountCollected: string;
+  /** Decision 8 (ALQ P-01 / BR-ALQ-011): comprobante del cobro (null si no hubo cobro o el deposito es previo). */
+  payment: GuaranteePaymentResponse | null;
   createdAt: string;
+}
+
+export interface GuaranteePaymentResponse {
+  amount: string;
+  method: 'TRANSFERENCIA' | 'DEPOSITO' | 'PLIN' | 'YAPE' | 'EFECTIVO' | 'POS';
+  operationNumber: string | null;
+  payerName: string;
+  payerDocumentNumber: string | null;
+  payerIsExternalAgent: boolean;
+  externalAgentVerifiedBy: string | null;
+  voucherDocumentId: string | null;
+  registeredBy: string | null;
+}
+
+/** BR-CON-004: documento requerido segun la nacionalidad del cliente. */
+export interface RequiredDocumentResponse {
+  code: string;
+  label: string;
+  kind: 'DOCUMENT' | 'DATA';
+  /** Campo de validate-documents con el que se confirma (null para DATA, p. ej. la fecha de ingreso). */
+  field: string | null;
+}
+
+/** Garantia exigida: tarifa de Flota x multiplicador notarial (x2 con DOUBLE_DEPOSIT). */
+export interface RequiredGuaranteeResponse {
+  baseAmount: string;
+  multiplier: 1 | 2;
+  amount: string;
+}
+
+export interface RentalCancellationResponse {
+  reason: string;
+  note: string | null;
+  cancelledAt: string;
+  cancelledBy: string;
 }
 
 /** P0-03 (a): traslado reserva -> garantia (vista previa; solo origen Reserva). */
@@ -108,6 +152,16 @@ export interface RentalResponse {
   vehicleBrand: string;
   vehicleModel: string;
   vehicleDepositMinimum: number | null;
+  /** DEC-ALQ-THIRDPATH-001: vehiculo marcado por Gerencia como elegible para la tercera via notarial. */
+  vehicleThirdPathEligible: boolean;
+  /** BR-CON-004: nacionalidad efectiva del cliente (PERUANO | EXTRANJERO). */
+  customerNationality: 'PERUANO' | 'EXTRANJERO';
+  /** BR-CON-004: documentos requeridos para validate-documents segun la nacionalidad. */
+  requiredDocuments: RequiredDocumentResponse[];
+  /** Garantia exigida segun Flota y la evaluacion notarial (null si Flota no define garantia del vehiculo). */
+  requiredGuarantee: RequiredGuaranteeResponse | null;
+  /** DEC-ALQ-CANCEL-001: datos de la cancelacion manual (null si no aplica). */
+  cancellation: RentalCancellationResponse | null;
   /** DEC-ALQ-CAPWARN-001: null = vehiculo sin capacidad registrada (sin tope, no bloquea). */
   vehiclePassengerCapacity: number | null;
   /** DEC-ALQ-VEHDATA-001: precio del combustible del vehiculo (null = no registrado). */

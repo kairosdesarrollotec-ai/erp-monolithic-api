@@ -19,6 +19,7 @@ import {
   attendanceEvidenceKeyPrefix,
   resolveAttendanceRecord,
 } from '../../domain/hr-administration-rules';
+import { resolveOnBehalfReason } from '../../domain/attendance-self-service-rules';
 import { LogAttendanceCommand, ATTENDANCE_EVIDENCE_KINDS } from './log-attendance.command';
 
 export interface LogAttendanceResult {
@@ -59,6 +60,7 @@ export class LogAttendanceHandler {
       'LOG_ATTENDANCE',
     );
 
+    const onBehalfReason = resolveOnBehalfReason(command.status, command.reason);
     const evidence = this.resolveEvidence(command, found.operatingCompanyId);
     const location = resolveAttendanceLocation(command.location);
 
@@ -94,6 +96,8 @@ export class LogAttendanceHandler {
           deductionAmount: resolved.deductionAmount,
           notes: command.notes?.trim() || null,
           createdById: command.firebaseUid,
+          source: 'ON_BEHALF',
+          onBehalfReason,
           ...location,
           evidence,
         },
@@ -116,6 +120,9 @@ export class LogAttendanceHandler {
             evidenceKind: created.evidenceKind,
             evidenceMissing: !created.evidenceKind,
             locationCaptured: created.latitude !== null && created.longitude !== null,
+            source: 'ON_BEHALF',
+            onBehalfOfEmployeeId: created.employeeId,
+            onBehalfReason,
           },
         },
         tx,
@@ -140,47 +147,60 @@ export class LogAttendanceHandler {
 
   /**
    * DEC-ADP-ATT-EVIDENCE-002: la evidencia fotografica es OBLIGATORIA en marcaciones de presencia (PRESENTE/TARDANZA)
-   * y se registra quien la corroboro. Si trae `storageRef`, debe ser un objeto subido con la URL firmada de ESTE
-   * colaborador (prefijo de empresa/colaborador). Las faltas y permisos no tienen foto posible: evidencia opcional.
+   * y se registra quien la corroboro. Las faltas y permisos no tienen foto posible: evidencia opcional.
    */
   private resolveEvidence(command: LogAttendanceCommand, companyId: string) {
-    const ev = command.evidence;
-    if (!ev) {
+    if (!command.evidence) {
       if (ATTENDANCE_STATUSES_REQUIRING_EVIDENCE.includes(command.status)) {
         throw new AttendanceEvidenceRequiredError();
       }
       return null;
     }
-    if (!(ATTENDANCE_EVIDENCE_KINDS as readonly string[]).includes(ev.kind)) {
-      throw new InvalidAttendanceEvidenceError(`Tipo de evidencia no admitido (${ev.kind}).`);
-    }
-    const storageRef = ev.storageRef?.trim() || null;
-    const url = ev.url?.trim() || null;
-    if (!storageRef && !url) {
-      throw new InvalidAttendanceEvidenceError('La evidencia requiere storageRef o url de la foto.');
-    }
-    if (storageRef && !storageRef.startsWith(attendanceEvidenceKeyPrefix(companyId, command.employeeId))) {
-      throw new InvalidAttendanceEvidenceError(
-        'storageRef no corresponde a una foto subida para este colaborador (usa la URL firmada de asistencia).',
-      );
-    }
-    if (Number.isNaN(ev.capturedAtLocal.getTime())) {
-      throw new InvalidAttendanceEvidenceError('capturedAtLocal no es una fecha y hora valida.');
-    }
-    const now = new Date();
-    if (ev.capturedAtLocal.getTime() > now.getTime() + 5 * 60 * 1000) {
-      throw new InvalidAttendanceEvidenceError('capturedAtLocal no puede estar en el futuro.');
-    }
-    return {
-      kind: ev.kind,
-      storageRef,
-      url,
-      capturedAt: ev.capturedAtLocal,
-      note: ev.note?.trim() || null,
+    return buildAttendanceEvidence(command.evidence, {
+      companyId,
+      employeeId: command.employeeId,
       corroboratedById: command.firebaseUid,
-      corroboratedAt: now,
-    };
+      now: new Date(),
+    });
   }
+}
+
+/**
+ * Valida y normaliza la foto de asistencia. Si trae `storageRef`, debe ser un objeto subido con la URL firmada de ESTE
+ * colaborador (prefijo de empresa/colaborador). Compartida por el registro a nombre de otro y por la marca propia.
+ */
+export function buildAttendanceEvidence(
+  ev: NonNullable<LogAttendanceCommand['evidence']>,
+  ctx: { companyId: string; employeeId: string; corroboratedById: string; now: Date },
+) {
+  if (!(ATTENDANCE_EVIDENCE_KINDS as readonly string[]).includes(ev.kind)) {
+    throw new InvalidAttendanceEvidenceError(`Tipo de evidencia no admitido (${ev.kind}).`);
+  }
+  const storageRef = ev.storageRef?.trim() || null;
+  const url = ev.url?.trim() || null;
+  if (!storageRef && !url) {
+    throw new InvalidAttendanceEvidenceError('La evidencia requiere storageRef o url de la foto.');
+  }
+  if (storageRef && !storageRef.startsWith(attendanceEvidenceKeyPrefix(ctx.companyId, ctx.employeeId))) {
+    throw new InvalidAttendanceEvidenceError(
+      'storageRef no corresponde a una foto subida para este colaborador (usa la URL firmada de asistencia).',
+    );
+  }
+  if (Number.isNaN(ev.capturedAtLocal.getTime())) {
+    throw new InvalidAttendanceEvidenceError('capturedAtLocal no es una fecha y hora valida.');
+  }
+  if (ev.capturedAtLocal.getTime() > ctx.now.getTime() + 5 * 60 * 1000) {
+    throw new InvalidAttendanceEvidenceError('capturedAtLocal no puede estar en el futuro.');
+  }
+  return {
+    kind: ev.kind,
+    storageRef,
+    url,
+    capturedAt: ev.capturedAtLocal,
+    note: ev.note?.trim() || null,
+    corroboratedById: ctx.corroboratedById,
+    corroboratedAt: ctx.now,
+  };
 }
 
 /**

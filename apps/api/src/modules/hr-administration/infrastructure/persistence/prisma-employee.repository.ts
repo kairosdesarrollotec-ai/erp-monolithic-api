@@ -108,7 +108,7 @@ export class PrismaEmployeeRepository implements EmployeeRepositoryPort {
         ? {
             OR: [
               { fullName: { contains: filters.search, mode: 'insensitive' } },
-              { documentNumber: { contains: filters.search } },
+              ...(filters.searchByDocument === false ? [] : [{ documentNumber: { contains: filters.search } }]),
             ],
           }
         : {}),

@@ -12,6 +12,7 @@ const EXPECTED: Record<InquiryAction, string[]> = {
   QUOTE: ['FRONT_OFFICE'],
   CLOSE: ['FRONT_OFFICE'],
   CONVERT_TO_RESERVATION: ['FRONT_OFFICE'],
+  CONVERT_TO_RENTAL: ['FRONT_OFFICE'],
 };
 
 describe('inquiry-role-policy', () => {

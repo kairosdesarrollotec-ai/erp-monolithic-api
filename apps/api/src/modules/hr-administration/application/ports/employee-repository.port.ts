@@ -51,6 +51,8 @@ export interface ListEmployeesFilters {
   status?: EmployeeStatus;
   areaId?: string;
   search?: string;
+  /** HU-35: false = la busqueda de texto no incluye el numero de documento. Por defecto true. */
+  searchByDocument?: boolean;
   limit?: number;
   offset?: number;
 }

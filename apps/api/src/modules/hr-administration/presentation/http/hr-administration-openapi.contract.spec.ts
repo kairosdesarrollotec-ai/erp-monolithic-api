@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.9.0');
+    expect(spec.info.version).toBe('0.10.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -37,8 +37,11 @@ describe('hr-administration.yaml contract specification', () => {
   it('define todas las rutas REST previstas para ADP-01..ADP-10', () => {
     expect(Object.keys(spec.paths).sort()).toEqual([
       '/attendance/apply-deductions',
+      '/attendance/pending-review',
       '/attendance/summary',
       '/attendance/{id}/reclassify',
+      '/attendance/{id}/review',
+      '/branches/{branchId}/geofence',
       '/employees',
       '/employees/{id}',
       '/employees/{id}/attendance',
@@ -62,13 +65,16 @@ describe('hr-administration.yaml contract specification', () => {
       '/leaves/{id}/evidence',
       '/leaves/{id}/evidence/upload-url',
       '/leaves/{id}/resolve',
+      '/me/attendance',
       '/me/employee',
       '/trainings',
       '/vacations/calendar',
+      '/vacations/{id}/cancel',
+      '/vacations/{id}/reschedule',
     ]);
   });
 
-  it('expone exactamente las 37 operaciones esperadas', () => {
+  it('expone exactamente las 46 operaciones esperadas', () => {
     const ops: string[] = [];
     for (const item of Object.values<any>(spec.paths)) {
       for (const op of Object.values<any>(item)) {
@@ -79,6 +85,15 @@ describe('hr-administration.yaml contract specification', () => {
       [
         'advanceFieldTripTimeout',
         'applyMonthDeductions',
+        'cancelVacation',
+        'clearBranchGeofence',
+        'getBranchGeofence',
+        'getMyAttendance',
+        'listAttendancePendingReview',
+        'logMyAttendance',
+        'reviewAttendance',
+        'rescheduleVacation',
+        'setBranchGeofence',
         'authorizeFieldTrip',
         'createEmployee',
         'createHrArea',
@@ -274,5 +289,35 @@ describe('hr-administration.yaml 0.8.0 (Respuestas de negocio 2026-10-20, frente
     expect(res.latitude.nullable).toBe(true);
     expect(res.longitude.nullable).toBe(true);
     expect(res.accuracy.nullable).toBe(true);
+  });
+
+  it('22-oct: la marca propia exige ubicacion y trae los campos de geocerca/revision (#9)', () => {
+    const req = spec.components.schemas.LogMyAttendanceRequest;
+    expect(req.required).toEqual(
+      expect.arrayContaining(['companyId', 'branchId', 'capturedAt', 'latitude', 'longitude', 'accuracy']),
+    );
+    const rec = spec.components.schemas.AttendanceRecordResponse.properties;
+    for (const f of ['source', 'outsideGeofence', 'reviewStatus', 'requiresReview', 'checkOut', 'onBehalfReason']) {
+      expect(rec[f]).toBeDefined();
+    }
+    expect(spec.components.schemas.LogAttendanceRequest.properties.reason).toBeDefined();
+    expect(spec.components.schemas.AttendanceEvidenceRequest.properties.kind.enum).toContain('SELF_PHOTO');
+    expect(spec.components.schemas.SetBranchGeofenceRequest.properties.radiusMeters).toMatchObject({
+      minimum: 10,
+      maximum: 5000,
+    });
+  });
+
+  it('22-oct: reprogramar y cancelar vacaciones (#10) y enmascaramiento HU-35', () => {
+    expect(spec.components.schemas.RescheduleVacationRequest.required).toEqual(
+      expect.arrayContaining(['startDate', 'endDate', 'reason']),
+    );
+    expect(spec.components.schemas.CancelVacationRequest.required).toEqual(['reason']);
+    for (const f of ['originalStartDate', 'rescheduleCount', 'statusReason']) {
+      expect(spec.components.schemas.VacationRequestResponse.properties[f]).toBeDefined();
+    }
+    const emp = spec.components.schemas.EmployeeResponse;
+    expect(emp.properties.documentNumber.nullable).toBe(true);
+    expect(emp.required).toContain('restrictedFields');
   });
 });

@@ -30,6 +30,7 @@ import {
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
 import { HrMemoService, SYSTEM_MEMO_ACTOR } from '../services/hr-memo.service';
+import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import type { AttendanceRepositoryPort } from '../ports/attendance-repository.port';
 import type { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import type { FieldTripRepositoryPort, FieldTripWithEmployee } from '../ports/field-trip-repository.port';
@@ -98,7 +99,8 @@ function setup(role: Role = 'RRHH') {
   const cascade = new FieldTripCascadeService(fieldTrips, employees);
   const memoRepo = buildMemoRepo();
   const memos = new HrMemoService(memoRepo, attendance, audit);
-  return { access, tm, clock, audit, displayNames, employees, attendance, fieldTrips, leaves, trainings, cascade, memoRepo, memos };
+  const alerts = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<FieldTripAlertPublisher>;
+  return { alerts, access, tm, clock, audit, displayNames, employees, attendance, fieldTrips, leaves, trainings, cascade, memoRepo, memos };
 }
 
 describe('reglas ADP de cierre de huecos', () => {
@@ -177,7 +179,7 @@ describe('HrMemoService (BR-ADP-005 / ADP-P03)', () => {
 
 describe('RejectFieldTripHandler (ADP-07)', () => {
   const build = (s: ReturnType<typeof setup>) =>
-    new RejectFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit);
+    new RejectFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
 
   it('rechaza con motivo: NO_AUTORIZADA, nivel pendiente registrado y auditoría', async () => {
     const s = setup('RRHH');
@@ -196,6 +198,7 @@ describe('RejectFieldTripHandler (ADP-07)', () => {
       expect.objectContaining({ action: 'FIELD_TRIP_REJECTED' }),
       s.tm.tx,
     );
+    expect(s.alerts.publish).toHaveBeenCalledWith('RESOLVED', expect.anything(), expect.anything(), s.tm.tx, { outcome: 'RECHAZADA' });
   });
 
   it('exige un motivo escrito', async () => {
@@ -224,7 +227,7 @@ describe('RejectFieldTripHandler (ADP-07)', () => {
 
 describe('ProcessDueFieldTripTimeoutsHandler y FieldTripCascadeScheduler (BR-ADP-004, NFR-BIZ-008)', () => {
   const build = (s: ReturnType<typeof setup>) =>
-    new ProcessDueFieldTripTimeoutsHandler(s.fieldTrips, s.cascade, s.tm, s.clock, s.audit);
+    new ProcessDueFieldTripTimeoutsHandler(s.fieldTrips, s.cascade, s.tm, s.clock, s.audit, s.alerts);
 
   it('sin salidas vencidas no hace nada', async () => {
     const s = setup();
@@ -256,6 +259,7 @@ describe('ProcessDueFieldTripTimeoutsHandler y FieldTripCascadeScheduler (BR-ADP
       }),
       s.tm.tx,
     );
+    expect(s.alerts.publish).toHaveBeenCalledWith('ESCALATED', expect.anything(), expect.anything(), s.tm.tx, expect.objectContaining({ automatic: true }));
   });
 
   it('tras vencer el nivel 3 queda NO_AUTORIZADA, nunca aprobada ni con 4º nivel', async () => {
@@ -272,6 +276,7 @@ describe('ProcessDueFieldTripTimeoutsHandler y FieldTripCascadeScheduler (BR-ADP
       expect.objectContaining({ action: 'FIELD_TRIP_NOT_AUTHORIZED' }),
       s.tm.tx,
     );
+    expect(s.alerts.publish).toHaveBeenCalledWith('NOT_AUTHORIZED', expect.anything(), expect.anything(), s.tm.tx, expect.anything());
   });
 
   it('si otra operación la resolvió justo antes, la omite sin error ni escalación contada', async () => {

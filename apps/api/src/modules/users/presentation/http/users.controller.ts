@@ -75,9 +75,11 @@ export class UsersController {
   }
 
   /** TR-06 (HU-24) - resuelve el rol del usuario para el contexto de
-   * trabajo elegido y enruta al tablero correspondiente. PROVISIONAL:
-   * siempre EMPTY hasta que existan modulos de dominio con datos reales
-   * (ver nota en GetDashboardHandler). */
+   * trabajo elegido y devuelve su tablero: `state: READY` con las tareas y
+   * alertas proyectadas (dashboard_items) o `EMPTY` si no hay ninguna.
+   * Ruta vigente: `GET /users/me/dashboard` (el diseno inicial decia
+   * `/dashboard/me`; se conserva esta ruta, ya consumida por el front, y el
+   * contrato transversal.yaml la documenta como la oficial - Auditoria TR P-06). */
   @Get('dashboard')
   async dashboard(
     @Req() req: AuthenticatedRequest,

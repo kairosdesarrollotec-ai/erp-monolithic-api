@@ -20,6 +20,7 @@ import {
   RejectExtensionInput,
   ReportExtensionBreachInput,
   RentalInquiryRecord,
+  CancelRentalInput,
 } from '../../application/ports/rental-repository.port';
 import { RentalStatus } from '../../domain/rental-status';
 import type { ReservationCreditSource } from '../../domain/reservation-credit';
@@ -114,6 +115,8 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     documentNumber: string;
     documentType?: string;
     status: string;
+    nationality?: 'PERUANO' | 'EXTRANJERO' | null;
+    countryEntryDate?: Date | null;
     isBiometricVerified?: boolean;
   } | null> {
     const client = tx ?? this.prisma;
@@ -127,6 +130,8 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
         documentNumber: true,
         documentType: true,
         status: true,
+        nationality: true,
+        countryEntryDate: true,
       },
     });
   }
@@ -140,9 +145,11 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     brand: string;
     model: string;
     status: string;
+    depositMinimum?: number | null;
+    thirdPathEligible?: boolean;
   } | null> {
     const client = tx ?? this.prisma;
-    return client.vehicle.findUnique({
+    const row = await client.vehicle.findUnique({
       where: { id },
       select: {
         id: true,
@@ -153,8 +160,12 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
         brand: true,
         model: true,
         status: true,
+        depositMinimum: true,
+        thirdPathEligible: true,
       },
     });
+    if (!row) return null;
+    return { ...row, depositMinimum: row.depositMinimum != null ? Number(row.depositMinimum) : null };
   }
 
   async findInquiryForRental(id: string, organizationId: string, tx?: Prisma.TransactionClient): Promise<RentalInquiryRecord | null> {
@@ -290,6 +301,62 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
       include: RENTAL_RELATIONS_INCLUDE,
     });
     return found ? toRentalRecord(found as RentalWithRelations) : null;
+  }
+
+  async markInquiryConverted(inquiryId: string, scope: RentalScope, tx: Prisma.TransactionClient): Promise<boolean> {
+    const result = await tx.inquiry.updateMany({
+      where: {
+        id: inquiryId,
+        organizationId: scope.organizationId,
+        operatingCompanyId: scope.operatingCompanyId,
+        status: 'COTIZADA',
+      },
+      data: { status: 'CONVERTIDA', version: { increment: 1 } },
+    });
+    return result.count === 1;
+  }
+
+  async findRentalDocumentById(
+    documentId: string,
+    rentalId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<{ id: string; documentType: string } | null> {
+    const client = tx ?? this.prisma;
+    return client.rentalDocument.findFirst({
+      where: { id: documentId, rentalId },
+      select: { id: true, documentType: true },
+    });
+  }
+
+  async countRentalDocumentsByType(
+    rentalId: string,
+    documentType: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number> {
+    const client = tx ?? this.prisma;
+    return client.rentalDocument.count({ where: { rentalId, documentType } });
+  }
+
+  async cancel(input: CancelRentalInput, tx: Prisma.TransactionClient): Promise<RentalRecord> {
+    // El compromiso de vehiculo del alquiler (heredado de la reserva) se libera: el vehiculo vuelve a estar disponible.
+    await tx.vehicleCommitment.updateMany({
+      where: { sourceType: 'RENTAL', sourceId: input.id, status: { in: ['ACTIVE', 'CONSOLIDATED'] } },
+      data: { status: 'RELEASED' },
+    });
+    return this.bumpVersion(
+      input.id,
+      input.scope,
+      input.expectedVersion,
+      {
+        status: 'CANCELLED',
+        cancelReason: input.reason,
+        cancelNote: input.note ?? null,
+        cancelledAt: input.cancelledAt,
+        cancelledBy: input.cancelledBy,
+        updatedBy: input.cancelledBy,
+      },
+      tx,
+    );
   }
 
   async countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number> {

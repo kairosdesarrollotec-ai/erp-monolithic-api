@@ -43,6 +43,23 @@ export class PrismaReservationDocumentRepository implements ReservationDocumentR
     return toRecord(row);
   }
 
+  async findById(
+    documentId: string,
+    reservationId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationDocumentRecord | null> {
+    const client = tx ?? this.prisma;
+    const row = await client.reservationDocument.findFirst({ where: { id: documentId, reservationId } });
+    return row ? toRecord(row) : null;
+  }
+
+  async countCustomerDocuments(reservationId: string, tx?: Prisma.TransactionClient): Promise<number> {
+    const client = tx ?? this.prisma;
+    return client.reservationDocument.count({
+      where: { reservationId, documentType: { not: 'PAYMENT_VOUCHER' } },
+    });
+  }
+
   async list(reservationId: string, _organizationId: string): Promise<ReservationDocumentRecord[]> {
     const rows = await this.prisma.reservationDocument.findMany({
       where: { reservationId },

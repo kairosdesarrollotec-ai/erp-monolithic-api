@@ -100,6 +100,11 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
     for (const role of ['GERENCIA', 'ADMINISTRACION', 'CAMPO'] as const) expect(allowed(role, 'EVIDENCE', 'DELETE_DIRECT')).toBe(false);
   });
 
+  it('SYNC.SUPERVISE_CONFLICTS: supervisor de sincronizacion = Administracion + Gerencia (+ PLATFORM_ADMIN); el resto denegado', () => {
+    for (const role of ['ADMINISTRACION', 'GERENCIA', 'PLATFORM_ADMIN'] as const) expect(allowed(role, 'SYNC', 'SUPERVISE_CONFLICTS')).toBe(true);
+    for (const role of ['RRHH', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE'] as const) expect(allowed(role, 'SYNC', 'SUPERVISE_CONFLICTS')).toBe(false);
+  });
+
   it('UPLOAD_EVIDENCE (reutilizada para borrar evidencia) sigue en el catalogo de Alquiler y Devolucion', () => {
     expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RENTAL' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);
     expect(PERMISSION_ACTION_CATALOG.some((d) => d.module === 'RETURN' && d.action === 'UPLOAD_EVIDENCE')).toBe(true);

@@ -6,11 +6,14 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
+import { InquiryNotTouristUseError, InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { ReservationRepositoryPort, ReservationRecord } from '../../../reservations/application/ports/reservation-repository.port';
 import { ReservationDepositPolicyPort } from '../../../parameters/application/ports/reservation-deposit-policy.port';
+import { assertChannelModeCoherent } from '../../../reservations/domain/channel-mode';
 import { assertReservationWithinGuarantee } from '../../../reservations/domain/reservation-guarantee';
+import { assertValidReservationPeriod } from '../../../reservations/domain/reservation-period';
+import { CustomerBlockedError } from '../../../rentals/domain/rental-errors';
 import { ConvertToReservationCommand } from './convert-to-reservation.command';
 
 export interface ConvertToReservationResult {
@@ -74,6 +77,9 @@ export class ConvertToReservationHandler {
     await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RESERVATION', 'CREATE', { companyId: context.companyId, branchId: context.branchId });
     this.quotingGuard.assertReady();
 
+    // PEND-08 / BR-RES-005: modalidad coherente con la ubicacion declarada (422 CHANNEL_MODE_MISMATCH).
+    assertChannelModeCoherent(command.channelMode, command.canComeToOffice, command.customerLocation);
+
     if (command.startAt.getTime() <= this.clock.now().getTime()) {
       throw new BadRequestException({
         code: 'RESERVATION_START_NOT_IN_FUTURE',
@@ -107,6 +113,22 @@ export class ConvertToReservationHandler {
 
         const quotation = this.currentValidQuotation(current, this.clock.now());
 
+        // P-13: cliente ROJO bloqueado tambien al reservar (igual que convert-to-rental).
+        const customer = await this.reservations.findCustomerById(current.customerId!);
+        if (
+          !customer ||
+          customer.organizationId !== scope.organizationId ||
+          customer.operatingCompanyId !== scope.operatingCompanyId
+        ) {
+          throw new NotFoundException({
+            code: 'CUSTOMER_NOT_FOUND',
+            detail: 'El cliente de la consulta no existe en esta empresa.',
+          });
+        }
+        if (customer.status === 'ROJO') {
+          throw new CustomerBlockedError();
+        }
+
         // F-01: el monto de la reserva (politica ADM-03) no puede superar la
         // garantia del vehiculo cotizado. Se valida ANTES de transicionar la
         // consulta: si falla, la consulta sigue COTIZADA y no se crea reserva.
@@ -115,9 +137,15 @@ export class ConvertToReservationHandler {
 
         const startAt = command.startAt;
         const endAt = new Date(startAt.getTime() + quotation.estimatedDays * MS_PER_DAY);
+        assertValidReservationPeriod(startAt, endAt);
 
         const converted = await this.inquiries.convertToReservation(
-          { id: command.id, ...scope, expectedVersion: command.expectedVersion },
+          {
+            id: command.id,
+            ...scope,
+            expectedVersion: command.expectedVersion,
+            interaction: { channel: current.channel, outcome: 'CONVERTIDA_A_RESERVA', note: `Reserva ${startAt.toISOString()}` },
+          },
           ['COTIZADA'],
           tx,
         );
@@ -178,6 +206,26 @@ export class ConvertToReservationHandler {
           tx,
         );
 
+        // P-07: ConsultaConvertida.v1 (mismo evento y forma que publica rentals/create-rental) en la misma tx.
+        await this.outboxRepository.publish(
+          {
+            aggregateType: 'inquiry',
+            aggregateId: converted.id,
+            eventType: 'ConsultaConvertida.v1',
+            payload: {
+              inquiryId: converted.id,
+              organizationId: scope.organizationId,
+              operatingCompanyId: scope.operatingCompanyId,
+              branchId: scope.branchId,
+              target: 'RESERVATION',
+              reservationId: reservation.id,
+              quotationId: quotation.id,
+              convertedBy: command.firebaseUid,
+            },
+          },
+          tx,
+        );
+
         return { inquiry: converted, reservation };
       },
       { isolationLevel: 'Serializable' },
@@ -187,6 +235,10 @@ export class ConvertToReservationHandler {
   private assertConvertible(inquiry: InquiryRecord): void {
     if (inquiry.status !== 'COTIZADA') {
       throw new InquiryNotTransitionableError(inquiry.status);
+    }
+    // P-05 (DT-CON-03): sin uso turistico no se convierte; solo cierre con motivo.
+    if (!inquiry.touristUse) {
+      throw new InquiryNotTouristUseError();
     }
     if (!inquiry.customerId) {
       throw new BadRequestException({

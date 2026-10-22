@@ -30,6 +30,7 @@ export interface UpdateVehicleInput {
   passengerCapacity?: number | null;
   fuelPrice?: number | null;
   photoUrl?: string | null;
+  thirdPathEligible?: boolean;
 }
 
 export interface ListVehiclesFilters {

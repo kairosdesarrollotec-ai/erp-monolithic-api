@@ -2,6 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CloseInquiryHandler } from './close-inquiry.handler';
 import { CloseInquiryCommand } from './close-inquiry.command';
 import { InquiryNotTransitionableError } from '../../domain/inquiry-errors';
+import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import {
   BRANCH,
@@ -13,6 +14,7 @@ import {
   buildTransactionManager,
   buildWorkContext,
   buildMatrixAuth,
+  FixedClock,
 } from '../../testing/inquiry-test-fixtures';
 
 function build(existing: ReturnType<typeof buildInquiry> | null = buildInquiry(), role: Parameters<typeof buildWorkContext>[0] = 'FRONT_OFFICE') {
@@ -20,8 +22,9 @@ function build(existing: ReturnType<typeof buildInquiry> | null = buildInquiry()
   const audit = { recordInquiryEvent: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AuditEventRepositoryPort>;
   const transactions = buildTransactionManager();
   const matrixAuth = buildMatrixAuth();
-  const handler = new CloseInquiryHandler(inquiries, buildWorkContext(role), audit, transactions, matrixAuth);
-  return { handler, inquiries, audit, transactions, matrixAuth };
+  const outbox = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxEventRepositoryPort>;
+  const handler = new CloseInquiryHandler(inquiries, buildWorkContext(role), audit, transactions, matrixAuth, outbox, new FixedClock(new Date('2026-10-22T15:00:00Z')));
+  return { handler, inquiries, audit, transactions, matrixAuth, outbox };
 }
 
 const command = () => new CloseInquiryCommand('inq-1', 'uid-1', COMPANY, BRANCH, 1, 'CLIENTE_NO_CONTINUA', 'Precio');
@@ -33,12 +36,35 @@ describe('CloseInquiryHandler', () => {
     await handler.execute(command());
 
     expect(inquiries.close).toHaveBeenCalledWith(
-      { id: 'inq-1', ...SCOPE, expectedVersion: 1, reason: 'CLIENTE_NO_CONTINUA', note: 'Precio' },
+      {
+        id: 'inq-1',
+        ...SCOPE,
+        expectedVersion: 1,
+        reason: 'CLIENTE_NO_CONTINUA',
+        note: 'Precio',
+        interaction: { channel: 'WHATSAPP', outcome: 'CERRADA_SIN_CONVERSION', note: 'CLIENTE_NO_CONTINUA: Precio' },
+      },
       ['REGISTRADA', 'COTIZADA'],
       transactions.tx,
     );
     expect(audit.recordInquiryEvent).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'INQUIRY_CLOSED_WITHOUT_CONVERSION' }),
+      transactions.tx,
+    );
+  });
+
+  it('publica ConsultaCerrada.v1 por outbox en la MISMA transaccion (P-07)', async () => {
+    const { handler, outbox, transactions } = build();
+
+    await handler.execute(command());
+
+    expect(outbox.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        aggregateType: 'inquiry',
+        aggregateId: 'inq-1',
+        eventType: 'ConsultaCerrada.v1',
+        payload: expect.objectContaining({ inquiryId: 'inq-1', reason: 'CLIENTE_NO_CONTINUA', closedBy: 'uid-1', closedAt: '2026-10-22T15:00:00.000Z' }),
+      }),
       transactions.tx,
     );
   });

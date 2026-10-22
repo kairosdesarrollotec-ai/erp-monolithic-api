@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { ReservationRecord } from '../../application/ports/reservation-repository.port';
+import type { PaymentMethod } from '../../domain/reservation-payment-method';
 import { buildVehicleDataWarnings } from '../../../../common/domain/vehicle-data-warnings';
 
 /**
@@ -44,6 +45,17 @@ export function toReservationRecord(row: ReservationWithRelations): ReservationR
     paymentValidatedAt: row.paymentValidatedAt,
     documentsCompletedAt: row.documentsCompletedAt,
     confirmedAt: row.confirmedAt,
+    payment:
+      row.paymentMethod && row.paymentAmount != null
+        ? {
+            amount: row.paymentAmount.toFixed(2),
+            method: row.paymentMethod as PaymentMethod,
+            operationNumber: row.paymentOperationNumber,
+            payerName: row.payerName ?? '',
+            voucherDocumentId: row.paymentVoucherDocumentId,
+            registeredBy: row.paymentRegisteredBy,
+          }
+        : null,
     createdAt: row.createdAt,
     createdBy: row.createdBy,
     version: row.version,

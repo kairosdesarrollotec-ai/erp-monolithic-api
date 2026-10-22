@@ -44,6 +44,16 @@ export function toReservationResponse(record: ReservationRecord, extras: Reserva
       documentsCompletedAt: record.documentsCompletedAt ? record.documentsCompletedAt.toISOString() : null,
     },
     missingRequirements,
+    payment: record.payment
+      ? {
+          amount: record.payment.amount,
+          method: record.payment.method,
+          operationNumber: record.payment.operationNumber,
+          payerName: record.payment.payerName,
+          voucherDocumentId: record.payment.voucherDocumentId,
+          registeredBy: record.payment.registeredBy,
+        }
+      : null,
     confirmedAt: record.confirmedAt ? record.confirmedAt.toISOString() : null,
     createdAt: record.createdAt.toISOString(),
     startDatePassed: (extras.now ?? new Date()).getTime() >= record.startAt.getTime(),

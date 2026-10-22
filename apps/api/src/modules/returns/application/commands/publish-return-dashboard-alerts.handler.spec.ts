@@ -157,8 +157,9 @@ describe('PublishReturnDashboardAlertsHandler (BR-DEV-001 / DEC-DEVREM-002)', ()
     const immo = (over: Record<string, unknown> = {}) =>
       buildReturnRecord({
         id: 'm1',
-        status: 'CON_DANOS',
-        receivedAt: hoursBeforeNow(50),
+        status: 'CERRADA',
+        receivedAt: hoursBeforeNow(60),
+        closedAt: hoursBeforeNow(50),
         vehicleDailyRate: 100,
         damages: [{ origin: 'TECHNICAL' }] as never,
         immobilizationCharges: [],
@@ -186,7 +187,7 @@ describe('PublishReturnDashboardAlertsHandler (BR-DEV-001 / DEC-DEVREM-002)', ()
       expect(port.createDashboardItems.mock.calls[0][0]).toEqual(port.createDashboardItems.mock.calls[1][0]);
     });
 
-    it('IMMOBILIZATION: pide recibidas hace >= 24 h y publica solo con dano tecnico y dias pendientes', async () => {
+    it('IMMOBILIZATION: pide cerradas hace >= 24 h (reloj desde el cierre) y publica solo con dano tecnico y dias pendientes', async () => {
       const { port, handler } = build(['ADMINISTRACION']);
       port.listImmobilizationCandidates.mockResolvedValue([
         immo(),

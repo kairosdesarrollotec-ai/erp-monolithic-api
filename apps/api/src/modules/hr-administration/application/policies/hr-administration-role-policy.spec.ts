@@ -7,9 +7,11 @@ import {
 } from './hr-administration-role-policy';
 import { WORKER_ROLES } from '../../../users/domain/worker-role';
 
+const GERENCIA_ONLY_OR_NOT_HR: readonly HrAdministrationAction[] = ['MANAGE_AREAS', 'MANAGE_SALARY', 'REVIEW_ATTENDANCE', 'MANAGE_GEOFENCE'];
+
 describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
-  it('define las 12 acciones canónicas de Administración de Personal', () => {
-    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(12);
+  it('define las 16 acciones canónicas de Administración de Personal', () => {
+    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(16);
     expect(HR_ADMINISTRATION_ACTIONS).toEqual([
       'VIEW_EMPLOYEES',
       'MANAGE_EMPLOYEES',
@@ -23,11 +25,15 @@ describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
       'REGISTER_TRAINING',
       'MANAGE_AREAS',
       'MANAGE_SALARY',
+      'LOG_OWN_ATTENDANCE',
+      'REVIEW_ATTENDANCE',
+      'MANAGE_GEOFENCE',
+      'VIEW_EMPLOYEE_DOCUMENT',
     ]);
   });
 
   describe('Permisos de Gerencia y RRHH (control total)', () => {
-    it.each(HR_ADMINISTRATION_ACTIONS.filter((a) => a !== 'MANAGE_AREAS' && a !== 'MANAGE_SALARY'))('permite la acción %s a GERENCIA y RRHH', (action) => {
+    it.each(HR_ADMINISTRATION_ACTIONS.filter((a) => !GERENCIA_ONLY_OR_NOT_HR.includes(a)))('permite la acción %s a GERENCIA y RRHH', (action) => {
       expect(isHrAdministrationRoleAllowed('GERENCIA', action)).toBe(true);
       expect(isHrAdministrationRoleAllowed('RRHH', action)).toBe(true);
       expect(() => assertHrAdministrationRoleAllowed('GERENCIA', action)).not.toThrow();
@@ -98,6 +104,33 @@ describe('MANAGE_AREAS y MANAGE_SALARY (Respuestas 2026-10-20 #17 y #19)', () =>
     expect(isHrAdministrationRoleAllowed('GERENCIA', action)).toBe(true);
     for (const role of ['RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE'] as const) {
       expect(isHrAdministrationRoleAllowed(role, action)).toBe(false);
+    }
+  });
+});
+
+describe('REVIEW_ATTENDANCE y MANAGE_GEOFENCE (22-oct #9, DEC-ADP-ATT-002: revisan Gerencia/Administración, no RRHH)', () => {
+  it.each(['REVIEW_ATTENDANCE', 'MANAGE_GEOFENCE'] as const)('%s lo permiten GERENCIA y ADMINISTRACION y lo deniegan los demás roles', (action) => {
+    expect(isHrAdministrationRoleAllowed('GERENCIA', action)).toBe(true);
+    expect(isHrAdministrationRoleAllowed('ADMINISTRACION', action)).toBe(true);
+    for (const role of ['RRHH', 'AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, action)).toBe(false);
+    }
+  });
+});
+
+describe('LOG_OWN_ATTENDANCE y VIEW_EMPLOYEE_DOCUMENT (22-oct #9, HU-35)', () => {
+  it('todos los roles de colaborador marcan su propia asistencia', () => {
+    for (const role of ['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, 'LOG_OWN_ATTENDANCE')).toBe(true);
+    }
+  });
+
+  it('el documento del colaborador solo lo ven GERENCIA, RRHH y ADMINISTRACION', () => {
+    for (const role of ['GERENCIA', 'RRHH', 'ADMINISTRACION'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, 'VIEW_EMPLOYEE_DOCUMENT')).toBe(true);
+    }
+    for (const role of ['AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, 'VIEW_EMPLOYEE_DOCUMENT')).toBe(false);
     }
   });
 });

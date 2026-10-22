@@ -7,6 +7,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
 import { FirebaseDisplayNameLookup } from '../recruitment/infrastructure/identity/firebase-display-name.lookup';
 import { HrAdministrationAccessService } from './application/services/hr-administration-access.service';
 import { FieldTripCascadeService } from './application/services/field-trip-cascade.service';
+import { FieldTripAlertPublisher } from './application/services/field-trip-alert.publisher';
 import { HrMemoService } from './application/services/hr-memo.service';
 import { EmployeeRepositoryPort } from './application/ports/employee-repository.port';
 import { HrAreaRepositoryPort } from './application/ports/hr-area-repository.port';
@@ -50,12 +51,21 @@ import { ApplyMonthDeductionsHandler } from './application/commands/apply-month-
 import { RequestLeaveHandler } from './application/commands/request-leave.handler';
 import { ResolveLeaveHandler } from './application/commands/resolve-leave.handler';
 import { ScheduleVacationHandler } from './application/commands/schedule-vacation.handler';
+import { RescheduleVacationHandler } from './application/commands/reschedule-vacation.handler';
+import { CancelVacationHandler } from './application/commands/cancel-vacation.handler';
 import { RequestFieldTripHandler } from './application/commands/request-field-trip.handler';
 import { AuthorizeFieldTripHandler } from './application/commands/authorize-field-trip.handler';
 import { AdvanceFieldTripTimeoutHandler } from './application/commands/advance-field-trip-timeout.handler';
 import { EvaluateFieldTripReturnHandler } from './application/commands/evaluate-field-trip-return.handler';
 import { RejectFieldTripHandler } from './application/commands/reject-field-trip.handler';
 import { ProcessDueFieldTripTimeoutsHandler } from './application/commands/process-due-field-trip-timeouts.handler';
+import { LogMyAttendanceHandler } from './application/commands/log-my-attendance.handler';
+import { ReviewAttendanceHandler } from './application/commands/review-attendance.handler';
+import { ManageBranchGeofenceHandler } from './application/commands/manage-branch-geofence.handler';
+import { GetMyAttendanceHandler, ListAttendancePendingReviewHandler } from './application/queries/my-attendance.handlers';
+import { BranchGeofenceRepositoryPort } from './application/ports/branch-geofence-repository.port';
+import { PrismaBranchGeofenceRepository } from './infrastructure/persistence/prisma-branch-geofence.repository';
+import { EmployeeFieldVisibilityService } from './application/services/employee-field-visibility.service';
 import { ReclassifyAttendanceHandler } from './application/commands/reclassify-attendance.handler';
 import { RequestLeaveEvidenceUploadSessionHandler } from './application/commands/request-leave-evidence-upload-session.handler';
 import { RecordLeaveEvidenceHandler } from './application/commands/record-leave-evidence.handler';
@@ -104,6 +114,7 @@ import { TrainingsController } from './presentation/http/trainings.controller';
   providers: [
     HrAdministrationAccessService,
     FieldTripCascadeService,
+    FieldTripAlertPublisher,
     HrMemoService,
     FieldTripCascadeScheduler,
     RecentAuthGuard,
@@ -115,6 +126,7 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     CreateHrAreaHandler,
     SetHrAreaActiveHandler,
     { provide: AttendanceRepositoryPort, useClass: PrismaAttendanceRepository },
+    { provide: BranchGeofenceRepositoryPort, useClass: PrismaBranchGeofenceRepository },
     { provide: LeaveRepositoryPort, useClass: PrismaLeaveRepository },
     { provide: VacationRepositoryPort, useClass: PrismaVacationRepository },
     { provide: FieldTripRepositoryPort, useClass: PrismaFieldTripRepository },
@@ -133,13 +145,21 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     RequestLeaveHandler,
     ResolveLeaveHandler,
     ScheduleVacationHandler,
+    RescheduleVacationHandler,
+    CancelVacationHandler,
     RequestFieldTripHandler,
     AuthorizeFieldTripHandler,
     AdvanceFieldTripTimeoutHandler,
     EvaluateFieldTripReturnHandler,
     RejectFieldTripHandler,
     ProcessDueFieldTripTimeoutsHandler,
+    EmployeeFieldVisibilityService,
     ReclassifyAttendanceHandler,
+    LogMyAttendanceHandler,
+    ReviewAttendanceHandler,
+    ManageBranchGeofenceHandler,
+    GetMyAttendanceHandler,
+    ListAttendancePendingReviewHandler,
     RequestLeaveEvidenceUploadSessionHandler,
     RequestAttendanceEvidenceUploadSessionHandler,
     LinkEmployeeAccountHandler,

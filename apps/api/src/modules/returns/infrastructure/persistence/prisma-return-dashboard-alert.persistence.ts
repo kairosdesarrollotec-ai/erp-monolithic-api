@@ -70,11 +70,12 @@ export class PrismaReturnDashboardAlertPersistence implements ReturnDashboardAle
     return rows.map(toReturnRecord);
   }
 
-  async listImmobilizationCandidates(receivedBefore: Date, limit: number, afterId?: string): Promise<ReturnRecord[]> {
+  async listImmobilizationCandidates(closedBefore: Date, limit: number, afterId?: string): Promise<ReturnRecord[]> {
     const rows = await this.prisma.rentalReturn.findMany({
       where: {
-        status: { in: ['CON_DANOS', 'CIERRE_FINANCIERO'] },
-        receivedAt: { not: null, lte: receivedBefore },
+        // BR-DEV-011 (22-oct-2026): reloj desde el cierre de la devolucion.
+        status: 'CERRADA',
+        closedAt: { not: null, lte: closedBefore },
         damages: { some: { origin: 'TECHNICAL' } },
         ...(afterId ? { id: { gt: afterId } } : {}),
       },

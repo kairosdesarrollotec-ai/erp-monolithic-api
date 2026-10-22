@@ -2,11 +2,21 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma, VacationRequest } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
+  CancelVacationData,
   CreateVacationData,
+  RescheduleVacationData,
+  VacationWithEmployeeScope,
   VacationRepositoryPort,
   VacationWithEmployee,
 } from '../../application/ports/vacation-repository.port';
 import { VACATION_CAPACITY_STATUSES } from '../../domain/hr-administration-rules';
+import { VacationOverlapError } from '../../domain/hr-administration-errors';
+
+/** La EXCLUDE de BD (empresa + area + fechas) es la red de seguridad final frente a dos reprogramaciones simultaneas. */
+function isVacationOverlapConstraintError(error: unknown): boolean {
+  const message = String((error as { message?: unknown } | null)?.message ?? '');
+  return message.includes('vacation_requests_area_no_overlap_excl') || message.includes('23P01');
+}
 
 @Injectable()
 export class PrismaVacationRepository implements VacationRepositoryPort {
@@ -26,6 +36,66 @@ export class PrismaVacationRepository implements VacationRepositoryPort {
         approvedById: data.approvedById ?? null,
         approvedAt: data.approvedAt ?? null,
       },
+    });
+  }
+
+  async findById(id: string, tx?: Prisma.TransactionClient): Promise<VacationWithEmployeeScope | null> {
+    const client = tx ?? this.prisma;
+    return client.vacationRequest.findUnique({
+      where: { id },
+      include: {
+        employee: {
+          select: { fullName: true, areaName: true, areaId: true, status: true, organizationId: true, operatingCompanyId: true, branchId: true },
+        },
+      },
+    });
+  }
+
+  async reschedule(id: string, data: RescheduleVacationData, tx?: Prisma.TransactionClient): Promise<VacationRequest> {
+    const client = tx ?? this.prisma;
+    const current = await client.vacationRequest.findUniqueOrThrow({ where: { id } });
+    try {
+      return await client.vacationRequest.update({
+        where: { id },
+        data: {
+          startDate: data.startDate,
+          endDate: data.endDate,
+          status: 'REPROGRAMADA',
+          // Las fechas originales se guardan UNA vez (la primera reprogramacion); las siguientes conservan el origen.
+          originalStartDate: current.originalStartDate ?? current.startDate,
+          originalEndDate: current.originalEndDate ?? current.endDate,
+          rescheduleCount: { increment: 1 },
+          statusReason: data.reason,
+          statusChangedAt: data.changedAt,
+          statusChangedById: data.changedById,
+        },
+      });
+    } catch (error) {
+      if (isVacationOverlapConstraintError(error)) {
+        throw new VacationOverlapError('del colaborador');
+      }
+      throw error;
+    }
+  }
+
+  async cancel(id: string, data: CancelVacationData, tx?: Prisma.TransactionClient): Promise<VacationRequest> {
+    const client = tx ?? this.prisma;
+    return client.vacationRequest.update({
+      where: { id },
+      data: {
+        status: 'CANCELADA',
+        statusReason: data.reason,
+        statusChangedAt: data.changedAt,
+        statusChangedById: data.changedById,
+      },
+    });
+  }
+
+  async findActiveByCompany(companyId: string, tx?: Prisma.TransactionClient): Promise<VacationRequest[]> {
+    const client = tx ?? this.prisma;
+    return client.vacationRequest.findMany({
+      where: { operatingCompanyId: companyId, status: { in: [...VACATION_CAPACITY_STATUSES] } },
+      orderBy: { requestedAt: 'asc' },
     });
   }
 

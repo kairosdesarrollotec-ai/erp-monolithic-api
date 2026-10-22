@@ -5,12 +5,17 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { RentalStateConflictError, ProhibitedVehicleNotaryExemptionError } from '../../domain/rental-errors';
+import {
+  RentalStateConflictError,
+  ProhibitedVehicleNotaryExemptionError,
+  NotaryEvaluationRequiredError,
+  NotaryExceptionNotApplicableError,
+} from '../../domain/rental-errors';
 import { PROHIBITED_NOTARY_EXEMPTION_MODELS } from '../policies/notary-matrix-policy';
 import { ApproveNotaryExceptionCommand } from './approve-notary-exception.command';
 
 /**
- * ALQ-05 / BR-ALQ-004 - Aprobación de Excepción Notarial (Tercer Camino).
+ * ALQ-05 / BR-ALQ-004 - Aprobación de Excepción Notarial (Tercera Vía o Revisión Manual).
  * Solo permitido para rol GERENCIA (Fiorella/José según SDD §11.2).
  * Transiciona Rental de NOTARY_EVALUATION a CONTRACTING.
  */
@@ -55,6 +60,16 @@ export class ApproveNotaryExceptionHandler {
       throw new RentalStateConflictError('aprobar excepción notarial en', existing.status);
     }
 
+    // Russbel 22-oct-2026: la aprobacion exige la evaluacion notarial guardada (evaluate-notary la persiste siempre) y
+    // registra el tipo REAL (THIRD_PATH_ELIGIBLE o MANUAL_REVIEW); ya no sobrescribe el resultado como tercera via.
+    const evaluation = existing.notaryEvaluation;
+    if (!evaluation) {
+      throw new NotaryEvaluationRequiredError();
+    }
+    if (evaluation.result !== 'THIRD_PATH_ELIGIBLE' && evaluation.result !== 'MANUAL_REVIEW') {
+      throw new NotaryExceptionNotApplicableError(evaluation.result);
+    }
+
     // Regla BR-ALQ-003: Prohibición absoluta de excepción en modelos de alto riesgo
     const vehicle = await this.rentals.findVehicleById(existing.vehicleId);
     if (vehicle) {
@@ -95,6 +110,7 @@ export class ApproveNotaryExceptionHandler {
           rentalId: updated.id,
           action: 'NOTARY_EXCEPTION_APPROVED',
           changes: {
+            exceptionType: evaluation.result,
             approvedBy: command.firebaseUid,
             justification: command.justification.trim(),
             newStatus: 'CONTRACTING',
@@ -110,6 +126,7 @@ export class ApproveNotaryExceptionHandler {
           eventType: 'ExcepcionNotarialAprobada.v1',
           payload: {
             rentalId: updated.id,
+            exceptionType: evaluation.result,
             approvedBy: command.firebaseUid,
             justification: command.justification.trim(),
             status: updated.status,

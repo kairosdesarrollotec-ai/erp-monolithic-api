@@ -30,6 +30,7 @@ import { ListReturnRemindersQueryDto } from './dto/list-return-reminders-query.d
 import { ListReturnAlertsQueryDto } from './dto/list-return-alerts-query.dto';
 import { ListReturnsQueryDto } from './dto/list-returns-query.dto';
 import { ReturnScopeQueryDto } from './dto/return-scope-query.dto';
+import { RecordZoneMarksDto } from './dto/record-zone-marks.dto';
 import {
   toCosmeticTariffResponse,
   toImmobilizationChargeResponse,
@@ -144,13 +145,13 @@ function controllerRoutes() {
 describe('Contrato OpenAPI returns.yaml vs backend', () => {
   const routes = controllerRoutes();
 
-  it('cada ruta del controller existe en OpenAPI y viceversa (21 operaciones)', () => {
+  it('cada ruta del controller existe en OpenAPI y viceversa (23 operaciones)', () => {
     const fromController = routes.map((r) => `${r.method} ${r.openApiPath}`).sort();
     const fromSpec = Object.entries(spec.paths)
       .flatMap(([p, ops]: [string, any]) => Object.keys(ops).map((m) => `${m} ${p}`))
       .sort();
     expect(fromController).toEqual(fromSpec);
-    expect(fromSpec).toHaveLength(21);
+    expect(fromSpec).toHaveLength(23);
   });
 
   it('el código de exito declarado en OpenAPI es el que devuelve NestJS', () => {
@@ -196,6 +197,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     ['CloseReturnRequest', CloseReturnDto],
     ['RequestReturnEvidenceUploadSessionRequest', RequestReturnEvidenceUploadSessionDto],
     ['RecordReturnEvidenceRequest', RecordReturnEvidenceDto],
+    ['RecordReturnZoneMarksRequest', RecordZoneMarksDto],
   ])('%s: mismos campos y mismos obligatorios que el DTO', (schemaName, dto) => {
     const contract = flatten(spec.components.schemas[schemaName]);
     const fields = dtoFields(dto as new () => unknown);
@@ -231,7 +233,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('1.7.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
-    expect(spec.info.version).toBe('1.9.0');
+    expect(spec.info.version).toBe('1.10.0');
     const alcohol: Operation = spec.paths['/returns/{id}/commands/register-alcohol-test'].post;
     expect(JSON.stringify(alcohol.responses['422'])).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
     const op: Operation = spec.paths['/returns/{id}/commands/register-late-charge'].post;
@@ -578,6 +580,6 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('contrato 1.8.0', () => {
-    expect(spec.info.version).toBe('1.9.0');
+    expect(spec.info.version).toBe('1.10.0');
   });
 });

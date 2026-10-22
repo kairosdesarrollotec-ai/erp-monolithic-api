@@ -5,6 +5,7 @@ import {
   DEMO_RESERVATION_AMOUNT,
   limaCalendarDate,
 } from '../../prisma/seed-demo.lib';
+import { DEFAULT_HR_AREAS } from '../modules/hr-administration/domain/hr-area-rules';
 
 describe('seed demo local', () => {
   const context = {
@@ -28,5 +29,13 @@ describe('seed demo local', () => {
     expect(Number(vehicle?.depositMinimum)).toBeGreaterThanOrEqual(Number(DEMO_RESERVATION_AMOUNT));
     expect(dataset.vehicles.find((item) => item.plate === 'DEM-103')?.passengerCapacity).toBe(2);
     expect(limaCalendarDate(new Date('2026-10-20T03:00:00Z')).toISOString()).toBe('2026-10-19T00:00:00.000Z');
+  });
+
+  it('el catalogo de areas del demo es el mismo que DEFAULT_HR_AREAS (9 areas, sin duplicados de codigo)', () => {
+    const data = buildDemoDataset(context);
+    const codes = data.hrAreas.map((a) => a.code).sort();
+    expect(codes).toEqual(DEFAULT_HR_AREAS.map((a) => a.code).sort());
+    expect(new Set(codes).size).toBe(9);
+    expect(data.hrAreas.find((a) => a.code === 'GERENCIA_GENERAL')?.name).toBe('Gerencia General / Subgerencia');
   });
 });

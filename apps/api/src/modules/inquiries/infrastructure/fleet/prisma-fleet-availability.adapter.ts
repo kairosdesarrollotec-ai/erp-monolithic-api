@@ -43,11 +43,23 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
         organizationId: query.organizationId,
         operatingCompanyId: query.operatingCompanyId,
       },
-      select: { id: true, branchId: true, dailyRate: true },
+      select: { id: true, branchId: true, dailyRate: true, status: true },
     });
 
     if (!vehicle) {
       return { eligible: false, reason: 'El vehículo indicado no existe en esta empresa.' };
+    }
+
+    // Russbel 22-oct-2026: un vehiculo en mantenimiento o fuera de servicio no es cotizable/elegible (422 VEHICLE_NOT_ELIGIBLE).
+    // RENTED no se bloquea aqui: la ocupacion futura la decide el solape de compromisos/reservas de la ventana.
+    if (vehicle.status === 'MAINTENANCE' || vehicle.status === 'OUT_OF_SERVICE') {
+      return {
+        eligible: false,
+        reason:
+          vehicle.status === 'MAINTENANCE'
+            ? 'El vehículo está en mantenimiento y no puede cotizarse ni reservarse.'
+            : 'El vehículo está fuera de servicio y no puede cotizarse ni reservarse.',
+      };
     }
 
     if (vehicle.branchId !== null && vehicle.branchId !== query.branchId) {

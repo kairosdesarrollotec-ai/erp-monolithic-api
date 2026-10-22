@@ -42,7 +42,9 @@ describe('Alerta de liberación de garantía a las 24 h (BR-DEV-001, SC-DEV-001.
 
 describe('Alerta de inmovilización > 24 h sin cobro (BR-DEV-011)', () => {
   const technical = { origin: 'TECHNICAL' as const };
-  const withTech = (extra: Partial<AlertSubject> = {}) => subject({ status: 'CON_DANOS', damages: [technical], ...extra });
+  // 22-oct-2026: el reloj corre desde el CIERRE de la devolucion (CERRADA + closedAt); aqui closedAt = RECEIVED para reutilizar at().
+  const withTech = (extra: Partial<AlertSubject> = {}) =>
+    subject({ status: 'CERRADA', receivedAt: new Date(RECEIVED.getTime() - 48 * 3_600_000), closedAt: RECEIVED, damages: [technical], ...extra });
 
   it('no alerta hasta superar las 24 h naturales', () => {
     expect(computeImmobilizationAlert(withTech(), at(24))).toBeNull();
@@ -70,12 +72,19 @@ describe('Alerta de inmovilización > 24 h sin cobro (BR-DEV-011)', () => {
     });
   });
 
-  it('requiere daño TÉCNICO y estado CON_DANOS | CIERRE_FINANCIERO', () => {
-    expect(computeImmobilizationAlert(subject({ status: 'CON_DANOS', damages: [{ origin: 'AESTHETIC' }] }), at(48))).toBeNull();
-    expect(computeImmobilizationAlert(withTech({ status: 'CERRADA' }), at(48))).toBeNull();
+  it('requiere daño TÉCNICO y devolución CERRADA con closedAt (el reloj no corre antes del cierre)', () => {
+    expect(computeImmobilizationAlert(withTech({ damages: [{ origin: 'AESTHETIC' }] }), at(48))).toBeNull();
     expect(computeImmobilizationAlert(withTech({ status: 'SIN_DANOS' }), at(48))).toBeNull();
-    expect(computeImmobilizationAlert(withTech({ status: 'CIERRE_FINANCIERO' }), at(48))).not.toBeNull();
-    expect(computeImmobilizationAlert(withTech({ receivedAt: null }), at(48))).toBeNull();
+    expect(computeImmobilizationAlert(withTech({ status: 'CON_DANOS' }), at(48))).toBeNull();
+    expect(computeImmobilizationAlert(withTech({ status: 'CIERRE_FINANCIERO' }), at(48))).toBeNull();
+    expect(computeImmobilizationAlert(withTech({ closedAt: null }), at(48))).toBeNull();
+    expect(computeImmobilizationAlert(withTech(), at(48))).not.toBeNull();
+  });
+
+  it('el reloj arranca en el cierre, no en la recepción: 30 h desde la recepción pero 6 h desde el cierre no alerta', () => {
+    const closedLater = withTech({ receivedAt: RECEIVED, closedAt: at(24) });
+    expect(computeImmobilizationAlert(closedLater, at(30))).toBeNull();
+    expect(computeImmobilizationAlert(closedLater, at(49))).toMatchObject({ pendingDays: 1, since: at(24) });
   });
 
   it('computeReturnAlerts combina ambas alertas de forma independiente', () => {

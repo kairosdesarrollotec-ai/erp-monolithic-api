@@ -51,6 +51,7 @@ export function buildInquiry(overrides: Partial<InquiryRecord> = {}): InquiryRec
     createdAt: new Date('2026-09-23T10:00:00Z'),
     createdBy: 'uid-1',
     version: 1,
+    customerNationality: 'PERUANO',
     interactions: [],
     quotations: [],
     ...overrides,

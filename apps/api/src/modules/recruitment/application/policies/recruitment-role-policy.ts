@@ -33,6 +33,7 @@ export const RECRUITMENT_ACTIONS = [
   'EVALUATE_PROBATION',
   'DECIDE_NO_ADVANCE',
   'TERMINATE_PROBATION',
+  'CANCEL_VACANCY',
 ] as const;
 
 export type RecruitmentAction = (typeof RECRUITMENT_ACTIONS)[number];
@@ -54,6 +55,8 @@ const RECRUITMENT_ROLE_POLICY: Readonly<Record<RecruitmentAction, ReadonlySet<Wo
   DECIDE_NO_ADVANCE: new Set(['GERENCIA']),
   // Respuestas 2026-10-20 #13: el término tras una prueba negativa lo registra Gerencia General.
   TERMINATE_PROBATION: new Set(['GERENCIA']),
+  // 22-oct: cancelar una vacante (motivo obligatorio) lo decide Gerencia / RRHH, igual que publicarla.
+  CANCEL_VACANCY: ALL_ROLES,
 };
 
 export function isRecruitmentRoleAllowed(role: WorkerRole, action: RecruitmentAction): boolean {

@@ -10,6 +10,7 @@ import {
   CancelReservationInput,
   ReservationCustomerRecord,
   ReservationVehicleRecord,
+  RegisterReservationPaymentInput,
 } from '../../application/ports/reservation-repository.port';
 import {
   InquiryAlreadyHasReservationError,
@@ -30,6 +31,19 @@ function scopeWhere(id: string, scope: ReservationScope) {
   };
 }
 
+/** 23P01 (exclusion_violation) sobre vehicle_commitments_no_overlap_excl; Prisma lo entrega como error desconocido/raw con el texto de Postgres. */
+export function isVehicleCommitmentExclusionViolation(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const candidate = error as { code?: string; message?: string; meta?: { code?: string; message?: string } };
+  const text = `${candidate.message ?? ''} ${candidate.meta?.message ?? ''}`;
+  return (
+    candidate.meta?.code === '23P01' ||
+    candidate.code === '23P01' ||
+    text.includes('vehicle_commitments_no_overlap_excl') ||
+    text.includes('23P01')
+  );
+}
+
 @Injectable()
 export class PrismaReservationRepository implements ReservationRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -37,7 +51,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
   async findCustomerById(id: string): Promise<ReservationCustomerRecord | null> {
     return this.prisma.customer.findUnique({
       where: { id },
-      select: { id: true, organizationId: true, operatingCompanyId: true },
+      select: { id: true, organizationId: true, operatingCompanyId: true, status: true },
     });
   }
 
@@ -145,9 +159,24 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     id: string,
     scope: ReservationScope,
     expectedVersion: number,
+    payment: RegisterReservationPaymentInput,
     tx?: Prisma.TransactionClient,
   ): Promise<ReservationRecord> {
-    return this.bumpVersion(id, scope, expectedVersion, { paymentValidatedAt: new Date() }, tx);
+    return this.bumpVersion(
+      id,
+      scope,
+      expectedVersion,
+      {
+        paymentValidatedAt: new Date(),
+        paymentAmount: new Prisma.Decimal(payment.amount),
+        paymentMethod: payment.method,
+        paymentOperationNumber: payment.operationNumber?.trim() || null,
+        payerName: payment.payerName.trim(),
+        paymentVoucherDocumentId: payment.voucherDocumentId ?? null,
+        paymentRegisteredBy: payment.registeredBy,
+      },
+      tx,
+    );
   }
 
   async registerDocuments(
@@ -218,17 +247,26 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
       throw new VehicleNotAvailableError({ from: overlapping.from, to: overlapping.to });
     }
 
-    await tx.vehicleCommitment.create({
-      data: {
-        organizationId: scope.organizationId,
-        vehicleId: reservation.vehicleId,
-        sourceType: 'RESERVATION',
-        sourceId: reservation.id,
-        status: 'CONSOLIDATED',
-        startsAt: reservation.startAt,
-        endsAt: reservation.endAt,
-      },
-    });
+    try {
+      await tx.vehicleCommitment.create({
+        data: {
+          organizationId: scope.organizationId,
+          vehicleId: reservation.vehicleId,
+          sourceType: 'RESERVATION',
+          sourceId: reservation.id,
+          status: 'CONSOLIDATED',
+          startsAt: reservation.startAt,
+          endsAt: reservation.endAt,
+        },
+      });
+    } catch (error) {
+      // PEND-07: ultima linea de defensa - la exclusion de rango de BD (vehicle_commitments_no_overlap_excl, 23P01)
+      // rechazo la fila porque otra confirmacion concurrente gano la carrera. Mismo 409 que la comprobacion previa.
+      if (isVehicleCommitmentExclusionViolation(error)) {
+        throw new VehicleNotAvailableError();
+      }
+      throw error;
+    }
 
     // Hallazgo CRITICO de revision de seguimiento de PR#6 (d442508,
     // "cancelacion vulnerable a carrera TOCTOU"): el mismo patron

@@ -48,6 +48,9 @@ import { FormalizeContractHandler } from '../../application/commands/formalize-c
 import { FormalizeContractCommand } from '../../application/commands/formalize-contract.command';
 import { CompleteDeliveryHandler } from '../../application/commands/complete-delivery.handler';
 import { CompleteDeliveryCommand } from '../../application/commands/complete-delivery.command';
+import { CancelRentalHandler } from '../../application/commands/cancel-rental.handler';
+import { CancelRentalCommand } from '../../application/commands/cancel-rental.command';
+import { CancelRentalDto } from './dto/cancel-rental.dto';
 import { GetRentalHandler } from '../../application/queries/get-rental.handler';
 import { GetRentalQuery } from '../../application/queries/get-rental.query';
 import { GetContractTemplateHandler } from '../../application/queries/get-contract-template.handler';
@@ -58,7 +61,7 @@ import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
 import { ValidateDocumentsDto } from './dto/validate-documents.dto';
 import { RegisterAlcoholTestDto } from './dto/register-alcohol-test.dto';
-import { CommandScopeDto } from './dto/command-scope.dto';
+import { EvaluateNotaryDto } from './dto/evaluate-notary.dto';
 import { ApproveNotaryExceptionDto } from './dto/approve-notary-exception.dto';
 import { FormalizeContractDto } from './dto/formalize-contract.dto';
 import { CompleteDeliveryDto } from './dto/complete-delivery.dto';
@@ -87,6 +90,7 @@ export class RentalsController {
     private readonly setCompanyDriverDailyRate: SetCompanyDriverDailyRateHandler,
     private readonly formalizeContract: FormalizeContractHandler,
     private readonly completeDelivery: CompleteDeliveryHandler,
+    private readonly cancelRental: CancelRentalHandler,
     private readonly getRental: GetRentalHandler,
     private readonly listRentals: ListRentalsHandler,
     private readonly getContractTemplate: GetContractTemplateHandler,
@@ -235,14 +239,14 @@ export class RentalsController {
         dto.companyId,
         dto.branchId,
         parseVersionIfMatch(ifMatch),
-        dto.identityDocumentValid !== undefined
-          ? {
-              identityDocumentValid: dto.identityDocumentValid,
-              driverLicenseValid: dto.driverLicenseValid ?? false,
-              addressOrStayProofValid: dto.addressOrStayProofValid ?? false,
-              notes: dto.notes,
-            }
-          : undefined,
+        {
+          identityDocumentValid: dto.identityDocumentValid ?? false,
+          passportValid: dto.passportValid ?? false,
+          foreignerCardValid: dto.foreignerCardValid ?? false,
+          driverLicenseValid: dto.driverLicenseValid ?? false,
+          addressOrStayProofValid: dto.addressOrStayProofValid ?? false,
+          notes: dto.notes,
+        },
       ),
     );
     return toRentalResponse(updated);
@@ -277,7 +281,7 @@ export class RentalsController {
   async evaluateNotaryCommand(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CommandScopeDto,
+    @Body() dto: EvaluateNotaryDto,
     @Headers('if-match') ifMatch: string,
   ) {
     const result = await this.evaluateNotary.execute(
@@ -287,6 +291,7 @@ export class RentalsController {
         dto.companyId,
         dto.branchId,
         parseVersionIfMatch(ifMatch),
+        dto.biometricVerified === true,
       ),
     );
     return {
@@ -419,9 +424,47 @@ export class RentalsController {
         dto.holderType
           ? { holderType: dto.holderType, withCompanyDriver: resolveWithCompanyDriver(dto) === true }
           : undefined,
+        dto.payment
+          ? {
+              method: dto.payment.method,
+              operationNumber: dto.payment.operationNumber,
+              payerName: dto.payment.payerName,
+              payerDocumentNumber: dto.payment.payerDocumentNumber,
+              payerIsExternalAgent: dto.payment.payerIsExternalAgent,
+              externalAgentVerified: dto.payment.externalAgentVerified === true,
+              voucherDocumentId: dto.payment.voucherDocumentId,
+            }
+          : undefined,
       ),
     );
     return toRentalResponse(updated);
+  }
+
+  /**
+   * DEC-ALQ-CANCEL-001: cancela el alquiler antes de la entrega (motivo obligatorio: DOCUMENTS_INVALID,
+   * CUSTOMER_REJECTED_NOTARY u OTHER con nota). Libera el compromiso del vehiculo.
+   */
+  @Post(':id/commands/cancel')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async cancelCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CancelRentalDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<RentalResponse> {
+    const cancelled = await this.cancelRental.execute(
+      new CancelRentalCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.reason,
+        dto.note,
+      ),
+    );
+    return toRentalResponse(cancelled);
   }
 
   @Post(':id/commands/complete-delivery')

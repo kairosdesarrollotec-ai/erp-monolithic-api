@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.9.0
+  version: 0.11.0
   description: >
+    0.11.0 — G1 (22-oct-2026). Sin cambios de forma. `confirm`: 409 VEHICLE_NOT_AVAILABLE tambien cuando dos confirmaciones
+    concurrentes compiten por el mismo vehiculo y la exclusion de rango de BD (`vehicle_commitments_no_overlap_excl`,
+    migracion 20261022030001) rechaza la perdedora; nunca 500. `ReservationResponse.missingRequirements` (ya presente) lista
+    PAYMENT_VALIDATION / DOCUMENTS_COMPLETE pendientes en TODAS las respuestas de reserva. `POST /reservations` ya no crea
+    (INQUIRY_REQUIRED / INQUIRY_CONVERSION_REQUIRED), por lo que no existe un VEHICLE_NOT_AVAILABLE 422 al crear.
     0.9.0 — DEC-ALQ-VEHDATA-001 (Respuestas de Russbel 2026-10-20 #5). Aditivo: `ReservationResponse.vehicleWarnings[]` (un
     `VehicleDataWarning` por cada dato faltante del vehículo: capacidad de pasajeros, garantía, precio del combustible). No bloquea; el
     front pide completarlo en Flota (PATCH /fleet/vehicles/{id}).
@@ -79,14 +84,11 @@ paths:
       deprecated: true
       summary: 'DESHABILITADO - crear una reserva se hace con POST /inquiries/{id}/commands/convert-to-reservation'
       description: >
-        Revalidacion PR#7 (hallazgo CRITICO "cardinalidad Inquiry ->
-        Reservation"): este endpoint permitia crear una reserva citando
-        una consulta en cualquier estado sin transicionarla (varias
-        reservas por consulta, reservas de consultas cerradas). Decision
-        interina (docs/conflicts/CONFLICT-CON-001.md, pendiente de
-        aprobacion): la unica via es convert-to-reservation de Consulta.
-        Este endpoint conserva autenticacion, contexto y rol y responde 409
-        INQUIRY_CONVERSION_REQUIRED.
+        DEC-CON-001-FINAL (decision 22-oct-2026): toda reserva nace de una Consulta COTIZADA. Este endpoint se
+        conserva como shim permanente: autentica, valida contexto y rol (RESERVATION.CREATE) y responde siempre
+        422 INQUIRY_REQUIRED (sin inquiryId) o 409 INQUIRY_CONVERSION_REQUIRED (con inquiryId, usar
+        convert-to-reservation). Ya no existe la reserva directa; el monto, la moneda y la version de politica los
+        decide el servidor.
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -98,6 +100,8 @@ paths:
           description: Empresa/sede no autorizada, o ROLE_NOT_ALLOWED
         '409':
           description: 'INQUIRY_CONVERSION_REQUIRED - usar POST /inquiries/{inquiryId}/commands/convert-to-reservation'
+        '422':
+          description: 'INQUIRY_REQUIRED - no hay reserva sin consulta previa'
     get:
       operationId: listReservations
       summary: Bandeja de reservas (RES-01)
@@ -163,7 +167,7 @@ paths:
   /reservations/{id}/commands/register-payment:
     post:
       operationId: registerReservationPayment
-      summary: Marca el pago del monto de reserva vigente (RES-P09, BR-RES-001)
+      summary: Registra el pago del monto de reserva con su comprobante (RES-P09, BR-RES-001, DEC-RES-PAYPROOF-001)
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -172,12 +176,13 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/CommandScopeRequest' }
+            schema: { $ref: '#/components/schemas/RegisterReservationPaymentRequest' }
       responses:
         '200': { description: Requisito de pago registrado, content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
         '404': { description: Reserva no encontrada en el scope del usuario }
         '409': { description: 'RESERVATION_STATE_CONFLICT - la reserva ya no esta en DRAFT' }
         '412': { description: 'RESERVATION_VERSION_CONFLICT - If-Match no coincide con la version actual' }
+        '422': { description: 'INVALID_DEPOSIT_AMOUNT (reason BELOW_REQUIRED/ABOVE_REQUIRED; el monto exigido lo fija el servidor) | PAYMENT_PROOF_REQUIRED (comprobante obligatorio; en EFECTIVO basta nro de recibo o comprobante) | PAYMENT_VOUCHER_NOT_FOUND' }
         '428': { description: 'IF_MATCH_REQUIRED - falta el header If-Match' }
   /reservations/{id}/commands/register-documents:
     post:
@@ -197,6 +202,7 @@ paths:
         '404': { description: Reserva no encontrada en el scope del usuario }
         '409': { description: 'RESERVATION_STATE_CONFLICT - la reserva ya no esta en DRAFT' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
+        '422': { description: 'DOCUMENTS_NOT_UPLOADED - hay que subir al menos un documento del cliente (distinto de PAYMENT_VOUCHER)' }
         '428': { description: IF_MATCH_REQUIRED }
   /reservations/{id}/commands/confirm:
     post:
@@ -436,26 +442,41 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
     CreateReservationRequest:
+      description: 'DEPRECADO (DEC-CON-001-FINAL). Solo inquiryId se interpreta; el resto se ignora. Ver POST /reservations.'
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
         - type: object
-          required: [customerId, vehicleId, channelMode, startAt, endAt, requiredPaymentAmount, currency, paymentPolicyVersion]
           properties:
-            inquiryId: { type: string, format: uuid, description: 'CONFLICT-CON-001: opcional. Si se omite, se crea una reserva directa sin consulta previa.' }
-            customerId: { type: string, format: uuid }
-            vehicleId: { type: string, format: uuid }
+            inquiryId: { type: string, format: uuid }
+            customerId: { type: string, format: uuid, deprecated: true }
+            vehicleId: { type: string, format: uuid, deprecated: true }
             channelMode: { $ref: '#/components/schemas/ChannelMode' }
-            startAt: { type: string, format: date-time }
-            endAt: { type: string, format: date-time }
-            requiredPaymentAmount:
-              type: string
-              description: >
-                Importe de pago requerido en formato decimal (ej. "300.00"). Si la reserva llega a
-                alquiler, este monto se TRASLADA ÍNTEGRO a la garantía del alquiler y solo se cobra la
-                diferencia (P0-03 opción a; ver rentals.yaml formalize-contract). Una reserva cancelada
-                (incluye no-show) no traslada nada.
-            currency: { type: string }
-            paymentPolicyVersion: { type: integer, minimum: 1 }
+            startAt: { type: string, format: date-time, deprecated: true }
+            endAt: { type: string, format: date-time, deprecated: true }
+    PaymentMethod:
+      type: string
+      enum: [TRANSFERENCIA, DEPOSITO, PLIN, YAPE, EFECTIVO, POS]
+    RegisterReservationPaymentRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [amount, method, payerName]
+          properties:
+            amount: { type: string, description: 'Decimal (ej. "300.00"). Debe ser igual al monto exigido por la politica vigente; menor o mayor -> 422 INVALID_DEPOSIT_AMOUNT.' }
+            method: { $ref: '#/components/schemas/PaymentMethod' }
+            operationNumber: { type: string, maxLength: 60, description: 'Nro de operacion o de recibo' }
+            payerName: { type: string, maxLength: 120 }
+            voucherDocumentId: { type: string, format: uuid, description: 'Documento PAYMENT_VOUCHER de esta reserva' }
+    ReservationPayment:
+      type: object
+      required: [amount, method, payerName]
+      properties:
+        amount: { type: string }
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        operationNumber: { type: string, nullable: true }
+        payerName: { type: string }
+        voucherDocumentId: { type: string, format: uuid, nullable: true }
+        registeredBy: { type: string, nullable: true }
     CancelReservationRequest:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
@@ -556,6 +577,10 @@ components:
         missingRequirements:
           type: array
           items: { type: string }
+        payment:
+          nullable: true
+          allOf:
+            - { $ref: '#/components/schemas/ReservationPayment' }
         confirmedAt: { type: string, format: date-time, nullable: true }
         createdAt: { type: string, format: date-time }
         startDatePassed: { type: boolean, description: 'RES-08: true si now >= startAt. El no-show no se marca solo (pendiente de Fiorella).' }

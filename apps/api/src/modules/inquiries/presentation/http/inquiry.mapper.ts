@@ -1,4 +1,5 @@
 import { InquiryRecord, InquirySummaryRecord } from '../../application/ports/inquiry-repository.port';
+import { requiredDocumentsFor } from '../../domain/inquiry-nationality';
 import { InquiryResponse, InquirySummaryResponse } from './dto/inquiry.response';
 
 function toDateOnly(value: Date | null): string | null {
@@ -25,9 +26,16 @@ export function toInquirySummaryResponse(record: InquirySummaryRecord): InquiryS
   };
 }
 
+/** El repositorio entrega `quotations` DESC (0 = mas reciente); se ordena igual por createdAt para no depender de ello. */
+function latestQuotation(record: InquiryRecord) {
+  return [...record.quotations].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+}
+
 export function toInquiryResponse(record: InquiryRecord): InquiryResponse {
   return {
     ...toInquirySummaryResponse(record),
+    requiredDocuments: requiredDocumentsFor(record.customerNationality),
+    latestQuotationId: latestQuotation(record)?.id ?? null,
     interactions: record.interactions.map((interaction) => ({
       id: interaction.id,
       channel: interaction.channel,

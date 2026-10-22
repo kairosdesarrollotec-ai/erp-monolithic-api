@@ -5,6 +5,11 @@ import { OutboxRelayService } from './infrastructure/outbox-relay.service';
 import { NotificationReadModelModule } from '../notifications/notification-read-model.module';
 import { NotificationTemplatesModule } from '../notification-templates/notification-templates.module';
 import { NotificationDispatchModule } from '../notifications/notification-dispatch.module';
+import { OutboxModule } from '../outbox/outbox.module';
+import { AuthorizationModule } from '../authorization/authorization.module';
+import { AlertRecipientsPort } from '../notifications/application/ports/alert-recipients.port';
+import { MatrixAlertRecipientsPersistence } from '../notifications/infrastructure/persistence/matrix-alert-recipients.persistence';
+import { HrAlertDashboardConsumer } from './application/hr-alert-dashboard.consumer';
 
 /**
  * Modulo transversal de TR-06 (Tablero por rol). Ver
@@ -28,9 +33,13 @@ import { NotificationDispatchModule } from '../notifications/notification-dispat
     NotificationReadModelModule,
     NotificationTemplatesModule,
     NotificationDispatchModule,
+    OutboxModule,
+    AuthorizationModule,
   ],
   providers: [
     { provide: DashboardItemRepositoryPort, useClass: PrismaDashboardItemRepository },
+    { provide: AlertRecipientsPort, useClass: MatrixAlertRecipientsPersistence },
+    HrAlertDashboardConsumer,
     OutboxRelayService,
   ],
   exports: [DashboardItemRepositoryPort],

@@ -14,6 +14,7 @@ import {
   ConvertToReservationInput,
   ConvertToRentalInput,
   CustomerRecord,
+  InteractionInput,
 } from '../../application/ports/inquiry-repository.port';
 import { InquiryStatus } from '../../domain/inquiry-status';
 import { InquiryVersionConflictError } from '../../domain/inquiry-errors';
@@ -24,9 +25,17 @@ import { InquiryVersionConflictError } from '../../domain/inquiry-errors';
  * cliente generado (`Prisma.InquiryGetPayload`), sin casts. Compila solo
  * contra un `prisma generate` del schema actual.
  */
+/**
+ * Orden de las colecciones del detalle (documentado en inquiries.yaml):
+ * - `interactions`: cronologico ASC (la ultima es la mas reciente).
+ * - `quotations`: de la MAS RECIENTE a la mas antigua (DESC) - `quotations[0]`
+ *   es la vigente. Asi lo consumen create-rental/complete-delivery; el front
+ *   debe leer `latestQuotationId` o el elemento 0, nunca `length - 1`.
+ */
 const DETAIL_INCLUDE = {
-  interactions: { orderBy: { occurredAt: 'asc' } },
-  quotations: { orderBy: { createdAt: 'desc' } },
+  interactions: { orderBy: [{ occurredAt: 'asc' }, { id: 'asc' }] },
+  quotations: { orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] },
+  customer: { select: { nationality: true } },
 } satisfies Prisma.InquiryInclude;
 
 type InquiryRow = Prisma.InquiryGetPayload<Record<string, never>>;
@@ -57,6 +66,7 @@ function toSummary(row: InquiryRow): InquirySummaryRecord {
 function toRecord(row: InquiryDetailRow): InquiryRecord {
   return {
     ...toSummary(row),
+    customerNationality: row.customer?.nationality ?? null,
     interactions: row.interactions.map((interaction) => ({
       id: interaction.id,
       channel: interaction.channel,
@@ -76,6 +86,23 @@ function toRecord(row: InquiryDetailRow): InquiryRecord {
       createdAt: quotation.createdAt,
     })),
   };
+}
+
+/** Escribe la fila append-only de `interactions` (hallazgo CON P-06); sin canal no hay fila. */
+async function appendInteraction(
+  client: Prisma.TransactionClient,
+  inquiryId: string,
+  interaction: InteractionInput | undefined,
+): Promise<void> {
+  if (!interaction || !interaction.channel) return;
+  await client.interaction.create({
+    data: {
+      inquiryId,
+      channel: interaction.channel,
+      outcome: interaction.outcome,
+      note: interaction.note ?? null,
+    },
+  });
 }
 
 function scopeWhere(id: string, scope: InquiryScope): Prisma.InquiryWhereInput {
@@ -106,6 +133,8 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
         partySize: input.partySize,
         dataOrigin: 'CON02',
         createdBy: input.createdBy,
+        // P-06: primera fila del historial (append-only) al registrar.
+        interactions: { create: { channel: input.channel, outcome: 'REGISTRADA', note: null } },
       },
       include: DETAIL_INCLUDE,
     });
@@ -211,6 +240,7 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
           validUntil: input.validUntil,
         },
       });
+      await appendInteraction(tx, input.id, input.interaction);
 
       const updated = await tx.inquiry.findFirstOrThrow({
         where: scopeWhere(input.id, input),
@@ -233,6 +263,7 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
     if (result.count === 0) {
       throw new InquiryVersionConflictError();
     }
+    await appendInteraction(client, input.id, input.interaction);
     const updated = await client.inquiry.findFirstOrThrow({
       where: scopeWhere(input.id, input),
       include: DETAIL_INCLUDE,
@@ -269,6 +300,7 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
     if (result.count === 0) {
       throw new InquiryVersionConflictError();
     }
+    await appendInteraction(tx, input.id, input.interaction);
     const updated = await tx.inquiry.findFirstOrThrow({
       where: scopeWhere(input.id, input),
       include: DETAIL_INCLUDE,

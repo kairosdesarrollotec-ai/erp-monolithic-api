@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { ConvertToRentalHandler } from './convert-to-rental.handler';
 import { ConvertToRentalCommand } from './convert-to-rental.command';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
-import { InquiryNotTransitionableError, QuotationExpiredError, QuotingNotProductionReadyError } from '../../domain/inquiry-errors';
+import { InquiryNotTouristUseError, InquiryNotTransitionableError, QuotationExpiredError, QuotingNotProductionReadyError } from '../../domain/inquiry-errors';
 import { RentalRepositoryPort } from '../../../rentals/application/ports/rental-repository.port';
 import { RentalCreationGuard } from '../../../rentals/application/services/rental-creation.guard';
 import { CustomerBlockedError, VehicleNotAvailableForRentalError } from '../../../rentals/domain/rental-errors';
@@ -89,6 +89,33 @@ function build(options: {
 
 const command = (planCode?: string) => new ConvertToRentalCommand('inq-1', 'uid-1', COMPANY, BRANCH, 2, planCode);
 
+describe('ConvertToRentalHandler - P-05 / P-07', () => {
+  it('P-07: publica ConsultaConvertida.v1 (target RENTAL) en la misma transaccion, ademas de RentalCreatedFromInquiry.v1', async () => {
+    const { handler, outbox, transactions } = build();
+
+    await handler.execute(command());
+
+    expect(outbox.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        aggregateType: 'inquiry',
+        aggregateId: 'inq-1',
+        eventType: 'ConsultaConvertida.v1',
+        payload: expect.objectContaining({ inquiryId: 'inq-1', target: 'RENTAL', rentalId: 'rent-1', quotationId: 'quo-new' }),
+      }),
+      transactions.tx,
+    );
+    expect(outbox.publish).toHaveBeenCalledWith(expect.objectContaining({ eventType: 'RentalCreatedFromInquiry.v1' }), transactions.tx);
+  });
+
+  it('P-05: touristUse=false -> 422 INQUIRY_NOT_TOURIST_USE; no transiciona ni crea alquiler', async () => {
+    const { handler, inquiries, rentals } = build({ existing: quotedInquiry({ touristUse: false }) });
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(InquiryNotTouristUseError);
+    expect(inquiries.convertToRental).not.toHaveBeenCalled();
+    expect(rentals.create).not.toHaveBeenCalled();
+  });
+});
+
 describe('ConvertToRentalHandler (caso de uso unico Consulta -> Alquiler directo)', () => {
   it('en UNA transaccion Serializable: valida, transiciona a CONVERTIDA, crea el Rental DRAFT sin fechas y audita + outbox', async () => {
     const { handler, inquiries, rentals, audit, outbox, transactions } = build();
@@ -97,7 +124,7 @@ describe('ConvertToRentalHandler (caso de uso unico Consulta -> Alquiler directo
 
     expect(transactions.run).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: 'Serializable' });
     expect(inquiries.findById).toHaveBeenLastCalledWith('inq-1', SCOPE, transactions.tx);
-    expect(inquiries.convertToRental).toHaveBeenCalledWith({ id: 'inq-1', ...SCOPE, expectedVersion: 2 }, ['COTIZADA'], transactions.tx);
+    expect(inquiries.convertToRental).toHaveBeenCalledWith({ id: 'inq-1', ...SCOPE, expectedVersion: 2, interaction: { channel: 'WHATSAPP', outcome: 'CONVERTIDA_A_ALQUILER' } }, ['COTIZADA'], transactions.tx);
     expect(inquiries.convertToReservation).not.toHaveBeenCalled();
 
     const [input, tx] = rentals.create.mock.calls[0];

@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
-import { RentalStateConflictError } from '../../domain/rental-errors';
+import { RentalDocumentsIncompleteError, RentalStateConflictError } from '../../domain/rental-errors';
+import { missingRequiredDocuments, requiredDocumentsFor, resolveNationality } from '../../domain/required-documents';
 import { ValidateDocumentsCommand } from './validate-documents.command';
 
 /**
@@ -44,18 +45,19 @@ export class ValidateDocumentsHandler {
       throw new RentalStateConflictError('validar documentos en', existing.status);
     }
 
-    if (command.documentDetails) {
-      const missing: string[] = [];
-      if (!command.documentDetails.identityDocumentValid) missing.push('Documento de identidad');
-      if (!command.documentDetails.driverLicenseValid) missing.push('Licencia de conducir vigente');
-      if (!command.documentDetails.addressOrStayProofValid) missing.push('Acreditación de domicilio u hospedaje');
-
-      if (missing.length > 0) {
-        throw new UnprocessableEntityException({
-          code: 'DOCUMENTS_INCOMPLETE',
-          detail: `Falta validar los siguientes documentos requeridos (BR-CON-004): ${missing.join(', ')}`,
-        });
-      }
+    // BR-CON-004 (22-oct-2026): el set requerido sale de la nacionalidad del cliente y es obligatorio.
+    const customer = await this.rentals.findCustomerById(existing.customerId);
+    if (!customer) {
+      throw new NotFoundException({ code: 'CUSTOMER_NOT_FOUND', detail: 'El cliente del alquiler no existe.' });
+    }
+    const nationality = resolveNationality(customer.nationality, customer.documentType);
+    const required = requiredDocumentsFor(nationality);
+    const missing = missingRequiredDocuments(nationality, command.documentDetails, customer);
+    if (missing.length > 0) {
+      throw new RentalDocumentsIncompleteError(
+        missing.map((doc) => doc.label),
+        required.map((doc) => doc.code),
+      );
     }
 
     return this.transactionManager.run(async (tx) => {
@@ -85,6 +87,8 @@ export class ValidateDocumentsHandler {
           changes: {
             fromStatus: 'DRAFT',
             toStatus: 'VALIDATION',
+            nationality,
+            requiredDocuments: required.map((doc) => doc.code),
             documentDetails: command.documentDetails,
           },
         },

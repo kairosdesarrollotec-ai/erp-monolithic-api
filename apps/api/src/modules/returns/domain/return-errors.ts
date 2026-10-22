@@ -88,12 +88,26 @@ export class ActiveIncidentsBlockCloseError extends DomainUnprocessableError {
   }
 }
 
+/**
+ * BR-DEV-011 (respuesta de negocio 22-oct-2026): los dias de paralizacion se cuentan desde que se CIERRA la devolucion
+ * (estado CERRADA, `closedAt`). Mientras la devolucion no este cerrada el reloj no corre: no hay cargo ni alerta.
+ */
+export class ImmobilizationClockNotStartedError extends DomainUnprocessableError {
+  readonly code = 'IMMOBILIZATION_CLOCK_NOT_STARTED';
+
+  constructor() {
+    super(
+      'El reloj de paralización arranca al CERRAR la devolución (BR-DEV-011); esta devolución aún no está cerrada, por lo que todavía no corre ningún día de paralización.',
+    );
+  }
+}
+
 export class ImmobilizationPeriodNotElapsedError extends DomainUnprocessableError {
   readonly code = 'IMMOBILIZATION_PERIOD_NOT_ELAPSED';
 
   constructor() {
     super(
-      'Han transcurrido menos de 24 horas naturales desde la recepción del vehículo sin respuesta del cliente; aún no corresponde el cargo por inmovilización (BR-DEV-011).',
+      'Han transcurrido menos de 24 horas naturales desde el cierre de la devolución sin respuesta del cliente; aún no corresponde el cargo por inmovilización (BR-DEV-011).',
     );
   }
 }
@@ -271,6 +285,15 @@ export class AlcoholTestPhotoRequiredError extends DomainUnprocessableError {
 /** DEC-DEV-LATE-CHARGE-002: el cargo manual por retraso solo procede si la devolución superó la tolerancia. */
 export class InvalidLateChargeError extends DomainUnprocessableError {
   readonly code = 'INVALID_LATE_CHARGE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+/** DEV-05 / PD-07: zona o marca fuera del catalogo, zona repetida o lista vacia en `POST /returns/{id}/zone-marks`. */
+export class InvalidZoneMarkError extends DomainUnprocessableError {
+  readonly code = 'INVALID_ZONE_MARK';
 
   constructor(detail: string) {
     super(detail);

@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client';
 import { VehicleDataWarning } from '../../../../common/domain/vehicle-data-warnings';
 import { ReservationStatus } from '../../domain/reservation-status';
 import { ChannelMode } from '../../domain/channel-mode';
+import { PaymentMethod } from '../../domain/reservation-payment-method';
 
 export interface ReservationRecord {
   id: string;
@@ -26,9 +27,30 @@ export interface ReservationRecord {
   paymentValidatedAt: Date | null;
   documentsCompletedAt: Date | null;
   confirmedAt: Date | null;
+  /** Decision 8 (22-oct-2026): comprobante del pago registrado (null mientras no se registre). */
+  payment?: ReservationPaymentRecord | null;
   createdAt: Date;
   createdBy: string;
   version: number;
+}
+
+export interface ReservationPaymentRecord {
+  amount: string;
+  method: PaymentMethod;
+  /** Nº de operacion, o nº de recibo si el metodo es EFECTIVO. */
+  operationNumber: string | null;
+  payerName: string;
+  voucherDocumentId: string | null;
+  registeredBy: string | null;
+}
+
+export interface RegisterReservationPaymentInput {
+  amount: string;
+  method: PaymentMethod;
+  operationNumber?: string;
+  payerName: string;
+  voucherDocumentId?: string;
+  registeredBy: string;
 }
 
 export interface CreateReservationInput {
@@ -51,6 +73,8 @@ export interface ReservationCustomerRecord {
   id: string;
   organizationId: string;
   operatingCompanyId: string;
+  /** Semaforo de riesgo del cliente (NORMAL | AMBAR | ROJO). ROJO bloquea (CUSTOMER_BLOCKED). */
+  status?: string;
 }
 
 export interface ReservationVehicleRecord {
@@ -131,6 +155,7 @@ export abstract class ReservationRepositoryPort {
     id: string,
     scope: ReservationScope,
     expectedVersion: number,
+    payment: RegisterReservationPaymentInput,
     tx?: Prisma.TransactionClient,
   ): Promise<ReservationRecord>;
 

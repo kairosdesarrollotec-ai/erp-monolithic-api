@@ -1,10 +1,13 @@
 import { buildVehicleDataWarnings } from '../../../../common/domain/vehicle-data-warnings';
 import { RentalRecord } from '../../application/ports/rental-repository.port';
-import { RentalResponse } from './dto/rental.response';
+import { GuaranteePaymentResponse, RentalResponse } from './dto/rental.response';
 import { fromCents, toCents } from '../../domain/reservation-credit';
 import { evaluateExtensionRequirements } from '../../domain/extension-requirements';
+import { requiredDocumentsFor, resolveNationality } from '../../domain/required-documents';
+import { requiredGuarantee } from '../../domain/guarantee-requirement';
 
 export function toRentalResponse(record: RentalRecord): RentalResponse {
+  const nationality = resolveNationality(record.customerNationality, record.customerDocumentType);
   return {
     id: record.id,
     organizationId: record.organizationId,
@@ -20,6 +23,23 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
     vehicleBrand: record.vehicleBrand,
     vehicleModel: record.vehicleModel,
     vehicleDepositMinimum: record.vehicleDepositMinimum,
+    vehicleThirdPathEligible: record.vehicleThirdPathEligible ?? false,
+    customerNationality: nationality,
+    requiredDocuments: requiredDocumentsFor(nationality).map((doc) => ({
+      code: doc.code,
+      label: doc.label,
+      kind: doc.kind,
+      field: doc.field,
+    })),
+    requiredGuarantee: requiredGuarantee(record.vehicleDepositMinimum, record.notaryEvaluation?.result ?? null),
+    cancellation: record.cancellation
+      ? {
+          reason: record.cancellation.reason,
+          note: record.cancellation.note,
+          cancelledAt: record.cancellation.cancelledAt.toISOString(),
+          cancelledBy: record.cancellation.cancelledBy,
+        }
+      : null,
     vehiclePassengerCapacity: record.vehiclePassengerCapacity ?? null,
     vehicleFuelPrice: record.vehicleFuelPrice ?? null,
     vehicleWarnings: buildVehicleDataWarnings({
@@ -55,6 +75,12 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           evaluatedAt: record.notaryEvaluation.evaluatedAt.toISOString(),
           approvedBy: record.notaryEvaluation.approvedBy,
           justification: record.notaryEvaluation.justification,
+          biometricVerified: record.notaryEvaluation.biometricVerified ?? false,
+          biometricVerifiedBy: record.notaryEvaluation.biometricVerifiedBy ?? null,
+          previousRentalsCount: record.notaryEvaluation.previousRentalsCount ?? null,
+          pendingApproval:
+            (record.notaryEvaluation.result === 'THIRD_PATH_ELIGIBLE' || record.notaryEvaluation.result === 'MANUAL_REVIEW') &&
+            !record.notaryEvaluation.approvedBy,
         }
       : null,
     contract: record.contract
@@ -81,6 +107,19 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           amountCollected: fromCents(
             toCents(record.deposit.originalAmount) - toCents(record.deposit.reservationCreditAmount ?? '0'),
           ),
+          payment: record.deposit.payment
+            ? {
+                amount: record.deposit.payment.amount,
+                method: record.deposit.payment.method as GuaranteePaymentResponse['method'],
+                operationNumber: record.deposit.payment.operationNumber,
+                payerName: record.deposit.payment.payerName,
+                payerDocumentNumber: record.deposit.payment.payerDocumentNumber,
+                payerIsExternalAgent: record.deposit.payment.payerIsExternalAgent,
+                externalAgentVerifiedBy: record.deposit.payment.externalAgentVerifiedBy,
+                voucherDocumentId: record.deposit.payment.voucherDocumentId,
+                registeredBy: record.deposit.payment.registeredBy,
+              }
+            : null,
           createdAt: record.deposit.createdAt.toISOString(),
         }
       : null,

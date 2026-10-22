@@ -17,3 +17,25 @@ export type ThirdRequiredDocument = 'RECIBO_AGUA_O_LUZ' | 'CONSTANCIA_HOSPEDAJE'
 export function thirdRequiredDocument(nationality: InquiryNationality): ThirdRequiredDocument {
   return nationality === 'PERUANO' ? 'RECIBO_AGUA_O_LUZ' : 'CONSTANCIA_HOSPEDAJE';
 }
+
+export interface RequiredDocument {
+  code: ThirdRequiredDocument;
+  label: string;
+}
+
+const REQUIRED_DOCUMENT_LABELS: Record<ThirdRequiredDocument, string> = {
+  RECIBO_AGUA_O_LUZ: 'Recibo de agua o luz',
+  CONSTANCIA_HOSPEDAJE: 'Constancia de hospedaje',
+};
+
+/**
+ * CON-P06 / OP-CON-003 (hallazgo CON P-03) - documentos que Consulta INFORMA al
+ * cliente segun su nacionalidad (solo informativo: Consulta no recibe
+ * documentos, Ficha AS-IS). Hoy solo se deriva el TERCER requisito
+ * (BR-CON-004); sin nacionalidad conocida (clientes antiguos) la lista es vacia.
+ */
+export function requiredDocumentsFor(nationality: InquiryNationality | null): RequiredDocument[] {
+  if (!nationality) return [];
+  const code = thirdRequiredDocument(nationality);
+  return [{ code, label: REQUIRED_DOCUMENT_LABELS[code] }];
+}

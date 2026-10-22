@@ -44,9 +44,10 @@ describe('EvaluateNotaryHandler', () => {
     previousRentalsCount?: number;
     biometricVerified?: boolean;
     vehicleModel?: string;
+    thirdPathEligible?: boolean;
+    depositMinimum?: string | null;
   }) {
-    const opts = { previousRentalsCount: 0, biometricVerified: false, vehicleModel: 'Versa',
-    vehicleDepositMinimum: null, ...overrides };
+    const opts = { previousRentalsCount: 0, biometricVerified: false, vehicleModel: 'Versa', thirdPathEligible: false, depositMinimum: null, ...overrides };
 
     const rentals = {
       findById: jest.fn().mockResolvedValue(fakeRental),
@@ -58,6 +59,8 @@ describe('EvaluateNotaryHandler', () => {
         brand: 'Nissan',
         model: opts.vehicleModel,
         status: 'RENTED',
+        thirdPathEligible: opts.thirdPathEligible,
+        depositMinimum: opts.depositMinimum,
       }),
       findCustomerById: jest.fn().mockResolvedValue({
         id: 'cust-1',
@@ -108,10 +111,8 @@ describe('EvaluateNotaryHandler', () => {
     return { rentals, workContext, matrixAuth, transactionManager, auditRepository, outboxRepository };
   }
 
-  it('evaluacion sin requiresApproval transiciona automaticamente a CONTRACTING y retorna evaluation', async () => {
-    // Cliente sin alquileres previos → MANDATORY (no requiresApproval)
-    const deps = buildDeps({ previousRentalsCount: 0, biometricVerified: false });
-    const handler = new EvaluateNotaryHandler(
+  function buildHandler(deps: ReturnType<typeof buildDeps>) {
+    return new EvaluateNotaryHandler(
       deps.rentals,
       deps.workContext,
       deps.matrixAuth,
@@ -119,16 +120,26 @@ describe('EvaluateNotaryHandler', () => {
       deps.auditRepository,
       deps.outboxRepository,
     );
+  }
+
+  it('evaluacion sin requiresApproval (cliente nuevo => DOUBLE_DEPOSIT x2) persiste la evaluacion y transiciona a CONTRACTING', async () => {
+    const deps = buildDeps({ previousRentalsCount: 0, depositMinimum: '500.00' });
+    // El handler devuelve el alquiler releido tras guardar/transicionar.
+    deps.rentals.findById.mockResolvedValueOnce(fakeRental).mockResolvedValueOnce({ ...fakeRental, status: 'CONTRACTING', version: 4 });
+    const handler = buildHandler(deps);
 
     const result = await handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3));
 
     expect(result.rental.status).toBe('CONTRACTING');
     expect(result.evaluation).toMatchObject({
-      result: expect.any(String),
+      result: 'DOUBLE_DEPOSIT',
       policyVersion: expect.any(Number),
       reason: expect.any(String),
       requiresApproval: false,
+      depositMultiplier: 2,
+      requiredGuarantee: { baseAmount: '500.00', multiplier: 2, amount: '1000.00' },
     });
+    expect(deps.rentals.saveNotaryEvaluation).toHaveBeenCalledWith(expect.objectContaining({ rentalId: 'rent-300', result: 'DOUBLE_DEPOSIT' }), fakeTx);
     expect(deps.rentals.transitionStatus).toHaveBeenCalledWith(
       'rent-300',
       expect.objectContaining({ organizationId: 'org-1' }),
@@ -143,23 +154,34 @@ describe('EvaluateNotaryHandler', () => {
     );
   });
 
-  it('evaluacion THIRD_PATH_ELIGIBLE retorna rental sin transicionar y evaluation con requiresApproval=true', async () => {
-    // Cliente recurrente con biometría → THIRD_PATH_ELIGIBLE (requiresApproval=true)
-    const deps = buildDeps({ previousRentalsCount: 3, biometricVerified: true });
-    const handler = new EvaluateNotaryHandler(
-      deps.rentals,
-      deps.workContext,
-      deps.matrixAuth,
-      deps.transactionManager,
-      deps.auditRepository,
-      deps.outboxRepository,
-    );
+  it('THIRD_PATH_ELIGIBLE (cliente antiguo + biometrico + vehiculo elegible): PERSISTE la evaluacion, no transiciona y no duplica la garantia', async () => {
+    const deps = buildDeps({ previousRentalsCount: 3, thirdPathEligible: true, depositMinimum: '500.00' });
+    const handler = buildHandler(deps);
 
-    const result = await handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3));
+    const result = await handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3, true));
 
     expect(result.rental.status).toBe('NOTARY_EVALUATION');
-    expect(result.evaluation.requiresApproval).toBe(true);
-    expect(result.evaluation.result).toBe('THIRD_PATH_ELIGIBLE');
+    expect(result.evaluation).toMatchObject({ result: 'THIRD_PATH_ELIGIBLE', requiresApproval: true, depositMultiplier: 1 });
+    expect(result.evaluation.requiredGuarantee).toMatchObject({ multiplier: 1, amount: '500.00' });
+    expect(deps.rentals.saveNotaryEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({ result: 'THIRD_PATH_ELIGIBLE', biometricVerified: true, biometricVerifiedBy: 'uid-1' }),
+      fakeTx,
+    );
+    expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
+    expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'NOTARY_EVALUATED_PENDING_APPROVAL' }),
+      fakeTx,
+    );
+  });
+
+  it('MANUAL_REVIEW (cliente antiguo sin biometrico): tambien persiste la evaluacion para que Gerencia apruebe el tipo correcto', async () => {
+    const deps = buildDeps({ previousRentalsCount: 5, thirdPathEligible: true });
+    const handler = buildHandler(deps);
+
+    const result = await handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3, false));
+
+    expect(result.evaluation).toMatchObject({ result: 'MANUAL_REVIEW', requiresApproval: true });
+    expect(deps.rentals.saveNotaryEvaluation).toHaveBeenCalledWith(expect.objectContaining({ result: 'MANUAL_REVIEW' }), fakeTx);
     expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
   });
 

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Transversal API
-  version: 0.1.0
+  version: 0.2.0
   description: >
     Contrato del modulo Transversal. Primer endpoint: registro de intentos
     de login (TR-01), auditoria reutilizando la tabla audit_events
@@ -158,15 +158,14 @@ paths:
         Resuelve el rol del usuario para el contexto elegido y el estado
         del tablero (TR-06).
       description: >
-        PROVISIONAL (HU-24/TR-06, hallazgo medio de revision PR#5
-        "dashboard siempre EMPTY"): esta operacion es infraestructura de
-        enrutamiento por rol, no la funcionalidad completa de TR-06. Los
-        modulos de dominio (Consulta, Reserva, Alquiler, Devolucion,
-        Reclutamiento, Administracion de Personal) todavia no existen,
-        asi que hoy `state` solo puede ser EMPTY - no hay tareas ni
-        alertas reales que calcular. No se cierra HU-24/TR-06 como
-        funcionalidad terminada mientras este endpoint no calcule datos
-        reales por rol.
+        Ruta OFICIAL del tablero por rol (TR-06): `GET /users/me/dashboard`
+        (el diseno inicial TR-06/07/08 proponia `/dashboard/me`; se conserva
+        esta ruta, ya consumida por el front - Auditoria TR P-06, 22-oct-2026).
+        `state` es READY con las tareas y alertas proyectadas a
+        `dashboard_items` por los modulos de dominio (Consulta, Reserva,
+        Alquiler, Devolucion, Reclutamiento, Personal), filtradas por rol,
+        empresa y sede, o EMPTY si no hay ninguna. La nota PROVISIONAL de
+        PR#5 ("siempre EMPTY") queda superada.
       security:
         - bearerAuth: []
       parameters:

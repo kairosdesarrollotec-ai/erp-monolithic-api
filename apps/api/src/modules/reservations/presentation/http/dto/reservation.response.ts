@@ -15,6 +15,15 @@ export interface SaleResolutionResponse {
   resolvedAt: string | null;
 }
 
+export interface ReservationPaymentResponse {
+  amount: string;
+  method: 'TRANSFERENCIA' | 'DEPOSITO' | 'PLIN' | 'YAPE' | 'EFECTIVO' | 'POS';
+  operationNumber: string | null;
+  payerName: string;
+  voucherDocumentId: string | null;
+  registeredBy: string | null;
+}
+
 /** TDD-RES-001.md seccion 11 - forma de respuesta HTTP de una reserva. */
 export interface ReservationResponse {
   id: string;
@@ -33,6 +42,8 @@ export interface ReservationResponse {
     documentsCompletedAt: string | null;
   };
   missingRequirements: string[];
+  /** Decision 8: comprobante del pago registrado (null si aun no se registro). */
+  payment: ReservationPaymentResponse | null;
   confirmedAt: string | null;
   createdAt: string;
   /** RES-08: true si ya llego la fecha pactada (now >= startAt). El no-show NO es automatico (pendiente de Fiorella). */

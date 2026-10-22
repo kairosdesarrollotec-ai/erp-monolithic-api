@@ -7,6 +7,7 @@ import { NotificationReadModelPort } from '../../notifications/application/ports
 import { NotificationTemplatePort } from '../../notification-templates/application/ports/notification-template.port';
 import { projectNotificationEvent } from '../../notifications/domain/notification-event-projector';
 import { NotificationDispatcherPort } from '../../notifications/application/ports/notification-dispatcher.port';
+import { OutboxEventConsumerRegistry } from '../../outbox/application/outbox-event-consumer.registry';
 
 const DEFAULT_BATCH_SIZE = 50;
 const DEFAULT_LEASE_MS = 30_000;
@@ -81,6 +82,7 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
     private readonly notifications: NotificationReadModelPort,
     private readonly notificationTemplates: NotificationTemplatePort,
     private readonly dispatcher: NotificationDispatcherPort,
+    private readonly consumers: OutboxEventConsumerRegistry,
   ) {}
 
   onModuleInit(): void {
@@ -110,6 +112,10 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
           }
 
           await this.projectNotification(event);
+
+          // Consumidores de dominio registrados (p. ej. Reclutamiento <- RelacionLaboralTerminada.v1). Idempotentes: si uno
+          // falla, el evento completo se reintenta con backoff y las proyecciones anteriores no se duplican.
+          await this.consumers.dispatch(event);
 
           await this.markProcessed(event.id);
         } catch (error) {

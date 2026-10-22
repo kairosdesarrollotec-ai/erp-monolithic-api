@@ -84,13 +84,13 @@ describe('PrismaReturnDashboardAlertPersistence (DEC-DEVREM-002)', () => {
     expect(arg.take).toBe(25);
   });
 
-  it('P3 listImmobilizationCandidates: CON_DANOS / CIERRE_FINANCIERO con dano tecnico recibidas antes del limite', async () => {
+  it('P3 listImmobilizationCandidates: CERRADA con dano tecnico cerradas antes del limite (reloj desde el cierre)', async () => {
     const { prisma, persistence } = build();
     const before = new Date('2026-10-20T15:00:00Z');
     await persistence.listImmobilizationCandidates(before, 10);
     expect(prisma.rentalReturn.findMany.mock.calls[0][0].where).toEqual({
-      status: { in: ['CON_DANOS', 'CIERRE_FINANCIERO'] },
-      receivedAt: { not: null, lte: before },
+      status: 'CERRADA',
+      closedAt: { not: null, lte: before },
       damages: { some: { origin: 'TECHNICAL' } },
     });
   });

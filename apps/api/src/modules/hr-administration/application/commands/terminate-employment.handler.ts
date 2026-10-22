@@ -99,7 +99,11 @@ export class TerminateEmploymentHandler {
           aggregateId: employee.id,
           eventType: 'RelacionLaboralTerminada.v1',
           payload: {
+            // 22-oct (#5): Reclutamiento crea la vacante de reemplazo al consumir este evento (`source` distingue la prueba negativa).
+            source: 'HR_TERMINATION',
+            candidateId: employee.candidateId ?? null,
             employeeId: employee.id,
+            employeeName: employee.fullName,
             terminationId: termination.id,
             reason: command.reason,
             noticeDays: command.noticeDays,
