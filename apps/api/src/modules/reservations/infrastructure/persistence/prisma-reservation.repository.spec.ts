@@ -110,3 +110,77 @@ describe('PrismaReservationRepository.confirm - exclusion de rango en BD (PEND-0
     expect(isVehicleCommitmentExclusionViolation(null)).toBe(false);
   });
 });
+
+describe('PrismaReservationRepository.create', () => {
+  it('persiste canComeToOffice y customerLocation', async () => {
+    const createdRow = {
+      id: 'res-new',
+      organizationId: 'o',
+      operatingCompanyId: 'c',
+      branchId: 'b',
+      inquiryId: 'inq-1',
+      customerId: 'cust-1',
+      vehicleId: 'v1',
+      channelMode: 'PRESENCIAL',
+      canComeToOffice: true,
+      customerLocation: 'AYACUCHO',
+      startAt: START,
+      endAt: END,
+      requiredPaymentAmount: '300.00',
+      currency: 'PEN',
+      paymentPolicyVersion: 1,
+      paymentValidatedAt: null,
+      documentsCompletedAt: null,
+      confirmedAt: null,
+      paymentMethod: null,
+      paymentAmount: null,
+      paymentOperationNumber: null,
+      payerName: null,
+      paymentVoucherDocumentId: null,
+      paymentRegisteredBy: null,
+      createdAt: new Date(),
+      createdBy: 'uid-1',
+      version: 1,
+      status: 'DRAFT',
+      customer: { fullName: 'Juan Perez' },
+      vehicle: { brand: 'Toyota', model: 'Hilux', plate: 'ABC-123', passengerCapacity: 5, depositMinimum: null, fuelPrice: null },
+    };
+
+    const prisma = {
+      reservation: {
+        create: jest.fn().mockResolvedValue(createdRow),
+      },
+    };
+    const repo = new PrismaReservationRepository(prisma as never);
+
+    const result = await repo.create({
+      organizationId: 'o',
+      operatingCompanyId: 'c',
+      branchId: 'b',
+      inquiryId: 'inq-1',
+      customerId: 'cust-1',
+      vehicleId: 'v1',
+      channelMode: 'PRESENCIAL',
+      canComeToOffice: true,
+      customerLocation: 'AYACUCHO',
+      startAt: START,
+      endAt: END,
+      requiredPaymentAmount: '300.00',
+      currency: 'PEN',
+      paymentPolicyVersion: 1,
+      createdBy: 'uid-1',
+    });
+
+    expect(prisma.reservation.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          canComeToOffice: true,
+          customerLocation: 'AYACUCHO',
+        }),
+      }),
+    );
+    expect(result.canComeToOffice).toBe(true);
+    expect(result.customerLocation).toBe('AYACUCHO');
+  });
+});
+

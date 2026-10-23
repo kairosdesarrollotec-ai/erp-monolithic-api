@@ -723,6 +723,12 @@ enum ChannelMode {
   VIRTUAL
 }
 
+/// DAT-RES-001 (BR-RES-005): Ubicacion declarada del cliente al momento de la reserva.
+enum CustomerLocation {
+  AYACUCHO
+  FUERA_DE_AYACUCHO
+}
+
 /// TDD-RES-001.md seccion 9.2 - bloqueo atomico unico (BR-RES-009):
 /// paymentValidatedAt y documentsCompletedAt deben estar AMBOS presentes
 /// antes de que status pueda ser CONFIRMED (validado en aplicacion, ver
@@ -755,6 +761,10 @@ model Reservation {
   vehicleId             String            @map("vehicle_id")
   status                ReservationStatus @default(DRAFT)
   channelMode           ChannelMode       @map("channel_mode")
+  /// BR-RES-005: si el cliente puede acercarse a la oficina (si es false, el channelMode debe ser VIRTUAL).
+  canComeToOffice       Boolean?          @map("can_come_to_office")
+  /// DAT-RES-001: ubicacion declarada del cliente al momento de la reserva.
+  customerLocation      CustomerLocation? @map("customer_location")
   startAt               DateTime          @map("start_at")
   endAt                 DateTime          @map("end_at")
   /// BR-RES-001 - parametro versionado; PROVISIONAL: valor vigente fijo

@@ -94,6 +94,8 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
           customerId: input.customerId,
           vehicleId: input.vehicleId,
           channelMode: input.channelMode,
+          canComeToOffice: input.canComeToOffice,
+          customerLocation: input.customerLocation,
           startAt: input.startAt,
           endAt: input.endAt,
           requiredPaymentAmount: input.requiredPaymentAmount,

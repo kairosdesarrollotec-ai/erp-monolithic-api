@@ -37,6 +37,8 @@ export function toReservationRecord(row: ReservationWithRelations): ReservationR
     }),
     status: row.status,
     channelMode: row.channelMode,
+    canComeToOffice: row.canComeToOffice,
+    customerLocation: row.customerLocation,
     startAt: row.startAt,
     endAt: row.endAt,
     requiredPaymentAmount: row.requiredPaymentAmount.toString(),

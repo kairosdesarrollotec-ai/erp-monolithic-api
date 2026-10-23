@@ -1,6 +1,6 @@
 import { VehicleDataWarning } from '../../../../../common/domain/vehicle-data-warnings';
 import { ReservationStatus } from '../../../domain/reservation-status';
-import { ChannelMode } from '../../../domain/channel-mode';
+import { ChannelMode, CustomerLocation } from '../../../domain/channel-mode';
 
 export interface SaleResolutionResponse {
   id: string;
@@ -29,6 +29,10 @@ export interface ReservationResponse {
   id: string;
   status: ReservationStatus;
   channelMode: ChannelMode;
+  /** BR-RES-005: si el cliente puede acercarse a la oficina (null en reservas creadas sin este dato). */
+  canComeToOffice: boolean | null;
+  /** DAT-RES-001: ubicacion declarada del cliente al momento de la reserva (null en reservas creadas sin este dato). */
+  customerLocation: CustomerLocation | null;
   version: number;
   customer: { id: string; name: string };
   vehicle: { id: string; plate: string; label: string };

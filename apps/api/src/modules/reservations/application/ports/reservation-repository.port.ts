@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { VehicleDataWarning } from '../../../../common/domain/vehicle-data-warnings';
 import { ReservationStatus } from '../../domain/reservation-status';
-import { ChannelMode } from '../../domain/channel-mode';
+import { ChannelMode, CustomerLocation } from '../../domain/channel-mode';
 import { PaymentMethod } from '../../domain/reservation-payment-method';
 
 export interface ReservationRecord {
@@ -19,6 +19,8 @@ export interface ReservationRecord {
   vehicleWarnings?: VehicleDataWarning[];
   status: ReservationStatus;
   channelMode: ChannelMode;
+  canComeToOffice?: boolean | null;
+  customerLocation?: CustomerLocation | null;
   startAt: Date;
   endAt: Date;
   requiredPaymentAmount: string;
@@ -61,6 +63,8 @@ export interface CreateReservationInput {
   customerId: string;
   vehicleId: string;
   channelMode: ChannelMode;
+  canComeToOffice?: boolean | null;
+  customerLocation?: CustomerLocation | null;
   startAt: Date;
   endAt: Date;
   requiredPaymentAmount: string;
