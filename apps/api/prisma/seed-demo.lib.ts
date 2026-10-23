@@ -124,7 +124,7 @@ export interface DemoDataset {
   notaryEvaluations: Prisma.NotaryEvaluationCreateManyInput[];
 }
 
-/** Catalogo H-02 de VeloxRent (mismo contenido que la migracion 20261019000900_hr_areas_catalog). */
+/** Catalogo H-02 de VeloxRent (mismo contenido que DEFAULT_HR_AREAS: migraciones 20261019000900 + 20261021010001). */
 export const DEMO_HR_AREAS: ReadonlyArray<{ code: string; name: string; description: string; sortOrder: number }> = [
   { code: 'ADMINISTRACION', name: 'Administración', description: 'Órgano de apoyo: gestión administrativa de la empresa', sortOrder: 10 },
   { code: 'TALENTO_HUMANO', name: 'Talento Humano', description: 'Órgano de apoyo: nombre formal de Recursos Humanos', sortOrder: 20 },
@@ -133,6 +133,9 @@ export const DEMO_HR_AREAS: ReadonlyArray<{ code: string; name: string; descript
   { code: 'ATENCION_AL_CLIENTE', name: 'Atención al cliente', description: 'Órgano de línea', sortOrder: 50 },
   { code: 'MARKETING', name: 'Marketing', description: 'Órgano de línea', sortOrder: 60 },
   { code: 'OPERACIONES', name: 'Operaciones', description: 'Órgano de línea', sortOrder: 70 },
+  // 22-oct: mismas 9 areas que DEFAULT_HR_AREAS y la migracion 20261021010001 (Respuestas 2026-10-20 #17).
+  { code: 'GERENCIA_GENERAL', name: 'Gerencia General / Subgerencia', description: 'Dirección de la empresa (Gerencia General y Subgerencia)', sortOrder: 80 },
+  { code: 'GESTION_Y_PROCESOS', name: 'Gestión y Procesos', description: 'Gestión de procesos de la empresa', sortOrder: 90 },
 ];
 
 interface VehicleSeed {

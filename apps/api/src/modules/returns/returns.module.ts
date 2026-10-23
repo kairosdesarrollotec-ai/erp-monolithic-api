@@ -58,6 +58,10 @@ import { ReturnDashboardAlertPort } from './application/ports/return-dashboard-a
 import { ReturnAlertRecipientsPort } from './application/ports/return-alert-recipients.port';
 import { MatrixReturnAlertRecipientsPersistence } from './infrastructure/persistence/matrix-return-alert-recipients.persistence';
 import { PrismaReturnDashboardAlertPersistence } from './infrastructure/persistence/prisma-return-dashboard-alert.persistence';
+import { RecordZoneMarksHandler } from './application/commands/record-zone-marks.handler';
+import { ListZoneMarksHandler } from './application/queries/list-zone-marks.handler';
+import { ReturnZoneMarkRepositoryPort } from './application/ports/return-zone-mark-repository.port';
+import { PrismaReturnZoneMarkPersistence } from './infrastructure/persistence/prisma-return-zone-mark.persistence';
 import { GetResponsibilityTemplateHandler } from './application/queries/get-responsibility-template.handler';
 
 /**
@@ -81,6 +85,8 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     RegisterReturnLateChargeHandler,
     CloseFinancialHandler,
     CloseReturnHandler,
+    RecordZoneMarksHandler,
+    ListZoneMarksHandler,
     RequestReturnEvidenceUploadSessionHandler,
     RecordReturnEvidenceHandler,
     DeleteReturnEvidenceHandler,
@@ -101,6 +107,8 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     PrismaImmobilizationChargePersistence,
     PrismaReturnEvidencePersistence,
     { provide: ReturnRepositoryPort, useClass: PrismaReturnRepository },
+    // DEV-05 / PD-07: marcas por zona persistidas.
+    { provide: ReturnZoneMarkRepositoryPort, useClass: PrismaReturnZoneMarkPersistence },
     { provide: ReturnEvidenceStoragePort, useClass: GcsReturnEvidenceService },
     { provide: ReturnCustomerRiskPort, useClass: PrismaReturnCustomerRiskPersistence },
     { provide: ReturnDepositSettlementPort, useClass: PrismaReturnDepositSettlementPersistence },

@@ -5,6 +5,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
+import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { UserDisplayNamePort } from '../ports/user-display-name.port';
 import { FieldTripNotFoundError } from '../../domain/hr-administration-errors';
@@ -25,6 +26,7 @@ export class AuthorizeFieldTripHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly alerts: FieldTripAlertPublisher,
   ) {}
 
   async execute(command: AuthorizeFieldTripCommand): Promise<FieldTripRequest> {
@@ -75,6 +77,9 @@ export class AuthorizeFieldTripHandler {
         },
         tx,
       );
+
+      // 22-oct #4: autorizada -> se retiran los avisos pendientes de esta salida.
+      await this.alerts.publish('RESOLVED', authorized, found.employee, tx, { outcome: 'AUTORIZADA' });
 
       return authorized;
     });

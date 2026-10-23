@@ -14,6 +14,8 @@ import {
   InvalidTerminationNoticeError,
   TerminationNotesRequiredError,
   VacationOverlapError,
+  VacationChangeReasonRequiredError,
+  VacationNotModifiableError,
 } from './hr-administration-errors';
 
 /** BR-ADP-004: minutos que cada nivel de la cascada tiene para responder. */
@@ -38,6 +40,23 @@ export interface VacationRange {
 /** Estados de vacaciones que ocupan el cupo del área (BR-ADP-002). CANCELADA y COMPLETADA liberan el cupo. */
 export const VACATION_CAPACITY_STATUSES = ['SOLICITADA', 'PROGRAMADA', 'REPROGRAMADA'] as const;
 
+/** Estados desde los que se puede reprogramar o cancelar (los que aun ocupan cupo y no se han ejecutado). */
+export const VACATION_MODIFIABLE_STATUSES = VACATION_CAPACITY_STATUSES;
+
+/**
+ * Respuestas 2026-10-22 #10 - PARAMETROS DE LA REGLA DE CAPACIDAD DE VACACIONES (un solo lugar para cambiarla):
+ *  - `VACATION_MAX_CONCURRENT`: maximo de personas de vacaciones a la vez dentro del ambito de capacidad.
+ *  - `VACATION_CAPACITY_SCOPE`: 'AREA_IN_COMPANY' = el tope aplica POR AREA dentro de la misma empresa (regla actual, exclusion por
+ *    empresa+area+fechas); 'COMPANY' = el tope aplica a TODA la empresa sin importar el area.
+ * PENDIENTE de confirmacion (Russbel dijo «2 personas de la misma empresa»): hoy sigue 1 por area dentro de la empresa. Cambiar a
+ * «N por empresa» exige (1) ajustar estas dos constantes y (2) una migracion que reemplace la EXCLUDE de BD
+ * `vacation_requests_area_no_overlap_excl` (hoy impone 1 por empresa+area, y una EXCLUDE no sirve para N>1: habria que validar con
+ * Serializable + conteo). Mientras tanto la validacion de dominio ya es parametrica.
+ */
+export const VACATION_MAX_CONCURRENT = 1;
+export type VacationCapacityScope = 'AREA_IN_COMPANY' | 'COMPANY';
+export const VACATION_CAPACITY_SCOPE: VacationCapacityScope = 'AREA_IN_COMPANY';
+
 /**
  * BR-ADP-002 / DR-ADP-001: capacidad de área para vacaciones (máximo 1 persona del área de vacaciones a la vez,
  * sin importar cuántos colaboradores tenga el área; NO son "2 personas clave").
@@ -48,7 +67,9 @@ export function validateVacationAreaCapacity(
   existingVacations: VacationRange[],
   newVacation: VacationRange,
   areaName: string,
+  maxConcurrent: number = VACATION_MAX_CONCURRENT,
 ): void {
+  const overlapping: VacationRange[] = [];
   for (const existing of existingVacations) {
     if (existing.id && newVacation.id && existing.id === newVacation.id) {
       continue;
@@ -59,12 +80,53 @@ export function validateVacationAreaCapacity(
 
     const overlap = existing.startDate <= newVacation.endDate && existing.endDate >= newVacation.startDate;
     if (overlap) {
-      throw new VacationOverlapError(
-        areaName,
-        `Conflicto de superposición en el área ${areaName}: ya hay vacaciones ${existing.status.toLowerCase()} del ${existing.startDate.toISOString().slice(0, 10)} al ${existing.endDate.toISOString().slice(0, 10)}. La capacidad máxima es de 1 persona del área a la vez y tiene prioridad quien solicitó primero (BR-ADP-002, DR-ADP-001).`,
-      );
+      overlapping.push(existing);
     }
   }
+  if (!exceedsConcurrency(overlapping, newVacation, maxConcurrent)) {
+    return;
+  }
+  const existing = overlapping[0];
+  throw new VacationOverlapError(
+    areaName,
+    `Conflicto de superposición en el área ${areaName}: ya hay vacaciones ${existing.status.toLowerCase()} del ${existing.startDate.toISOString().slice(0, 10)} al ${existing.endDate.toISOString().slice(0, 10)}. La capacidad máxima es de ${maxConcurrent} persona${maxConcurrent === 1 ? '' : 's'} del área a la vez y tiene prioridad quien solicitó primero (BR-ADP-002, DR-ADP-001).`,
+  );
+}
+
+export const VACATION_CHANGE_REASON_MIN_LENGTH = 3;
+export const VACATION_CHANGE_REASON_MAX_LENGTH = 500;
+
+/** Motivo obligatorio para reprogramar o cancelar vacaciones (queda en la ficha y en la auditoria). Devuelve el texto recortado. */
+export function assertVacationChangeReason(reason: string | null | undefined): string {
+  const trimmed = (reason ?? '').trim();
+  if (trimmed.length < VACATION_CHANGE_REASON_MIN_LENGTH || trimmed.length > VACATION_CHANGE_REASON_MAX_LENGTH) {
+    throw new VacationChangeReasonRequiredError();
+  }
+  return trimmed;
+}
+
+/** Solo se reprograma o cancela lo que aun ocupa cupo (SOLICITADA / PROGRAMADA / REPROGRAMADA). */
+export function assertVacationModifiable(id: string, status: string): void {
+  if (!(VACATION_MODIFIABLE_STATUSES as readonly string[]).includes(status)) {
+    throw new VacationNotModifiableError(id, status);
+  }
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** true si, en algun dia del rango de `candidate`, las `overlapping` mas la candidata superan `maxConcurrent` personas a la vez. */
+function exceedsConcurrency(overlapping: readonly VacationRange[], candidate: VacationRange, maxConcurrent: number): boolean {
+  if (overlapping.length < maxConcurrent) return false;
+  const firstDay = Math.floor(candidate.startDate.getTime() / DAY_MS);
+  const lastDay = Math.floor(candidate.endDate.getTime() / DAY_MS);
+  for (let day = firstDay; day <= lastDay; day += 1) {
+    let concurrent = 0;
+    for (const v of overlapping) {
+      if (Math.floor(v.startDate.getTime() / DAY_MS) <= day && Math.floor(v.endDate.getTime() / DAY_MS) >= day) concurrent += 1;
+    }
+    if (concurrent >= maxConcurrent) return true;
+  }
+  return false;
 }
 
 /**

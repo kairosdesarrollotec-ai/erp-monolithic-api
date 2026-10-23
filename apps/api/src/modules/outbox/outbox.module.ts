@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OutboxEventRepositoryPort } from './application/ports/outbox-event-repository.port';
+import { OutboxEventConsumerRegistry } from './application/outbox-event-consumer.registry';
 import { PrismaOutboxEventRepository } from './infrastructure/persistence/prisma-outbox-event.repository';
 
 /**
@@ -10,9 +11,12 @@ import { PrismaOutboxEventRepository } from './infrastructure/persistence/prisma
  * controller propio: el consumo del outbox es tarea de un worker separado
  * (apps/worker, todavia no construido - ver
  * claude/Diseno_Agregador_Transversal_TR-06-07-08.md en el Project).
+ *
+ * `OutboxEventConsumerRegistry`: los modulos de dominio que REACCIONAN a un evento (p. ej. Reclutamiento a
+ * RelacionLaboralTerminada.v1) registran un consumidor aqui; el relay de DashboardProjections despacha sin importarlos.
  */
 @Module({
-  providers: [{ provide: OutboxEventRepositoryPort, useClass: PrismaOutboxEventRepository }],
-  exports: [OutboxEventRepositoryPort],
+  providers: [{ provide: OutboxEventRepositoryPort, useClass: PrismaOutboxEventRepository }, OutboxEventConsumerRegistry],
+  exports: [OutboxEventRepositoryPort, OutboxEventConsumerRegistry],
 })
 export class OutboxModule {}

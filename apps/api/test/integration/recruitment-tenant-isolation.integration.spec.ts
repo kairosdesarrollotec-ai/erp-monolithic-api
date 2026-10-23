@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../src/common/persistence/prisma.service';
 import { PrismaTransactionManager } from '../../src/common/persistence/prisma-transaction-manager';
 import { PrismaVacancyRepository } from '../../src/modules/recruitment/infrastructure/persistence/prisma-vacancy.repository';
+import { PrismaVacancyAreaCatalogRepository } from '../../src/modules/recruitment/infrastructure/persistence/prisma-vacancy-area-catalog.repository';
 import { PrismaCandidateRepository } from '../../src/modules/recruitment/infrastructure/persistence/prisma-candidate.repository';
 import { PrismaOutboxEventRepository } from '../../src/modules/outbox/infrastructure/persistence/prisma-outbox-event.repository';
 import { WorkContextAuthorizationService } from '../../src/modules/users/application/services/work-context-authorization.service';
@@ -58,6 +59,7 @@ describe('Recruitment — aislamiento multiempresa (Postgres real)', () => {
     // MatrixAuthorizationService con DB real requeriría sembrar la matriz completa.
     return {
       assertAllowed: async () => undefined,
+      isAllowed: async () => true,
     } as unknown as MatrixAuthorizationService;
   }
 
@@ -92,6 +94,17 @@ describe('Recruitment — aislamiento multiempresa (Postgres real)', () => {
       ],
     });
 
+    // 22-oct: el area de una vacante debe existir y estar activa en el catalogo hr_areas de SU empresa (VACANCY_AREA_NOT_FOUND).
+    // Las empresas de la prueba se crean aqui, asi que el catalogo que la migracion sembro para empresas existentes no las cubre.
+    await prisma.hrArea.createMany({
+      data: [
+        { organizationId: org, operatingCompanyId: companyA, code: 'OPERACIONES', name: 'Operaciones', sortOrder: 1 },
+        { organizationId: org, operatingCompanyId: companyA, code: 'FLOTA', name: 'Flota', sortOrder: 2 },
+        { organizationId: org, operatingCompanyId: companyB, code: 'OPERACIONES', name: 'Operaciones', sortOrder: 1 },
+        { organizationId: org, operatingCompanyId: companyB, code: 'FLOTA', name: 'Flota', sortOrder: 2 },
+      ],
+    });
+
     // WorkContextAuthorizationService está mockeado — no se necesitan registros de userProfile en la DB.
   }, 60000);
 
@@ -107,7 +120,7 @@ describe('Recruitment — aislamiento multiempresa (Postgres real)', () => {
 
     // Crear vacante en Empresa A
     const accessA = buildRecruitmentAccess(companyA, branchA);
-    const registerHandler = new RegisterVacancyHandler(accessA, vacancyRepo, txManager, audit);
+    const registerHandler = new RegisterVacancyHandler(accessA, vacancyRepo, txManager, audit, new PrismaVacancyAreaCatalogRepository(ps));
     const vacancy = await registerHandler.execute(
       new RegisterVacancyCommand(UID_A, companyA, branchA, 'Asistente A', 'Operaciones', 'RENUNCIA'),
     );
@@ -133,7 +146,7 @@ describe('Recruitment — aislamiento multiempresa (Postgres real)', () => {
 
     // Crear vacante en Empresa B
     const accessB = buildRecruitmentAccess(companyB, branchB);
-    const registerHandler = new RegisterVacancyHandler(accessB, vacancyRepo, txManager, audit);
+    const registerHandler = new RegisterVacancyHandler(accessB, vacancyRepo, txManager, audit, new PrismaVacancyAreaCatalogRepository(ps));
     const vacancyB = await registerHandler.execute(
       new RegisterVacancyCommand(UID_B, companyB, branchB, 'Conductor B', 'Flota', 'CRECIMIENTO'),
     );

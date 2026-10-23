@@ -14,6 +14,7 @@ import { SetCompanyDriverDailyRateHandler } from './application/commands/set-com
 import { ApproveNotaryExceptionHandler } from './application/commands/approve-notary-exception.handler';
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
+import { CancelRentalHandler } from './application/commands/cancel-rental.handler';
 import { RequestEvidenceUploadSessionHandler } from './application/commands/request-evidence-upload-session.handler';
 import { RecordEvidenceHandler } from './application/commands/record-evidence.handler';
 import { RentalEvidenceRemovalService } from './application/services/rental-evidence-removal.service';
@@ -67,6 +68,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     SetCompanyDriverDailyRateHandler,
     FormalizeContractHandler,
     CompleteDeliveryHandler,
+    CancelRentalHandler,
     RequestEvidenceUploadSessionHandler,
     RecordEvidenceHandler,
     DeleteEvidenceHandler,

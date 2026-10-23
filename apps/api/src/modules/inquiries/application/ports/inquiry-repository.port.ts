@@ -59,6 +59,8 @@ export interface InquirySummaryRecord extends InquirySnapshot {
 }
 
 export interface InquiryRecord extends InquirySummaryRecord {
+  /** Nacionalidad del cliente de la consulta (BR-CON-004); null si no hay cliente o no se capturo. */
+  customerNationality: InquiryNationality | null;
   interactions: InteractionRecord[];
   quotations: QuotationRecord[];
 }
@@ -103,7 +105,19 @@ export interface ListInquiriesFilter extends InquiryScope {
   limit: number;
 }
 
+/**
+ * Fila append-only de `interactions` (hallazgo CON P-06) que el repositorio
+ * escribe en la MISMA transaccion que la mutacion. Si `channel` es null
+ * (consulta LEGACY_STUB sin canal) no se escribe.
+ */
+export interface InteractionInput {
+  channel: InquiryChannel | null;
+  outcome: string;
+  note?: string;
+}
+
 export interface QuoteInquiryInput extends InquiryScope {
+  interaction?: InteractionInput;
   id: string;
   expectedVersion: number;
   vehicleId: string;
@@ -116,6 +130,7 @@ export interface QuoteInquiryInput extends InquiryScope {
 }
 
 export interface CloseInquiryInput extends InquiryScope {
+  interaction?: InteractionInput;
   id: string;
   expectedVersion: number;
   reason: string;
@@ -123,6 +138,7 @@ export interface CloseInquiryInput extends InquiryScope {
 }
 
 export interface ConvertToReservationInput extends InquiryScope {
+  interaction?: InteractionInput;
   id: string;
   expectedVersion: number;
 }

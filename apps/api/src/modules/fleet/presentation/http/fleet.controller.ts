@@ -185,6 +185,7 @@ export class FleetController {
         dto.fuelPrice,
         dto.photoUrl,
         dto.assignedBranchId,
+        dto.thirdPathEligible,
       ),
     );
 

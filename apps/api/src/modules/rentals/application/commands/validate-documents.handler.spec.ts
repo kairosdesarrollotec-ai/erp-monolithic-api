@@ -1,4 +1,4 @@
-import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { ValidateDocumentsHandler } from './validate-documents.handler';
 import { ValidateDocumentsCommand } from './validate-documents.command';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
@@ -6,7 +6,7 @@ import { WorkContextAuthorizationService } from '../../../users/application/serv
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
-import { RentalStateConflictError } from '../../domain/rental-errors';
+import { RentalDocumentsIncompleteError, RentalStateConflictError } from '../../domain/rental-errors';
 import { testRole } from '../../../users/testing/role-fixtures';
 
 describe('ValidateDocumentsHandler', () => {
@@ -43,6 +43,11 @@ describe('ValidateDocumentsHandler', () => {
     const rentals = {
       findById: jest.fn().mockResolvedValue(fakeRental),
       transitionStatus: jest.fn().mockResolvedValue({ ...fakeRental, status: 'VALIDATION', version: 2 }),
+      // Cliente peruano por defecto (DNI); los tests de extranjero lo sobreescriben.
+      findCustomerById: jest.fn().mockResolvedValue({
+        id: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', fullName: 'Maria Lopez', documentNumber: '99887766',
+        documentType: 'DNI', status: 'NORMAL', nationality: 'PERUANO', countryEntryDate: null,
+      }),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
     const workContext = {
@@ -90,6 +95,8 @@ describe('ValidateDocumentsHandler', () => {
     const result = await handler.execute(
       new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 1, {
         identityDocumentValid: true,
+        passportValid: false,
+        foreignerCardValid: false,
         driverLicenseValid: true,
         addressOrStayProofValid: true,
       }),
@@ -126,6 +133,8 @@ describe('ValidateDocumentsHandler', () => {
       handler.execute(
         new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 2, {
           identityDocumentValid: true,
+          passportValid: false,
+          foreignerCardValid: false,
           driverLicenseValid: true,
           addressOrStayProofValid: true,
         }),
@@ -133,35 +142,64 @@ describe('ValidateDocumentsHandler', () => {
     ).rejects.toThrow(RentalStateConflictError);
   });
 
-  it('documentos incompletos lanza UnprocessableEntityException con code DOCUMENTS_INCOMPLETE', async () => {
+  const buildHandler = (deps: ReturnType<typeof buildDeps>) =>
+    new ValidateDocumentsHandler(deps.rentals, deps.workContext, deps.matrixAuth, deps.transactionManager, deps.auditRepository);
+
+  it('peruano sin recibo de agua/luz validado -> 422 DOCUMENTS_INCOMPLETE con missingDocuments y requiredDocuments (el comprobante de domicilio es obligatorio)', async () => {
     const deps = buildDeps();
-    const handler = new ValidateDocumentsHandler(
-      deps.rentals,
-      deps.workContext,
-      deps.matrixAuth,
-      deps.transactionManager,
-      deps.auditRepository,
-    );
-
-    await expect(
-      handler.execute(
+    const error = await buildHandler(deps)
+      .execute(
         new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 1, {
           identityDocumentValid: true,
-          driverLicenseValid: false,
+          passportValid: false,
+          foreignerCardValid: false,
+          driverLicenseValid: true,
           addressOrStayProofValid: false,
         }),
-      ),
-    ).rejects.toThrow(UnprocessableEntityException);
+      )
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(RentalDocumentsIncompleteError);
+    expect((error as RentalDocumentsIncompleteError).code).toBe('DOCUMENTS_INCOMPLETE');
+    expect((error as RentalDocumentsIncompleteError).extra).toMatchObject({
+      missingDocuments: ['Recibo de agua o luz'],
+      requiredDocuments: ['DNI', 'LICENCIA_CONDUCIR', 'RECIBO_AGUA_LUZ'],
+    });
+    expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
+  });
 
+  it('extranjero: exige pasaporte, CE, licencia, constancia de hospedaje y fecha de ingreso (dato del cliente)', async () => {
+    const deps = buildDeps();
+    deps.rentals.findCustomerById.mockResolvedValue({
+      id: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', fullName: 'John Smith', documentNumber: 'P123',
+      documentType: 'PASAPORTE', status: 'NORMAL', nationality: 'EXTRANJERO', countryEntryDate: null,
+    });
+    const full = { identityDocumentValid: false, passportValid: true, foreignerCardValid: true, driverLicenseValid: true, addressOrStayProofValid: true };
+
+    const noEntryDate = await buildHandler(deps)
+      .execute(new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 1, full))
+      .catch((e: unknown) => e);
+    expect(noEntryDate).toBeInstanceOf(RentalDocumentsIncompleteError);
+    expect((noEntryDate as RentalDocumentsIncompleteError).extra).toMatchObject({ missingDocuments: ['Fecha de ingreso al país'] });
+
+    deps.rentals.findCustomerById.mockResolvedValue({
+      id: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', fullName: 'John Smith', documentNumber: 'P123',
+      documentType: 'PASAPORTE', status: 'NORMAL', nationality: 'EXTRANJERO', countryEntryDate: new Date('2026-10-01'),
+    });
+    const ok = await buildHandler(deps).execute(new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 1, full));
+    expect(ok.status).toBe('VALIDATION');
+
+    const noProof = await buildHandler(deps)
+      .execute(new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 1, { ...full, addressOrStayProofValid: false }))
+      .catch((e: unknown) => e);
+    expect((noProof as RentalDocumentsIncompleteError).extra).toMatchObject({ missingDocuments: ['Constancia de hospedaje'] });
+  });
+
+  it('cliente inexistente -> 404 CUSTOMER_NOT_FOUND', async () => {
+    const deps = buildDeps();
+    deps.rentals.findCustomerById.mockResolvedValue(null);
     await expect(
-      handler.execute(
-        new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 1, {
-          identityDocumentValid: true,
-          driverLicenseValid: false,
-          addressOrStayProofValid: false,
-        }),
-      ),
-    ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'DOCUMENTS_INCOMPLETE' }) });
+      buildHandler(deps).execute(new ValidateDocumentsCommand('rent-200', 'uid-1', 'comp-1', 'branch-1', 1, { identityDocumentValid: true, passportValid: false, foreignerCardValid: false, driverLicenseValid: true, addressOrStayProofValid: true })),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('alquiler no encontrado lanza NotFoundException', async () => {
@@ -177,7 +215,7 @@ describe('ValidateDocumentsHandler', () => {
     );
 
     await expect(
-      handler.execute(new ValidateDocumentsCommand('rent-inexistente', 'uid-1', 'comp-1', 'branch-1', 1)),
+      handler.execute(new ValidateDocumentsCommand('rent-inexistente', 'uid-1', 'comp-1', 'branch-1', 1, { identityDocumentValid: true, passportValid: false, foreignerCardValid: false, driverLicenseValid: true, addressOrStayProofValid: true })),
     ).rejects.toThrow(NotFoundException);
   });
 });

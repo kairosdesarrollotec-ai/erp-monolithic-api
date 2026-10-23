@@ -5,6 +5,8 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { InquiryNotTransitionableError } from '../../domain/inquiry-errors';
+import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
+import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { CloseInquiryCommand } from './close-inquiry.command';
 
 /**
@@ -31,6 +33,8 @@ export class CloseInquiryHandler {
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
     private readonly matrixAuth: MatrixAuthorizationService,
+    private readonly outboxRepository: OutboxEventRepositoryPort,
+    private readonly clock: ClockPort,
   ) {}
 
   async execute(command: CloseInquiryCommand): Promise<InquiryRecord> {
@@ -71,6 +75,12 @@ export class CloseInquiryHandler {
           expectedVersion: command.expectedVersion,
           reason: command.reason,
           note: command.note,
+          // P-06: historial append-only.
+          interaction: {
+            channel: current.channel,
+            outcome: 'CERRADA_SIN_CONVERSION',
+            note: command.note ? `${command.reason}: ${command.note}` : command.reason,
+          },
         },
         ['REGISTRADA', 'COTIZADA'],
         tx,
@@ -83,6 +93,26 @@ export class CloseInquiryHandler {
           inquiryId: closed.id,
           action: 'INQUIRY_CLOSED_WITHOUT_CONVERSION',
           changes: { reason: command.reason, note: command.note ?? null },
+        },
+        tx,
+      );
+
+      // P-07: ConsultaCerrada.v1 en la misma transaccion.
+      await this.outboxRepository.publish(
+        {
+          aggregateType: 'inquiry',
+          aggregateId: closed.id,
+          eventType: 'ConsultaCerrada.v1',
+          payload: {
+            inquiryId: closed.id,
+            organizationId: context.organizationId,
+            operatingCompanyId: context.companyId,
+            branchId: context.branchId,
+            customerId: closed.customerId,
+            reason: command.reason,
+            closedBy: command.firebaseUid,
+            closedAt: this.clock.now().toISOString(),
+          },
         },
         tx,
       );

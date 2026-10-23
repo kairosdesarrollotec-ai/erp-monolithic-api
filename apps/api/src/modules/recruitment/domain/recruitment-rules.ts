@@ -17,6 +17,8 @@ import {
   OnboardingChecklistIncompleteError,
   OnboardingMissingNotarizedContractError,
   VacancyNotTransitionableError,
+  VacancyNotCancellableError,
+  VacancyCancelReasonRequiredError,
 } from './recruitment-errors';
 
 // BDD-REC-001 §11.6: Necesidad registrada -> Publicado -> En negociación -> Entrevistado -> Decidido.
@@ -117,6 +119,33 @@ export function assertVacancyResumable(currentStatus: VacancyStatus): void {
   }
 }
 
+/** Estados desde los que se puede cancelar sin dejar candidatos en proceso colgados (EN_NEGOCIACION en adelante ya los tiene). */
+const CANCELLABLE_VACANCY_STATUSES: readonly VacancyStatus[] = [
+  VacancyStatus.NECESIDAD_REGISTRADA,
+  VacancyStatus.PUBLICADA,
+  VacancyStatus.PAUSADA,
+];
+
+/** REC-02 cancelar: solo NECESIDAD_REGISTRADA / PUBLICADA / PAUSADA, y ademas debe ser una transicion valida de la tabla. */
+export function assertVacancyCancellable(currentStatus: VacancyStatus): void {
+  if (!CANCELLABLE_VACANCY_STATUSES.includes(currentStatus)) {
+    throw new VacancyNotCancellableError(currentStatus);
+  }
+  assertValidVacancyTransition(currentStatus, VacancyStatus.CANCELADA);
+}
+
+export const VACANCY_CANCEL_REASON_MIN_LENGTH = 5;
+export const VACANCY_CANCEL_REASON_MAX_LENGTH = 500;
+
+/** Motivo obligatorio (5 a 500 caracteres, sin contar espacios sobrantes). Devuelve el motivo recortado. */
+export function assertVacancyCancelReason(reason: string | null | undefined): string {
+  const trimmed = (reason ?? '').trim();
+  if (trimmed.length < VACANCY_CANCEL_REASON_MIN_LENGTH || trimmed.length > VACANCY_CANCEL_REASON_MAX_LENGTH) {
+    throw new VacancyCancelReasonRequiredError();
+  }
+  return trimmed;
+}
+
 export function assertValidVacancyTransition(currentStatus: VacancyStatus, targetStatus: VacancyStatus): void {
   if (currentStatus === targetStatus) {
     return;
@@ -127,14 +156,34 @@ export function assertValidVacancyTransition(currentStatus: VacancyStatus, targe
   }
 }
 
+/** Texto sin tildes ni mayusculas, espacios colapsados: «Institutos Técnicos» -> «institutos tecnicos». */
+export function normalizeChannelText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * BR-REC-004: canales tecnicos admitidos para una vacante de mecanico. 22-oct: el front envia «Institutos técnicos»; ademas de los
+ * nombres propios SENATI / TECSUP se acepta ese texto (normalizado: sin tildes ni mayusculas, singular o plural).
+ */
+export function isTechnicalChannel(channel: string): boolean {
+  const normalized = normalizeChannelText(channel);
+  return (
+    normalized.includes('senati') ||
+    normalized.includes('tecsup') ||
+    /\binstituto(s)? tecnico(s)?\b/.test(normalized)
+  );
+}
+
 export function assertMechanicChannels(isMechanic: boolean, channels: string[]): void {
   if (!isMechanic) {
     return;
   }
-  const hasTechnicalChannel = channels.some((channel) => {
-    const upper = channel.toUpperCase();
-    return upper.includes('SENATI') || upper.includes('TECSUP');
-  });
+  const hasTechnicalChannel = channels.some(isTechnicalChannel);
 
   if (!hasTechnicalChannel) {
     throw new MechanicMissingTechnicalChannelsError();

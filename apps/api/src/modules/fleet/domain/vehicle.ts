@@ -19,6 +19,8 @@ export interface FleetVehicle {
   /** Precio del combustible por unidad (PEN); insumo de la multa por combustible (aun no calculada). */
   fuelPrice?: number | null;
   photoUrl?: string | null;
+  /** DEC-ALQ-THIRDPATH-001: vehiculo "de menor costo relativo" elegible para la tercera via notarial. Solo lo edita Gerencia. */
+  thirdPathEligible?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

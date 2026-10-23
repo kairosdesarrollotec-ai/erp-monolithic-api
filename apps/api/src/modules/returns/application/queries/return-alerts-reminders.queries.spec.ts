@@ -59,12 +59,13 @@ describe('Consultas con alertas y recordatorios de Devolución', () => {
   it('get/list: alerta de inmovilización > 24 h por daño técnico', async () => {
     const deps = buildDeps({ role: 'GERENCIA' });
     const record = buildReturnRecord({
-      status: 'CON_DANOS',
-      receivedAt: hoursBeforeNow(30),
+      status: 'CERRADA',
+      receivedAt: hoursBeforeNow(40),
+      closedAt: hoursBeforeNow(30),
       damages: [buildTechnicalDamage()],
     });
     deps.returns.findById.mockResolvedValue(record);
-    deps.returns.list.mockResolvedValue([record, buildReturnRecord({ status: 'CON_DANOS', receivedAt: hoursBeforeNow(30), damages: [buildDamage()] })]);
+    deps.returns.list.mockResolvedValue([record, buildReturnRecord({ status: 'CERRADA', receivedAt: hoursBeforeNow(40), closedAt: hoursBeforeNow(30), damages: [buildDamage()] })]);
 
     const one = await new GetReturnHandler(deps.access, deps.returns, deps.clock).execute(
       new GetReturnQuery('ret-1', 'uid-1', 'comp-1', 'branch-1'),
@@ -119,11 +120,14 @@ describe('Consultas con alertas y recordatorios de Devolución', () => {
         buildReturnRecord({ id: 'r-overdue', status: 'SIN_DANOS', receivedAt: hoursBeforeNow(25) }),
         buildReturnRecord({ id: 'r-soon', status: 'SIN_DANOS', receivedAt: hoursBeforeNow(21) }),
         buildReturnRecord({ id: 'r-ok', status: 'SIN_DANOS', receivedAt: hoursBeforeNow(10) }),
-        buildReturnRecord({ id: 'r-immo', status: 'CON_DANOS', receivedAt: hoursBeforeNow(50), damages: [buildTechnicalDamage()] }),
+        buildReturnRecord({ id: 'r-immo', status: 'CERRADA', receivedAt: hoursBeforeNow(60), closedAt: hoursBeforeNow(50), damages: [buildTechnicalDamage()] }),
+        // sin cerrar: el reloj no corre aunque hayan pasado > 24 h desde la recepcion
+        buildReturnRecord({ id: 'r-open', status: 'CON_DANOS', receivedAt: hoursBeforeNow(60), closedAt: null, damages: [buildTechnicalDamage()] }),
         buildReturnRecord({
           id: 'r-charged',
-          status: 'CON_DANOS',
-          receivedAt: hoursBeforeNow(30),
+          status: 'CERRADA',
+          receivedAt: hoursBeforeNow(40),
+          closedAt: hoursBeforeNow(30),
           damages: [buildTechnicalDamage()],
           immobilizationCharges: [{ id: 'c', returnId: 'r-charged', damageId: null, daysCharged: 1, dailyRate: 120, totalAmount: 120, notes: null, createdAt: FIXED_NOW }],
         }),
@@ -141,13 +145,13 @@ describe('Consultas con alertas y recordatorios de Devolución', () => {
       expect(items[2].immobilization).toMatchObject({ pendingDays: 2, suggestedAmount: 240 });
     });
 
-    it('filtra por tipo y consulta candidatos desde el umbral mínimo (20 h garantía / 24 h inmovilización)', async () => {
+    it('filtra por tipo y consulta candidatos desde el umbral mínimo (20 h desde la recepción para garantía / 24 h desde el cierre para inmovilización)', async () => {
       const { deps, handler } = build();
       await handler.execute(new ListReturnAlertsQuery('uid-1', 'comp-1', 'branch-1'));
-      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: hoursBeforeNow(20), includeLateCharge: true, limit: 100 });
+      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: hoursBeforeNow(20), closedBefore: hoursBeforeNow(24), includeLateCharge: true, limit: 100 });
 
       await handler.execute(new ListReturnAlertsQuery('uid-1', 'comp-1', 'branch-1', 'IMMOBILIZATION', 5));
-      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: hoursBeforeNow(24), includeLateCharge: false, limit: 5 });
+      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: null, closedBefore: hoursBeforeNow(24), includeLateCharge: false, limit: 5 });
 
       deps.alerts.listCandidates.mockResolvedValue([
         buildReturnRecord({ id: 'r-overdue', status: 'SIN_DANOS', receivedAt: hoursBeforeNow(25) }),
@@ -167,7 +171,7 @@ describe('Consultas con alertas y recordatorios de Devolución', () => {
 
       const items = await handler.execute(new ListReturnAlertsQuery('uid-1', 'comp-1', 'branch-1', 'LATE_CHARGE'));
 
-      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: null, includeLateCharge: true, limit: 100 });
+      expect(deps.alerts.listCandidates).toHaveBeenLastCalledWith({ ...TEST_SCOPE, receivedBefore: null, closedBefore: null, includeLateCharge: true, limit: 100 });
       expect(items).toHaveLength(1);
       expect(items[0]).toMatchObject({ returnId: 'r-late', type: 'LATE_CHARGE', warrantyRelease: null, immobilization: null });
       expect(items[0].lateCharge).toEqual({ lateMinutes: 45, lateToleranceMinutes: 30 });

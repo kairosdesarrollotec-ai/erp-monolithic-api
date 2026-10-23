@@ -15,7 +15,8 @@ export type RentalAction =
   | 'AUTHORIZE_EXTENSION'
   | 'REJECT_EXTENSION'
   | 'MANAGE_CONTRACT_TEMPLATES'
-  | 'REPORT_EXTENSION_BREACH';
+  | 'REPORT_EXTENSION_BREACH'
+  | 'CANCEL';
 
 const OPERATIONAL_ROLES: ReadonlySet<WorkerRole> = new Set([
   'FRONT_OFFICE',
@@ -44,6 +45,8 @@ const RENTAL_ROLE_POLICY: Readonly<Record<RentalAction, ReadonlySet<WorkerRole>>
   MANAGE_CONTRACT_TEMPLATES: new Set(['GERENCIA', 'ADMINISTRACION']),
   // BR-ALQ-013: falta grave compromete el 100% de la garantia del cliente y su estado "rojo" -> Gerencia.
   REPORT_EXTENSION_BREACH: new Set(['GERENCIA']),
+  // DEC-ALQ-CANCEL-001 (22-oct-2026): cancelar antes de la entrega (documentos invalidos / cliente rechaza notaria) lo hace el personal operativo.
+  CANCEL: OPERATIONAL_ROLES,
 };
 
 // ROLES DINAMICOS (fase 2): esta politica ya NO decide en runtime; solo SIEMBRA la version 0 de la matriz ADM-02

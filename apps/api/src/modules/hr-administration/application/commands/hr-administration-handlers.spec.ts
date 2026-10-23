@@ -16,6 +16,7 @@ import {
   InvalidAttendanceRecordError,
   InvalidAttendanceEvidenceError,
   AttendanceEvidenceRequiredError,
+  AttendanceReasonRequiredError,
   InvalidAuthorizationLevelError,
   InvalidDateRangeError,
   InvalidFieldTripDatesError,
@@ -43,6 +44,7 @@ import {
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
 import { HrMemoService } from '../services/hr-memo.service';
+import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import type { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import type { AttendanceRepositoryPort } from '../ports/attendance-repository.port';
 import type { LeaveRepositoryPort } from '../ports/leave-repository.port';
@@ -131,7 +133,9 @@ function setup(role: Role = 'RRHH') {
   const cascade = new FieldTripCascadeService(fieldTrips, employees);
   const memoRepo = buildMemoRepo();
   const memos = new HrMemoService(memoRepo, attendance, audit);
+  const alerts = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<FieldTripAlertPublisher>;
   return {
+    alerts,
     memoRepo,
     memos, access, tm, clock, audit, outbox, displayNames, employees, attendance, leaves, vacations, fieldTrips, terminations, cascade };
 }
@@ -356,13 +360,13 @@ describe('LogAttendanceHandler (BR-ADP-001)', () => {
     capturedAtLocal: new Date('2026-10-08T13:02:00Z'),
   };
   const cmd = (status: LogAttendanceCommand['status'], minutesLate?: number, deductionAmount?: number) =>
-    new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), status, minutesLate, deductionAmount, null, null, null, photo);
+    new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), status, minutesLate, deductionAmount, null, null, null, photo, null, 'Registro a nombre del colaborador');
   const cmdNoEvidence = (status: LogAttendanceCommand['status'], minutesLate?: number) =>
-    new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), status, minutesLate);
+    new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), status, minutesLate, undefined, null, null, null, null, null, 'Registro a nombre del colaborador');
 
   describe('evidencia fotografica (DEC-ADP-ATT-EVIDENCE-001)', () => {
     const evidenceCmd = (evidence: LogAttendanceCommand['evidence']) =>
-      new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), 'PRESENTE', undefined, undefined, null, null, null, evidence);
+      new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), 'PRESENTE', undefined, undefined, null, null, null, evidence, null, 'Registro a nombre del colaborador');
     const okEvidence = {
       kind: 'WHATSAPP_PHOTO' as const,
       storageRef: ` companies/${COMPANY_ID}/employees/emp-1/attendance/foto.jpg `,
@@ -377,6 +381,15 @@ describe('LogAttendanceHandler (BR-ADP-001)', () => {
       const err = await handler.execute(cmdNoEvidence(status, status === 'TARDANZA' ? 10 : undefined)).catch((e) => e);
       expect(err).toBeInstanceOf(AttendanceEvidenceRequiredError);
       expect(err.code).toBe('ATTENDANCE_EVIDENCE_REQUIRED');
+      expect(s.attendance.create).not.toHaveBeenCalled();
+    });
+
+    it.each(['PRESENTE', 'TARDANZA'] as const)('registro a nombre de otro sin motivo: %s lanza AttendanceReasonRequiredError', async (status) => {
+      const s = setup();
+      s.employees.findById.mockResolvedValue(buildEmployee());
+      const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
+      const noReason = new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), status, 10, undefined, null, null, null, photo);
+      await expect(handler.execute(noReason)).rejects.toBeInstanceOf(AttendanceReasonRequiredError);
       expect(s.attendance.create).not.toHaveBeenCalled();
     });
 
@@ -554,7 +567,7 @@ describe('RequestLeaveHandler / ResolveLeaveHandler (BR-ADP-003)', () => {
     const s = setup('ADMINISTRACION');
     s.employees.findById.mockResolvedValue(buildEmployee());
     s.leaves.create.mockResolvedValue(leave());
-    const handler = new RequestLeaveHandler(s.access, s.leaves, s.employees, s.tm, s.audit);
+    const handler = new RequestLeaveHandler(s.access, s.leaves, s.employees, s.tm, s.audit, s.alerts);
     const created = await handler.execute(requestCmd());
     expect(created.status).toBe('SOLICITADO');
     expect(s.leaves.create).toHaveBeenCalledWith(expect.objectContaining({ reason: 'Trámite' }), s.tm.tx);
@@ -563,14 +576,14 @@ describe('RequestLeaveHandler / ResolveLeaveHandler (BR-ADP-003)', () => {
   it('Auditoría (solo lectura) no puede solicitar permisos', async () => {
     const s = setup('AUDITORIA');
     s.employees.findById.mockResolvedValue(buildEmployee());
-    const handler = new RequestLeaveHandler(s.access, s.leaves, s.employees, s.tm, s.audit);
+    const handler = new RequestLeaveHandler(s.access, s.leaves, s.employees, s.tm, s.audit, s.alerts);
     await expect(handler.execute(requestCmd())).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('rechaza una ventana horaria invertida', async () => {
     const s = setup();
     s.employees.findById.mockResolvedValue(buildEmployee());
-    const handler = new RequestLeaveHandler(s.access, s.leaves, s.employees, s.tm, s.audit);
+    const handler = new RequestLeaveHandler(s.access, s.leaves, s.employees, s.tm, s.audit, s.alerts);
     await expect(
       handler.execute(
         new RequestLeaveCommand(UID, 'emp-1', 'SALIDA_ANTES_DE_HORA', new Date('2026-10-12T00:00:00Z'), 'x', new Date('2026-10-12T15:00:00Z'), new Date('2026-10-12T14:00:00Z')),
@@ -675,7 +688,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     const s = setup('CAMPO');
     s.employees.findById.mockResolvedValue(buildEmployee());
     s.fieldTrips.create.mockResolvedValue(fieldTrip());
-    const handler = new RequestFieldTripHandler(s.access, s.fieldTrips, s.employees, s.tm, s.clock, s.audit);
+    const handler = new RequestFieldTripHandler(s.access, s.fieldTrips, s.employees, s.tm, s.clock, s.audit, s.alerts);
     await handler.execute(
       new RequestFieldTripCommand(UID, 'emp-1', ' Taller ', ' Inspección ', new Date('2026-10-09T09:00:00Z'), new Date('2026-10-09T13:00:00Z')),
     );
@@ -688,7 +701,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('RequestFieldTrip: la salida debe ser anterior al retorno', async () => {
     const s = setup();
     s.employees.findById.mockResolvedValue(buildEmployee());
-    const handler = new RequestFieldTripHandler(s.access, s.fieldTrips, s.employees, s.tm, s.clock, s.audit);
+    const handler = new RequestFieldTripHandler(s.access, s.fieldTrips, s.employees, s.tm, s.clock, s.audit, s.alerts);
     await expect(
       handler.execute(new RequestFieldTripCommand(UID, 'emp-1', 'a', 'b', new Date('2026-10-09T13:00:00Z'), new Date('2026-10-09T09:00:00Z'))),
     ).rejects.toBeInstanceOf(InvalidFieldTripDatesError);
@@ -697,7 +710,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('AuthorizeFieldTrip: solo jefatura (AUTHORIZE_FIELD_TRIP); Campo no autoriza', async () => {
     const s = setup('CAMPO');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip());
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
     await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 1))).rejects.toBeInstanceOf(ForbiddenException);
   });
 
@@ -705,7 +718,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     const s = setup('RRHH');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_2' }));
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 2 }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
     const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 2, 'ok'));
     expect(result.authorizationLevel).toBe(2);
     expect(s.fieldTrips.transition).toHaveBeenCalledWith(
@@ -723,7 +736,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('AuthorizeFieldTrip: el nivel 4 nunca es válido y no se puede saltar al nivel 3', async () => {
     const s = setup('RRHH');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip());
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
     await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 4))).rejects.toBeInstanceOf(
       InvalidAuthorizationLevelError,
     );
@@ -735,7 +748,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('AuthorizeFieldTrip: una salida NO_AUTORIZADA no se aprueba por defecto (NO_AUTHORIZATION_AVAILABLE)', async () => {
     const s = setup('RRHH');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'NO_AUTORIZADA' }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
     await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 3))).rejects.toBeInstanceOf(
       NoAuthorizationAvailableError,
     );
@@ -747,7 +760,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     const level3 = fieldTrip({ status: 'PENDIENTE_NIVEL_3', level3TimeoutAt: new Date('2026-10-09T08:20:00Z') });
     s.fieldTrips.findById.mockResolvedValue(level3);
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'NO_AUTORIZADA' }));
-    const handler = new AdvanceFieldTripTimeoutHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.clock, s.audit);
+    const handler = new AdvanceFieldTripTimeoutHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.clock, s.audit, s.alerts);
     const result = await handler.execute(new AdvanceFieldTripTimeoutCommand(UID, 'ft-1'));
     expect(result.fieldTrip.status).toBe('NO_AUTORIZADA');
     expect(result.message).toContain('Nadie autorizó');
@@ -846,7 +859,8 @@ describe('TerminateEmploymentHandler (BR-ADP-006, BR-REC-008)', () => {
     });
     // El evento no filtra datos personales sensibles al otro módulo.
     expect(JSON.stringify(event.payload)).not.toContain('45678912');
-    expect(JSON.stringify(event.payload)).not.toContain('Carlos Perez');
+    // 22-oct: `employeeName` SI viaja (lo usa la alerta de RRHH del dashboard: hr-alert-event.projector); el DNI nunca.
+    expect((event.payload as { employeeName?: string }).employeeName).toBe('Carlos Perez');
     expect(s.audit.recordHrAdministrationEvent).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'EMPLOYMENT_TERMINATED', entityType: 'termination' }),
       s.tm.tx,

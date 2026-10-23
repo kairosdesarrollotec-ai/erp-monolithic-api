@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Sync Conflicts API (TR-08 / ENTREGA-04 / DEV-04)
-  version: 1.1.0
+  version: 1.2.0
   description: >
+    1.2.0 (22-oct-2026, G2, ADITIVO): resolver conflictos exige la accion ADM-02 PROPIA `SYNC.SUPERVISE_CONFLICTS` (v0 ADMINISTRACION +
+    GERENCIA, editable en la matriz) en ENTREGA y RECEPCION; deja de usarse RETURN.CLOSE / RENTAL.MANAGE_CONTRACT_TEMPLATES. Sin cambio
+    de rutas ni de cuerpos; el 403 sigue siendo ROLE_NOT_ALLOWED.
     1.1.0 — ADITIVO, sin romper clientes 1.0.0 (cambios tecnicos, ninguna regla de negocio de la matriz SDD 17.4 cambia):
     (1) `fieldRevisions` en la respuesta de `sync` y en `GET status`: revision vigente (y valor) de cada campo del checklist
     en el servidor. El dispositivo la guarda y la usa como `baseRev` de su SIGUIENTE edicion de ese campo; asi una edicion
@@ -41,9 +44,8 @@ info:
     `complete-delivery` (Alquiler) responden 409 SYNC_CONFLICT_PENDING.
 
 
-    Permisos (ADM-02, sin acciones nuevas): sincronizar = RENTAL.UPLOAD_EVIDENCE / RETURN.UPLOAD_EVIDENCE; consultar =
-    RENTAL.READ / RETURN.READ; resolver (supervisor, PROVISIONAL) = RENTAL.MANAGE_CONTRACT_TEMPLATES (ENTREGA) /
-    RETURN.CLOSE (RECEPCION), cuyo set por defecto es ADMINISTRACION + GERENCIA.
+    Permisos (ADM-02): sincronizar = RENTAL.UPLOAD_EVIDENCE / RETURN.UPLOAD_EVIDENCE; consultar = RENTAL.READ / RETURN.READ;
+    resolver (supervisor) = SYNC.SUPERVISE_CONFLICTS en ambos checklists (v0 ADMINISTRACION + GERENCIA, editable en ADM-02).
 
 
     Errores `{ statusCode, code, detail }`. Todos los POST aceptan `Idempotency-Key`. Zona horaria America/Lima (los

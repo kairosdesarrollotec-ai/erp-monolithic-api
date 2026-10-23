@@ -1,22 +1,27 @@
-import { IsDecimal, IsIn, IsISO8601, IsInt, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsIn, IsISO8601, IsOptional, IsUUID } from 'class-validator';
 
 /**
- * CONFLICT-CON-001 (resuelto): inquiryId es opcional — se omite para
- * creacion directa, se incluye cuando la reserva se origina en una Consulta
- * (aunque en ese caso se recomienda usar convert-to-reservation que valida
- * la cotizacion vigente y transiciona la Consulta en la misma transaccion).
+ * Russbel 22-oct-2026 (decision 1; DEC-CON-001-FINAL; BR-CON-003, EX-CON-001): `POST /reservations` YA NO CREA reservas.
+ * La Consulta es el unico punto de entrada: la reserva se crea con
+ * `POST /inquiries/{id}/commands/convert-to-reservation`. Este endpoint queda como compatibilidad y siempre responde
+ * error (422 INQUIRY_REQUIRED sin `inquiryId`; 409 INQUIRY_CONVERSION_REQUIRED con `inquiryId`).
+ *
+ * El monto de reserva, la moneda y la version de politica ya NO se aceptan del cliente: los lee el servidor de la
+ * politica ADM-03 (ReservationDepositPolicyPort). Los campos customerId/vehicleId/channelMode/startAt/endAt se aceptan
+ * solo para no romper clientes antiguos y se ignoran.
  */
 export class CreateReservationDto {
   @IsOptional() @IsUUID() inquiryId?: string;
-  @IsUUID() customerId!: string;
-  @IsUUID() vehicleId!: string;
   @IsUUID() companyId!: string;
   @IsUUID() branchId!: string;
-  @IsIn(['PRESENCIAL', 'VIRTUAL']) channelMode!: 'PRESENCIAL' | 'VIRTUAL';
-  @IsISO8601() startAt!: string;
-  @IsISO8601() endAt!: string;
-  /** Monto a cobrar al confirmar (BR-RES-001). Formato: "300.00". */
-  @IsString() @IsDecimal({ decimal_digits: '0,2' }) requiredPaymentAmount!: string;
-  @IsString() currency!: string;
-  @IsInt() @IsPositive() paymentPolicyVersion!: number;
+  /** DEPRECADO e ignorado. */
+  @IsOptional() @IsUUID() customerId?: string;
+  /** DEPRECADO e ignorado. */
+  @IsOptional() @IsUUID() vehicleId?: string;
+  /** DEPRECADO e ignorado. */
+  @IsOptional() @IsIn(['PRESENCIAL', 'VIRTUAL']) channelMode?: 'PRESENCIAL' | 'VIRTUAL';
+  /** DEPRECADO e ignorado. */
+  @IsOptional() @IsISO8601() startAt?: string;
+  /** DEPRECADO e ignorado. */
+  @IsOptional() @IsISO8601() endAt?: string;
 }

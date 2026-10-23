@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -76,4 +77,12 @@ export class UpdateVehicleDto {
     message: 'photoUrl must be a Google Cloud Storage HTTPS URL',
   })
   photoUrl?: string;
+
+  /**
+   * DEC-ALQ-THIRDPATH-001: marca el vehiculo como "de menor costo relativo" elegible para la tercera via notarial.
+   * Solo Gerencia (accion FLEET.MANAGE_THIRD_PATH, editable en ADM-02); otro rol recibe 403.
+   */
+  @IsOptional()
+  @IsBoolean()
+  thirdPathEligible?: boolean;
 }

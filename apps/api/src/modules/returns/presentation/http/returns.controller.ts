@@ -77,6 +77,11 @@ import { ListReturnRemindersQueryDto } from './dto/list-return-reminders-query.d
 import { ListReturnAlertsQueryDto } from './dto/list-return-alerts-query.dto';
 import { ListReturnsQueryDto } from './dto/list-returns-query.dto';
 import { ReturnScopeQueryDto } from './dto/return-scope-query.dto';
+import { RecordZoneMarksDto } from './dto/record-zone-marks.dto';
+import { RecordZoneMarksHandler } from '../../application/commands/record-zone-marks.handler';
+import { RecordZoneMarksCommand } from '../../application/commands/record-zone-marks.command';
+import { ListZoneMarksHandler } from '../../application/queries/list-zone-marks.handler';
+import { ListZoneMarksQuery } from '../../application/queries/list-zone-marks.query';
 import {
   CosmeticTariffResponse,
   ImmobilizationChargeResponse,
@@ -85,12 +90,14 @@ import {
   ReturnAlertItemResponse,
   ReturnReminderInboxItemResponse,
   ReturnReminderResponse,
+  ReturnZoneMarksResponse,
 } from './dto/return.response';
 import {
   toCosmeticTariffResponse,
   toImmobilizationChargeResponse,
   toReturnDamageResponse,
   toReturnResponse,
+  toReturnZoneMarksResponse,
   toReturnAlertItemResponse,
   toReminderInboxItemResponse,
   toReturnReminderResponse,
@@ -116,6 +123,8 @@ export class ReturnsController {
     private readonly registerLateCharge: RegisterReturnLateChargeHandler,
     private readonly closeFinancial: CloseFinancialHandler,
     private readonly closeReturn: CloseReturnHandler,
+    private readonly recordZoneMarks: RecordZoneMarksHandler,
+    private readonly listZoneMarks: ListZoneMarksHandler,
     private readonly getReturn: GetReturnHandler,
     private readonly getCosmeticTariff: GetCosmeticTariffHandler,
     private readonly listReturns: ListReturnsHandler,
@@ -266,6 +275,35 @@ export class ReturnsController {
       new GetResponsibilityTemplateQuery(id, req.firebaseUid!, query.companyId, query.branchId),
     );
     return toResponsibilityTemplateResponse(template);
+  }
+
+  /** DEV-05 / PD-07: marcas por zona persistidas en el servidor (restaurar la pantalla Resultado). */
+  @Get(':id/zone-marks')
+  async zoneMarks(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ReturnScopeQueryDto,
+  ): Promise<ReturnZoneMarksResponse> {
+    const result = await this.listZoneMarks.execute(new ListZoneMarksQuery(id, req.firebaseUid!, query.companyId, query.branchId));
+    return toReturnZoneMarksResponse(result);
+  }
+
+  /**
+   * DEV-05 / PD-07: registra las marcas por zona y emite los eventos auditables RETURN_ZONE_MARKED / RETURN_ROUTE_TAKEN.
+   * No lleva If-Match (no cambia el agregado de la devolución) y es idempotente.
+   */
+  @Post(':id/zone-marks')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async recordZoneMarksCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordZoneMarksDto,
+  ): Promise<ReturnZoneMarksResponse> {
+    const result = await this.recordZoneMarks.execute(
+      new RecordZoneMarksCommand(id, req.firebaseUid!, dto.companyId, dto.branchId, dto.marks),
+    );
+    return toReturnZoneMarksResponse(result);
   }
 
   @Post(':id/commands/register-alcohol-test')

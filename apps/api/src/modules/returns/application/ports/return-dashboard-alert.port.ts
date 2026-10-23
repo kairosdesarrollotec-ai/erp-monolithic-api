@@ -30,8 +30,8 @@ export abstract class ReturnDashboardAlertPort {
   abstract listActiveItems(keyPrefix: string, limit: number, afterId?: string): Promise<ActiveWarrantyDashboardItem[]>;
   /** P3: devoluciones abiertas ya recibidas, con hora pactada anterior a `now` menos la tolerancia y sin cargo por retraso registrado (la mora exacta se calcula en dominio). */
   abstract listLateChargeCandidates(now: Date, limit: number, afterId?: string): Promise<ReturnRecord[]>;
-  /** P3: devoluciones CON_DANOS / CIERRE_FINANCIERO recibidas en o antes de `receivedBefore` con al menos un dano tecnico. */
-  abstract listImmobilizationCandidates(receivedBefore: Date, limit: number, afterId?: string): Promise<ReturnRecord[]>;
+  /** P3: devoluciones CERRADA cerradas en o antes de `closedBefore` (reloj de paralizacion desde el cierre, 22-oct-2026) con al menos un dano tecnico. */
+  abstract listImmobilizationCandidates(closedBefore: Date, limit: number, afterId?: string): Promise<ReturnRecord[]>;
   abstract findReturnsByIds(ids: readonly string[]): Promise<ReturnRecord[]>;
   /** Descarta (no borra) por id; idempotente (solo los aún activos). Devuelve los realmente descartados. */
   abstract dismissItems(ids: readonly string[], at: Date): Promise<number>;

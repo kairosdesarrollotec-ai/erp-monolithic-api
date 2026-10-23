@@ -23,4 +23,14 @@ export abstract class ReservationDocumentRepositoryPort {
   ): Promise<ReservationDocumentRecord>;
 
   abstract list(reservationId: string, organizationId: string): Promise<ReservationDocumentRecord[]>;
+
+  /** Documento de la reserva por id (null si no existe o pertenece a otra reserva). */
+  abstract findById(
+    documentId: string,
+    reservationId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationDocumentRecord | null>;
+
+  /** Cantidad de documentos del cliente subidos (excluye el comprobante de pago). */
+  abstract countCustomerDocuments(reservationId: string, tx?: Prisma.TransactionClient): Promise<number>;
 }

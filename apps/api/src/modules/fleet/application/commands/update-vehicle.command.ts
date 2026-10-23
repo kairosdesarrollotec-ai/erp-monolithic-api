@@ -16,5 +16,7 @@ export class UpdateVehicleCommand {
     public readonly fuelPrice?: number,
     public readonly photoUrl?: string,
     public readonly assignedBranchId?: string,
+    /** DEC-ALQ-THIRDPATH-001: undefined = no cambia. Cambiarlo exige FLEET.MANAGE_THIRD_PATH (Gerencia). */
+    public readonly thirdPathEligible?: boolean,
   ) {}
 }

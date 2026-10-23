@@ -228,3 +228,20 @@ export interface ReturnEvidenceUploadSessionResponse {
   objectUrl: string;
   expiresAt: string;
 }
+
+/** DEV-05 / PD-07: marcas por zona persistidas + ruta resultante. */
+export interface ReturnZoneMarkResponse {
+  zone: string;
+  mark: 'NO_DAMAGE' | 'DAMAGE';
+  markedBy: string;
+  markedAt: string;
+}
+
+export interface ReturnZoneMarksResponse {
+  returnId: string;
+  marks: ReturnZoneMarkResponse[];
+  /** true = las 5 zonas tienen marca. */
+  complete: boolean;
+  /** NO_DAMAGE = las 5 zonas sin daño (ir a DEV-09); DAMAGE = al menos una con daño (ir a DEV-06); null = faltan zonas. */
+  route: 'NO_DAMAGE' | 'DAMAGE' | null;
+}

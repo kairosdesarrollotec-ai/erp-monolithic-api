@@ -53,6 +53,15 @@ describe('PrismaFleetAvailabilityAdapter', () => {
     expect(findManyCommitmentMock).not.toHaveBeenCalled();
   });
 
+  it.each(['MAINTENANCE', 'OUT_OF_SERVICE'])('P-15: rechaza un vehículo en estado %s (VEHICLE_NOT_ELIGIBLE) sin consultar solapes', async (status) => {
+    findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: 'branch-1', dailyRate: '100.00', status });
+
+    const result = await adapter.checkEligibility(BASE_QUERY);
+
+    expect(result.eligible).toBe(false);
+    expect(findManyCommitmentMock).not.toHaveBeenCalled();
+  });
+
   it('devuelve inelegible cuando el vehículo está asignado a otra sede', async () => {
     findFirstVehicleMock.mockResolvedValue({ id: 'vehicle-1', branchId: 'branch-other', dailyRate: '100.00' });
 

@@ -213,6 +213,8 @@ export class InquiriesController {
         parseVersionIfMatch(ifMatch),
         dto.channelMode,
         parseBusinessInstant(dto.startAt),
+        dto.canComeToOffice,
+        dto.customerLocation,
       ),
     );
     return {

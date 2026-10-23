@@ -4,6 +4,7 @@ import {
   computeDepositBreakdown,
   resolveReservationCredit,
 } from './reservation-credit';
+import { ReservationCreditExceedsGuaranteeError } from './rental-errors';
 
 describe('P0-03 opcion (a) - traslado del monto de la reserva a la garantia', () => {
   const source = (overrides: Partial<ReservationCreditSource> = {}): ReservationCreditSource => ({
@@ -105,15 +106,19 @@ describe('P0-03 opcion (a) - traslado del monto de la reserva a la garantia', ()
       expect(computeDepositBreakdown('0.30', 'PEN', credit).amountToCollect).toBe('0.20');
     });
 
-    it('monto de reserva mayor que la garantia: NO es error; cubre la garantia y el sobrante queda como excedente', () => {
+    it('monto de reserva mayor que la garantia: 422 RESERVATION_EXCEEDS_GUARANTEE (decision 2, 22-oct-2026: ya no hay saldo a favor)', () => {
       const credit = resolveReservationCredit(source({ amount: '600.00' }));
-      expect(computeDepositBreakdown('500.00', 'PEN', credit)).toEqual({
-        totalAmount: '500.00',
-        reservationCreditAmount: '500.00',
-        reservationCreditExcess: '100.00',
-        amountToCollect: '0.00',
-        currency: 'PEN',
-      });
+      expect(() => computeDepositBreakdown('500.00', 'PEN', credit)).toThrow(ReservationCreditExceedsGuaranteeError);
+      try {
+        computeDepositBreakdown('500.00', 'PEN', credit);
+      } catch (error) {
+        expect((error as ReservationCreditExceedsGuaranteeError).code).toBe('RESERVATION_EXCEEDS_GUARANTEE');
+      }
+    });
+
+    it('monto de reserva igual a la garantia: cubre todo y no queda nada por cobrar', () => {
+      const credit = resolveReservationCredit(source({ amount: '500.00' }));
+      expect(computeDepositBreakdown('500.00', 'PEN', credit)).toMatchObject({ reservationCreditAmount: '500.00', reservationCreditExcess: '0.00', amountToCollect: '0.00' });
     });
 
     it('monto de reserva mayor que S/ 300 y menor que la garantia: sin excedente', () => {

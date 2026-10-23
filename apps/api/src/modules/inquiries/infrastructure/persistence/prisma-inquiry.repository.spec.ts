@@ -49,6 +49,7 @@ describe('PrismaInquiryRepository', () => {
           }),
         },
         quotation: { create: jest.fn().mockResolvedValue({}) },
+        interaction: { create: jest.fn().mockResolvedValue({}) },
       };
     }
 
@@ -85,4 +86,73 @@ describe('PrismaInquiryRepository', () => {
       expect(tx.quotation.create).not.toHaveBeenCalled();
     });
   });
+
+  describe('interactions append-only (P-06)', () => {
+    it('quote escribe la interaccion en la MISMA transaccion que la cotizacion', async () => {
+      const tx = buildTxWithInteraction();
+      const repo = new PrismaInquiryRepository({ $transaction: (fn: any) => fn(tx) } as any);
+
+      await repo.quote(
+        {
+          id: 'inq-1', ...SCOPE, expectedVersion: 1, vehicleId: 'veh-1', destination: 'X', estimatedDays: 2,
+          amount: '240.00', currency: 'PEN', rateCardVersionId: 'RC', validUntil: new Date(),
+          interaction: { channel: 'WHATSAPP', outcome: 'COTIZADA', note: 'n' },
+        },
+        ['REGISTRADA'],
+      );
+
+      expect(tx.interaction.create).toHaveBeenCalledWith({ data: { inquiryId: 'inq-1', channel: 'WHATSAPP', outcome: 'COTIZADA', note: 'n' } });
+    });
+
+    it('close escribe la interaccion; sin canal (LEGACY_STUB) no escribe nada', async () => {
+      const tx = buildTxWithInteraction();
+      const repo = new PrismaInquiryRepository({} as any);
+
+      await repo.close({ id: 'inq-1', ...SCOPE, expectedVersion: 1, reason: 'R', interaction: { channel: 'PRESENCIAL', outcome: 'CERRADA_SIN_CONVERSION', note: 'R' } }, ['REGISTRADA'], tx as never);
+      expect(tx.interaction.create).toHaveBeenCalledWith({ data: expect.objectContaining({ channel: 'PRESENCIAL', outcome: 'CERRADA_SIN_CONVERSION' }) });
+
+      tx.interaction.create.mockClear();
+      await repo.close({ id: 'inq-1', ...SCOPE, expectedVersion: 1, reason: 'R', interaction: { channel: null, outcome: 'CERRADA_SIN_CONVERSION' } }, ['REGISTRADA'], tx as never);
+      expect(tx.interaction.create).not.toHaveBeenCalled();
+    });
+
+    it('si la version no coincide (412) NO se escribe la interaccion', async () => {
+      const tx = buildTxWithInteraction(0);
+      const repo = new PrismaInquiryRepository({} as any);
+
+      await expect(
+        repo.close({ id: 'inq-1', ...SCOPE, expectedVersion: 9, reason: 'R', interaction: { channel: 'WHATSAPP', outcome: 'X' } }, ['REGISTRADA'], tx as never),
+      ).rejects.toBeInstanceOf(InquiryVersionConflictError);
+      expect(tx.interaction.create).not.toHaveBeenCalled();
+    });
+
+    it('create registra la primera interaccion REGISTRADA anidada en el INSERT de la consulta', async () => {
+      const create = jest.fn().mockResolvedValue({
+        id: 'inq-1', ...SCOPE, customerId: 'c', channel: 'WHATSAPP', touristUse: true, destination: 'X', estimatedDays: 1, travelStartDate: null,
+        partySize: null, dataOrigin: 'CON02', status: 'REGISTRADA', closedReason: null, createdAt: new Date(), createdBy: 'u', version: 1,
+        interactions: [], quotations: [], customer: { nationality: 'EXTRANJERO' },
+      });
+      const repo = new PrismaInquiryRepository({ inquiry: { create } } as any);
+
+      const record = await repo.create({ ...SCOPE, customerId: 'c', channel: 'WHATSAPP', touristUse: true, destination: 'X', estimatedDays: 1, createdBy: 'u' });
+
+      expect(create.mock.calls[0][0].data.interactions).toEqual({ create: { channel: 'WHATSAPP', outcome: 'REGISTRADA', note: null } });
+      expect(record.customerNationality).toBe('EXTRANJERO');
+    });
+  });
 });
+
+function buildTxWithInteraction(count = 1) {
+  return {
+    inquiry: {
+      updateMany: jest.fn().mockResolvedValue({ count }),
+      findFirstOrThrow: jest.fn().mockResolvedValue({
+        id: 'inq-1', ...SCOPE, customerId: null, channel: 'WHATSAPP', touristUse: true, destination: 'X', estimatedDays: 2, travelStartDate: null,
+        partySize: null, dataOrigin: 'CON02', status: 'COTIZADA', closedReason: null, createdAt: new Date(), createdBy: 'u', version: 2,
+        interactions: [], quotations: [], customer: null,
+      }),
+    },
+    quotation: { create: jest.fn().mockResolvedValue({}) },
+    interaction: { create: jest.fn().mockResolvedValue({}) },
+  };
+}

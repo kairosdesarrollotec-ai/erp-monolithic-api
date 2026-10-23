@@ -1,8 +1,18 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.13.0
+  version: 1.14.0
   description: >
+    1.14.0 - Decisiones de Russbel 22-oct-2026 (BACK-1). (a) DEC-CON-001-FINAL: POST /rentals exige inquiryId de una Consulta COTIZADA vigente
+    del mismo cliente y vehiculo (422 INQUIRY_REQUIRED / INQUIRY_VEHICLE_MISMATCH / INQUIRY_CUSTOMER_MISMATCH / QUOTATION_EXPIRED) y la marca
+    CONVERTIDA (outbox ConsultaConvertida.v1). (b) DEC-ALQ-CANCEL-001: nuevo POST /rentals/{id}/commands/cancel. (c) BR-CON-004: validate-documents
+    exige documentos segun nacionalidad (422 DOCUMENTS_INCOMPLETE con missingDocuments/requiredDocuments); respuesta con customerNationality y
+    requiredDocuments. (d) DEC-ALQ-THIRDPATH-001: evaluate-notary recibe biometricVerified, SIEMPRE persiste la evaluacion, THIRD_PATH_ELIGIBLE
+    y MANUAL_REVIEW son alcanzables, approve-notary-exception conserva el tipo real. (e) DEC-ALQ-PAYPROOF-001: formalize-contract acepta
+    `payment` (medio, nro operacion, pagador, agente externo, comprobante); depositAmount pasa a opcional (el servidor usa la tarifa de Flota,
+    x2 con DOUBLE_DEPOSIT) y un monto menor al exigido responde 422 INVALID_DEPOSIT_AMOUNT. (f) DEC-RES-GUARANTEE-CAP: from-reservation exige que
+    hoy (Lima) sea la fecha de inicio y que el monto de reserva no supere la garantia (422). El excedente/saldo a favor desaparece (siempre "0.00").
+    Documentos nuevos: PAYMENT_VOUCHER y RESPONSIBILITY_DOCUMENT.
     1.13.0 - DEC-EVID-DELETE-002 (Respuestas 2026-10-20 #35, SDD 15.5): eliminar evidencia ahora exige DOBLE APROBACION (contrato nuevo
     evidence.yaml: POST /evidence/deletion-requests, approve, reject). `DELETE /rentals/{id}/evidence/{evidenceId}` queda DEPRECADO
     (responde con el header `Deprecation: true`) y CAMBIA su permiso: ya no basta RENTAL.UPLOAD_EVIDENCE, exige el permiso nuevo
@@ -115,7 +125,7 @@ paths:
         '409':
           description: VEHICLE_NOT_AVAILABLE - vehículo no AVAILABLE, de otra sede o con reserva/compromiso solapado
         '422':
-          description: Período de alquiler inválido, CUSTOMER_BLOCKED (cliente ROJO) o INQUIRY_NOT_TRANSITIONABLE (inquiryId no está COTIZADA)
+          description: INQUIRY_REQUIRED (sin inquiryId), Período de alquiler inválido, CUSTOMER_BLOCKED (cliente ROJO), INQUIRY_NOT_TRANSITIONABLE (la consulta no está COTIZADA), QUOTATION_EXPIRED, INQUIRY_VEHICLE_MISMATCH o INQUIRY_CUSTOMER_MISMATCH
         '500':
           description: Error interno del servidor
 
@@ -241,7 +251,7 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: Documentos incompletos
+          description: 'DOCUMENTS_INCOMPLETE - faltan documentos requeridos por la nacionalidad del cliente (BR-CON-004); el cuerpo trae missingDocuments y requiredDocuments'
         '428':
           description: Falta header If-Match
 
@@ -302,13 +312,21 @@ paths:
                   rental: { $ref: '#/components/schemas/RentalResponse' }
                   evaluation:
                     type: object
-                    required: [result, policyVersion, reason, requiresApproval]
+                    required: [result, policyVersion, reason, requiresApproval, previousRentalsCount, biometricVerified, vehicleThirdPathEligible, depositMultiplier, requiredGuarantee]
                     properties:
                       result: { $ref: '#/components/schemas/NotaryResult' }
                       policyVersion: { type: integer }
                       reason: { type: string }
                       requiresApproval: { type: boolean }
                       approverRole: { type: string }
+                      requiresResponsibilityDocument: { type: boolean, description: 'Tercera via: se firma el documento de responsabilidad (RESPONSIBILITY_DOCUMENT) y no se duplica la garantia.' }
+                      previousRentalsCount: { type: integer, description: 'Alquileres previos CERRADOS del cliente; cliente antiguo = mas de 2.' }
+                      biometricVerified: { type: boolean }
+                      vehicleThirdPathEligible: { type: boolean }
+                      depositMultiplier: { type: integer, enum: [1, 2] }
+                      requiredGuarantee:
+                        nullable: true
+                        allOf: [{ $ref: '#/components/schemas/RequiredGuarantee' }]
         '401':
           description: Token de autenticación ausente o inválido
         '403':
@@ -552,9 +570,40 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER (se envió garantía con conductor de la empresa). RESERVATION_CREDIT_CURRENCY_MISMATCH (moneda distinta). Un monto de reserva mayor que la garantía ya NO es error (queda en deposit.reservationCreditExcess).
+          description: >-
+            DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER (se envió garantía con conductor de la empresa). RESERVATION_CREDIT_CURRENCY_MISMATCH (moneda distinta). INVALID_DEPOSIT_AMOUNT (garantia menor a la exigida; tarifa de Flota, x2 con DOUBLE_DEPOSIT). PAYMENT_PROOF_REQUIRED (hay cobro y falta payment/comprobante; en EFECTIVO basta nro de recibo o comprobante). EXTERNAL_AGENT_VERIFICATION_REQUIRED (BR-ALQ-011). GUARANTEE_VOUCHER_NOT_FOUND. RESPONSIBILITY_DOCUMENT_REQUIRED (tercera via sin documento de responsabilidad). Un monto de reserva mayor que la garantia no es posible: se rechaza al crear el alquiler desde la reserva (RESERVATION_EXCEEDS_GUARANTEE).
         '428':
           description: Falta header If-Match
+
+  /rentals/{id}/commands/cancel:
+    post:
+      operationId: cancelRental
+      summary: Cancelar el alquiler antes de la entrega con motivo (DEC-ALQ-CANCEL-001)
+      description: >
+        Permite cancelar por documentos invalidos, cliente rechaza la notaria u otro motivo (OTHER exige nota >= 10).
+        Libera el compromiso del vehiculo y publica AlquilerCancelado.v1. Si ya habia garantia cobrada queda
+        `depositPendingRefund` en la auditoria/evento (el reembolso es un flujo pendiente).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancelRentalRequest' }
+      responses:
+        '200':
+          description: Alquiler cancelado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalResponse' }
+        '403': { description: No autorizado (RENTAL.CANCEL) }
+        '404': { description: Alquiler no encontrado }
+        '409': { description: Estado incompatible (INVALID_RENTAL_STATE_TRANSITION) }
+        '412': { description: Versión no coincide (If-Match) }
+        '422': { description: INVALID_CANCEL_REASON }
+        '428': { description: Falta header If-Match }
 
   /rentals/{id}/commands/complete-delivery:
     post:
@@ -980,10 +1029,16 @@ components:
     ValidateDocumentsRequest:
       type: object
       required: [companyId, branchId]
+      description: >
+        BR-CON-004. PERUANO: identityDocumentValid + driverLicenseValid + addressOrStayProofValid (recibo agua/luz).
+        EXTRANJERO: passportValid + foreignerCardValid + driverLicenseValid + addressOrStayProofValid (constancia de hospedaje)
+        + fecha de ingreso en el cliente. Un cuerpo sin detalle ya no valida nada.
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         identityDocumentValid: { type: boolean }
+        passportValid: { type: boolean }
+        foreignerCardValid: { type: boolean }
         driverLicenseValid: { type: boolean }
         addressOrStayProofValid: { type: boolean }
         notes: { type: string }
@@ -1003,6 +1058,68 @@ components:
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
+        biometricVerified: { type: boolean, default: false, description: 'Casilla que marca el personal tras la verificacion biometrica; se audita con quien la marco (DEC-ALQ-THIRDPATH-001).' }
+
+    RequiredGuarantee:
+      type: object
+      required: [baseAmount, multiplier, amount]
+      properties:
+        baseAmount: { type: string, description: 'Garantia del vehiculo en Flota' }
+        multiplier: { type: integer, enum: [1, 2] }
+        amount: { type: string }
+
+    CancelRentalRequest:
+      type: object
+      required: [companyId, branchId, reason]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        reason: { type: string, enum: [DOCUMENTS_INVALID, CUSTOMER_REJECTED_NOTARY, OTHER] }
+        note: { type: string, maxLength: 500, description: 'Obligatoria (min 10) con OTHER' }
+
+    GuaranteePaymentRequest:
+      type: object
+      required: [method, payerName, payerIsExternalAgent]
+      properties:
+        method: { type: string, enum: [TRANSFERENCIA, DEPOSITO, PLIN, YAPE, EFECTIVO, POS] }
+        operationNumber: { type: string, maxLength: 60, description: 'Nro de operacion; en EFECTIVO, nro de recibo' }
+        payerName: { type: string, maxLength: 120 }
+        payerDocumentNumber: { type: string, maxLength: 30, description: 'Obligatorio si paga un agente externo' }
+        payerIsExternalAgent: { type: boolean }
+        externalAgentVerified: { type: boolean, description: 'Debe ser true si payerIsExternalAgent (BR-ALQ-011)' }
+        voucherDocumentId: { type: string, format: uuid, description: 'Documento PAYMENT_VOUCHER de este alquiler' }
+
+    GuaranteePayment:
+      type: object
+      required: [amount, method, payerName, payerIsExternalAgent]
+      properties:
+        amount: { type: string }
+        method: { type: string, enum: [TRANSFERENCIA, DEPOSITO, PLIN, YAPE, EFECTIVO, POS] }
+        operationNumber: { type: string, nullable: true }
+        payerName: { type: string }
+        payerDocumentNumber: { type: string, nullable: true }
+        payerIsExternalAgent: { type: boolean }
+        externalAgentVerifiedBy: { type: string, nullable: true }
+        voucherDocumentId: { type: string, format: uuid, nullable: true }
+        registeredBy: { type: string, nullable: true }
+
+    RequiredDocument:
+      type: object
+      required: [code, label, kind, field]
+      properties:
+        code: { type: string }
+        label: { type: string }
+        kind: { type: string, enum: [DOCUMENT, DATA] }
+        field: { type: string, nullable: true, description: 'Campo de validate-documents (null para DATA)' }
+
+    RentalCancellation:
+      type: object
+      required: [reason, cancelledAt, cancelledBy]
+      properties:
+        reason: { type: string }
+        note: { type: string, nullable: true }
+        cancelledAt: { type: string, format: date-time }
+        cancelledBy: { type: string }
 
     ApproveNotaryExceptionRequest:
       type: object
@@ -1060,8 +1177,10 @@ components:
       type: object
       required: [companyId, branchId, documentRef]
       description: >
-        `depositAmount` y `depositCurrency` son obligatorios SALVO con conductor de la empresa
-        (`withCompanyDriver=true`), donde no hay garantía y se omiten (DEC-ALQ-COMPANY-DRIVER-004).
+        Con conductor de la empresa (`withCompanyDriver=true`) no hay garantía (DEC-ALQ-COMPANY-DRIVER-004). En el resto,
+        `depositAmount`/`depositCurrency` son opcionales si Flota define la garantía del vehículo (el servidor usa la exigida,
+        x2 con DOUBLE_DEPOSIT); si se envían no pueden ser menores; si Flota no la define son obligatorios (400). Si hay
+        diferencia a cobrar, `payment` es obligatorio (DEC-ALQ-PAYPROOF-001).
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
@@ -1070,6 +1189,7 @@ components:
           type: string
           description: Garantía TOTAL del vehículo (incluye el monto de reserva que se traslada, si lo hay). Omitir con conductor de la empresa.
         depositCurrency: { type: string, enum: [PEN, USD], description: Omitir con conductor de la empresa. }
+        payment: { $ref: '#/components/schemas/GuaranteePaymentRequest' }
         holderType: { $ref: '#/components/schemas/ContractHolderType' }
         withCompanyDriver:
           type: boolean
@@ -1241,6 +1361,10 @@ components:
         evaluatedAt: { type: string, format: date-time }
         approvedBy: { type: string, nullable: true }
         justification: { type: string, nullable: true }
+        biometricVerified: { type: boolean }
+        biometricVerifiedBy: { type: string, nullable: true }
+        previousRentalsCount: { type: integer, nullable: true }
+        pendingApproval: { type: boolean, description: 'true = falta aprobacion de Gerencia (THIRD_PATH_ELIGIBLE / MANUAL_REVIEW sin approvedBy)' }
 
     RentalContractResponse:
       type: object
@@ -1315,6 +1439,9 @@ components:
         amountCollected:
           type: string
           description: Diferencia cobrada al formalizar = originalAmount - reservationCreditAmount.
+        payment:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/GuaranteePayment' }]
         createdAt: { type: string, format: date-time }
 
     CompanyDriverChargeResponse:
@@ -1420,6 +1547,17 @@ components:
           type: number
           nullable: true
           description: Monto mínimo de garantía configurado para el vehículo (PEN).
+        vehicleThirdPathEligible: { type: boolean, description: 'Marca de Gerencia en Flota (tercera via notarial)' }
+        customerNationality: { type: string, enum: [PERUANO, EXTRANJERO] }
+        requiredDocuments:
+          type: array
+          items: { $ref: '#/components/schemas/RequiredDocument' }
+        requiredGuarantee:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/RequiredGuarantee' }]
+        cancellation:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/RentalCancellation' }]
         vehiclePassengerCapacity:
           type: integer
           nullable: true
@@ -1481,7 +1619,7 @@ components:
 
     RentalDocumentType:
       type: string
-      enum: [LICENSE, ID_DOCUMENT, PROOF_OF_ADDRESS, BANK_STATEMENT, OTHER]
+      enum: [LICENSE, ID_DOCUMENT, PROOF_OF_ADDRESS, BANK_STATEMENT, PAYMENT_VOUCHER, RESPONSIBILITY_DOCUMENT, OTHER]
       description: Tipo de documento del cliente adjunto a un alquiler.
 
     RequestRentalDocumentUploadSessionRequest:

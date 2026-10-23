@@ -1,4 +1,4 @@
-import { ChannelMode } from '../../../reservations/domain/channel-mode';
+import { ChannelMode, CustomerLocation } from '../../../reservations/domain/channel-mode';
 
 /**
  * Hallazgo critico de revision PR#7 ("convertir no crea reserva"):
@@ -22,5 +22,8 @@ export class ConvertToReservationCommand {
     public readonly expectedVersion: number,
     public readonly channelMode: ChannelMode,
     public readonly startAt: Date,
+    /** PEND-08 (opcional): si es false, la modalidad PRESENCIAL se rechaza. */
+    public readonly canComeToOffice?: boolean,
+    public readonly customerLocation?: CustomerLocation,
   ) {}
 }

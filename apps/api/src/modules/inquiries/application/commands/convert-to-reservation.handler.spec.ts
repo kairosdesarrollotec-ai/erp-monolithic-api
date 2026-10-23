@@ -3,7 +3,8 @@ import { QuotingNotProductionReadyError } from '../../domain/inquiry-errors';
 import { ConvertToReservationHandler } from './convert-to-reservation.handler';
 import { ConvertToReservationCommand } from './convert-to-reservation.command';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
-import { InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
+import { InquiryNotTouristUseError, InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
+import { CustomerBlockedError } from '../../../rentals/domain/rental-errors';
 import { ReservationRepositoryPort } from '../../../reservations/application/ports/reservation-repository.port';
 import { InquiryAlreadyHasReservationError, ReservationExceedsGuaranteeError } from '../../../reservations/domain/reservation-errors';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
@@ -43,11 +44,13 @@ function build(options: {
   production?: boolean;
   now?: Date;
   depositMinimum?: number | null;
+  customerStatus?: string;
 } = {}) {
   const existing = options.existing === undefined ? quotedInquiry() : options.existing;
   const inquiries = buildInquiryRepository(existing);
   const reservations = {
     create: jest.fn().mockResolvedValue({ id: 'res-1', inquiryId: 'inq-1', status: 'DRAFT' }),
+    findCustomerById: jest.fn().mockResolvedValue({ id: 'cust-1', organizationId: ORG, operatingCompanyId: COMPANY, status: options.customerStatus ?? 'NORMAL' }),
     findVehicleById: jest.fn().mockResolvedValue({ id: 'veh-new', depositMinimum: options.depositMinimum === undefined ? 500 : options.depositMinimum }),
   } as unknown as jest.Mocked<ReservationRepositoryPort>;
   const audit = { recordInquiryEvent: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<AuditEventRepositoryPort>;
@@ -88,7 +91,7 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
 
     expect(transactions.run).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: 'Serializable' });
     expect(inquiries.findById).toHaveBeenLastCalledWith('inq-1', SCOPE, transactions.tx);
-    expect(inquiries.convertToReservation).toHaveBeenCalledWith({ id: 'inq-1', ...SCOPE, expectedVersion: 2 }, ['COTIZADA'], transactions.tx);
+    expect(inquiries.convertToReservation).toHaveBeenCalledWith({ id: 'inq-1', ...SCOPE, expectedVersion: 2, interaction: expect.objectContaining({ channel: 'WHATSAPP', outcome: 'CONVERTIDA_A_RESERVA' }) }, ['COTIZADA'], transactions.tx);
     expect(reservations.create).toHaveBeenCalledWith(
       expect.objectContaining({
         organizationId: ORG,
@@ -111,6 +114,79 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
       transactions.tx,
     );
     expect(result.reservation.id).toBe('res-1');
+  });
+
+  it('P-07: publica ConsultaConvertida.v1 (target RESERVATION) en la misma transaccion, ademas de ReservationCreated', async () => {
+    const { handler, outbox, transactions } = build();
+
+    await handler.execute(command());
+
+    expect(outbox.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        aggregateType: 'inquiry',
+        aggregateId: 'inq-1',
+        eventType: 'ConsultaConvertida.v1',
+        payload: expect.objectContaining({ inquiryId: 'inq-1', target: 'RESERVATION', reservationId: 'res-1', quotationId: 'quo-new' }),
+      }),
+      transactions.tx,
+    );
+    expect(outbox.publish).toHaveBeenCalledTimes(2);
+  });
+
+  it('PEND-13: periodo invalido (cotizacion con 0 dias => startAt >= endAt) -> 400 INVALID_PERIOD; no transiciona ni crea', async () => {
+    const { handler, inquiries, reservations } = build({
+      existing: buildInquiry({
+        status: 'COTIZADA',
+        version: 2,
+        quotations: [buildQuotation({ id: 'quo-0', vehicleId: 'veh-new', estimatedDays: 0, createdAt: new Date('2026-09-23T10:00:00Z'), validUntil: new Date('2026-09-26T10:00:00Z') })],
+      }),
+    });
+
+    await expect(handler.execute(command())).rejects.toMatchObject({ code: 'INVALID_PERIOD', httpStatus: 400 });
+    expect(inquiries.convertToReservation).not.toHaveBeenCalled();
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  it('PEND-08: PRESENCIAL con canComeToOffice=false -> 422 CHANNEL_MODE_MISMATCH; no transiciona ni crea', async () => {
+    const { handler, inquiries, reservations } = build();
+
+    await expect(
+      handler.execute(new ConvertToReservationCommand('inq-1', 'uid-1', COMPANY, BRANCH, 2, 'PRESENCIAL', START, false)),
+    ).rejects.toMatchObject({ code: 'CHANNEL_MODE_MISMATCH', httpStatus: 422 });
+    expect(inquiries.convertToReservation).not.toHaveBeenCalled();
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  it('PEND-08: VIRTUAL con canComeToOffice=false convierte con normalidad', async () => {
+    const { handler, reservations } = build();
+
+    await handler.execute(new ConvertToReservationCommand('inq-1', 'uid-1', COMPANY, BRANCH, 2, 'VIRTUAL', START, false, 'FUERA_DE_AYACUCHO'));
+
+    expect(reservations.create).toHaveBeenCalledWith(expect.objectContaining({ channelMode: 'VIRTUAL' }), expect.anything());
+  });
+
+  it('P-13: cliente ROJO -> 422 CUSTOMER_BLOCKED; no transiciona ni crea reserva', async () => {
+    const { handler, inquiries, reservations } = build({ customerStatus: 'ROJO' });
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(CustomerBlockedError);
+    expect(inquiries.convertToReservation).not.toHaveBeenCalled();
+    expect(reservations.create).not.toHaveBeenCalled();
+  });
+
+  it('P-13: cliente AMBAR no bloquea', async () => {
+    const { handler, reservations } = build({ customerStatus: 'AMBAR' });
+
+    await handler.execute(command());
+
+    expect(reservations.create).toHaveBeenCalled();
+  });
+
+  it('P-05: touristUse=false -> 422 INQUIRY_NOT_TOURIST_USE; no transiciona ni crea reserva', async () => {
+    const { handler, inquiries, reservations } = build({ existing: quotedInquiry({ touristUse: false }) });
+
+    await expect(handler.execute(command())).rejects.toBeInstanceOf(InquiryNotTouristUseError);
+    expect(inquiries.convertToReservation).not.toHaveBeenCalled();
+    expect(reservations.create).not.toHaveBeenCalled();
   });
 
   describe('F-01: la reserva nunca supera la garantia del vehiculo', () => {

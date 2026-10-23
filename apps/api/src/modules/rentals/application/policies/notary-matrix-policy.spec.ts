@@ -11,6 +11,7 @@ describe('evaluateNotaryMatrix', () => {
         vehicleModel: `Toyota ${model} 4x4`,
         previousRentalsCount: 5,
         biometricVerified: true,
+        thirdPathEligible: true,
       });
 
       expect(output.result).toBe('MANDATORY');
@@ -20,17 +21,31 @@ describe('evaluateNotaryMatrix', () => {
     }
   });
 
-  it('cliente recurrente (> 2 alquileres) con biometria verificada es elegible para tercer camino (BR-ALQ-004)', () => {
+  it('cliente antiguo (> 2) + biometrico verificado + vehiculo de menor costo => THIRD_PATH_ELIGIBLE con aprobacion de Gerencia (BR-ALQ-004)', () => {
     const output = evaluateNotaryMatrix({
       vehicleModel: 'Nissan Versa',
       previousRentalsCount: 3,
       biometricVerified: true,
+      thirdPathEligible: true,
       scoreRiskLevel: 'LOW',
     });
 
     expect(output.result).toBe('THIRD_PATH_ELIGIBLE');
     expect(output.requiresApproval).toBe(true);
     expect(output.approverRole).toBe('GERENCIA');
+    expect(output.requiresResponsibilityDocument).toBe(true);
+  });
+
+  it('cliente antiguo + biometrico verificado pero vehiculo NO de menor costo => DOUBLE_DEPOSIT (SC-ALQ-002.04)', () => {
+    const output = evaluateNotaryMatrix({
+      vehicleModel: 'Nissan Versa',
+      previousRentalsCount: 3,
+      biometricVerified: true,
+      thirdPathEligible: false,
+    });
+
+    expect(output.result).toBe('DOUBLE_DEPOSIT');
+    expect(output.requiresApproval).toBe(false);
   });
 
   it('cliente recurrente con riesgo ALTO no accede a tercer camino y requiere notaria MANDATORY', () => {
@@ -38,6 +53,7 @@ describe('evaluateNotaryMatrix', () => {
       vehicleModel: 'Kia Rio',
       previousRentalsCount: 4,
       biometricVerified: true,
+      thirdPathEligible: true,
       scoreRiskLevel: 'HIGH',
     });
 
@@ -50,20 +66,23 @@ describe('evaluateNotaryMatrix', () => {
       vehicleModel: 'Hyundai Accent',
       previousRentalsCount: 2,
       biometricVerified: true,
+      thirdPathEligible: true,
     });
 
     expect(output.result).toBe('DOUBLE_DEPOSIT');
     expect(output.requiresApproval).toBe(false);
   });
 
-  it('cliente sin biometria verificada requiere DOUBLE_DEPOSIT', () => {
+  it('cliente antiguo sin biometrico verificado => MANUAL_REVIEW (revision manual de Gerencia)', () => {
     const output = evaluateNotaryMatrix({
       vehicleModel: 'Suzuki Swift',
       previousRentalsCount: 5,
       biometricVerified: false,
+      thirdPathEligible: true,
     });
 
-    expect(output.result).toBe('DOUBLE_DEPOSIT');
-    expect(output.requiresApproval).toBe(false);
+    expect(output.result).toBe('MANUAL_REVIEW');
+    expect(output.requiresApproval).toBe(true);
+    expect(output.approverRole).toBe('GERENCIA');
   });
 });

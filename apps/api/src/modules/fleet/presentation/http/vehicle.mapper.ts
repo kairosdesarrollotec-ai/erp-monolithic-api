@@ -30,6 +30,7 @@ export function toVehicleResponse(vehicle: FleetVehicle | FleetVehicleWithAvaila
     passengerCapacity: vehicle.passengerCapacity ?? null,
     fuelPrice: vehicle.fuelPrice ?? null,
     photoUrl: vehicle.photoUrl ?? null,
+    thirdPathEligible: vehicle.thirdPathEligible ?? false,
     createdAt: vehicle.createdAt.toISOString(),
     updatedAt: vehicle.updatedAt.toISOString(),
     ...(availability ? { availability: toAvailabilityResponse(availability) } : {}),

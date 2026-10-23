@@ -343,6 +343,12 @@ model Branch {
   id        String   @id @default(uuid())
   companyId String   @map("company_id")
   name      String
+  /// 22-oct (Respuestas #9): geocerca de la sede para las marcas de asistencia propias (WGS84 + radio en metros). Null = sin configurar.
+  latitude            Float?
+  longitude           Float?
+  geofenceRadiusMeters Int?    @map("geofence_radius_meters")
+  geofenceUpdatedBy   String?  @map("geofence_updated_by")
+  geofenceUpdatedAt   DateTime? @map("geofence_updated_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -527,6 +533,8 @@ model Vehicle {
   /// Precio del combustible por unidad para este vehiculo (PEN). Insumo de la multa por combustible, que AUN NO se calcula (F-05).
   fuelPrice          Decimal? @map("fuel_price") @db.Decimal(10, 2)
   photoUrl           String?  @map("photo_url")
+  /// DEC-ALQ-THIRDPATH-001 (22-oct-2026): vehiculo "de menor costo relativo" elegible para la tercera via notarial (BR-ALQ-004). Solo lo edita Gerencia (FLEET.MANAGE_THIRD_PATH).
+  thirdPathEligible  Boolean  @default(false) @map("third_path_eligible")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
 
@@ -757,6 +765,14 @@ model Reservation {
   paymentPolicyVersion  Int               @map("payment_policy_version")
   paymentValidatedAt    DateTime?         @map("payment_validated_at")
   documentsCompletedAt  DateTime?         @map("documents_completed_at")
+  /// DEC-RES-PAYPROOF-001 (22-oct-2026): comprobante del pago de la reserva (medio, nº de operacion/recibo, pagador,
+  /// comprobante subido). Se llena en register-payment; el monto requerido y la version de politica los lee el servidor.
+  paymentAmount             Decimal?  @map("payment_amount") @db.Decimal(12, 2)
+  paymentMethod             String?   @map("payment_method") @db.VarChar(20)
+  paymentOperationNumber    String?   @map("payment_operation_number") @db.VarChar(60)
+  payerName                 String?   @map("payer_name") @db.VarChar(120)
+  paymentVoucherDocumentId  String?   @map("payment_voucher_document_id") @db.Uuid
+  paymentRegisteredBy       String?   @map("payment_registered_by")
   confirmedAt           DateTime?         @map("confirmed_at")
   createdAt             DateTime          @default(now()) @map("created_at")
   createdBy             String            @map("created_by")
@@ -950,6 +966,11 @@ model Rental {
   version            Int                @default(1)
   /// DEC-ALQ-DRIVERRATE-001: tarifa diaria manual del conductor de la empresa (NULL = sin valor manual; CHECK >= 0 en la migracion).
   companyDriverDailyRate Decimal?   @db.Decimal(10, 2) @map("company_driver_daily_rate")
+  /// DEC-ALQ-CANCEL-001 (22-oct-2026): cancelacion manual antes de la entrega (motivo obligatorio).
+  cancelReason  String?   @map("cancel_reason") @db.VarChar(40)
+  cancelNote    String?   @map("cancel_note") @db.VarChar(500)
+  cancelledAt   DateTime? @map("cancelled_at") @db.Timestamptz(6)
+  cancelledBy   String?   @map("cancelled_by")
 
   operatingCompany Company      @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   branch           Branch       @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
@@ -1034,6 +1055,11 @@ model NotaryEvaluation {
   evaluatedAt   DateTime     @default(now()) @map("evaluated_at")
   approvedBy    String?      @map("approved_by")
   justification String?      @db.VarChar(500)
+  /// DEC-ALQ-THIRDPATH-001: casilla que registra el personal (RENIEC fuera del MVP, DEC-MVP-RENIEC-MTC-EXCL).
+  biometricVerified   Boolean  @default(false) @map("biometric_verified")
+  biometricVerifiedBy String?  @map("biometric_verified_by")
+  /// Alquileres previos (CLOSED) del cliente usados en la decision (auditable).
+  previousRentalsCount Int?    @map("previous_rentals_count")
 
   rental Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
 
@@ -1145,6 +1171,18 @@ model RentalDeposit {
   /// DEC-ALQ-RESCREDIT-002: excedente del monto de la reserva sobre la garantia
   /// (saldo a favor visible; sin reembolso ni calculo automatico, pregunta a Finanzas).
   reservationCreditExcess Decimal          @default(0) @map("reservation_credit_excess") @db.Decimal(12, 2)
+  /// DEC-ALQ-PAYPROOF-001 (22-oct-2026, ALQ P-01 / BR-ALQ-011): comprobante del cobro de la garantia (la diferencia
+  /// que se cobra al formalizar). NULL si no se cobro nada (la reserva cubre toda la garantia) o en depositos previos.
+  paymentAmount            Decimal?  @map("payment_amount") @db.Decimal(12, 2)
+  paymentMethod            String?   @map("payment_method") @db.VarChar(20)
+  paymentOperationNumber   String?   @map("payment_operation_number") @db.VarChar(60)
+  payerName                String?   @map("payer_name") @db.VarChar(120)
+  payerDocumentNumber      String?   @map("payer_document_number") @db.VarChar(30)
+  /// BR-ALQ-011: true si paga un agente externo (verificacion adicional obligatoria).
+  payerIsExternalAgent     Boolean   @default(false) @map("payer_is_external_agent")
+  externalAgentVerifiedBy  String?   @map("external_agent_verified_by")
+  paymentVoucherDocumentId String?   @map("payment_voucher_document_id") @db.Uuid
+  paymentRegisteredBy      String?   @map("payment_registered_by")
   createdAt      DateTime                  @default(now()) @map("created_at")
 
   rental      Rental                    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
@@ -1298,6 +1336,7 @@ model RentalReturn {
   evidences             ReturnEvidence[]
   incidents             Incident[]
   reminder              ReturnReminder?
+  zoneMarks             ReturnZoneMark[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
@@ -1340,6 +1379,25 @@ model ReturnReminder {
 
   @@index([organizationId, operatingCompanyId, branchId, status, dueAt], map: "idx_return_reminders_scope_status_due")
   @@map("return_reminders")
+}
+
+/// DEV-05 / PD-07 (G2, 22-oct-2026) - Marca "Sin daño" / "Con daño" por zona del comparador de la pantalla Resultado. Una fila por
+/// (devolucion, zona); cambiar de opinion actualiza la fila y cada cambio se audita (RETURN_ZONE_MARKED).
+model ReturnZoneMark {
+  id          String   @id @default(uuid())
+  returnId    String   @map("return_id")
+  zone        String   @db.VarChar(30)
+  /// NO_DAMAGE | DAMAGE (validado en el handler y con CHECK en la migracion).
+  mark        String   @db.VarChar(10)
+  markedBy    String   @map("marked_by")
+  markedAt    DateTime @default(now()) @map("marked_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  rentalReturn RentalReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@unique([returnId, zone])
+  @@map("return_zone_marks")
 }
 
 /// TDD-04-devolucion seccion 9.2 - Daño detectado en devolución (estético o técnico).
@@ -1589,11 +1647,23 @@ model Vacancy {
   createdAt           DateTime       @default(now()) @map("created_at")
   updatedAt           DateTime       @updatedAt @map("updated_at")
   createdBy           String         @map("created_by")
+  /// 22-oct (Respuestas #5): vacante creada automaticamente por RelacionLaboralTerminada.v1. `originEventId` (id del outbox_event)
+  /// es UNIQUE => idempotencia: un evento, una vacante. Null en vacantes registradas a mano.
+  originEventId       String?        @unique(map: "vacancies_origin_event_id_key") @map("origin_event_id")
+  originTerminationId String?        @map("origin_termination_id")
+  originEmployeeId    String?        @map("origin_employee_id")
+  /// Un candidato origina como maximo UNA vacante de reemplazo (prueba negativa y baja de la ficha pueden ser la misma salida).
+  originCandidateId   String?        @unique(map: "vacancies_origin_candidate_id_key") @map("origin_candidate_id")
+  /// REC-02 cancelar: motivo obligatorio, fecha y autor (la vacante no se borra; los candidatos siguen consultables).
+  cancelReason        String?        @map("cancel_reason") @db.VarChar(500)
+  cancelledAt         DateTime?      @map("cancelled_at")
+  cancelledBy         String?        @map("cancelled_by")
 
   operatingCompany Company     @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
   branch           Branch      @relation(fields: [branchId, operatingCompanyId], references: [id, companyId])
   candidates       Candidate[]
 
+  @@index([originTerminationId], map: "vacancies_origin_termination_idx")
   @@unique([operatingCompanyId, code], map: "vacancies_operating_company_id_code_key")
   @@index([organizationId, operatingCompanyId, branchId, status, createdAt(sort: Desc)], map: "vacancies_scope_status_created_idx")
   @@index([operatingCompanyId, createdAt(sort: Desc)], map: "vacancies_company_created_idx")
@@ -1861,6 +1931,25 @@ model AttendanceRecord {
   longitude          Float?
   /// Precision horizontal reportada por el dispositivo, en metros.
   accuracy           Float?           @map("accuracy_meters")
+  /// 22-oct (Respuestas #9): SELF = el colaborador marca desde su cuenta; ON_BEHALF = Personal registra a nombre de otro (con motivo).
+  source             String           @default("ON_BEHALF") @db.VarChar(20)
+  onBehalfReason     String?          @map("on_behalf_reason") @db.Text
+  /// Hora capturada en el dispositivo (admite marcas offline con tope de antiguedad); `checkInTime` es la hora aceptada.
+  capturedAt         DateTime?        @map("captured_at")
+  outsideGeofence    Boolean          @default(false) @map("outside_geofence")
+  distanceMeters     Float?           @map("distance_meters")
+  geofenceRadiusMeters Int?           @map("geofence_radius_meters")
+  /// PENDING = fuera de la geocerca, espera a Gerencia/Administracion; APPROVED / CORRECTED = ya revisada. Null = no requiere revision.
+  reviewStatus       String?          @map("review_status") @db.VarChar(20)
+  reviewedById       String?          @map("reviewed_by_id")
+  reviewedAt         DateTime?        @map("reviewed_at")
+  reviewNote         String?          @map("review_note") @db.Text
+  checkOutCapturedAt DateTime?        @map("check_out_captured_at")
+  checkOutLatitude   Float?           @map("check_out_latitude")
+  checkOutLongitude  Float?           @map("check_out_longitude")
+  checkOutAccuracy   Float?           @map("check_out_accuracy_meters")
+  checkOutOutsideGeofence Boolean     @default(false) @map("check_out_outside_geofence")
+  checkOutDistanceMeters Float?       @map("check_out_distance_meters")
   createdById        String           @map("created_by_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
@@ -1870,6 +1959,7 @@ model AttendanceRecord {
   @@unique([employeeId, date], map: "attendance_records_employee_date_key")
   @@index([employeeId, payrollMonth], map: "attendance_records_employee_payroll_month_idx")
   @@index([date, status], map: "attendance_records_date_status_idx")
+  @@index([reviewStatus, date], map: "attendance_records_review_status_idx")
   @@map("attendance_records")
 }
 
@@ -1912,6 +2002,13 @@ model VacationRequest {
   approvedById String?       @map("approved_by_id")
   approvedAt  DateTime?      @map("approved_at")
   notes       String?        @db.Text
+  /// 22-oct (Respuestas #10): reprogramar/cancelar conserva las fechas originales y quien/cuando/por que.
+  originalStartDate DateTime? @map("original_start_date") @db.Date
+  originalEndDate   DateTime? @map("original_end_date") @db.Date
+  rescheduleCount   Int       @default(0) @map("reschedule_count")
+  statusReason      String?   @map("status_reason") @db.Text
+  statusChangedAt   DateTime? @map("status_changed_at")
+  statusChangedById String?   @map("status_changed_by_id")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 

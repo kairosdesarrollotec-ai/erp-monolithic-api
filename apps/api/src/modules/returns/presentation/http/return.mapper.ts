@@ -1,3 +1,5 @@
+import type { RecordZoneMarksResult } from '../../application/commands/record-zone-marks.handler';
+import type { ReturnZoneMarksResponse } from './dto/return.response';
 import {
   ImmobilizationChargeRecord,
   ReturnDamageRecord,
@@ -222,5 +224,14 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     etag: `"${record.version}"`,
     damages: (record.damages ?? []).map((d) => toReturnDamageResponse(d)),
     immobilizationCharges: (record.immobilizationCharges ?? []).map((c) => toImmobilizationChargeResponse(c)),
+  };
+}
+
+export function toReturnZoneMarksResponse(result: RecordZoneMarksResult): ReturnZoneMarksResponse {
+  return {
+    returnId: result.returnId,
+    marks: result.marks.map((m) => ({ zone: m.zone, mark: m.mark, markedBy: m.markedBy, markedAt: m.markedAt.toISOString() })),
+    complete: result.complete,
+    route: result.route,
   };
 }

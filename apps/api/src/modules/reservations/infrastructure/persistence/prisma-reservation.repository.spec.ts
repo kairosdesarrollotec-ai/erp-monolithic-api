@@ -1,4 +1,4 @@
-import { PrismaReservationRepository } from './prisma-reservation.repository';
+import { PrismaReservationRepository, isVehicleCommitmentExclusionViolation } from './prisma-reservation.repository';
 import { VehicleNotAvailableError } from '../../domain/reservation-errors';
 
 const START = new Date('2026-10-20T00:00:00.000Z');
@@ -67,5 +67,46 @@ describe('PrismaReservationRepository.confirm - VEHICLE_NOT_AVAILABLE', () => {
     expect(err.code).toBe('VEHICLE_NOT_AVAILABLE');
     expect(err.detail).toContain('21/10/2026 al 27/10/2026') // 00:00Z = 19:00 del dia previo en Lima (DEC-TZ-LIMA-001);
     expect(tx.vehicleCommitment.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('PrismaReservationRepository.confirm - exclusion de rango en BD (PEND-07)', () => {
+  const scope = { organizationId: 'o', operatingCompanyId: 'c', branchId: 'b' };
+  const reservation = {
+    id: 'res-1', vehicleId: 'v1', startAt: START, endAt: END, version: 1,
+    paymentValidatedAt: new Date(), documentsCompletedAt: new Date(),
+  };
+
+  it('si el INSERT del commitment viola la exclusion (23P01, carrera perdida) -> 409 VEHICLE_NOT_AVAILABLE, no un 500', async () => {
+    const dbError = Object.assign(new Error('conflicting key value violates exclusion constraint "vehicle_commitments_no_overlap_excl"'), { code: 'P2010', meta: { code: '23P01' } });
+    const tx = {
+      reservation: { findFirst: jest.fn().mockResolvedValue(reservation), findMany: jest.fn().mockResolvedValue([]) },
+      vehicleCommitment: { findMany: jest.fn().mockResolvedValue([]), create: jest.fn().mockRejectedValue(dbError) },
+    };
+    const repo = new PrismaReservationRepository({} as never);
+
+    const error = await repo.confirm('res-1', scope, 1, tx as never).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(VehicleNotAvailableError);
+    expect((error as VehicleNotAvailableError).httpStatus).toBe(409);
+  });
+
+  it('otros errores del INSERT se propagan sin traducir', async () => {
+    const boom = new Error('connection reset');
+    const tx = {
+      reservation: { findFirst: jest.fn().mockResolvedValue(reservation), findMany: jest.fn().mockResolvedValue([]) },
+      vehicleCommitment: { findMany: jest.fn().mockResolvedValue([]), create: jest.fn().mockRejectedValue(boom) },
+    };
+    const repo = new PrismaReservationRepository({} as never);
+
+    await expect(repo.confirm('res-1', scope, 1, tx as never)).rejects.toBe(boom);
+  });
+
+  it('isVehicleCommitmentExclusionViolation reconoce 23P01 por meta.code, code o nombre de la constraint', () => {
+    expect(isVehicleCommitmentExclusionViolation({ meta: { code: '23P01' } })).toBe(true);
+    expect(isVehicleCommitmentExclusionViolation({ code: '23P01' })).toBe(true);
+    expect(isVehicleCommitmentExclusionViolation(new Error('violates exclusion constraint "vehicle_commitments_no_overlap_excl"'))).toBe(true);
+    expect(isVehicleCommitmentExclusionViolation(new Error('unique constraint failed'))).toBe(false);
+    expect(isVehicleCommitmentExclusionViolation(null)).toBe(false);
   });
 });

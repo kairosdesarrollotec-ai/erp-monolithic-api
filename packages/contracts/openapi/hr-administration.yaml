@@ -1,8 +1,29 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.9.0
+  version: 0.10.0
   description: >
+    0.10.0 (22-oct-2026, Respuestas Russbel #4, #5, #9, #10 y HU-35; ADITIVO salvo lo marcado COMPORTAMIENTO CAMBIADO):
+    (1) #10 Vacaciones en conflicto: POST /vacations/{id}/reschedule (nuevas fechas libres + motivo, estado REPROGRAMADA, conserva las
+    fechas originales) y POST /vacations/{id}/cancel (estado CANCELADA, libera el cupo, motivo). Misma regla de capacidad que programar
+    (BR-ADP-002: maximo 1 persona por area dentro de la misma empresa, parametrizada en el back; PENDIENTE de confirmar si pasa a
+    «2 por empresa»), transaccion Serializable, auditoria. Permiso SCHEDULE_VACATION. VacationRequestResponse suma originalStartDate,
+    originalEndDate, rescheduleCount, statusReason, statusChangedAt, statusChangedById.
+    (2) #9 Asistencia con autoservicio y control: POST /me/attendance (marca propia con foto obligatoria en la entrada, ubicacion
+    obligatoria, geocerca contra la sede, una marca por dia y tipo, hora del cliente con tope de antiguedad), GET /me/attendance,
+    GET /attendance/pending-review, PATCH /attendance/{id}/review (aprobar o corregir marcas fuera de geocerca) y
+    GET|PUT|DELETE /branches/{branchId}/geofence. Permisos nuevos editables en ADM-02: LOG_OWN_ATTENDANCE, REVIEW_ATTENDANCE,
+    MANAGE_GEOFENCE. COMPORTAMIENTO CAMBIADO: POST /employees/{id}/attendance (registro «a nombre de» otro colaborador) ahora exige
+    `reason` en PRESENTE/TARDANZA (422 ATTENDANCE_REASON_REQUIRED) y queda auditado como origen ON_BEHALF.
+    (3) #5 La terminacion crea la vacante en Reclutamiento de forma asincrona: EmploymentTerminationResponse.vacancyCreatedId se
+    informa en el expediente (GET /employees/{id}) una vez consumido el evento (en la respuesta inmediata de /terminate es null).
+    (4) #4 La cascada de salidas a campo publica eventos de alerta (solicitada / escalada / nadie autorizo / resuelta) que el tablero
+    muestra a quien tenga NOTIFICATIONS.RECEIVE_FIELD_TRIP_ALERTS (v0 Gerencia); sin cambio HTTP.
+    (5) HU-35 COMPORTAMIENTO CAMBIADO: EmployeeResponse.documentNumber y baseSalary salen en null (y se listan en `restrictedFields`)
+    para roles sin permiso: el documento requiere HR_ADMINISTRATION.VIEW_EMPLOYEE_DOCUMENT (v0 Gerencia, RRHH, Administracion; no
+    Auditoria ni Finanzas) y el sueldo HR_ADMINISTRATION.MANAGE_SALARY (v0 solo Gerencia). La busqueda por documento en GET /employees
+    solo aplica si el rol puede ver documentos.
+
     0.9.0 (frente B2, 2026-10-21): POST /employees: `baseSalary` solo lo fija Gerencia (HR_ADMINISTRATION.MANAGE_SALARY), igual que en
     PATCH. Otro rol que envie un `baseSalary` distinto de null recibe 403 EMPLOYEE_SALARY_GERENCIA_ONLY y NO se crea la ficha
     (COMPORTAMIENTO CAMBIADO). Sin sueldo (omitido o null) la ficha se crea normalmente con `baseSalary: null` = pendiente de que
@@ -523,6 +544,68 @@ paths:
         '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
         '404': { description: Colaborador no encontrado }
 
+  /vacations/{id}/reschedule:
+    post:
+      operationId: rescheduleVacation
+      summary: Reprogramar vacaciones en conflicto a otra fecha libre (22-oct, #10; sin lista de espera)
+      description: >
+        Mueve las vacaciones (SOLICITADA / PROGRAMADA / REPROGRAMADA) a nuevas fechas y las deja en estado REPROGRAMADA, conservando las
+        fechas originales (`originalStartDate/EndDate`) y contando el cambio (`rescheduleCount`). Valida con la MISMA regla de capacidad
+        que programar (BR-ADP-002), ignorando la propia solicitud; si las nuevas fechas chocan: 409 VACATION_OVERLAP. Motivo obligatorio.
+        Permiso SCHEDULE_VACATION. Auditoria VACATION_RESCHEDULED.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RescheduleVacationRequest' }
+      responses:
+        '200':
+          description: Vacaciones reprogramadas (estado REPROGRAMADA)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '400': { description: Datos inválidos o rango de fechas invertido (INVALID_DATE_RANGE) }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.SCHEDULE_VACATION }
+        '404': { description: Vacaciones no encontradas (VACATION_NOT_FOUND) }
+        '409':
+          description: Las nuevas fechas chocan con otras vacaciones del área en la empresa (VACATION_OVERLAP), las vacaciones ya no se pueden modificar (VACATION_NOT_MODIFIABLE) o el colaborador está terminado (EMPLOYEE_TERMINATED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
+        '422': { description: 'Motivo ausente o corto (VACATION_CHANGE_REASON_REQUIRED), mismas fechas que las actuales (VACATION_RESCHEDULE_UNCHANGED) o fecha de inicio anterior a hoy en Lima (VACATION_DATE_IN_PAST)' }
+
+  /vacations/{id}/cancel:
+    post:
+      operationId: cancelVacation
+      summary: Cancelar vacaciones (22-oct, #10) liberando el cupo del área
+      description: SOLICITADA / PROGRAMADA / REPROGRAMADA -> CANCELADA con motivo obligatorio. Permiso SCHEDULE_VACATION. Auditoria VACATION_CANCELLED.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancelVacationRequest' }
+      responses:
+        '200':
+          description: Vacaciones canceladas (estado CANCELADA)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.SCHEDULE_VACATION }
+        '404': { description: Vacaciones no encontradas (VACATION_NOT_FOUND) }
+        '409': { description: Las vacaciones ya no se pueden modificar (VACATION_NOT_MODIFIABLE) }
+        '422': { description: Motivo ausente o corto (VACATION_CHANGE_REASON_REQUIRED) }
+
   /vacations/calendar:
     get:
       operationId: getVacationsCalendar
@@ -770,6 +853,163 @@ paths:
         '404': { description: Registro de asistencia no encontrado (ATTENDANCE_NOT_FOUND) }
         '409': { description: No es una falta, o su descuento ya se aplicó en el cierre de mes (ATTENDANCE_NOT_RECLASSIFIABLE) }
         '422': { description: Clasificación o justificación inválida (INVALID_ATTENDANCE_RECLASSIFICATION) }
+
+  /me/attendance:
+    post:
+      operationId: logMyAttendance
+      summary: Marcar la propia asistencia desde la cuenta personal (22-oct, #9)
+      description: >
+        El colaborador (ficha vinculada a su cuenta, GET /me/employee) marca ENTRADA (`type=CHECK_IN`, estado PRESENTE o TARDANZA, foto
+        OBLIGATORIA) o SALIDA (`type=CHECK_OUT`). La ubicacion (latitude, longitude, accuracy) es OBLIGATORIA y solo se captura en el
+        momento de marcar (nunca seguimiento). Se compara con la geocerca de la sede (GET|PUT /branches/{branchId}/geofence): si queda fuera
+        de rango la marca se guarda con `outsideGeofence=true` y `reviewStatus=PENDING` hasta que Gerencia/Administracion la aprueben o
+        corrijan (PATCH /attendance/{id}/review); si la sede no tiene geocerca configurada la marca se acepta sin evaluar. Una sola marca por
+        dia y tipo (409 ATTENDANCE_ALREADY_LOGGED / ATTENDANCE_MARK_ALREADY_LOGGED). `capturedAt` es la hora del dispositivo (admite marcas
+        offline): no puede estar en el futuro ni tener mas de 24 h de antigüedad (422 ATTENDANCE_CAPTURE_TOO_OLD); el dia de la marca es el
+        dia de Lima de `capturedAt`. Permiso HR_ADMINISTRATION.LOG_OWN_ATTENDANCE (v0 todos los roles de colaborador).
+        Foto: subirla con POST /employees/{employeeId}/attendance/evidence/upload-url (el colaborador puede pedirla para si mismo) y enviar su `storageRef`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LogMyAttendanceRequest' }
+      responses:
+        '201':
+          description: Marca registrada (revisar `requiresReview` / `outsideGeofence`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceRecordResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.LOG_OWN_ATTENDANCE o sin asignación vigente en esa empresa/sede }
+        '404': { description: El usuario no está vinculado a una ficha de colaborador (EMPLOYEE_NOT_LINKED) }
+        '409': { description: 'Ya existe la marca del día (ATTENDANCE_ALREADY_LOGGED), la salida ya se marcó (ATTENDANCE_MARK_ALREADY_LOGGED), falta la entrada (ATTENDANCE_CHECK_IN_REQUIRED) o el colaborador está terminado (EMPLOYEE_TERMINATED)' }
+        '422': { description: 'Ubicación ausente o inválida (ATTENDANCE_LOCATION_REQUIRED / INVALID_ATTENDANCE_RECORD), foto ausente en la entrada (ATTENDANCE_EVIDENCE_REQUIRED) o inválida (INVALID_ATTENDANCE_EVIDENCE), hora demasiado antigua (ATTENDANCE_CAPTURE_TOO_OLD) o estado no permitido en marca propia (ATTENDANCE_SELF_STATUS_NOT_ALLOWED)' }
+    get:
+      operationId: getMyAttendance
+      summary: Mis marcas de asistencia y la geocerca de mi sede (22-oct, #9)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: month, in: query, required: false, schema: { type: string, example: '2026-10' }, description: 'Mes a listar (YYYY-MM); por defecto el mes actual en Lima.' }
+      responses:
+        '200':
+          description: Marcas propias del mes y geocerca de la sede
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MyAttendanceResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.LOG_OWN_ATTENDANCE o sin asignación vigente }
+        '404': { description: El usuario no está vinculado a una ficha de colaborador (EMPLOYEE_NOT_LINKED) }
+
+  /attendance/pending-review:
+    get:
+      operationId: listAttendancePendingReview
+      summary: Marcas de asistencia fuera de la geocerca pendientes de revisión (22-oct, #9)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }
+      responses:
+        '200':
+          description: Marcas con reviewStatus=PENDING de la empresa (más antiguas primero)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AttendanceRecordResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.REVIEW_ATTENDANCE }
+
+  /attendance/{id}/review:
+    patch:
+      operationId: reviewAttendance
+      summary: Aprobar o corregir una marca fuera de la geocerca (22-oct, #9)
+      description: >
+        Solo marcas con reviewStatus=PENDING (409 ATTENDANCE_NOT_PENDING_REVIEW si no). APPROVE deja la marca tal cual (APPROVED).
+        CORRECT exige `note` y al menos un cambio (`status`, `minutesLate`); recalcula el descuento y deja CORRECTED. No se corrige si
+        el descuento del mes ya se aplicó. Permiso HR_ADMINISTRATION.REVIEW_ATTENDANCE. Auditoria ATTENDANCE_REVIEWED.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewAttendanceRequest' }
+      responses:
+        '200':
+          description: Marca revisada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceRecordResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.REVIEW_ATTENDANCE }
+        '404': { description: Registro no encontrado (ATTENDANCE_NOT_FOUND) }
+        '409': { description: 'La marca no está pendiente de revisión (ATTENDANCE_NOT_PENDING_REVIEW) o su descuento ya se aplicó (ATTENDANCE_NOT_RECLASSIFIABLE)' }
+        '422': { description: 'Corrección sin nota o sin cambios (INVALID_ATTENDANCE_REVIEW) o registro inválido (INVALID_ATTENDANCE_RECORD)' }
+
+  /branches/{branchId}/geofence:
+    get:
+      operationId: getBranchGeofence
+      summary: Geocerca de la sede para las marcas de asistencia (22-oct, #9)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: branchId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Geocerca vigente (campos en null si no está configurada)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BranchGeofenceResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_GEOFENCE }
+        '404': { description: Sede no encontrada en la empresa (BRANCH_NOT_FOUND) }
+    put:
+      operationId: setBranchGeofence
+      summary: Configurar coordenadas y radio de la geocerca de la sede (solo Gerencia/Administración por permiso)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: branchId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SetBranchGeofenceRequest' }
+      responses:
+        '200':
+          description: Geocerca guardada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BranchGeofenceResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_GEOFENCE }
+        '404': { description: Sede no encontrada en la empresa (BRANCH_NOT_FOUND) }
+        '422': { description: 'Coordenadas fuera de rango o radio fuera de 10..5000 m (INVALID_GEOFENCE)' }
+    delete:
+      operationId: clearBranchGeofence
+      summary: Quitar la geocerca de la sede (las marcas propias dejan de evaluarse contra la sede)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: branchId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Geocerca eliminada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BranchGeofenceResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_GEOFENCE }
+        '404': { description: Sede no encontrada en la empresa (BRANCH_NOT_FOUND) }
 
   /leaves/{id}/evidence/upload-url:
     post:
@@ -1042,14 +1282,14 @@ components:
 
     EmployeeResponse:
       type: object
-      required: [accountLinked, id, companyId, branchId, fullName, documentType, documentNumber, areaId, areaCode, areaName, jobTitle, status, hireDate, fieldTripLateCount, isFieldTripObserved, createdAt]
+      required: [accountLinked, restrictedFields, id, companyId, branchId, fullName, documentType, documentNumber, areaId, areaCode, areaName, jobTitle, status, hireDate, fieldTripLateCount, isFieldTripObserved, createdAt]
       properties:
         id: { type: string, format: uuid }
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         candidateId: { type: string, format: uuid, nullable: true }
         documentType: { type: string }
-        documentNumber: { type: string }
+        documentNumber: { type: string, nullable: true, description: 'null si el rol no tiene HR_ADMINISTRATION.VIEW_EMPLOYEE_DOCUMENT (ver restrictedFields).' }
         fullName: { type: string }
         email: { type: string, nullable: true }
         phone: { type: string, nullable: true }
@@ -1067,7 +1307,11 @@ components:
         terminationNoticeDays: { type: integer, nullable: true }
         fieldTripLateCount: { type: integer }
         isFieldTripObserved: { type: boolean }
-        baseSalary: { type: number, nullable: true }
+        baseSalary: { type: number, nullable: true, description: 'null = pendiente O restringido: solo lo ve quien tiene HR_ADMINISTRATION.MANAGE_SALARY (ver restrictedFields).' }
+        restrictedFields:
+          type: array
+          items: { type: string, enum: [documentNumber, baseSalary] }
+          description: Campos enmascarados para el rol del solicitante (HU-35). Vacío si ve todo.
         accountLinked: { type: boolean, description: La ficha está vinculada a una cuenta de usuario por correo (DEC-ADP-LINK-EMAIL-001) }
         version: { type: integer, minimum: 1, description: Versión optimista de la ficha (DEC-ADP-EDIT-ETAG-001); mismo valor que el header ETag }
         createdAt: { type: string, format: date-time }
@@ -1132,6 +1376,11 @@ components:
       type: object
       required: [date, status]
       properties:
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+          description: 'Registro «a nombre de» otro colaborador (22-oct, #9): motivo OBLIGATORIO en PRESENTE/TARDANZA (422 ATTENDANCE_REASON_REQUIRED); queda en el registro (source ON_BEHALF) y en la auditoría.'
         date: { type: string, format: date }
         checkInTime: { type: string, format: date-time, nullable: true }
         checkOutTime: { type: string, format: date-time, nullable: true }
@@ -1156,7 +1405,7 @@ components:
       required: [kind, capturedAtLocal]
       description: Requiere al menos uno de storageRef o url. Si viene storageRef debe empezar por companies/{companyId}/employees/{employeeId}/attendance/ (el que devuelve la URL de subida).
       properties:
-        kind: { type: string, enum: [WHATSAPP_PHOTO] }
+        kind: { type: string, enum: [WHATSAPP_PHOTO, SELF_PHOTO] }
         storageRef: { type: string, nullable: true, maxLength: 2000, description: Referencia interna al objeto almacenado }
         url: { type: string, nullable: true, maxLength: 2000 }
         capturedAtLocal:
@@ -1185,7 +1434,7 @@ components:
       type: object
       required: [kind, capturedAtLocal]
       properties:
-        kind: { type: string, enum: [WHATSAPP_PHOTO] }
+        kind: { type: string, enum: [WHATSAPP_PHOTO, SELF_PHOTO] }
         storageRef: { type: string, nullable: true }
         url: { type: string, nullable: true }
         capturedAtLocal: { type: string, description: Hora de la foto en America/Lima sin offset (YYYY-MM-DDTHH:mm:ss) }
@@ -1215,6 +1464,22 @@ components:
         notes: { type: string, nullable: true }
         justification: { type: string, nullable: true }
         reclassifiedAt: { type: string, format: date-time, nullable: true }
+        source: { type: string, enum: [SELF, ON_BEHALF], description: 'SELF = el colaborador marcó desde su cuenta; ON_BEHALF = Personal registró a nombre de otro (ver onBehalfReason). Registros históricos: ON_BEHALF.' }
+        onBehalfReason: { type: string, nullable: true }
+        capturedAt: { type: string, format: date-time, nullable: true, description: Hora del dispositivo al marcar la entrada (solo marcas propias) }
+        outsideGeofence: { type: boolean, description: La entrada quedó fuera del radio de la geocerca de la sede }
+        distanceMeters: { type: number, nullable: true, description: Distancia a la sede al marcar la entrada (null si la sede no tenía geocerca) }
+        geofenceRadiusMeters: { type: integer, nullable: true }
+        reviewStatus: { type: string, enum: [PENDING, APPROVED, CORRECTED], nullable: true, description: 'PENDING = fuera de geocerca, espera revisión; null = no requiere revisión.' }
+        requiresReview: { type: boolean, description: true si reviewStatus es PENDING }
+        reviewedById: { type: string, nullable: true }
+        reviewedAt: { type: string, format: date-time, nullable: true }
+        reviewNote: { type: string, nullable: true }
+        checkOut:
+          nullable: true
+          description: Datos de la salida marcada desde la cuenta personal (null si no hay salida propia)
+          allOf:
+            - { $ref: '#/components/schemas/AttendanceCheckOutResponse' }
         evidence:
           nullable: true
           allOf:
@@ -1226,6 +1491,110 @@ components:
           allOf:
             - { $ref: '#/components/schemas/HrMemoResponse' }
         createdAt: { type: string, format: date-time }
+
+    AttendanceCheckOutResponse:
+      type: object
+      required: [outsideGeofence]
+      properties:
+        capturedAt: { type: string, format: date-time, nullable: true }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+        accuracy: { type: number, nullable: true }
+        outsideGeofence: { type: boolean }
+        distanceMeters: { type: number, nullable: true }
+
+    LogMyAttendanceRequest:
+      type: object
+      required: [companyId, branchId, capturedAt, latitude, longitude, accuracy]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid, description: Sede del contexto de trabajo; su geocerca es la que se evalúa }
+        type: { type: string, enum: [CHECK_IN, CHECK_OUT], default: CHECK_IN }
+        status: { type: string, enum: [PRESENTE, TARDANZA], default: PRESENTE, description: Solo en CHECK_IN. Faltas y permisos los registra Personal. }
+        minutesLate: { type: integer, minimum: 1, description: Obligatorio si status=TARDANZA }
+        capturedAt: { type: string, format: date-time, description: 'Hora del dispositivo (ISO 8601 con offset/Z). Máx. 24 h de antigüedad (marcas offline) y no futura.' }
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        accuracy: { type: number, minimum: 0, maximum: 100000, description: Precisión horizontal en metros }
+        notes: { type: string, nullable: true, maxLength: 1000 }
+        evidence:
+          nullable: true
+          description: Foto de la marca. OBLIGATORIA en CHECK_IN (422 ATTENDANCE_EVIDENCE_REQUIRED); se ignora en CHECK_OUT (solo la entrada guarda foto).
+          allOf:
+            - { $ref: '#/components/schemas/MyAttendanceEvidenceRequest' }
+
+    MyAttendanceEvidenceRequest:
+      type: object
+      description: Requiere al menos uno de storageRef o url. storageRef debe ser el que devolvió la URL de subida de ESTE colaborador.
+      properties:
+        kind: { type: string, enum: [SELF_PHOTO, WHATSAPP_PHOTO], default: SELF_PHOTO }
+        storageRef: { type: string, nullable: true, maxLength: 2000 }
+        url: { type: string, nullable: true, maxLength: 2000 }
+        note: { type: string, nullable: true, maxLength: 1000 }
+
+    GeofenceInfo:
+      type: object
+      required: [configured]
+      properties:
+        configured: { type: boolean }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+        radiusMeters: { type: integer, nullable: true }
+
+    MyAttendanceResponse:
+      type: object
+      required: [employeeId, geofence, items]
+      properties:
+        employeeId: { type: string, format: uuid }
+        geofence: { $ref: '#/components/schemas/GeofenceInfo' }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AttendanceRecordResponse' }
+
+    ReviewAttendanceRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [APPROVE, CORRECT] }
+        note: { type: string, maxLength: 1000, description: Obligatoria en CORRECT; opcional al aprobar }
+        status: { $ref: '#/components/schemas/AttendanceStatus' }
+        minutesLate: { type: integer, minimum: 1, description: Para TARDANZA corregida }
+
+    SetBranchGeofenceRequest:
+      type: object
+      required: [companyId, latitude, longitude, radiusMeters]
+      properties:
+        companyId: { type: string, format: uuid }
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        radiusMeters: { type: integer, minimum: 10, maximum: 5000 }
+
+    BranchGeofenceResponse:
+      type: object
+      required: [branchId, branchName, configured]
+      properties:
+        branchId: { type: string, format: uuid }
+        branchName: { type: string }
+        configured: { type: boolean }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+        radiusMeters: { type: integer, nullable: true }
+        updatedAt: { type: string, format: date-time, nullable: true }
+        updatedBy: { type: string, nullable: true }
+
+    RescheduleVacationRequest:
+      type: object
+      required: [startDate, endDate, reason]
+      properties:
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+
+    CancelVacationRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 3, maxLength: 500 }
 
     MonthlyAttendanceSummaryResponse:
       type: object
@@ -1329,6 +1698,12 @@ components:
         approvedById: { type: string, nullable: true }
         approvedAt: { type: string, format: date-time, nullable: true }
         notes: { type: string, nullable: true }
+        originalStartDate: { type: string, format: date, nullable: true, description: Fechas antes de la primera reprogramación (null si nunca se reprogramó) }
+        originalEndDate: { type: string, format: date, nullable: true }
+        rescheduleCount: { type: integer }
+        statusReason: { type: string, nullable: true, description: Motivo de la última reprogramación o cancelación }
+        statusChangedAt: { type: string, format: date-time, nullable: true }
+        statusChangedById: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
 
     RequestFieldTripRequest:
@@ -1420,7 +1795,7 @@ components:
         terminatedById: { type: string }
         terminatedAt: { type: string, format: date-time }
         createdAt: { type: string, format: date-time }
-        vacancyCreatedId: { type: string, format: uuid, nullable: true, description: Vacante creada automáticamente en Reclutamiento }
+        vacancyCreatedId: { type: string, format: uuid, nullable: true, description: 'Vacante creada automáticamente en Reclutamiento (22-oct, #5). El consumo del evento es asíncrono: null en la respuesta inmediata de /terminate; el expediente GET /employees/{id} la informa cuando ya se creó.' }
 
     RejectFieldTripRequest:
       type: object

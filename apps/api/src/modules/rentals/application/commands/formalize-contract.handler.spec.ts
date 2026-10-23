@@ -9,7 +9,14 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { RentalStateConflictError } from '../../domain/rental-errors';
+import {
+  ExternalAgentVerificationRequiredError,
+  GuaranteeBelowRequiredError,
+  GuaranteePaymentProofRequiredError,
+  GuaranteeVoucherNotFoundError,
+  RentalStateConflictError,
+  ReservationCreditExceedsGuaranteeError,
+} from '../../domain/rental-errors';
 import {
   ReservationCreditCurrencyMismatchError,
   ReservationCreditSource,
@@ -83,6 +90,8 @@ describe('FormalizeContractHandler', () => {
       activeByType?: Record<string, TemplateRecord>;
       rental?: RentalRecord;
       reservation?: ReservationCreditSource | null;
+      responsibilityDocs?: number;
+      voucher?: { documentType: string } | null;
     } = {},
   ) {
     const activeByType = options.activeByType ?? { RENTAL_CONTRACT: genericTemplate };
@@ -90,6 +99,8 @@ describe('FormalizeContractHandler', () => {
     const rentals = {
       findById: jest.fn().mockResolvedValue(rental),
       findReservationCreditSource: jest.fn().mockResolvedValue(options.reservation ?? null),
+      countRentalDocumentsByType: jest.fn().mockResolvedValue(options.responsibilityDocs ?? 0),
+      findRentalDocumentById: jest.fn().mockResolvedValue(options.voucher ?? null),
       formalizeContract: jest.fn().mockResolvedValue({ ...rental, status: 'PENDING_DELIVERY', version: 5 }),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
@@ -141,6 +152,8 @@ describe('FormalizeContractHandler', () => {
     depositAmount?: string;
     depositCurrency?: string;
     contractVariant?: ConstructorParameters<typeof FormalizeContractCommand>[9];
+    /** undefined = comprobante por defecto (EFECTIVO con nº de recibo); null = sin comprobante. */
+    payment?: ConstructorParameters<typeof FormalizeContractCommand>[10] | null;
   } = {}) {
     return new FormalizeContractCommand(
       overrides.id ?? 'rent-500',
@@ -153,6 +166,15 @@ describe('FormalizeContractHandler', () => {
       overrides.depositCurrency ?? (overrides.contractVariant?.withCompanyDriver ? undefined : 'PEN'),
       undefined,
       overrides.contractVariant,
+      overrides.payment === null
+        ? undefined
+        : (overrides.payment ?? {
+            method: 'EFECTIVO',
+            operationNumber: 'REC-001',
+            payerName: 'Luis Vargas',
+            payerIsExternalAgent: false,
+            externalAgentVerified: false,
+          }),
     );
   }
 
@@ -405,22 +427,23 @@ describe('FormalizeContractHandler', () => {
       );
     });
 
-    it('monto de reserva mayor que la garantia → NO error: aplica hasta cubrirla y registra el excedente (DEC-ALQ-RESCREDIT-002)', async () => {
+    it('monto de reserva mayor que la garantia → 422 RESERVATION_EXCEEDS_GUARANTEE (ya no hay saldo a favor)', async () => {
       const deps = buildDeps({ rental: reservationRental, reservation: reservationSource({ amount: '600.00' }) });
 
-      await deps.handler.execute(command({ depositAmount: '500.00' }));
+      await expect(deps.handler.execute(command({ depositAmount: '500.00' }))).rejects.toThrow(
+        ReservationCreditExceedsGuaranteeError,
+      );
+      expect(deps.rentals.formalizeContract).not.toHaveBeenCalled();
+    });
+
+    it('reserva que cubre toda la garantia: no hay cobro, no exige comprobante', async () => {
+      const deps = buildDeps({ rental: reservationRental, reservation: reservationSource({ amount: '500.00' }) });
+
+      await deps.handler.execute(command({ depositAmount: '500.00', payment: null }));
 
       expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
-        expect.objectContaining({
-          depositAmount: '500.00',
-          reservationCreditAmount: '500.00',
-          reservationCreditExcess: '100.00',
-        }),
+        expect.objectContaining({ reservationCreditAmount: '500.00', reservationCreditExcess: '0.00', payment: undefined }),
         fakeTx,
-      );
-      const payment = deps.outboxRepository.publish.mock.calls.find((c) => c[0].eventType === 'PagoRegistrado.v1');
-      expect(payment![0].payload).toEqual(
-        expect.objectContaining({ amountCollected: '0.00', reservationCreditExcess: '100.00' }),
       );
     });
 
@@ -494,7 +517,7 @@ describe('FormalizeContractHandler', () => {
       expect(deps.rentals.formalizeContract).not.toHaveBeenCalled();
     });
 
-    it('reserva con credito pagado: TODO el credito queda como saldo a favor (sin reembolso automatico)', async () => {
+    it('reserva con credito pagado: sin saldo a favor, el monto queda sin aplicar solo en la auditoria', async () => {
       const deps = buildDeps({
         rental: reservationRental,
         reservation: reservationSource({ amount: '300.00' }),
@@ -508,13 +531,13 @@ describe('FormalizeContractHandler', () => {
           depositRequired: false,
           depositAmount: '0.00',
           reservationCreditAmount: '0.00',
-          reservationCreditExcess: '300.00',
+          reservationCreditExcess: '0.00',
           currency: 'PEN',
         }),
         fakeTx,
       );
       expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ changes: expect.objectContaining({ reservationCreditExcess: '300.00', reservationCreditApplied: true }) }),
+        expect.objectContaining({ changes: expect.objectContaining({ unappliedReservationAmount: '300.00', reservationCreditApplied: false }) }),
         fakeTx,
       );
     });
@@ -530,6 +553,124 @@ describe('FormalizeContractHandler', () => {
           }),
         ),
       ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_DEPOSIT_AMOUNT' }) });
+    });
+  });
+
+  describe('Decision 8 - comprobante del cobro y garantia exigida (22-oct-2026)', () => {
+    const withMin = (extra: Partial<RentalRecord> = {}): RentalRecord => ({ ...fakeRental, vehicleDepositMinimum: 500, ...extra });
+
+    it('sin payment y con cobro → 422 PAYMENT_PROOF_REQUIRED', async () => {
+      const deps = buildDeps();
+      await expect(deps.handler.execute(command({ payment: null }))).rejects.toThrow(GuaranteePaymentProofRequiredError);
+      expect(deps.rentals.formalizeContract).not.toHaveBeenCalled();
+    });
+
+    it('transferencia sin comprobante ni nº de operacion → PAYMENT_PROOF_REQUIRED', async () => {
+      const deps = buildDeps();
+      await expect(
+        deps.handler.execute(
+          command({ payment: { method: 'TRANSFERENCIA', payerName: 'Luis', payerIsExternalAgent: false, externalAgentVerified: false } }),
+        ),
+      ).rejects.toThrow(GuaranteePaymentProofRequiredError);
+    });
+
+    it('agente externo sin verificacion adicional → 422 EXTERNAL_AGENT_VERIFICATION_REQUIRED', async () => {
+      const deps = buildDeps();
+      await expect(
+        deps.handler.execute(
+          command({
+            payment: {
+              method: 'EFECTIVO',
+              operationNumber: 'R-1',
+              payerName: 'Agente',
+              payerDocumentNumber: '44556677',
+              payerIsExternalAgent: true,
+              externalAgentVerified: false,
+            },
+          }),
+        ),
+      ).rejects.toThrow(ExternalAgentVerificationRequiredError);
+    });
+
+    it('agente externo verificado: guarda quien verifico y lo audita', async () => {
+      const deps = buildDeps();
+      await deps.handler.execute(
+        command({
+          payment: {
+            method: 'EFECTIVO',
+            operationNumber: 'R-1',
+            payerName: 'Agente',
+            payerDocumentNumber: '44556677',
+            payerIsExternalAgent: true,
+            externalAgentVerified: true,
+          },
+        }),
+      );
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payment: expect.objectContaining({ payerIsExternalAgent: true, externalAgentVerifiedBy: 'uid-1', amount: '500.00' }),
+        }),
+        fakeTx,
+      );
+    });
+
+    it('comprobante que no existe o no es PAYMENT_VOUCHER → GUARANTEE_VOUCHER_NOT_FOUND', async () => {
+      const deps = buildDeps({ voucher: null });
+      await expect(
+        deps.handler.execute(
+          command({
+            payment: {
+              method: 'YAPE',
+              operationNumber: 'Y-1',
+              payerName: 'Luis',
+              payerIsExternalAgent: false,
+              externalAgentVerified: false,
+              voucherDocumentId: 'doc-x',
+            },
+          }),
+        ),
+      ).rejects.toThrow(GuaranteeVoucherNotFoundError);
+    });
+
+    it('garantia menor a la tarifa de Flota → 422 INVALID_DEPOSIT_AMOUNT', async () => {
+      const deps = buildDeps({ rental: withMin() });
+      await expect(deps.handler.execute(command({ depositAmount: '400.00' }))).rejects.toThrow(GuaranteeBelowRequiredError);
+    });
+
+    it('sin depositAmount usa la tarifa de Flota', async () => {
+      const deps = buildDeps({ rental: withMin() });
+      await deps.handler.execute(
+        new FormalizeContractCommand('rent-500', 'uid-1', 'comp-1', 'branch-1', 4, 'doc', undefined, undefined, undefined, undefined, {
+          method: 'EFECTIVO',
+          operationNumber: 'R-2',
+          payerName: 'Luis',
+          payerIsExternalAgent: false,
+          externalAgentVerified: false,
+        }),
+      );
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({ depositAmount: '500.00', currency: 'PEN' }),
+        fakeTx,
+      );
+    });
+
+    it('DOUBLE_DEPOSIT exige el doble de la tarifa de Flota', async () => {
+      const notaryEvaluation = { result: 'DOUBLE_DEPOSIT' } as any;
+      const deps = buildDeps({ rental: withMin({ notaryEvaluation }) });
+      await expect(deps.handler.execute(command({ depositAmount: '500.00' }))).rejects.toThrow(GuaranteeBelowRequiredError);
+      await deps.handler.execute(command({ depositAmount: '1000.00' }));
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(expect.objectContaining({ depositAmount: '1000.00' }), fakeTx);
+    });
+
+    it('tercera via sin documento de responsabilidad → 422 RESPONSIBILITY_DOCUMENT_REQUIRED; con documento formaliza', async () => {
+      const notaryEvaluation = { result: 'THIRD_PATH_ELIGIBLE' } as any;
+      const without = buildDeps({ rental: withMin({ notaryEvaluation }), responsibilityDocs: 0 });
+      await expect(without.handler.execute(command({ depositAmount: '500.00' }))).rejects.toMatchObject({
+        response: expect.objectContaining({ code: 'RESPONSIBILITY_DOCUMENT_REQUIRED' }),
+      });
+      const withDoc = buildDeps({ rental: withMin({ notaryEvaluation }), responsibilityDocs: 1 });
+      await withDoc.handler.execute(command({ depositAmount: '500.00' }));
+      expect(withDoc.rentals.formalizeContract).toHaveBeenCalled();
     });
   });
 });

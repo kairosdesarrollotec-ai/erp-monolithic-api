@@ -13,7 +13,7 @@ export class ListEmployeesHandler {
   ) {}
 
   async execute(query: ListEmployeesQuery): Promise<{ items: Employee[]; total: number }> {
-    const { scope } = await this.access.authorize(
+    const { scope, context } = await this.access.authorize(
       {
         firebaseUid: query.firebaseUid,
         companyId: query.companyId,
@@ -22,6 +22,9 @@ export class ListEmployeesHandler {
       'VIEW_EMPLOYEES',
     );
 
+    // HU-35: sin VIEW_EMPLOYEE_DOCUMENT la busqueda no alcanza el numero de documento (evita descubrirlo por sondeo).
+    const searchByDocument = await this.access.isActionAllowed(context, 'VIEW_EMPLOYEE_DOCUMENT');
+
     return this.employees.findMany({
       organizationId: scope.organizationId,
       companyId: scope.operatingCompanyId,
@@ -29,6 +32,7 @@ export class ListEmployeesHandler {
       status: query.status,
       areaId: query.areaId,
       search: query.search?.trim() || undefined,
+      searchByDocument,
       limit: query.limit,
       offset: query.offset,
     });

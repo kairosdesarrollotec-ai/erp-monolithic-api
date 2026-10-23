@@ -33,7 +33,35 @@ export class MechanicMissingTechnicalChannelsError extends DomainUnprocessableEr
   readonly code = 'MECHANIC_TECHNICAL_CHANNELS_REQUIRED';
 
   constructor() {
-    super('Las vacantes de personal mecánico requieren al menos un canal técnico especializado (SENATI o TECSUP - BR-REC-004).');
+    super('Las vacantes de personal mecánico requieren al menos un canal técnico especializado (SENATI, TECSUP o Institutos técnicos - BR-REC-004).');
+  }
+}
+
+/** REC-02 cancelar (22-oct): solo NECESIDAD_REGISTRADA / PUBLICADA / PAUSADA; con candidatos en proceso o decidida/cancelada ya no. */
+export class VacancyNotCancellableError extends DomainUnprocessableError {
+  readonly code = 'VACANCY_NOT_CANCELLABLE';
+
+  constructor(currentStatus: string) {
+    super(
+      `La vacante no se puede cancelar en estado ${currentStatus}: solo aplica a vacantes con necesidad registrada, publicadas o pausadas.`,
+    );
+  }
+}
+
+export class VacancyCancelReasonRequiredError extends DomainUnprocessableError {
+  readonly code = 'VACANCY_CANCEL_REASON_REQUIRED';
+
+  constructor() {
+    super('Indica el motivo de la cancelación de la vacante (entre 5 y 500 caracteres).');
+  }
+}
+
+/** 22-oct: el area de la vacante debe existir (y estar activa) en el catalogo hr_areas de la empresa. */
+export class VacancyAreaNotFoundError extends DomainUnprocessableError {
+  readonly code = 'VACANCY_AREA_NOT_FOUND';
+
+  constructor(area: string) {
+    super(`El área «${area}» no existe o está inactiva en el catálogo de áreas de la empresa. Elige un área del catálogo (Personal > Áreas).`);
   }
 }
 

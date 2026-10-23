@@ -16,6 +16,10 @@ import { CandidateCvStoragePort } from './application/ports/candidate-cv-storage
 import { GcsCandidateCvService } from './infrastructure/storage/gcs-candidate-cv.service';
 import { PauseVacancyHandler } from './application/commands/pause-vacancy.handler';
 import { ResumeVacancyHandler } from './application/commands/resume-vacancy.handler';
+import { CancelVacancyHandler } from './application/commands/cancel-vacancy.handler';
+import { VacancyFromTerminationConsumer } from './application/services/vacancy-from-termination.consumer';
+import { VacancyAreaCatalogPort } from './application/ports/vacancy-area-catalog.port';
+import { PrismaVacancyAreaCatalogRepository } from './infrastructure/persistence/prisma-vacancy-area-catalog.repository';
 import { RequestCandidateCvUploadSessionHandler } from './application/commands/request-candidate-cv-upload-session.handler';
 import { RecordCandidateCvHandler } from './application/commands/record-candidate-cv.handler';
 import { RecordNegotiationHandler } from './application/commands/record-negotiation.handler';
@@ -65,6 +69,9 @@ import { InterviewsController } from './presentation/http/interviews.controller'
     PublishVacancyHandler,
     PauseVacancyHandler,
     ResumeVacancyHandler,
+    CancelVacancyHandler,
+    VacancyFromTerminationConsumer,
+    { provide: VacancyAreaCatalogPort, useClass: PrismaVacancyAreaCatalogRepository },
     RegisterCandidateHandler,
     ChangeCandidateStageHandler,
     ScheduleInterviewHandler,

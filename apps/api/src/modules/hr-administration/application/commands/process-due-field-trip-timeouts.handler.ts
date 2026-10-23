@@ -3,6 +3,7 @@ import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
+import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { FieldTripNotPendingError } from '../../domain/hr-administration-errors';
 
@@ -34,6 +35,7 @@ export class ProcessDueFieldTripTimeoutsHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
+    private readonly alerts: FieldTripAlertPublisher,
   ) {}
 
   async execute(): Promise<ProcessDueFieldTripTimeoutsResult> {
@@ -84,6 +86,13 @@ export class ProcessDueFieldTripTimeoutsHandler {
             },
           },
           tx,
+        );
+        await this.alerts.publish(
+          fieldTrip.status === 'NO_AUTORIZADA' ? 'NOT_AUTHORIZED' : 'ESCALATED',
+          fieldTrip,
+          before.employee,
+          tx,
+          { previousStatus: before.status, automatic: true },
         );
         return fieldTrip.status;
       } catch (error) {

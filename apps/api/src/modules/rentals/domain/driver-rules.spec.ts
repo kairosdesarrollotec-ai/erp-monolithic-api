@@ -15,7 +15,7 @@ describe('DEC-ALQ-COMPANY-DRIVER-004 / OWN-DRIVER-005 - reglas de dominio', () =
     expect(isCompanyDriverVariantCode(undefined)).toBe(false);
   });
 
-  it('sin garantia, todo el credito de reserva validado pasa a saldo a favor; sin reserva, 0.00', () => {
+  it('sin garantia NO hay saldo a favor (decision 2, 22-oct-2026): el monto de la reserva queda como no aplicado para Finanzas; sin reserva, 0.00', () => {
     const credit = resolveReservationCredit({
       reservationId: 'r1',
       status: 'CONFIRMED',
@@ -23,13 +23,13 @@ describe('DEC-ALQ-COMPANY-DRIVER-004 / OWN-DRIVER-005 - reglas de dominio', () =
       currency: 'PEN',
       paymentValidatedAt: new Date(),
     });
-    expect(computeNoDepositBreakdown(credit)).toEqual({ reservationCreditExcess: '300.00', currency: 'PEN' });
-    expect(computeNoDepositBreakdown(resolveReservationCredit(null))).toEqual({ reservationCreditExcess: '0.00', currency: null });
+    expect(computeNoDepositBreakdown(credit)).toEqual({ reservationCreditExcess: '0.00', unappliedReservationAmount: '300.00', currency: 'PEN' });
+    expect(computeNoDepositBreakdown(resolveReservationCredit(null))).toEqual({ reservationCreditExcess: '0.00', unappliedReservationAmount: '0.00', currency: null });
   });
 
-  it('reserva cancelada o sin pago validado no genera saldo a favor', () => {
+  it('reserva cancelada o sin pago validado no deja monto sin aplicar', () => {
     const base = { reservationId: 'r1', amount: '300', currency: 'PEN' };
-    expect(computeNoDepositBreakdown(resolveReservationCredit({ ...base, status: 'CANCELLED', paymentValidatedAt: new Date() })).reservationCreditExcess).toBe('0.00');
-    expect(computeNoDepositBreakdown(resolveReservationCredit({ ...base, status: 'CONFIRMED', paymentValidatedAt: null })).reservationCreditExcess).toBe('0.00');
+    expect(computeNoDepositBreakdown(resolveReservationCredit({ ...base, status: 'CANCELLED', paymentValidatedAt: new Date() })).unappliedReservationAmount).toBe('0.00');
+    expect(computeNoDepositBreakdown(resolveReservationCredit({ ...base, status: 'CONFIRMED', paymentValidatedAt: null })).unappliedReservationAmount).toBe('0.00');
   });
 });

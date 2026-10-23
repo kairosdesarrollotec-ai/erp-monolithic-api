@@ -36,6 +36,12 @@ export class PrismaVacancyRepository implements VacancyRepositoryPort {
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       createdBy: entity.createdBy,
+      originTerminationId: entity.originTerminationId,
+      originEmployeeId: entity.originEmployeeId,
+      originCandidateId: entity.originCandidateId,
+      cancelReason: entity.cancelReason,
+      cancelledAt: entity.cancelledAt,
+      cancelledBy: entity.cancelledBy,
     };
   }
 
@@ -53,9 +59,49 @@ export class PrismaVacancyRepository implements VacancyRepositoryPort {
         status: VacancyStatus.NECESIDAD_REGISTRADA,
         isMechanic: input.isMechanic,
         createdBy: input.createdBy,
+        originEventId: input.originEventId ?? null,
+        originTerminationId: input.originTerminationId ?? null,
+        originEmployeeId: input.originEmployeeId ?? null,
+        originCandidateId: input.originCandidateId ?? null,
       },
     });
     return this.mapToRecord(created);
+  }
+
+  async findByOriginEventId(originEventId: string, tx?: Prisma.TransactionClient): Promise<VacancyRecord | null> {
+    const client = tx ?? this.prisma;
+    const found = await client.vacancy.findUnique({ where: { originEventId } });
+    return found ? this.mapToRecord(found) : null;
+  }
+
+  async findByOriginCandidateId(originCandidateId: string, tx?: Prisma.TransactionClient): Promise<VacancyRecord | null> {
+    const client = tx ?? this.prisma;
+    const found = await client.vacancy.findUnique({ where: { originCandidateId } });
+    return found ? this.mapToRecord(found) : null;
+  }
+
+  async cancel(
+    id: string,
+    input: { reason: string; cancelledBy: string; cancelledAt: Date },
+    expectedVersion: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<VacancyRecord> {
+    const client = tx ?? this.prisma;
+    const updated = await client.vacancy.updateMany({
+      where: { id, version: expectedVersion },
+      data: {
+        status: VacancyStatus.CANCELADA,
+        cancelReason: input.reason,
+        cancelledAt: input.cancelledAt,
+        cancelledBy: input.cancelledBy,
+        version: { increment: 1 },
+      },
+    });
+    if (updated.count === 0) {
+      throw new VacancyVersionConflictError();
+    }
+    const reloaded = await client.vacancy.findUniqueOrThrow({ where: { id } });
+    return this.mapToRecord(reloaded);
   }
 
   async findById(

@@ -1,4 +1,5 @@
-import { IsIn, IsISO8601, IsUUID } from 'class-validator';
+import { IsBoolean, IsIn, IsISO8601, IsOptional, IsUUID } from 'class-validator';
+import { CUSTOMER_LOCATIONS, CustomerLocation } from '../../../../reservations/domain/channel-mode';
 
 /**
  * Hallazgo critico de revision PR#7 ("convertir no crea reserva"):
@@ -13,4 +14,9 @@ export class ConvertToReservationDto {
 
   @IsIn(['PRESENCIAL', 'VIRTUAL']) channelMode!: 'PRESENCIAL' | 'VIRTUAL';
   @IsISO8601() startAt!: string;
+
+  /** PEND-08 (BR-RES-005): el cliente puede acercarse a la oficina. Opcional; si es false, PRESENCIAL se rechaza. */
+  @IsOptional() @IsBoolean() canComeToOffice?: boolean;
+  /** PEND-08 (DAT-RES-001): ubicacion del cliente. Opcional; FUERA_DE_AYACUCHO con PRESENCIAL se rechaza. */
+  @IsOptional() @IsIn(CUSTOMER_LOCATIONS) customerLocation?: CustomerLocation;
 }

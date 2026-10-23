@@ -4,12 +4,14 @@ import { PrismaService } from '../../../../common/persistence/prisma.service';
 import {
   AttendanceRepositoryPort,
   AttendanceWithEmployee,
+  CheckOutData,
   CreateAttendanceData,
   EmployeeAttendanceTotals,
   ListAttendanceFilters,
   MonthlyAttendanceItem,
   PendingDeductionItem,
   ReclassifyAttendanceData,
+  ReviewAttendanceData,
 } from '../../application/ports/attendance-repository.port';
 
 function monthRange(month: string): { start: Date; end: Date } {
@@ -47,6 +49,13 @@ export class PrismaAttendanceRepository implements AttendanceRepositoryPort {
         latitude: data.latitude ?? null,
         longitude: data.longitude ?? null,
         accuracy: data.accuracy ?? null,
+        source: data.source ?? 'ON_BEHALF',
+        onBehalfReason: data.onBehalfReason ?? null,
+        capturedAt: data.capturedAt ?? null,
+        outsideGeofence: data.outsideGeofence ?? false,
+        distanceMeters: data.distanceMeters ?? null,
+        geofenceRadiusMeters: data.geofenceRadiusMeters ?? null,
+        reviewStatus: data.reviewStatus ?? null,
         ...(data.evidence
           ? {
               evidenceKind: data.evidence.kind,
@@ -66,6 +75,60 @@ export class PrismaAttendanceRepository implements AttendanceRepositoryPort {
     const client = tx ?? this.prisma;
     return client.attendanceRecord.findUnique({
       where: { id },
+      include: {
+        employee: {
+          select: { fullName: true, organizationId: true, operatingCompanyId: true, branchId: true, baseSalary: true },
+        },
+      },
+    });
+  }
+
+  async recordCheckOut(id: string, data: CheckOutData, tx?: Prisma.TransactionClient): Promise<AttendanceRecord | null> {
+    const client = tx ?? this.prisma;
+    const result = await client.attendanceRecord.updateMany({
+      where: { id, checkOutCapturedAt: null },
+      data: {
+        checkOutTime: data.checkOutTime,
+        checkOutCapturedAt: data.capturedAt,
+        checkOutLatitude: data.latitude,
+        checkOutLongitude: data.longitude,
+        checkOutAccuracy: data.accuracy,
+        checkOutOutsideGeofence: data.outsideGeofence,
+        checkOutDistanceMeters: data.distanceMeters,
+      },
+    });
+    if (result.count === 0) return null;
+    return client.attendanceRecord.findUniqueOrThrow({ where: { id } });
+  }
+
+  async review(id: string, data: ReviewAttendanceData, tx?: Prisma.TransactionClient): Promise<AttendanceRecord | null> {
+    const client = tx ?? this.prisma;
+    const result = await client.attendanceRecord.updateMany({
+      where: { id, reviewStatus: 'PENDING', isDeductionApplied: false },
+      data: {
+        reviewStatus: data.reviewStatus,
+        reviewedById: data.reviewedById,
+        reviewedAt: data.reviewedAt,
+        reviewNote: data.reviewNote,
+        ...(data.status !== undefined ? { status: data.status } : {}),
+        ...(data.minutesLate !== undefined ? { minutesLate: data.minutesLate } : {}),
+        ...(data.deductionAmount !== undefined ? { deductionAmount: data.deductionAmount } : {}),
+      },
+    });
+    if (result.count === 0) return null;
+    return client.attendanceRecord.findUniqueOrThrow({ where: { id } });
+  }
+
+  async findPendingReview(
+    companyId: string,
+    limit: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<AttendanceWithEmployee[]> {
+    const client = tx ?? this.prisma;
+    return client.attendanceRecord.findMany({
+      where: { reviewStatus: 'PENDING', employee: { operatingCompanyId: companyId } },
+      orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+      take: limit,
       include: {
         employee: {
           select: { fullName: true, organizationId: true, operatingCompanyId: true, branchId: true, baseSalary: true },

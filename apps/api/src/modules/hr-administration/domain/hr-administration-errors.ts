@@ -85,6 +85,47 @@ export class VacationOverlapError extends DomainConflictError {
   }
 }
 
+export class VacationNotFoundError extends DomainNotFoundError {
+  readonly code = 'VACATION_NOT_FOUND';
+
+  constructor(id: string) {
+    super(`No se encontró la solicitud de vacaciones con ID ${id}.`);
+  }
+}
+
+/** Reprogramar/cancelar solo aplica a vacaciones SOLICITADA / PROGRAMADA / REPROGRAMADA (las CANCELADA o COMPLETADA ya no se tocan). */
+export class VacationNotModifiableError extends DomainConflictError {
+  readonly code = 'VACATION_NOT_MODIFIABLE';
+
+  constructor(id: string, status: string) {
+    super(`Las vacaciones ${id} están en estado ${status} y ya no se pueden reprogramar ni cancelar.`);
+  }
+}
+
+export class VacationChangeReasonRequiredError extends DomainUnprocessableError {
+  readonly code = 'VACATION_CHANGE_REASON_REQUIRED';
+
+  constructor() {
+    super('Indica el motivo (entre 3 y 500 caracteres) para reprogramar o cancelar las vacaciones.');
+  }
+}
+
+export class VacationRescheduleUnchangedError extends DomainUnprocessableError {
+  readonly code = 'VACATION_RESCHEDULE_UNCHANGED';
+
+  constructor() {
+    super('Las nuevas fechas son iguales a las actuales: elige otras fechas libres para reprogramar.');
+  }
+}
+
+export class VacationDateInPastError extends DomainUnprocessableError {
+  readonly code = 'VACATION_DATE_IN_PAST';
+
+  constructor() {
+    super('Las nuevas fechas de vacaciones no pueden empezar antes de hoy.');
+  }
+}
+
 export class InvalidDateRangeError extends DomainBadRequestError {
   readonly code = 'INVALID_DATE_RANGE';
 
@@ -428,5 +469,89 @@ export class EmployeeSalaryGerenciaOnlyError extends DomainForbiddenError {
 
   constructor() {
     super('El sueldo base solo puede editarlo Gerencia General; el resto de la ficha puede editarse sin cambiar el sueldo.');
+  }
+}
+
+// ---- 22-oct (Respuestas #9): autoservicio de asistencia, geocerca y revision ----
+
+export class AttendanceLocationRequiredError extends DomainUnprocessableError {
+  readonly code = 'ATTENDANCE_LOCATION_REQUIRED';
+
+  constructor() {
+    super('La marca de asistencia propia requiere la ubicación (latitude, longitude y accuracy).');
+  }
+}
+
+export class AttendanceCaptureTooOldError extends DomainUnprocessableError {
+  readonly code = 'ATTENDANCE_CAPTURE_TOO_OLD';
+
+  constructor(maxHours: number) {
+    super(`La hora de la marca (capturedAt) tiene más de ${maxHours} horas de antigüedad y ya no se acepta.`);
+  }
+}
+
+export class AttendanceReasonRequiredError extends DomainUnprocessableError {
+  readonly code = 'ATTENDANCE_REASON_REQUIRED';
+
+  constructor() {
+    super(
+      'Registrar la presencia o tardanza a nombre de otro colaborador requiere el motivo (reason, 3 a 500 caracteres).',
+    );
+  }
+}
+
+export class AttendanceSelfStatusNotAllowedError extends DomainUnprocessableError {
+  readonly code = 'ATTENDANCE_SELF_STATUS_NOT_ALLOWED';
+
+  constructor(status: string) {
+    super(`El estado ${status} no se puede marcar desde la cuenta personal; solo PRESENTE o TARDANZA.`);
+  }
+}
+
+export class AttendanceCheckInRequiredError extends DomainConflictError {
+  readonly code = 'ATTENDANCE_CHECK_IN_REQUIRED';
+
+  constructor() {
+    super('Para marcar la salida primero debe existir la entrada del día.');
+  }
+}
+
+export class AttendanceMarkAlreadyLoggedError extends DomainConflictError {
+  readonly code = 'ATTENDANCE_MARK_ALREADY_LOGGED';
+
+  constructor(type: string) {
+    super(`Ya existe la marca de ${type === 'CHECK_OUT' ? 'salida' : 'entrada'} de este día.`);
+  }
+}
+
+export class AttendanceNotPendingReviewError extends DomainConflictError {
+  readonly code = 'ATTENDANCE_NOT_PENDING_REVIEW';
+
+  constructor() {
+    super('La marca no está pendiente de revisión.');
+  }
+}
+
+export class InvalidAttendanceReviewError extends DomainUnprocessableError {
+  readonly code = 'INVALID_ATTENDANCE_REVIEW';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class InvalidGeofenceError extends DomainUnprocessableError {
+  readonly code = 'INVALID_GEOFENCE';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
+export class BranchNotFoundError extends DomainNotFoundError {
+  readonly code = 'BRANCH_NOT_FOUND';
+
+  constructor(branchId: string) {
+    super(`No se encontró la sede ${branchId} en la empresa indicada.`);
   }
 }

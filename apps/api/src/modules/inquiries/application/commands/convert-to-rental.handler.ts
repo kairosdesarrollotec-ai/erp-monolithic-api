@@ -6,7 +6,7 @@ import { TransactionManagerPort } from '../../../../common/application/ports/tra
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
+import { InquiryNotTouristUseError, InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { RentalRepositoryPort, RentalRecord } from '../../../rentals/application/ports/rental-repository.port';
 import { RentalCreationGuard } from '../../../rentals/application/services/rental-creation.guard';
@@ -111,7 +111,12 @@ export class ConvertToRentalHandler {
         );
 
         const converted = await this.inquiries.convertToRental(
-          { id: command.id, ...scope, expectedVersion: command.expectedVersion },
+          {
+            id: command.id,
+            ...scope,
+            expectedVersion: command.expectedVersion,
+            interaction: { channel: current.channel, outcome: 'CONVERTIDA_A_ALQUILER' },
+          },
           ['COTIZADA'],
           tx,
         );
@@ -184,6 +189,26 @@ export class ConvertToRentalHandler {
           tx,
         );
 
+        // P-07: ConsultaConvertida.v1 (misma forma que rentals/create-rental) en la misma tx.
+        await this.outboxRepository.publish(
+          {
+            aggregateType: 'inquiry',
+            aggregateId: converted.id,
+            eventType: 'ConsultaConvertida.v1',
+            payload: {
+              inquiryId: converted.id,
+              organizationId: scope.organizationId,
+              operatingCompanyId: scope.operatingCompanyId,
+              branchId: scope.branchId,
+              target: 'RENTAL',
+              rentalId: rental.id,
+              quotationId: quotation.id,
+              convertedBy: command.firebaseUid,
+            },
+          },
+          tx,
+        );
+
         return { inquiry: converted, rental };
       },
       { isolationLevel: 'Serializable' },
@@ -193,6 +218,10 @@ export class ConvertToRentalHandler {
   private assertConvertible(inquiry: InquiryRecord): void {
     if (inquiry.status !== 'COTIZADA') {
       throw new InquiryNotTransitionableError(inquiry.status);
+    }
+    // P-05 (DT-CON-03): sin uso turistico no se convierte; solo cierre con motivo.
+    if (!inquiry.touristUse) {
+      throw new InquiryNotTouristUseError();
     }
     if (!inquiry.customerId) {
       throw new BadRequestException({

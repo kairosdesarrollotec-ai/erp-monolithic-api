@@ -34,16 +34,10 @@ export type DashboardResult =
  * de un valor enviado por el cliente ni de una segunda consulta
  * independiente al repositorio.
  *
- * PROVISIONAL: los modulos de dominio (Consulta, Reserva, Alquiler,
- * Devolucion, Reclutamiento, Administracion de Personal) todavia no
- * existen, asi que no hay tareas/alertas/borradores reales que calcular
- * todavia - se devuelve siempre `state: EMPTY` con el rol resuelto, para
- * que el frontend pueda enrutar a la vista correcta por rol sin inventar
- * datos. Cuando los modulos de dominio existan, este handler se extiende
- * para agregar tareas/alertas reales sin cambiar el contrato de entrada
- * (ver estrategia de evolucion de DashboardResponse.state en
- * packages/contracts/openapi/transversal.yaml). No declarar HU-24/TR-06
- * como funcionalidad terminada mientras esto siga asi.
+ * Estado actual (Auditoria TR P-06, 22-oct-2026): los modulos de dominio ya publican
+ * sus tareas/alertas a `dashboard_items` (proyecciones por outbox); este handler las lee
+ * por rol/empresa/sede y devuelve `state: READY` con `tasks`, o `EMPTY` si no hay ninguna.
+ * Antes devolvia siempre EMPTY (nota PROVISIONAL de PR#5, ya superada).
  *
  * IMPORTANTE (hallazgo ALTO de revision de seguimiento de PR#5): que
  * este handler pase por `authorization.authorize()` NO significa que
