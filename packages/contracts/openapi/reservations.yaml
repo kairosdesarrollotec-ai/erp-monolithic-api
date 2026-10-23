@@ -1,8 +1,10 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.11.0
+  version: 0.12.0
   description: >
+    0.12.0 — DAT-RES-001, BR-RES-005: ReservationResponse expone `canComeToOffice` (boolean, nullable) y
+    `customerLocation` (CustomerLocation, nullable). Se anade el schema `CustomerLocation` [AYACUCHO, FUERA_DE_AYACUCHO].
     0.11.0 — G1 (22-oct-2026). Sin cambios de forma. `confirm`: 409 VEHICLE_NOT_AVAILABLE tambien cuando dos confirmaciones
     concurrentes compiten por el mismo vehiculo y la exclusion de rango de BD (`vehicle_commitments_no_overlap_excl`,
     migracion 20261022030001) rechaza la perdedora; nunca 500. `ReservationResponse.missingRequirements` (ya presente) lista
@@ -435,6 +437,10 @@ components:
     ChannelMode:
       type: string
       enum: [PRESENCIAL, VIRTUAL]
+    CustomerLocation:
+      type: string
+      enum: [AYACUCHO, FUERA_DE_AYACUCHO]
+      description: DAT-RES-001. Ubicacion declarada del cliente.
     CommandScopeRequest:
       type: object
       required: [companyId, branchId]
@@ -549,6 +555,15 @@ components:
         id: { type: string, format: uuid }
         status: { $ref: '#/components/schemas/ReservationStatus' }
         channelMode: { $ref: '#/components/schemas/ChannelMode' }
+        canComeToOffice:
+          type: boolean
+          nullable: true
+          description: 'BR-RES-005. Si el cliente puede acercarse a la oficina para entrega/firma presencial (null en reservas antiguas).'
+        customerLocation:
+          nullable: true
+          allOf:
+            - { $ref: '#/components/schemas/CustomerLocation' }
+          description: 'DAT-RES-001. Ubicacion declarada del cliente al reservar (null en reservas antiguas).'
         version: { type: integer }
         customer:
           type: object

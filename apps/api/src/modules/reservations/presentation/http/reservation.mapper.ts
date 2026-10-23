@@ -32,6 +32,8 @@ export function toReservationResponse(record: ReservationRecord, extras: Reserva
     id: record.id,
     status: record.status,
     channelMode: record.channelMode,
+    canComeToOffice: record.canComeToOffice ?? null,
+    customerLocation: record.customerLocation ?? null,
     version: record.version,
     customer: { id: record.customerId, name: record.customerName },
     vehicle: { id: record.vehicleId, plate: record.vehiclePlate, label: record.vehicleLabel },

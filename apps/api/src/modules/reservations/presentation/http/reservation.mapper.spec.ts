@@ -45,4 +45,18 @@ describe('toReservationResponse', () => {
     const warning = { code: 'VEHICLE_FUEL_PRICE_MISSING' as const, field: 'fuelPrice' as const, message: 'x' };
     expect(toReservationResponse(record({ vehicleWarnings: [warning] })).vehicleWarnings).toEqual([warning]);
   });
+
+  it('DAT-RES-001 / BR-RES-005: expone canComeToOffice y customerLocation (null por defecto o valores asignados)', () => {
+    const defaultResp = toReservationResponse(record());
+    expect(defaultResp.canComeToOffice).toBeNull();
+    expect(defaultResp.customerLocation).toBeNull();
+
+    const customResp = toReservationResponse(record({ canComeToOffice: true, customerLocation: 'AYACUCHO' }));
+    expect(customResp.canComeToOffice).toBe(true);
+    expect(customResp.customerLocation).toBe('AYACUCHO');
+
+    const virtualResp = toReservationResponse(record({ canComeToOffice: false, customerLocation: 'FUERA_DE_AYACUCHO' }));
+    expect(virtualResp.canComeToOffice).toBe(false);
+    expect(virtualResp.customerLocation).toBe('FUERA_DE_AYACUCHO');
+  });
 });
