@@ -4,9 +4,9 @@
 -- se mantiene como primera linea para devolver el 409 VEHICLE_NOT_AVAILABLE con las fechas ocupadas.
 -- Escrita A MANO (no se representa en schema.prisma, igual que vacation_requests_area_no_overlap_excl).
 --
--- SEGURIDAD CON DATOS EXISTENTES: si ya hay compromisos bloqueantes solapados la constraint NO se crea (la migracion no falla ni
--- modifica datos): se emite un WARNING con la cantidad y queda PENDIENTE; el SQL listo esta en el bloque ELSE comentado de abajo y en
--- contract-notes-G1-20261022.md. Se limpia el solape (liberar/cancelar el compromiso erroneo) y se vuelve a ejecutar el ALTER TABLE.
+-- SEGURIDAD CON DATOS EXISTENTES: si ya hay compromisos bloqueantes solapados, la migracion DEBE fallar. Marcarla como aplicada sin
+-- crear la constraint dejaría la regla NFR-KAI-001 sin la defensa de base de datos y permitiría una doble asignacion futura. Saneamiento
+-- y reintento: docs/runbooks/vehicle-commitment-overlap-remediation.md.
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 DO $$
@@ -32,7 +32,13 @@ BEGIN
    AND tsrange(a."starts_at", a."ends_at", '[)') && tsrange(b."starts_at", b."ends_at", '[)');
 
   IF overlap_count > 0 THEN
-    RAISE WARNING 'vehicle_commitments: % par(es) de compromisos bloqueantes solapados; NO se crea vehicle_commitments_no_overlap_excl. Corrija los datos y ejecute el ALTER TABLE manualmente (ver contract-notes-G1-20261022.md).', overlap_count;
+    RAISE EXCEPTION USING
+      ERRCODE = 'integrity_constraint_violation',
+      MESSAGE = format(
+        'vehicle_commitments: %s par(es) de compromisos bloqueantes solapados; se aborta la migracion para no omitir vehicle_commitments_no_overlap_excl.',
+        overlap_count
+      ),
+      HINT = 'Sanee los solapamientos segun docs/runbooks/vehicle-commitment-overlap-remediation.md y vuelva a ejecutar prisma migrate deploy.';
   ELSE
     ALTER TABLE "vehicle_commitments"
       ADD CONSTRAINT "vehicle_commitments_no_overlap_excl"

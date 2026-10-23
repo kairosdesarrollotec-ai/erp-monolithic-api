@@ -1,6 +1,6 @@
 # Consolidado de avance por flujo — 2026-10-22
 
-Base: auditorías del 21-oct (`Auditoria_{CON,RES,ALQ,DEV,TR,REC,ADP}_2026-10-21`, en el Project "Kairos Project") + lo reportado por los agentes del 22-oct. **Lo del 22-oct NO está verificado** (faltan `prisma generate`, migraciones, tests y tsc en el Mac): los % del 22-oct son estimaciones.
+Base: auditorías del 21-oct (`Auditoria_{CON,RES,ALQ,DEV,TR,REC,ADP}_2026-10-21`, en el Project "Kairos Project") + lo reportado por los agentes del 22-oct. La estimación funcional sigue siendo una referencia y no una aprobación de negocio. La verificación técnica del PR #98 se registra en `artifacts/evidence/PR98-ci-and-audit.md` y su trazabilidad en `artifacts/traceability/PR98-reglas-negocio-20261022.md`.
 
 Ponderado: conforme = 1, parcial = 0,5, falta = 0, fuera de alcance excluido. Estricto: solo lo conforme.
 
@@ -59,4 +59,3 @@ Ponderado: conforme = 1, parcial = 0,5, falta = 0, fuera de alcance excluido. Es
 2. Suite back (unit + integración `--runInBand`) y front (`npx tsc -b --noEmit` + tests).
 3. Cerrar el seguimiento de front de Consulta/Reserva/Devolución (G5) y la persistencia de `canComeToOffice` en el back.
 4. Decisiones de negocio abiertas: niveles de cascada por persona, tabla de sanciones, tercera vía notarial, tope de vacaciones, cargo por retraso en la liquidación, multa de combustible, vía legal, rutas de trocha.
-
