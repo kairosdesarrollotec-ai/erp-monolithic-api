@@ -12,7 +12,7 @@ import {
  * 38 archivos por expediente): se consulta aparte con listEvidences.
  */
 export const RETURN_INCLUDE = {
-  vehicle: { select: { plate: true, dailyRate: true } },
+  vehicle: { select: { plate: true, dailyRate: true, fuelPenaltyPerLine: true } },
   customer: { select: { fullName: true } },
   damages: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
   immobilizationCharges: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
@@ -37,8 +37,9 @@ type ImmobilizationChargeRow = Prisma.ImmobilizationChargeGetPayload<Record<stri
 type ReturnEvidenceRow = Prisma.ReturnEvidenceGetPayload<Record<string, never>>;
 export type ReturnReminderRow = Prisma.ReturnReminderGetPayload<Record<string, never>>;
 
-function decimalToNumber(value: Prisma.Decimal | null): number | null {
-  return value === null ? null : value.toNumber();
+function decimalToNumber(value: Prisma.Decimal | number | null | undefined): number | null {
+  if (value == null) return null;
+  return typeof (value as any).toNumber === 'function' ? (value as any).toNumber() : Number(value);
 }
 
 export function toReturnDamageRecord(row: ReturnDamageRow): ReturnDamageRecord {
@@ -157,5 +158,14 @@ export function toReturnRecord(row: ReturnWithRelations): ReturnRecord {
     damages: row.damages.map(toReturnDamageRecord),
     immobilizationCharges: row.immobilizationCharges.map(toImmobilizationChargeRecord),
     reminder: row.reminder ? toReturnReminderRecord(row.reminder) : null,
+    vehicleFuelPenaltyPerLine: decimalToNumber(row.vehicle.fuelPenaltyPerLine),
+    mechanicReportAccepted: row.mechanicReportAccepted,
+    mechanicReportAcceptedAt: row.mechanicReportAcceptedAt,
+    mechanicReportAcceptedBy: row.mechanicReportAcceptedBy,
+    mechanicReportNotes: row.mechanicReportNotes,
+    legalEscalated: row.legalEscalated,
+    legalEscalatedAt: row.legalEscalatedAt,
+    legalEscalatedBy: row.legalEscalatedBy,
+    legalNotes: row.legalNotes,
   };
 }

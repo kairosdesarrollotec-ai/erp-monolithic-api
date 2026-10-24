@@ -1,8 +1,14 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.12.0
+  version: 0.13.0
   description: >
+    0.13.0 — HU-04, BDD-RES-001 (BR-RES-005, BR-RES-006, SC-RES-003, SC-RES-004): Soporte de Reserva Remota.
+    Se anaden tipos VIDEO_360 y SIGNED_ACCEPTANCE a ReservationDocumentType. ReservationResponse.requirements
+    expone isRemote (boolean), video360Uploaded (boolean) y signedAcceptanceUploaded (boolean). Confirmacion de
+    reserva valida requisitos remotos (video 360 y documento de aceptacion firmado) respondiendo 422
+    RESERVATION_REQUIREMENTS_NOT_MET si falta alguno. El bloqueo del vehiculo permanece atomico (RES-P11 / SC-RES-004)
+    solo al cumplirse pago y documentos remotos completos.
     0.12.0 — DAT-RES-001, BR-RES-005: ReservationResponse expone `canComeToOffice` (boolean, nullable) y
     `customerLocation` (CustomerLocation, nullable). Se anade el schema `CustomerLocation` [AYACUCHO, FUERA_DE_AYACUCHO].
     0.11.0 — G1 (22-oct-2026). Sin cambios de forma. `confirm`: 409 VEHICLE_NOT_AVAILABLE tambien cuando dos confirmaciones
@@ -224,7 +230,7 @@ paths:
         '404': { description: Reserva no encontrada en el scope del usuario }
         '409': { description: 'VEHICLE_NOT_AVAILABLE (el detail indica las fechas ocupadas, dd/mm/yyyy) o RESERVATION_STATE_CONFLICT (la reserva ya no esta en DRAFT)' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
-        '422': { description: 'REQUIREMENTS_INCOMPLETE - falta pago o documentos; RESERVATION_EXCEEDS_GUARANTEE - el monto de la reserva supera la garantia del vehiculo' }
+        '422': { description: 'REQUIREMENTS_INCOMPLETE - falta pago o documentos; RESERVATION_EXCEEDS_GUARANTEE - el monto de la reserva supera la garantia del vehiculo; RESERVATION_REQUIREMENTS_NOT_MET - para reservas remotas falta video 360 o documento de aceptacion firmado' }
         '428': { description: IF_MATCH_REQUIRED }
   /reservations/{id}/commands/cancel:
     post:
@@ -589,6 +595,9 @@ components:
           properties:
             paymentValidatedAt: { type: string, format: date-time, nullable: true }
             documentsCompletedAt: { type: string, format: date-time, nullable: true }
+            isRemote: { type: boolean, description: 'BR-RES-005. True si la reserva es remota.' }
+            video360Uploaded: { type: boolean, description: 'SC-RES-003. True si se subio el video 360 del vehiculo.' }
+            signedAcceptanceUploaded: { type: boolean, description: 'SC-RES-003. True si se subio el documento de aceptacion firmado.' }
         missingRequirements:
           type: array
           items: { type: string }
@@ -607,7 +616,7 @@ components:
 
     ReservationDocumentType:
       type: string
-      enum: [PAYMENT_VOUCHER, ID_DOCUMENT, OTHER]
+      enum: [PAYMENT_VOUCHER, ID_DOCUMENT, VIDEO_360, SIGNED_ACCEPTANCE, OTHER]
       description: Tipo de documento adjunto a una reserva.
 
     RequestReservationDocumentUploadSessionRequest:
@@ -619,12 +628,12 @@ components:
         documentType: { $ref: '#/components/schemas/ReservationDocumentType' }
         contentType:
           type: string
-          description: MIME type del archivo (image/jpeg, image/png, application/pdf).
+          description: MIME type del archivo (image/jpeg, image/png, application/pdf, video/mp4, video/webm).
         contentLength:
           type: integer
           minimum: 1
-          maximum: 10485760
-          description: Tamaño en bytes. Máximo 10 MB.
+          maximum: 104857600
+          description: Tamaño en bytes. Máximo 100 MB.
 
     ReservationDocumentUploadSessionResponse:
       type: object

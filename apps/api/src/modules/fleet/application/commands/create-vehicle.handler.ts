@@ -49,6 +49,11 @@ export class CreateVehicleHandler {
       passengerCapacity: command.passengerCapacity,
       fuelPrice: command.fuelPrice ?? null,
       photoUrl: command.photoUrl?.trim() || null,
+      suitableForTrocha: command.suitableForTrocha ?? false,
+      rateNormal: command.rateNormal ?? null,
+      ratePlus: command.ratePlus ?? null,
+      rateLibre: command.rateLibre ?? null,
+      fuelPenaltyPerLine: command.fuelPenaltyPerLine ?? null,
     });
 
     // B7 (Respuestas 2026-10-20/21): auditoria de quien/cuando creo el vehiculo.

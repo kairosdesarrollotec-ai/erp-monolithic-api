@@ -33,4 +33,19 @@ export abstract class ReservationDocumentRepositoryPort {
 
   /** Cantidad de documentos del cliente subidos (excluye el comprobante de pago). */
   abstract countCustomerDocuments(reservationId: string, tx?: Prisma.TransactionClient): Promise<number>;
+
+  /** Verifica si la reserva tiene al menos un documento subido de determinado tipo. */
+  abstract hasDocumentType(
+    reservationId: string,
+    documentType: ReservationDocumentType,
+    tx?: Prisma.TransactionClient,
+  ): Promise<boolean>;
+
+  /** Obtiene un documento de la reserva por tipo (null si no existe). */
+  abstract findByType(
+    reservationId: string,
+    documentType: ReservationDocumentType,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationDocumentRecord | null>;
 }
+

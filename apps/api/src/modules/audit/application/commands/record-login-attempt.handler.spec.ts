@@ -15,43 +15,43 @@ const buildRepo = () =>
   ({ recordLoginAttempt: jest.fn().mockResolvedValue(undefined) }) as unknown as jest.Mocked<AuditEventRepositoryPort>;
 const failures = (n: number) => Array.from({ length: n }, () => ({ outcome: 'FAILURE' as const }));
 
-describe('B8 - umbral de fallos de login (sin bloqueo de cuenta)', () => {
+describe('DEC-AUTH-LOCKOUT-001 - umbral de fallos de login con alerta a Administracion', () => {
   const cmd = new RecordLoginAttemptCommand('user@veloxrent.pe', 'FAILURE', 'invalid-credential');
 
-  it('con 10 fallos consecutivos alerta a Administracion una vez', async () => {
-    const tracker = buildTracker(failures(10));
+  it('con 5 fallos consecutivos alerta a Administracion una vez', async () => {
+    const tracker = buildTracker(failures(5));
     await new RecordLoginAttemptHandler(buildRepo(), tracker).execute(cmd);
     expect(tracker.raiseAlert).toHaveBeenCalledWith(
-      expect.objectContaining({ email: 'user@veloxrent.pe', failures: 10, windowMinutes: 15 }),
+      expect.objectContaining({ email: 'user@veloxrent.pe', failures: 5, windowMinutes: 15 }),
     );
   });
 
-  it('con 9 fallos no alerta', async () => {
-    const tracker = buildTracker(failures(9));
+  it('con 4 fallos no alerta', async () => {
+    const tracker = buildTracker(failures(4));
     await new RecordLoginAttemptHandler(buildRepo(), tracker).execute(cmd);
     expect(tracker.raiseAlert).not.toHaveBeenCalled();
   });
 
-  it('un acceso exitoso corta la racha (9 fallos recientes + exito + fallos viejos)', async () => {
-    const tracker = buildTracker([...failures(9), { outcome: 'SUCCESS' }, ...failures(5)]);
+  it('un acceso exitoso corta la racha (4 fallos recientes + exito + fallos viejos)', async () => {
+    const tracker = buildTracker([...failures(4), { outcome: 'SUCCESS' }, ...failures(5)]);
     await new RecordLoginAttemptHandler(buildRepo(), tracker).execute(cmd);
     expect(tracker.raiseAlert).not.toHaveBeenCalled();
   });
 
   it('no repite la alerta dentro de la misma ventana', async () => {
-    const tracker = buildTracker(failures(12), true);
+    const tracker = buildTracker(failures(6), true);
     await new RecordLoginAttemptHandler(buildRepo(), tracker).execute(cmd);
     expect(tracker.raiseAlert).not.toHaveBeenCalled();
   });
 
   it('un intento exitoso no evalua el umbral', async () => {
-    const tracker = buildTracker(failures(12));
+    const tracker = buildTracker(failures(6));
     await new RecordLoginAttemptHandler(buildRepo(), tracker).execute(new RecordLoginAttemptCommand('user@veloxrent.pe', 'SUCCESS', null));
     expect(tracker.listAttemptsSince).not.toHaveBeenCalled();
   });
 
   it('si la alerta falla, el intento igual queda registrado y no se propaga el error', async () => {
-    const tracker = buildTracker(failures(10));
+    const tracker = buildTracker(failures(5));
     tracker.raiseAlert.mockRejectedValue(new Error('db down'));
     const repo = buildRepo();
     await expect(new RecordLoginAttemptHandler(repo, tracker).execute(cmd)).resolves.toBeUndefined();

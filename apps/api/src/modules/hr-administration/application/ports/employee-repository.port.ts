@@ -16,6 +16,12 @@ export interface CreateEmployeeData {
   status?: EmployeeStatus;
   hireDate: Date;
   baseSalary?: number | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountCci?: string | null;
+  contractType?: string | null;
+  contractUrl?: string | null;
+  contractNotes?: string | null;
 }
 
 export interface UpdateEmployeeData {
@@ -33,6 +39,12 @@ export interface UpdateEmployeeData {
   probationEvaluatedAt?: Date | null;
   payrollStartedAt?: Date | null;
   baseSalary?: number | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountCci?: string | null;
+  contractType?: string | null;
+  contractUrl?: string | null;
+  contractNotes?: string | null;
   fieldTripLateCount?: number;
   isFieldTripObserved?: boolean;
 }

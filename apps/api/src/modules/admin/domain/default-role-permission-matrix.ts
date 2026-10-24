@@ -8,7 +8,7 @@ import { assertHrAdministrationRoleAllowed, HrAdministrationAction } from '../..
 import { assertAdminRoleAllowed, AdminAction } from '../application/policies/admin-role-policy';
 import { isSyncRoleAllowed, type SyncRoleAction } from '../../sync-conflicts/application/policies/sync-role-policy';
 import { assertReturnRoleAllowed, ReturnAction } from '../../returns/application/policies/return-role-policy';
-import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission, assertFleetManageThirdPath } from '../../fleet/application/policies/fleet-role.policy';
+import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission, assertFleetManageThirdPath, assertFleetRegisterOperationalFormat, assertFleetViewOperationalFormat } from '../../fleet/application/policies/fleet-role.policy';
 import { assertCustomerWrite, assertCustomerRead } from '../../customers/application/policies/customer-role.policy';
 import { isPaymentRoleAllowed, type PaymentAction } from '../../payments/application/policies/payment-role-policy';
 import { isNotificationRoleAllowed, type NotificationAction } from '../../notifications/application/policies/notification-role-policy';
@@ -68,6 +68,8 @@ function isAllowedByExistingPolicy(role: WorkerRole, module: PermissionModule, a
       if (action === 'WRITE') assertFleetWrite(role);
       else if (action === 'READ') assertFleetRead(role);
       else if (action === 'MANAGE_THIRD_PATH') assertFleetManageThirdPath(role);
+      else if (action === 'REGISTER_VEHICLE_OPERATIONAL_FORMAT') assertFleetRegisterOperationalFormat(role);
+      else if (action === 'VIEW_VEHICLE_OPERATIONAL_FORMAT') assertFleetViewOperationalFormat(role);
       else assertFleetCrossBranchPermission(role);
     } else if (module === 'CUSTOMER') {
       if (action === 'WRITE') assertCustomerWrite(role);

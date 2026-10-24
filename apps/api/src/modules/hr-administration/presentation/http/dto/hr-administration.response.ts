@@ -36,14 +36,62 @@ export interface EmployeeResponse {
   isFieldTripObserved: boolean;
   /** null = pendiente O restringido (solo MANAGE_SALARY lo ve; ver restrictedFields). */
   baseSalary: number | null;
+  bankName: string | null;
+  bankAccountNumber: string | null;
+  bankAccountCci: string | null;
+  contractType: string | null;
+  contractUrl: string | null;
+  contractNotes: string | null;
   /** HU-35: campos enmascarados para el rol del solicitante. */
-  restrictedFields: Array<'documentNumber' | 'baseSalary'>;
+  restrictedFields: Array<
+    | 'documentNumber'
+    | 'baseSalary'
+    | 'bankName'
+    | 'bankAccountNumber'
+    | 'bankAccountCci'
+    | 'contractType'
+    | 'contractUrl'
+    | 'contractNotes'
+  >;
   /** DEC-ADP-LINK-EMAIL-001: la ficha está vinculada a una cuenta de usuario (por correo). */
   accountLinked: boolean;
   /** DEC-ADP-EDIT-ETAG-001: versión optimista; viaja también en el header ETag y se devuelve en If-Match. */
   version: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export type HrDocumentCategory = 'REGULATION' | 'POLICY' | 'FORMAT';
+
+export interface HrDocumentResponse {
+  id: string;
+  companyId: string;
+  code: string;
+  title: string;
+  category: HrDocumentCategory;
+  version: number;
+  fileUrl: string;
+  fileHash: string | null;
+  fileName: string | null;
+  mimeType: string;
+  sizeBytes: number | null;
+  isActive: boolean;
+  publishedBy: string;
+  publishedAt: string;
+  createdAt: string;
+  hasRead: boolean;
+  readAt: string | null;
+}
+
+export interface ActiveHrDocumentsListResponse {
+  items: HrDocumentResponse[];
+  total: number;
+}
+
+export interface ConfirmHrDocumentReadResponse {
+  documentId: string;
+  employeeId: string;
+  readAt: string;
 }
 
 /** DEC-ADP-RELINK-001: aviso de re-vinculación que acompaña a la respuesta de PATCH /employees/{id}. */
@@ -275,6 +323,8 @@ export interface VacationRequestResponse {
   approvedById: string | null;
   approvedAt: string | null;
   notes: string | null;
+  /** R4 (23-oct): días otorgados por Gerencia (permite conceder menos días de los solicitados). */
+  grantedDays: number | null;
   /** #10 (22-oct): fechas antes de la primera reprogramacion (null si nunca se reprogramo). */
   originalStartDate: string | null;
   originalEndDate: string | null;

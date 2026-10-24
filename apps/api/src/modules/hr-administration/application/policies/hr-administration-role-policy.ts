@@ -37,20 +37,25 @@ export const HR_ADMINISTRATION_ACTIONS = [
   'REVIEW_ATTENDANCE',
   'MANAGE_GEOFENCE',
   'VIEW_EMPLOYEE_DOCUMENT',
+  'VIEW_EMPLOYEE_SENSITIVE_DATA',
+  'MANAGE_HR_DOCUMENTS',
+  'VIEW_HR_DOCUMENTS',
+  'CONFIRM_HR_DOCUMENT_READ',
 ] as const;
 
 export type HrAdministrationAction = (typeof HR_ADMINISTRATION_ACTIONS)[number];
 
 const LEADERSHIP_ROLES: ReadonlySet<WorkerRole> = new Set(['GERENCIA', 'RRHH']);
+const ALL_STAFF_ROLES: ReadonlySet<WorkerRole> = new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE', 'MECANICO']);
 
 const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, ReadonlySet<WorkerRole>>> = {
   VIEW_EMPLOYEES: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS']),
   MANAGE_EMPLOYEES: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   LOG_ATTENDANCE: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS']),
-  AUTHORIZE_LEAVE: LEADERSHIP_ROLES, // Exclusivo de quienes tienen este permiso (BR-ADP-003): nunca por nombre
-  SCHEDULE_VACATION: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
+  AUTHORIZE_LEAVE: new Set(['GERENCIA']), // C5: Exclusivo de Gerencia por defecto (editable en ADM-02)
+  SCHEDULE_VACATION: new Set(['GERENCIA']), // C5: Exclusivo de Gerencia por defecto (editable en ADM-02)
   REQUEST_FIELD_TRIP: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'CAMPO', 'FRONT_OFFICE']),
-  AUTHORIZE_FIELD_TRIP: LEADERSHIP_ROLES, // Cascada genérica N1..N3 (BR-ADP-004): la autoriza el permiso, no una persona fija
+  AUTHORIZE_FIELD_TRIP: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']), // Nivel 1 y 2 = Gerencia; Nivel 3 = Administracion o Gerencia (DEC-ADP-FIELD-TRIP-001)
   EVALUATE_FIELD_TRIP_RETURN: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   TERMINATE_EMPLOYMENT: LEADERSHIP_ROLES, // Exclusivo Gerencia / RRHH (BR-ADP-006, ADR-KAI-006)
   REGISTER_TRAINING: LEADERSHIP_ROLES, // ADP-10: talleres internos informales (BR-ADP-008), RR.HH.
@@ -67,6 +72,13 @@ const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, Rea
   MANAGE_GEOFENCE: new Set(['GERENCIA', 'ADMINISTRACION']),
   // HU-35: el DNI/documento del colaborador es dato personal sensible; AUDITORIA y FINANZAS no lo ven salvo que la matriz lo conceda.
   VIEW_EMPLOYEE_DOCUMENT: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
+  // HU-35: datos personales sensibles (DNI, sueldo, contrato y cuenta bancaria); v0 solo GERENCIA
+  VIEW_EMPLOYEE_SENSITIVE_DATA: new Set(['GERENCIA']),
+  // HU-31: reglamentos, políticas y formatos de Talento Humano; publica solo GERENCIA
+  MANAGE_HR_DOCUMENTS: new Set(['GERENCIA']),
+  // HU-31: consulta de documentos vigentes y confirmación de lectura por colaboradores
+  VIEW_HR_DOCUMENTS: ALL_STAFF_ROLES,
+  CONFIRM_HR_DOCUMENT_READ: ALL_STAFF_ROLES,
 };
 
 export function isHrAdministrationRoleAllowed(role: WorkerRole, action: HrAdministrationAction): boolean {

@@ -18,6 +18,7 @@ import {
   nextLevelTimeoutAfter,
   pendingLevelOf,
   validateAuthorizationLevel,
+  validateFieldTripTimeoutMinutes,
 } from '../../domain/hr-administration-rules';
 
 export interface AuthorizeFieldTripInput {
@@ -39,6 +40,7 @@ export interface RejectFieldTripInput {
 export interface AdvanceTimeoutInput {
   fieldTripId: string;
   now: Date;
+  timeoutMinutes?: number;
 }
 
 export interface EvaluateReturnInput {
@@ -141,6 +143,9 @@ export class FieldTripCascadeService {
 
     const { nextStatus, message } = getNextCascadeStatus(fieldTrip.status, fieldTrip.id);
 
+    const timeoutMinutes = input.timeoutMinutes ?? 5;
+    validateFieldTripTimeoutMinutes(timeoutMinutes);
+
     const timeoutAt = currentLevelTimeoutAt(fieldTrip);
     if (timeoutAt && input.now.getTime() < timeoutAt.getTime()) {
       throw new FieldTripTimeoutNotElapsedError(fieldTrip.id, timeoutAt);
@@ -152,11 +157,11 @@ export class FieldTripCascadeService {
       level3TimeoutAt?: Date;
     } = { status: nextStatus };
 
-    // Cada nivel dura 5 min desde el vencimiento del anterior (no desde que el programador lo detecta).
+    // Cada nivel dura N min (3..10, defecto 5 min) desde el vencimiento del anterior (no desde que el programador lo detecta).
     if (nextStatus === 'PENDIENTE_NIVEL_2') {
-      updatePayload.level2TimeoutAt = nextLevelTimeoutAfter(timeoutAt, input.now);
+      updatePayload.level2TimeoutAt = nextLevelTimeoutAfter(timeoutAt, input.now, timeoutMinutes);
     } else if (nextStatus === 'PENDIENTE_NIVEL_3') {
-      updatePayload.level3TimeoutAt = nextLevelTimeoutAfter(timeoutAt, input.now);
+      updatePayload.level3TimeoutAt = nextLevelTimeoutAfter(timeoutAt, input.now, timeoutMinutes);
     }
 
     const updated = await this.fieldTripRepository.transition(fieldTrip.id, [fieldTrip.status], updatePayload, tx);

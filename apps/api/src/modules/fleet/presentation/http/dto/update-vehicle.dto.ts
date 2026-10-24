@@ -85,4 +85,32 @@ export class UpdateVehicleDto {
   @IsOptional()
   @IsBoolean()
   thirdPathEligible?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  suitableForTrocha?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  rateNormal?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  ratePlus?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  rateLibre?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  fuelPenaltyPerLine?: number;
 }

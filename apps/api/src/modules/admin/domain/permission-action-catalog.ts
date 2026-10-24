@@ -77,6 +77,8 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'FLEET', action: 'WRITE', label: 'Flota: crear/editar vehículos' },
   { module: 'FLEET', action: 'CROSS_BRANCH', label: 'Flota: operar en sedes distintas' },
   { module: 'FLEET', action: 'MANAGE_THIRD_PATH', label: 'Flota: marcar vehiculo de menor costo elegible para la tercera via notarial (solo Gerencia)' },
+  { module: 'FLEET', action: 'REGISTER_VEHICLE_OPERATIONAL_FORMAT', label: 'Flota: registrar fichas operativas (Formatos 01 al 09)' },
+  { module: 'FLEET', action: 'VIEW_VEHICLE_OPERATIONAL_FORMAT', label: 'Flota: consultar fichas operativas y recordatorios' },
   // CUSTOMER (2 acciones — customer-role.policy.ts)
   { module: 'CUSTOMER', action: 'READ', label: 'Clientes: consultar' },
   { module: 'CUSTOMER', action: 'WRITE', label: 'Clientes: crear/editar' },
@@ -115,6 +117,11 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'HR_ADMINISTRATION', action: 'REVIEW_ATTENDANCE', label: 'Personal: aprobar o corregir marcas de asistencia fuera de la geocerca' },
   { module: 'HR_ADMINISTRATION', action: 'MANAGE_GEOFENCE', label: 'Personal: configurar la geocerca (coordenadas y radio) de cada sede' },
   { module: 'HR_ADMINISTRATION', action: 'VIEW_EMPLOYEE_DOCUMENT', label: 'Personal: ver el número de documento (DNI) del colaborador' },
+  // HU-31 y HU-35 (23-oct-2026, Frente R6)
+  { module: 'HR_ADMINISTRATION', action: 'VIEW_EMPLOYEE_SENSITIVE_DATA', label: 'Personal: ver datos personales sensibles del colaborador (DNI, sueldo base, contrato y cuenta bancaria; solo Gerencia por defecto)' },
+  { module: 'HR_ADMINISTRATION', action: 'MANAGE_HR_DOCUMENTS', label: 'Personal: publicar y versionar reglamentos, políticas y formatos de Talento Humano (solo Gerencia)' },
+  { module: 'HR_ADMINISTRATION', action: 'VIEW_HR_DOCUMENTS', label: 'Personal: consultar reglamentos, políticas y formatos vigentes de Talento Humano' },
+  { module: 'HR_ADMINISTRATION', action: 'CONFIRM_HR_DOCUMENT_READ', label: 'Personal: registrar la confirmación de lectura de documentos de Talento Humano' },
   // PAYMENT (5 acciones — BDD-PAG-001 / SDD-PAG-001 / TDD-PAG-001)
   { module: 'PAYMENT', action: 'READ_LIST', label: 'Pagos: listar garantías de alquiler' },
   { module: 'PAYMENT', action: 'READ_DETAIL', label: 'Pagos: ver detalle de garantía y ajustes' },

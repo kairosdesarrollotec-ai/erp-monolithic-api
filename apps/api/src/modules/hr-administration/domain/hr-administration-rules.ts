@@ -4,6 +4,7 @@ import {
   DeductionsBeforeMonthEndError,
   FieldTripRejectionReasonRequiredError,
   InvalidAttendanceReclassificationError,
+  InvalidFieldTripTimeoutParameterError,
   EmployeeStatusTransitionNotAllowedError,
   FinalSettlementRequiredError,
   FieldTripNotPendingError,
@@ -18,8 +19,17 @@ import {
   VacationNotModifiableError,
 } from './hr-administration-errors';
 
-/** BR-ADP-004: minutos que cada nivel de la cascada tiene para responder. */
+/** BR-ADP-004: minutos por defecto que cada nivel de la cascada tiene para responder. */
 export const FIELD_TRIP_LEVEL_TIMEOUT_MINUTES = 5;
+export const FIELD_TRIP_TIMEOUT_MIN_MINUTES = 3;
+export const FIELD_TRIP_TIMEOUT_MAX_MINUTES = 10;
+
+/** Valida el parametro configurable del tenant para tiempo por nivel (rango 3..10 min). */
+export function validateFieldTripTimeoutMinutes(minutes: number): void {
+  if (!Number.isInteger(minutes) || minutes < FIELD_TRIP_TIMEOUT_MIN_MINUTES || minutes > FIELD_TRIP_TIMEOUT_MAX_MINUTES) {
+    throw new InvalidFieldTripTimeoutParameterError(minutes);
+  }
+}
 
 /** BR-ADP-005: a partir de la 4ta tardanza al regresar de campo la persona queda observada. */
 export const FIELD_TRIP_OBSERVED_THRESHOLD = 4;
@@ -55,7 +65,7 @@ export const VACATION_MODIFIABLE_STATUSES = VACATION_CAPACITY_STATUSES;
  */
 export const VACATION_MAX_CONCURRENT = 1;
 export type VacationCapacityScope = 'AREA_IN_COMPANY' | 'COMPANY';
-export const VACATION_CAPACITY_SCOPE: VacationCapacityScope = 'AREA_IN_COMPANY';
+export const VACATION_CAPACITY_SCOPE: VacationCapacityScope = 'COMPANY';
 
 /**
  * BR-ADP-002 / DR-ADP-001: capacidad de área para vacaciones (máximo 1 persona del área de vacaciones a la vez,
@@ -149,8 +159,7 @@ export function getNextCascadeStatus(
     case 'PENDIENTE_NIVEL_3':
       return {
         nextStatus: 'NO_AUTORIZADA',
-        message:
-          'Nadie autorizó tras agotar los 3 niveles de la cascada. La persona no sale; la decisión de a quién más consultar es manual, fuera del sistema (BR-ADP-004, DR-ADP-002).',
+        message: 'Nadie autorizó. Consulta manualmente con Fiorella o José',
       };
     default:
       throw new FieldTripNotPendingError(fieldTripId, currentStatus);
@@ -211,17 +220,17 @@ export function currentLevelTimeoutAt(fieldTrip: {
   }
 }
 
-export function levelTimeoutFrom(now: Date): Date {
-  return new Date(now.getTime() + FIELD_TRIP_LEVEL_TIMEOUT_MINUTES * 60 * 1000);
+export function levelTimeoutFrom(now: Date, timeoutMinutes: number = FIELD_TRIP_LEVEL_TIMEOUT_MINUTES): Date {
+  return new Date(now.getTime() + timeoutMinutes * 60 * 1000);
 }
 
 /**
- * Vencimiento del nivel siguiente al escalar: cada nivel dura 5 min contados desde el vencimiento del anterior
+ * Vencimiento del nivel siguiente al escalar: cada nivel dura N min (por defecto 5 min) contados desde el vencimiento del anterior
  * (no desde el momento en que el programador lo detecta), de modo que un retraso del proceso periódico no alarga
- * la cascada (BR-ADP-004: 3 niveles x 5 min exactos). Sin vencimiento previo se cuenta desde `now`.
+ * la cascada (BR-ADP-004: 3 niveles x N min exactos). Sin vencimiento previo se cuenta desde `now`.
  */
-export function nextLevelTimeoutAfter(previousTimeoutAt: Date | null, now: Date): Date {
-  return levelTimeoutFrom(previousTimeoutAt ?? now);
+export function nextLevelTimeoutAfter(previousTimeoutAt: Date | null, now: Date, timeoutMinutes: number = FIELD_TRIP_LEVEL_TIMEOUT_MINUTES): Date {
+  return levelTimeoutFrom(previousTimeoutAt ?? now, timeoutMinutes);
 }
 
 export const FIELD_TRIP_REJECTION_REASON_MIN_LENGTH = 5;

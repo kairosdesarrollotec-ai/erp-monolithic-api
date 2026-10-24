@@ -86,6 +86,26 @@ export function assertFleetManageThirdPath(role: WorkerRole | null): void {
   }
 }
 
+/** DEC-OPS-FORMATS-001: registrar formatos operativos de vehiculos (01 al 09). */
+export function assertFleetRegisterOperationalFormat(role: WorkerRole | null): void {
+  if (role === null || !FLEET_WRITE_ROLES.has(role)) {
+    throw new ForbiddenException({
+      code: 'FLEET_REGISTER_OPERATIONAL_FORMAT_NOT_ALLOWED',
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no tiene permiso para registrar fichas operativas.`,
+    });
+  }
+}
+
+/** DEC-OPS-FORMATS-001: consultar fichas operativas y recordatorios. */
+export function assertFleetViewOperationalFormat(role: WorkerRole | null): void {
+  if (role === null || !FLEET_READ_ROLES.has(role)) {
+    throw new ForbiddenException({
+      code: 'FLEET_VIEW_OPERATIONAL_FORMAT_NOT_ALLOWED',
+      detail: `El rol "${role ?? 'sin clave de sistema'}" no tiene permiso para consultar fichas operativas.`,
+    });
+  }
+}
+
 /**
  * Valida que el usuario tenga permiso para operar sobre una sede distinta a
  * la de su contexto de trabajo (IDOR por sede - Finding #2, PR#34).

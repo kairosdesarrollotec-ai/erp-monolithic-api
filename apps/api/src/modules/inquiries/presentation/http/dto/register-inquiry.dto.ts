@@ -61,4 +61,7 @@ export class RegisterInquiryDto {
   @IsOptional() @Matches(ISO_DATE_ONLY, { message: 'travelStartDate debe tener formato YYYY-MM-DD.' })
   travelStartDate?: string;
   @IsOptional() @IsInt() @IsPositive() partySize?: number;
+
+  /** DEC-CON-TROCHA-001 */
+  @IsOptional() @IsBoolean() isDirtRoad?: boolean;
 }

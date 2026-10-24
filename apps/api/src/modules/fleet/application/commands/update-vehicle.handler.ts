@@ -75,12 +75,18 @@ export class UpdateVehicleHandler {
       fuelPrice: command.fuelPrice,
       photoUrl: command.photoUrl?.trim() || null,
       thirdPathEligible: thirdPathChanges ? command.thirdPathEligible : undefined,
+      suitableForTrocha: command.suitableForTrocha,
+      rateNormal: command.rateNormal,
+      ratePlus: command.ratePlus,
+      rateLibre: command.rateLibre,
+      fuelPenaltyPerLine: command.fuelPenaltyPerLine,
     });
 
     // B7: auditoria de quien/cuando edito el vehiculo, con el diff antes/despues de los campos que cambiaron.
     const tracked = [
       'branchId', 'brand', 'model', 'year', 'color', 'category',
       'dailyRate', 'depositMinimum', 'passengerCapacity', 'fuelPrice', 'photoUrl', 'thirdPathEligible',
+      'suitableForTrocha', 'rateNormal', 'ratePlus', 'rateLibre', 'fuelPenaltyPerLine',
     ] as const;
     const changes: Record<string, { from: unknown; to: unknown }> = {};
     for (const key of tracked) {

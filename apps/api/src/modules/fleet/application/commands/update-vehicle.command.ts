@@ -18,5 +18,10 @@ export class UpdateVehicleCommand {
     public readonly assignedBranchId?: string,
     /** DEC-ALQ-THIRDPATH-001: undefined = no cambia. Cambiarlo exige FLEET.MANAGE_THIRD_PATH (Gerencia). */
     public readonly thirdPathEligible?: boolean,
+    public readonly suitableForTrocha?: boolean,
+    public readonly rateNormal?: number,
+    public readonly ratePlus?: number,
+    public readonly rateLibre?: number,
+    public readonly fuelPenaltyPerLine?: number,
   ) {}
 }

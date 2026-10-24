@@ -3,7 +3,9 @@ import { CloseReturnHandler } from './close-return.handler';
 import { CloseReturnCommand } from './close-return.command';
 import {
   ActiveIncidentsBlockCloseError,
+  MechanicReportNotAcceptedError,
   RentalNotReturnableError,
+  ReturnOfflineChangesPendingError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
 import {
@@ -104,9 +106,20 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
   });
 
   it('con daño técnico: el vehículo pasa a MAINTENANCE', async () => {
-    const { deps, handler } = build({ damages: [buildDamage(), buildTechnicalDamage()] });
+    const { deps, handler } = build({ damages: [buildDamage(), buildTechnicalDamage()], mechanicReportAccepted: true });
     await handler.execute(cmd());
     expect(deps.fleetVehicles.updateStatus).toHaveBeenCalledWith('veh-1', expect.anything(), 'MAINTENANCE');
+  });
+
+  it('DEC-DEV-REPORT-001: con daños y sin aceptación de informe mecánico -> 422 MECHANIC_REPORT_NOT_ACCEPTED', async () => {
+    const { handler } = build({ damages: [buildDamage()], mechanicReportAccepted: false });
+    await expect(handler.execute(cmd())).rejects.toThrow(MechanicReportNotAcceptedError);
+  });
+
+  it('DEC-DEV-OFFLINE-001: con cambios offline pendientes -> 422 RETURN_OFFLINE_CHANGES_PENDING', async () => {
+    const { handler } = build();
+    const offlineCmd = new CloseReturnCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 11, undefined, false, undefined, true);
+    await expect(handler.execute(offlineCmd)).rejects.toThrow(ReturnOfflineChangesPendingError);
   });
 
   it('Fleet se actualiza al final, después de auditoría y outbox (dentro de la misma transacción)', async () => {

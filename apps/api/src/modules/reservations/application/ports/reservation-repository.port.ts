@@ -28,6 +28,9 @@ export interface ReservationRecord {
   paymentPolicyVersion: number;
   paymentValidatedAt: Date | null;
   documentsCompletedAt: Date | null;
+  /** Requisitos remotos (BR-RES-005, BR-RES-006, SC-RES-003). */
+  video360Uploaded?: boolean;
+  signedAcceptanceUploaded?: boolean;
   confirmedAt: Date | null;
   /** Decision 8 (22-oct-2026): comprobante del pago registrado (null mientras no se registre). */
   payment?: ReservationPaymentRecord | null;

@@ -1,8 +1,15 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Inquiries API
-  version: 0.7.0
+  version: 0.9.0
   description: >
+    0.9.0 — DEC-R1-FIX-001 (23-oct-2026, R1):
+    - 422 PLAN_RATE_NOT_CONFIGURED: si el vehiculo elegido no tiene tarifa configurada para el plan especificado (NORMAL, PLUS o LIBRE).
+    0.8.0 — DEC-CON-TROCHA-001 / DEC-CON-PLANS-001 (23-oct-2026, ADITIVO):
+    - RegisterInquiryRequest suma `isDirtRoad` (boolean, default false): indica si la ruta incluye trocha.
+    - QuoteRequest suma `plan` (enum [NORMAL, PLUS, LIBRE], default NORMAL).
+    - 422 VEHICLE_NOT_SUITABLE_FOR_TROCHA: si isDirtRoad=true y el vehiculo no es apto para trocha.
+    - Quotation expone `plan`.
     0.7.0 — G1 (22-oct-2026, reglas de negocio):
     - InquiryResponse suma `requiredDocuments` (BR-CON-004: peruano ->
       RECIBO_AGUA_O_LUZ; extranjero -> CONSTANCIA_HOSPEDAJE; vacio si el
@@ -151,7 +158,7 @@ paths:
         '404': { description: Consulta no encontrada en el scope }
         '409': { $ref: '#/components/responses/IdempotencyConflict' }
         '412': { description: INQUIRY_VERSION_CONFLICT }
-        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE, INQUIRY_NOT_TOURIST_USE (touristUse=false: solo se puede cerrar), o VEHICLE_NOT_ELIGIBLE (no existe en la empresa / no elegible segun Flota / ocupado en las fechas del viaje; el detail indica las fechas)' }
+        '422': { description: 'INQUIRY_NOT_TRANSITIONABLE, INQUIRY_NOT_TOURIST_USE (touristUse=false: solo se puede cerrar), VEHICLE_NOT_SUITABLE_FOR_TROCHA (isDirtRoad=true pero el vehículo no es apto para trocha), PLAN_RATE_NOT_CONFIGURED (falta tarifa para el plan elegido), o VEHICLE_NOT_ELIGIBLE (no existe en la empresa / no elegible segun Flota / ocupado en las fechas del viaje; el detail indica las fechas)' }
         '428': { description: IF_MATCH_REQUIRED }
         '503': { $ref: '#/components/responses/QuotingNotProductionReady' }
   /inquiries/{id}/commands/close:
@@ -361,6 +368,7 @@ components:
                 nationality: { $ref: '#/components/schemas/InquiryNationality' }
                 countryEntryDate: { type: string, format: date, description: 'SC-CON-001.03 - solo si nationality = EXTRANJERO' }
             destination: { type: string, minLength: 1, maxLength: 200, description: DAT-CON-003 }
+            isDirtRoad: { type: boolean, default: false, description: 'DEC-CON-TROCHA-001. Indica si la ruta incluye trocha.' }
             estimatedDays: { type: integer, minimum: 1, description: 'DAT-CON-003 - tiempo estimado' }
             travelStartDate: { type: string, format: date, description: 'CON-02 periodo (opcional)' }
             partySize: { type: integer, minimum: 1, description: 'CON-02 personas (opcional)' }
@@ -373,6 +381,7 @@ components:
             vehicleId: { type: string, format: uuid }
             destination: { type: string }
             estimatedDays: { type: integer, minimum: 1 }
+            plan: { type: string, enum: [NORMAL, PLUS, LIBRE], default: NORMAL, description: 'DEC-CON-PLANS-001. Plan de tarifas elegido.' }
     CloseInquiryRequest:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
@@ -401,7 +410,7 @@ components:
       type: object
       required:
         [id, companyId, branchId, status, channel, touristUse, customerId,
-         destination, estimatedDays, travelStartDate, partySize,
+         destination, estimatedDays, isDirtRoad, travelStartDate, partySize,
          dataOrigin, closedReason, version, createdAt]
       properties:
         id: { type: string, format: uuid }
@@ -414,6 +423,7 @@ components:
         touristUse: { type: boolean }
         customerId: { type: [string, 'null'], format: uuid }
         destination: { type: [string, 'null'] }
+        isDirtRoad: { type: boolean, description: 'DEC-CON-TROCHA-001' }
         estimatedDays: { type: [integer, 'null'] }
         travelStartDate: { type: [string, 'null'], format: date }
         partySize: { type: [integer, 'null'] }
@@ -469,6 +479,7 @@ components:
                   estimatedDays: { type: integer }
                   amount: { type: string }
                   currency: { type: string }
+                  plan: { type: string, enum: [NORMAL, PLUS, LIBRE], default: NORMAL, description: 'DEC-CON-PLANS-001. Plan cotizado.' }
                   validUntil: { type: string, format: date-time }
                   createdAt: { type: string, format: date-time }
     ConvertToReservationResponse:

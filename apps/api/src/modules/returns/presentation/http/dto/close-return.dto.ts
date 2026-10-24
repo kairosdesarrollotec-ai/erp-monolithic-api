@@ -19,4 +19,9 @@ export class CloseReturnDto {
   @IsString()
   @MaxLength(1000)
   notes?: string;
+
+  /** DEC-DEV-OFFLINE-001: si es true, responde 422 RETURN_OFFLINE_CHANGES_PENDING */
+  @IsOptional()
+  @IsBoolean()
+  hasPendingOfflineChanges?: boolean;
 }

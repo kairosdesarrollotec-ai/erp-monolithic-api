@@ -19,6 +19,8 @@ import { ChargeImmobilizationHandler } from './application/commands/charge-immob
 import { RegisterReturnLateChargeHandler } from './application/commands/register-late-charge.handler';
 import { CloseFinancialHandler } from './application/commands/close-financial.handler';
 import { CloseReturnHandler } from './application/commands/close-return.handler';
+import { RecordMechanicReportHandler } from './application/commands/record-mechanic-report.handler';
+import { EscalateLegalHandler } from './application/commands/escalate-legal.handler';
 import { RequestReturnEvidenceUploadSessionHandler } from './application/commands/request-return-evidence-upload-session.handler';
 import { RecordReturnEvidenceHandler } from './application/commands/record-return-evidence.handler';
 import { ReturnEvidenceRemovalService } from './application/services/return-evidence-removal.service';
@@ -85,6 +87,8 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     RegisterReturnLateChargeHandler,
     CloseFinancialHandler,
     CloseReturnHandler,
+    RecordMechanicReportHandler,
+    EscalateLegalHandler,
     RecordZoneMarksHandler,
     ListZoneMarksHandler,
     RequestReturnEvidenceUploadSessionHandler,

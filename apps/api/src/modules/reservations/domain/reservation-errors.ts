@@ -221,3 +221,21 @@ export class ChannelModeMismatchError extends DomainUnprocessableError {
     );
   }
 }
+
+/**
+ * BR-RES-005, BR-RES-006, SC-RES-003, SC-RES-004: En modalidad remota, confirmar la reserva
+ * exige que se hayan completado los requisitos remotos: video 360 del vehículo y documento de aceptación firmado.
+ * 422 RESERVATION_REQUIREMENTS_NOT_MET.
+ */
+export class ReservationRequirementsNotMetError extends DomainUnprocessableError {
+  readonly code = 'RESERVATION_REQUIREMENTS_NOT_MET';
+  readonly missingRequirements: string[];
+
+  constructor(missing: string[]) {
+    super(`Requisitos remotos incompletos para confirmar la reserva: ${missing.join(', ')}.`, {
+      missingRequirements: missing,
+    });
+    this.missingRequirements = missing;
+  }
+}
+

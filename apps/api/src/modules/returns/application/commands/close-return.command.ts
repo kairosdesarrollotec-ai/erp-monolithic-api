@@ -8,5 +8,6 @@ export class CloseReturnCommand {
     public readonly signatureData?: string,
     public readonly generateWarrantyAct?: boolean,
     public readonly notes?: string,
+    public readonly hasPendingOfflineChanges?: boolean,
   ) {}
 }

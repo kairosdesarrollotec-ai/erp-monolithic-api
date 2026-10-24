@@ -46,12 +46,25 @@ export interface CancelVacationData {
   changedAt: Date;
 }
 
+export interface ResolveVacationData {
+  status: VacationStatus;
+  grantedDays?: number | null;
+  endDate?: Date;
+  statusReason?: string | null;
+  approvedById?: string | null;
+  approvedAt?: Date | null;
+  statusChangedById?: string | null;
+  statusChangedAt?: Date | null;
+}
+
 export abstract class VacationRepositoryPort {
   abstract findById(id: string, tx?: Prisma.TransactionClient): Promise<VacationWithEmployeeScope | null>;
   /** Reprograma a nuevas fechas: guarda las originales (la primera vez), cuenta el cambio y deja el estado REPROGRAMADA. */
   abstract reschedule(id: string, data: RescheduleVacationData, tx?: Prisma.TransactionClient): Promise<VacationRequest>;
   /** Cancela (estado CANCELADA, libera el cupo) con motivo y autor. */
   abstract cancel(id: string, data: CancelVacationData, tx?: Prisma.TransactionClient): Promise<VacationRequest>;
+  /** Resuelve (aprueba con grantedDays, reprograma o rechaza/cancela) por Gerencia. */
+  abstract resolve(id: string, data: ResolveVacationData, tx?: Prisma.TransactionClient): Promise<VacationRequest>;
   /** Vacaciones que ocupan cupo en TODA la empresa (para VACATION_CAPACITY_SCOPE = 'COMPANY'). */
   abstract findActiveByCompany(companyId: string, tx?: Prisma.TransactionClient): Promise<VacationRequest[]>;
   abstract create(data: CreateVacationData, tx?: Prisma.TransactionClient): Promise<VacationRequest>;

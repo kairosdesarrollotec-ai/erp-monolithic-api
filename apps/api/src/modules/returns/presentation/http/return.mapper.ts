@@ -224,6 +224,14 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     etag: `"${record.version}"`,
     damages: (record.damages ?? []).map((d) => toReturnDamageResponse(d)),
     immobilizationCharges: (record.immobilizationCharges ?? []).map((c) => toImmobilizationChargeResponse(c)),
+    mechanicReportAccepted: record.mechanicReportAccepted ?? false,
+    mechanicReportAcceptedAt: record.mechanicReportAcceptedAt ? record.mechanicReportAcceptedAt.toISOString() : null,
+    mechanicReportAcceptedBy: record.mechanicReportAcceptedBy ?? null,
+    mechanicReportNotes: record.mechanicReportNotes ?? null,
+    legalEscalated: record.legalEscalated ?? false,
+    legalEscalatedAt: record.legalEscalatedAt ? record.legalEscalatedAt.toISOString() : null,
+    legalEscalatedBy: record.legalEscalatedBy ?? null,
+    legalNotes: record.legalNotes ?? null,
   };
 }
 

@@ -21,6 +21,14 @@ export interface FleetVehicle {
   photoUrl?: string | null;
   /** DEC-ALQ-THIRDPATH-001: vehiculo "de menor costo relativo" elegible para la tercera via notarial. Solo lo edita Gerencia. */
   thirdPathEligible?: boolean;
+  /** DEC-FLT-TROCHA-001: apto para trocha / afirmado */
+  suitableForTrocha?: boolean;
+  /** Tarifas por plan (DEC-CON-PLANS-001) */
+  rateNormal?: number | null;
+  ratePlus?: number | null;
+  rateLibre?: number | null;
+  /** Multa por combustible por linea faltante (PEN) */
+  fuelPenaltyPerLine?: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

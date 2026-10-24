@@ -8,7 +8,10 @@ import { FieldTripCascadeService } from '../services/field-trip-cascade.service'
 import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { UserDisplayNamePort } from '../ports/user-display-name.port';
-import { FieldTripNotFoundError } from '../../domain/hr-administration-errors';
+import {
+  FieldTripLevelRoleMismatchError,
+  FieldTripNotFoundError,
+} from '../../domain/hr-administration-errors';
 import { validateAuthorizationLevel } from '../../domain/hr-administration-rules';
 import { AuthorizeFieldTripCommand } from './authorize-field-trip.command';
 
@@ -45,6 +48,11 @@ export class AuthorizeFieldTripHandler {
       },
       'AUTHORIZE_FIELD_TRIP',
     );
+
+    // DEC-ADP-FIELD-TRIP-001: Nivel 1 y 2 = Gerencia; Nivel 3 = Administracion (Cecilia) o Gerencia.
+    if (command.authorizationLevel < 3 && context.roleKey === 'ADMINISTRACION') {
+      throw new FieldTripLevelRoleMismatchError(command.authorizationLevel, context.roleKey);
+    }
 
     const userName = await this.displayNames.findDisplayName(command.firebaseUid);
 

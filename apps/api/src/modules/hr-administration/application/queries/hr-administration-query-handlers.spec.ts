@@ -84,6 +84,7 @@ function setup(role: 'RRHH' | 'GERENCIA' | 'CAMPO' | 'AUDITORIA' | 'forbidden' =
     create: jest.fn(),
     findByEmployee: jest.fn(),
     findActiveByArea: jest.fn(),
+    findActiveByCompany: jest.fn(),
     findCalendar: jest.fn(),
   } as unknown as jest.Mocked<VacationRepositoryPort>;
 

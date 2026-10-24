@@ -49,6 +49,11 @@ function toDomain(row: {
     fuelPrice: row.fuelPrice !== null ? Number(row.fuelPrice) : null,
     photoUrl: row.photoUrl,
     thirdPathEligible: row.thirdPathEligible,
+    suitableForTrocha: (row as any).suitableForTrocha ?? false,
+    rateNormal: (row as any).rateNormal !== null && (row as any).rateNormal !== undefined ? Number((row as any).rateNormal) : null,
+    ratePlus: (row as any).ratePlus !== null && (row as any).ratePlus !== undefined ? Number((row as any).ratePlus) : null,
+    rateLibre: (row as any).rateLibre !== null && (row as any).rateLibre !== undefined ? Number((row as any).rateLibre) : null,
+    fuelPenaltyPerLine: (row as any).fuelPenaltyPerLine !== null && (row as any).fuelPenaltyPerLine !== undefined ? Number((row as any).fuelPenaltyPerLine) : null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -82,6 +87,11 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
         fuelPrice:
           input.fuelPrice !== undefined && input.fuelPrice !== null ? new Prisma.Decimal(input.fuelPrice) : undefined,
         photoUrl: input.photoUrl ?? undefined,
+        suitableForTrocha: input.suitableForTrocha ?? false,
+        rateNormal: input.rateNormal !== undefined && input.rateNormal !== null ? new Prisma.Decimal(input.rateNormal) : undefined,
+        ratePlus: input.ratePlus !== undefined && input.ratePlus !== null ? new Prisma.Decimal(input.ratePlus) : undefined,
+        rateLibre: input.rateLibre !== undefined && input.rateLibre !== null ? new Prisma.Decimal(input.rateLibre) : undefined,
+        fuelPenaltyPerLine: input.fuelPenaltyPerLine !== undefined && input.fuelPenaltyPerLine !== null ? new Prisma.Decimal(input.fuelPenaltyPerLine) : undefined,
       },
     });
 
@@ -207,6 +217,23 @@ export class PrismaFleetVehicleRepository extends FleetVehicleRepositoryPort {
             : undefined,
         photoUrl: input.photoUrl ?? undefined,
         thirdPathEligible: input.thirdPathEligible,
+        suitableForTrocha: input.suitableForTrocha !== undefined ? input.suitableForTrocha : undefined,
+        rateNormal:
+          input.rateNormal !== undefined && input.rateNormal !== null
+            ? new Prisma.Decimal(input.rateNormal)
+            : undefined,
+        ratePlus:
+          input.ratePlus !== undefined && input.ratePlus !== null
+            ? new Prisma.Decimal(input.ratePlus)
+            : undefined,
+        rateLibre:
+          input.rateLibre !== undefined && input.rateLibre !== null
+            ? new Prisma.Decimal(input.rateLibre)
+            : undefined,
+        fuelPenaltyPerLine:
+          input.fuelPenaltyPerLine !== undefined && input.fuelPenaltyPerLine !== null
+            ? new Prisma.Decimal(input.fuelPenaltyPerLine)
+            : undefined,
       },
     });
 

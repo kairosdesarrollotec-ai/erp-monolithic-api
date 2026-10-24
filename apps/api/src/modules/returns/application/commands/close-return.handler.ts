@@ -12,8 +12,10 @@ import { ReturnVehicleCommitmentPort } from '../ports/return-vehicle-commitment.
 import { ReturnAccessService } from '../services/return-access.service';
 import {
   ActiveIncidentsBlockCloseError,
+  MechanicReportNotAcceptedError,
   RentalNotReturnableError,
   ReturnNotFoundError,
+  ReturnOfflineChangesPendingError,
   ReturnRentalNotFoundError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
@@ -46,6 +48,10 @@ export class CloseReturnHandler {
   async execute(command: CloseReturnCommand): Promise<ReturnRecord> {
     const { context, scope } = await this.access.authorize(command, 'CLOSE');
 
+    if (command.hasPendingOfflineChanges) {
+      throw new ReturnOfflineChangesPendingError();
+    }
+
     const existing = await this.returns.findById(command.id, scope);
     if (!existing) {
       throw new ReturnNotFoundError(command.id);
@@ -75,6 +81,12 @@ export class CloseReturnHandler {
       const openIncidents = [...findOpenIncidents(current.status, damages), ...linkedIncidentIds.map(openIncidentLabel)];
       if (openIncidents.length > 0) {
         throw new ActiveIncidentsBlockCloseError(openIncidents);
+      }
+
+      // DEC-DEV-REPORT-001 (Frente C): si registra daños, inmovilización exige que el cliente acepte el informe mecánico antes de cerrar
+      const hasDamages = (damages.length > 0);
+      if (hasDamages && !current.mechanicReportAccepted) {
+        throw new MechanicReportNotAcceptedError();
       }
       assertCanTransitionReturn(current.status, 'CERRADA');
 
