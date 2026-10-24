@@ -471,3 +471,13 @@ export class NotaryExceptionNotApplicableError extends DomainUnprocessableError 
     super(`La evaluacion notarial dio ${result}: solo THIRD_PATH_ELIGIBLE o MANUAL_REVIEW admiten aprobacion de excepcion por Gerencia.`);
   }
 }
+
+/** BR-ALQ-002, HU-28, SC-ALQ-001: el trámite notarial lo asume la empresa y está prohibido clasificarlo como pago del cliente. */
+export class NotaryExpenseCannotBeCustomerPaymentError extends DomainUnprocessableError {
+  readonly code = 'NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT';
+
+  constructor() {
+    super('El trámite notarial lo asume la empresa y está prohibido clasificarlo como pago del cliente (BR-ALQ-002, HU-28, SC-ALQ-001).');
+  }
+}
+

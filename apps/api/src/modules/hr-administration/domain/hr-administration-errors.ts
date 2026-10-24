@@ -134,6 +134,22 @@ export class InvalidDateRangeError extends DomainBadRequestError {
   }
 }
 
+export class InvalidGrantedDaysError extends DomainBadRequestError {
+  readonly code = 'INVALID_GRANTED_DAYS';
+
+  constructor(message?: string) {
+    super(message || 'Los días otorgados deben estar entre 1 y los días solicitados.');
+  }
+}
+
+export class VacationAlreadyResolvedError extends DomainConflictError {
+  readonly code = 'VACATION_ALREADY_RESOLVED';
+
+  constructor(id: string) {
+    super(`La solicitud de vacaciones ${id} ya fue resuelta previamente.`);
+  }
+}
+
 export class LeaveNotFoundError extends DomainNotFoundError {
   readonly code = 'LEAVE_NOT_FOUND';
 
@@ -227,8 +243,24 @@ export class NoAuthorizationAvailableError extends DomainConflictError {
 
   constructor(id: string) {
     super(
-      `Nadie autorizó la salida a campo ${id} tras agotarse los 3 niveles de la cascada. La persona no sale y la decisión posterior queda manual, fuera del sistema (BR-ADP-004, DR-ADP-002).`,
+      `Nadie autorizó tras agotar los 3 niveles de la cascada. Consulta manualmente con Fiorella o José (salida ${id}).`,
     );
+  }
+}
+
+export class InvalidFieldTripTimeoutParameterError extends DomainBadRequestError {
+  readonly code = 'INVALID_FIELD_TRIP_TIMEOUT_PARAMETER';
+
+  constructor(minutes: number) {
+    super(`El parámetro de tiempo por nivel de salida a campo debe estar entre 3 y 10 minutos (recibido: ${minutes}).`);
+  }
+}
+
+export class FieldTripLevelRoleMismatchError extends DomainForbiddenError {
+  readonly code = 'ROLE_NOT_ALLOWED';
+
+  constructor(level: number, role: string) {
+    super(`Los niveles 1 y 2 solo pueden ser autorizados por Gerencia (rol ${role} no autorizado para nivel ${level}).`);
   }
 }
 

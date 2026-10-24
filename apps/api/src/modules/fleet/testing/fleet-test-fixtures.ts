@@ -4,9 +4,15 @@ import { FleetVehicleRepositoryPort } from '../application/ports/fleet-vehicle-r
 import { WorkContextAuthorizationService } from '../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../authorization/matrix-authorization.service';
 import { FleetAccessService } from '../application/services/fleet-access.service';
-import type { WorkerRole } from '../../users/domain/worker-role';
+import {
+  assertFleetWrite,
+  assertFleetRead,
+  assertFleetCrossBranchPermission,
+  assertFleetRegisterOperationalFormat,
+  assertFleetViewOperationalFormat,
+} from '../application/policies/fleet-role.policy';
 import { testRole, roleKeyOfTestRoleId } from '../../users/testing/role-fixtures';
-import { assertFleetWrite, assertFleetRead, assertFleetCrossBranchPermission } from '../application/policies/fleet-role.policy';
+import type { WorkerRole } from '../../users/domain/worker-role';
 
 export const ORG = 'org-1';
 export const COMPANY = 'company-1';
@@ -29,6 +35,11 @@ export function buildFleetVehicle(overrides: Partial<FleetVehicle> = {}): FleetV
     depositMinimum: 500,
     passengerCapacity: 5,
     fuelPrice: 4.5,
+    suitableForTrocha: false,
+    rateNormal: 250,
+    ratePlus: 280,
+    rateLibre: 400,
+    fuelPenaltyPerLine: 50,
     photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/hilux.jpg',
     createdAt: new Date('2026-09-28T10:00:00Z'),
     updatedAt: new Date('2026-09-28T10:00:00Z'),
@@ -58,6 +69,11 @@ export function buildFleetVehicleRepository(
         passengerCapacity: input.passengerCapacity ?? null,
         fuelPrice: input.fuelPrice ?? null,
         photoUrl: input.photoUrl ?? null,
+        suitableForTrocha: input.suitableForTrocha ?? false,
+        rateNormal: input.rateNormal ?? null,
+        ratePlus: input.ratePlus ?? null,
+        rateLibre: input.rateLibre ?? null,
+        fuelPenaltyPerLine: input.fuelPenaltyPerLine ?? null,
       }),
     ),
     findById: jest.fn().mockImplementation(async (id: string) => (existing && existing.id === id ? existing : null)),
@@ -94,6 +110,8 @@ export function buildFleetAccessService(
         if (module === 'FLEET') {
           if (action === 'WRITE') assertFleetWrite(r);
           else if (action === 'READ') assertFleetRead(r);
+          else if (action === 'REGISTER_VEHICLE_OPERATIONAL_FORMAT') assertFleetRegisterOperationalFormat(r);
+          else if (action === 'VIEW_VEHICLE_OPERATIONAL_FORMAT') assertFleetViewOperationalFormat(r);
           else assertFleetCrossBranchPermission(r);
         }
       } catch {

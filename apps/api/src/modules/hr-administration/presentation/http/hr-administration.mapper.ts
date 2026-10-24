@@ -38,9 +38,21 @@ const iso = (d: Date | null | undefined): string | null => (d ? d.toISOString() 
 const dateOnly = (d: Date): string => d.toISOString().slice(0, 10);
 
 export function toEmployeeResponse(e: Employee, visibility: EmployeeFieldVisibility): EmployeeResponse {
-  const restrictedFields: Array<'documentNumber' | 'baseSalary'> = [];
+  const restrictedFields: Array<
+    | 'documentNumber'
+    | 'baseSalary'
+    | 'bankName'
+    | 'bankAccountNumber'
+    | 'bankAccountCci'
+    | 'contractType'
+    | 'contractUrl'
+    | 'contractNotes'
+  > = [];
   if (!visibility.canViewDocument) restrictedFields.push('documentNumber');
   if (!visibility.canViewSalary) restrictedFields.push('baseSalary');
+  if (!visibility.canViewSensitiveData) {
+    restrictedFields.push('bankName', 'bankAccountNumber', 'bankAccountCci', 'contractType', 'contractUrl', 'contractNotes');
+  }
   return {
     id: e.id,
     companyId: e.operatingCompanyId,
@@ -67,11 +79,81 @@ export function toEmployeeResponse(e: Employee, visibility: EmployeeFieldVisibil
     isFieldTripObserved: e.isFieldTripObserved,
     baseSalary:
       !visibility.canViewSalary || e.baseSalary === null || e.baseSalary === undefined ? null : Number(e.baseSalary),
+    bankName: visibility.canViewSensitiveData ? e.bankName : null,
+    bankAccountNumber: visibility.canViewSensitiveData ? e.bankAccountNumber : null,
+    bankAccountCci: visibility.canViewSensitiveData ? e.bankAccountCci : null,
+    contractType: visibility.canViewSensitiveData ? e.contractType : null,
+    contractUrl: visibility.canViewSensitiveData ? e.contractUrl : null,
+    contractNotes: visibility.canViewSensitiveData ? e.contractNotes : null,
     restrictedFields,
     accountLinked: !!e.firebaseUid,
     version: e.version,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
+  };
+}
+
+export function toHrDocumentResponse(
+  doc:
+    | {
+        id: string;
+        operatingCompanyId: string;
+        code: string;
+        title: string;
+        category: string;
+        createdAt: Date;
+        currentVersion: {
+          id: string;
+          version: number;
+          fileUrl: string;
+          fileHash: string | null;
+          fileName: string | null;
+          mimeType: string;
+          sizeBytes: number | null;
+          isCurrent: boolean;
+          publishedBy: string;
+          publishedAt: Date;
+        };
+      }
+    | {
+        id: string;
+        operatingCompanyId: string;
+        code: string;
+        title: string;
+        category: string;
+        version: number;
+        fileUrl: string;
+        fileHash: string | null;
+        fileName: string | null;
+        mimeType: string;
+        sizeBytes: number | null;
+        isActive: boolean;
+        publishedBy: string;
+        publishedAt: Date;
+        createdAt: Date;
+      },
+  readInfo?: { hasRead: boolean; readAt: Date | null },
+): HrDocumentResponse {
+  const v = 'currentVersion' in doc ? doc.currentVersion : doc;
+  const isActive = 'currentVersion' in doc ? doc.currentVersion.isCurrent : doc.isActive;
+  return {
+    id: doc.id,
+    companyId: doc.operatingCompanyId,
+    code: doc.code,
+    title: doc.title,
+    category: doc.category as any,
+    version: v.version,
+    fileUrl: v.fileUrl,
+    fileHash: v.fileHash,
+    fileName: v.fileName,
+    mimeType: v.mimeType,
+    sizeBytes: v.sizeBytes,
+    isActive,
+    publishedBy: v.publishedBy,
+    publishedAt: v.publishedAt.toISOString(),
+    createdAt: doc.createdAt.toISOString(),
+    hasRead: readInfo?.hasRead ?? false,
+    readAt: readInfo?.readAt ? readInfo.readAt.toISOString() : null,
   };
 }
 
@@ -267,6 +349,7 @@ export function toVacationRequestResponse(
     approvedById: v.approvedById,
     approvedAt: iso(v.approvedAt),
     notes: v.notes,
+    grantedDays: v.grantedDays ?? null,
     originalStartDate: v.originalStartDate ? dateOnly(v.originalStartDate) : null,
     originalEndDate: v.originalEndDate ? dateOnly(v.originalEndDate) : null,
     rescheduleCount: v.rescheduleCount,

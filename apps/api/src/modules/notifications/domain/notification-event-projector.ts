@@ -111,6 +111,8 @@ const FALLBACK_TEMPLATES: Record<string, string> = {
   'CandidatoSeleccionado.v1': 'Candidato {nombre} seleccionado.',
   'PersonalIncorporado.v1': 'Nuevo personal incorporado desde el {fecha}.',
   'RelacionLaboralTerminada.v1': 'Relacion laboral terminada ({motivo}).',
+  'PermisoSolicitado.v1': 'Nueva solicitud de permiso de {colaborador}.',
+  'VacacionSolicitada.v1': 'Nueva solicitud de vacaciones de {colaborador}.',
 };
 
 /**
@@ -188,6 +190,36 @@ export function projectNotificationEvent(
       const payload = event.payload as RelacionLaboralTerminadaPayload;
       const body = templateBody ?? FALLBACK_TEMPLATES['RelacionLaboralTerminada.v1'];
       const title = renderNotificationTemplate(body, { motivo: payload.reason });
+      return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.actorUserId, title, '/personal');
+    }
+
+    // HR-Administration — permiso solicitado (R4).
+    case 'PermisoSolicitado.v1': {
+      const payload = event.payload as {
+        leaveId: string;
+        employeeName: string;
+        actorUserId: string;
+        organizationId: string;
+        operatingCompanyId: string;
+        branchId: string;
+      };
+      const body = templateBody ?? FALLBACK_TEMPLATES['PermisoSolicitado.v1'];
+      const title = renderNotificationTemplate(body, { colaborador: payload.employeeName });
+      return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.actorUserId, title, '/personal');
+    }
+
+    // HR-Administration — vacacion solicitada (R4).
+    case 'VacacionSolicitada.v1': {
+      const payload = event.payload as {
+        vacationId: string;
+        employeeName: string;
+        actorUserId: string;
+        organizationId: string;
+        operatingCompanyId: string;
+        branchId: string;
+      };
+      const body = templateBody ?? FALLBACK_TEMPLATES['VacacionSolicitada.v1'];
+      const title = renderNotificationTemplate(body, { colaborador: payload.employeeName });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.actorUserId, title, '/personal');
     }
 

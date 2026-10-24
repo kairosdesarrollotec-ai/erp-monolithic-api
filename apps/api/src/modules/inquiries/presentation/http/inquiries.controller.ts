@@ -92,6 +92,7 @@ export class InquiriesController {
           estimatedDays: dto.estimatedDays,
           travelStartDate: toUtcDate(dto.travelStartDate),
           partySize: dto.partySize,
+          isDirtRoad: dto.isDirtRoad,
         },
         dto.customerId,
         dto.prospect
@@ -167,6 +168,7 @@ export class InquiriesController {
         dto.vehicleId,
         dto.destination,
         dto.estimatedDays,
+        dto.plan,
       ),
     );
     return toInquiryResponse(updated);

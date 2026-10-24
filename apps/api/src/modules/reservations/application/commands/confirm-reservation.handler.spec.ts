@@ -221,4 +221,63 @@ describe('ConfirmReservationHandler', () => {
     });
     expect(reservations.confirm).not.toHaveBeenCalled();
   });
+
+  describe('HU-04 / BDD-RES-001 / SC-RES-007 (Reserva Remota)', () => {
+    it('rechaza con RESERVATION_REQUIREMENTS_NOT_MET si es remota y falta video 360 y aceptacion firmada', async () => {
+      const existing = buildRecord({
+        channelMode: 'VIRTUAL',
+        paymentValidatedAt: new Date(),
+        documentsCompletedAt: new Date(),
+        video360Uploaded: false,
+        signedAcceptanceUploaded: false,
+      });
+      const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+      const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+      await expect(
+        handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
+      ).rejects.toMatchObject({
+        code: 'RESERVATION_REQUIREMENTS_NOT_MET',
+        httpStatus: 422,
+        missingRequirements: expect.arrayContaining(['video 360 del vehículo', 'documento de aceptación firmado']),
+      });
+      expect(reservations.confirm).not.toHaveBeenCalled();
+    });
+
+    it('rechaza si es remota por ubicacion FUERA_DE_AYACUCHO y falta aceptacion firmada', async () => {
+      const existing = buildRecord({
+        customerLocation: 'FUERA_DE_AYACUCHO',
+        paymentValidatedAt: new Date(),
+        documentsCompletedAt: new Date(),
+        video360Uploaded: true,
+        signedAcceptanceUploaded: false,
+      });
+      const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+      const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+      await expect(
+        handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1)),
+      ).rejects.toMatchObject({
+        code: 'RESERVATION_REQUIREMENTS_NOT_MET',
+        missingRequirements: ['documento de aceptación firmado'],
+      });
+    });
+
+    it('confirma reserva remota cuando tiene video 360 y aceptacion firmada', async () => {
+      const existing = buildRecord({
+        channelMode: 'VIRTUAL',
+        customerLocation: 'FUERA_DE_AYACUCHO',
+        paymentValidatedAt: new Date(),
+        documentsCompletedAt: new Date(),
+        video360Uploaded: true,
+        signedAcceptanceUploaded: true,
+      });
+      const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
+      const handler = new ConfirmReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+
+      const result = await handler.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1));
+      expect(reservations.confirm).toHaveBeenCalledWith('res-1', SCOPE, 1, FAKE_TX);
+      expect(result.status).toBe('CONFIRMED');
+    });
+  });
 });

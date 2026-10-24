@@ -78,8 +78,14 @@ import { ListReturnAlertsQueryDto } from './dto/list-return-alerts-query.dto';
 import { ListReturnsQueryDto } from './dto/list-returns-query.dto';
 import { ReturnScopeQueryDto } from './dto/return-scope-query.dto';
 import { RecordZoneMarksDto } from './dto/record-zone-marks.dto';
+import { RecordMechanicReportDto } from './dto/record-mechanic-report.dto';
+import { EscalateLegalDto } from './dto/escalate-legal.dto';
 import { RecordZoneMarksHandler } from '../../application/commands/record-zone-marks.handler';
 import { RecordZoneMarksCommand } from '../../application/commands/record-zone-marks.command';
+import { RecordMechanicReportHandler } from '../../application/commands/record-mechanic-report.handler';
+import { RecordMechanicReportCommand } from '../../application/commands/record-mechanic-report.command';
+import { EscalateLegalHandler } from '../../application/commands/escalate-legal.handler';
+import { EscalateLegalCommand } from '../../application/commands/escalate-legal.command';
 import { ListZoneMarksHandler } from '../../application/queries/list-zone-marks.handler';
 import { ListZoneMarksQuery } from '../../application/queries/list-zone-marks.query';
 import {
@@ -123,6 +129,8 @@ export class ReturnsController {
     private readonly registerLateCharge: RegisterReturnLateChargeHandler,
     private readonly closeFinancial: CloseFinancialHandler,
     private readonly closeReturn: CloseReturnHandler,
+    private readonly recordMechanicReport: RecordMechanicReportHandler,
+    private readonly escalateLegal: EscalateLegalHandler,
     private readonly recordZoneMarks: RecordZoneMarksHandler,
     private readonly listZoneMarks: ListZoneMarksHandler,
     private readonly getReturn: GetReturnHandler,
@@ -520,6 +528,52 @@ export class ReturnsController {
         parseVersionIfMatch(ifMatch),
         dto.signatureData,
         dto.generateWarrantyAct,
+        dto.notes,
+        dto.hasPendingOfflineChanges,
+      ),
+    );
+    return toReturnResponse(updated);
+  }
+
+  @Post(':id/commands/record-mechanic-report')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async recordMechanicReportCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordMechanicReportDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReturnResponse> {
+    const updated = await this.recordMechanicReport.execute(
+      new RecordMechanicReportCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.accepted,
+        dto.notes,
+      ),
+    );
+    return toReturnResponse(updated);
+  }
+
+  @Post(':id/commands/escalate-legal')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async escalateLegalCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: EscalateLegalDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReturnResponse> {
+    const updated = await this.escalateLegal.execute(
+      new EscalateLegalCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
         dto.notes,
       ),
     );

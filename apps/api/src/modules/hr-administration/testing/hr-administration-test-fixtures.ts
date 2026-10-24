@@ -26,7 +26,7 @@ export const HR_SCOPE = {
 };
 
 export function buildWorkContext(
-  role: WorkerRole | 'forbidden' = 'RRHH',
+  role: WorkerRole | 'forbidden' = 'GERENCIA',
 ): jest.Mocked<WorkContextAuthorizationService> {
   return {
     authorize:

@@ -51,6 +51,9 @@ import { CompleteDeliveryCommand } from '../../application/commands/complete-del
 import { CancelRentalHandler } from '../../application/commands/cancel-rental.handler';
 import { CancelRentalCommand } from '../../application/commands/cancel-rental.command';
 import { CancelRentalDto } from './dto/cancel-rental.dto';
+import { RecordCompanyExpenseHandler } from '../../application/commands/record-company-expense.handler';
+import { RecordCompanyExpenseCommand } from '../../application/commands/record-company-expense.command';
+import { RecordCompanyExpenseDto, CompanyExpenseResponse } from './dto/record-company-expense.dto';
 import { GetRentalHandler } from '../../application/queries/get-rental.handler';
 import { GetRentalQuery } from '../../application/queries/get-rental.query';
 import { GetContractTemplateHandler } from '../../application/queries/get-contract-template.handler';
@@ -91,6 +94,7 @@ export class RentalsController {
     private readonly formalizeContract: FormalizeContractHandler,
     private readonly completeDelivery: CompleteDeliveryHandler,
     private readonly cancelRental: CancelRentalHandler,
+    private readonly recordCompanyExpenseHandler: RecordCompanyExpenseHandler,
     private readonly getRental: GetRentalHandler,
     private readonly listRentals: ListRentalsHandler,
     private readonly getContractTemplate: GetContractTemplateHandler,
@@ -491,5 +495,30 @@ export class RentalsController {
     return toRentalResponse(updated);
   }
 
+  @Post(':id/company-expenses')
+  @HttpCode(201)
+  @UseInterceptors(IdempotencyInterceptor)
+  async recordCompanyExpense(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordCompanyExpenseDto,
+  ): Promise<CompanyExpenseResponse> {
+    return this.recordCompanyExpenseHandler.execute(
+      new RecordCompanyExpenseCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.expenseType,
+        dto.amount,
+        dto.expenseDate,
+        dto.reference,
+        dto.currency,
+        dto.notes,
+        dto.paidByCustomer,
+      ),
+    );
+  }
+
 }
+
 

@@ -41,10 +41,12 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
   });
 
   it('HR_ADMINISTRATION tiene filas sembradas reflejando hr-administration-role-policy', () => {
-    expect(allowed('GERENCIA', 'HR_ADMINISTRATION', 'TERMINATE_EMPLOYMENT')).toBe(true);
-    expect(allowed('RRHH', 'HR_ADMINISTRATION', 'AUTHORIZE_LEAVE')).toBe(true);
+    expect(allowed('GERENCIA', 'HR_ADMINISTRATION', 'AUTHORIZE_LEAVE')).toBe(true);
+    expect(allowed('RRHH', 'HR_ADMINISTRATION', 'AUTHORIZE_LEAVE')).toBe(false);
+    expect(allowed('RRHH', 'HR_ADMINISTRATION', 'SCHEDULE_VACATION')).toBe(false);
     expect(allowed('ADMINISTRACION', 'HR_ADMINISTRATION', 'LOG_ATTENDANCE')).toBe(true);
     expect(allowed('ADMINISTRACION', 'HR_ADMINISTRATION', 'AUTHORIZE_LEAVE')).toBe(false);
+    expect(allowed('ADMINISTRACION', 'HR_ADMINISTRATION', 'SCHEDULE_VACATION')).toBe(false);
     expect(allowed('CAMPO', 'HR_ADMINISTRATION', 'REQUEST_FIELD_TRIP')).toBe(true);
     expect(allowed('CAMPO', 'HR_ADMINISTRATION', 'MANAGE_EMPLOYEES')).toBe(false);
     expect(allowed('AUDITORIA', 'HR_ADMINISTRATION', 'VIEW_EMPLOYEES')).toBe(true);

@@ -5,6 +5,7 @@ import {
   CancelVacationData,
   CreateVacationData,
   RescheduleVacationData,
+  ResolveVacationData,
   VacationWithEmployeeScope,
   VacationRepositoryPort,
   VacationWithEmployee,
@@ -89,6 +90,30 @@ export class PrismaVacationRepository implements VacationRepositoryPort {
         statusChangedById: data.changedById,
       },
     });
+  }
+
+  async resolve(id: string, data: ResolveVacationData, tx?: Prisma.TransactionClient): Promise<VacationRequest> {
+    const client = tx ?? this.prisma;
+    try {
+      return await client.vacationRequest.update({
+        where: { id },
+        data: {
+          status: data.status,
+          ...(data.grantedDays !== undefined ? { grantedDays: data.grantedDays } : {}),
+          ...(data.endDate ? { endDate: data.endDate } : {}),
+          ...(data.statusReason !== undefined ? { statusReason: data.statusReason } : {}),
+          ...(data.approvedById !== undefined ? { approvedById: data.approvedById } : {}),
+          ...(data.approvedAt !== undefined ? { approvedAt: data.approvedAt } : {}),
+          ...(data.statusChangedById !== undefined ? { statusChangedById: data.statusChangedById } : {}),
+          ...(data.statusChangedAt !== undefined ? { statusChangedAt: data.statusChangedAt } : {}),
+        },
+      });
+    } catch (error) {
+      if (isVacationOverlapConstraintError(error)) {
+        throw new VacationOverlapError('del colaborador');
+      }
+      throw error;
+    }
   }
 
   async findActiveByCompany(companyId: string, tx?: Prisma.TransactionClient): Promise<VacationRequest[]> {

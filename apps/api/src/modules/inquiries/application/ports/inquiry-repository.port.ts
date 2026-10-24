@@ -12,6 +12,7 @@ export interface QuotationRecord {
   estimatedDays: number;
   amount: string;
   currency: string;
+  plan?: string | null;
   validUntil: Date;
   createdAt: Date;
 }
@@ -35,6 +36,7 @@ export interface InquirySnapshot {
   estimatedDays: number | null;
   travelStartDate: Date | null;
   partySize: number | null;
+  isDirtRoad?: boolean | null;
 }
 
 /**
@@ -76,6 +78,7 @@ export interface CreateInquiryInput {
   estimatedDays: number;
   travelStartDate?: Date;
   partySize?: number;
+  isDirtRoad?: boolean;
   createdBy: string;
 }
 
@@ -125,6 +128,7 @@ export interface QuoteInquiryInput extends InquiryScope {
   estimatedDays: number;
   amount: string;
   currency: string;
+  plan?: string | null;
   rateCardVersionId: string;
   validUntil: Date;
 }

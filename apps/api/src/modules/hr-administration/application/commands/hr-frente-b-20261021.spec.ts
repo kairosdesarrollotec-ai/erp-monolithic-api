@@ -298,6 +298,8 @@ describe('Vacaciones por area POR EMPRESA (Respuestas #18)', () => {
         rows.push(row);
         return row;
       }),
+      findActiveByCompany: jest.fn().mockImplementation(async (companyId: string) =>
+        rows.filter((r) => r.operatingCompanyId === companyId)),
       findActiveByArea: jest.fn().mockImplementation(async (companyId: string, areaId: string) =>
         rows.filter((r) => r.operatingCompanyId === companyId && r.areaId === areaId)),
       findByEmployee: jest.fn(),
@@ -308,7 +310,7 @@ describe('Vacaciones por area POR EMPRESA (Respuestas #18)', () => {
   function scheduler(vacations: VacationRepositoryPort, employee: ReturnType<typeof buildEmployee>) {
     const employees = { findById: jest.fn().mockResolvedValue(employee) } as unknown as jest.Mocked<EmployeeRepositoryPort>;
     const ctx = { authorize: jest.fn().mockResolvedValue({ organizationId: ORG_ID, companyId: employee.operatingCompanyId, branchId: employee.branchId, roleId: 'role-RRHH' }) };
-    const access = new HrAdministrationAccessService(buildWorkContext('RRHH'), buildMatrixAuth());
+    const access = new HrAdministrationAccessService(buildWorkContext('GERENCIA'), buildMatrixAuth());
     void ctx;
     return new ScheduleVacationHandler(access, vacations, employees, buildTransactionManager(), new FixedClock(), buildAudit());
   }

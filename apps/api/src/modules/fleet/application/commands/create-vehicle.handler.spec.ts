@@ -64,6 +64,11 @@ describe('CreateVehicleHandler', () => {
       passengerCapacity: 5,
       fuelPrice: 4.5,
       photoUrl: 'https://storage.googleapis.com/test-bucket/vehicle-photos/tucson.jpg',
+      suitableForTrocha: false,
+      rateNormal: null,
+      ratePlus: null,
+      rateLibre: null,
+      fuelPenaltyPerLine: null,
     });
     expect(result.plate).toBe('XYZ-789');
   });
@@ -175,6 +180,50 @@ describe('CreateVehicleHandler', () => {
 
       expect(repository.create).toHaveBeenCalledWith(
         expect.objectContaining({ passengerCapacity: 5, depositMinimum: null, fuelPrice: null }),
+      );
+    });
+
+    it('registra vehiculo con tarifas de 3 planes (Normal, Plus, Libre), trocha y multa combustible', async () => {
+      const repository = buildFleetVehicleRepository(null);
+      repository.findByPlate.mockResolvedValue(null);
+      const { access } = buildFleetAccessService('CAMPO');
+      const handler = new CreateVehicleHandler(repository, access, buildAudit());
+
+      await handler.execute(
+        new CreateVehicleCommand(
+          'uid-1',
+          COMPANY,
+          BRANCH,
+          'TRO-123',
+          'Toyota',
+          'Hilux',
+          5,
+          2024,
+          'Blanco',
+          'PICKUP',
+          'AVAILABLE',
+          250,
+          undefined,
+          undefined,
+          500,
+          50,
+          true,
+          250,
+          280,
+          400,
+          50,
+        ),
+      );
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          plate: 'TRO-123',
+          suitableForTrocha: true,
+          rateNormal: 250,
+          ratePlus: 280,
+          rateLibre: 400,
+          fuelPenaltyPerLine: 50,
+        }),
       );
     });
   });

@@ -19,7 +19,7 @@ import {
 } from '../../domain/reservation-errors';
 import { TERMINAL_RESERVATION_STATUSES } from '../../domain/reservation-status';
 import { findFirstVehicleConflict } from '../../../../common/persistence/vehicle-overlap';
-import { ReservationWithRelations, toReservationRecord as toRecord } from './reservation-record.mapper';
+import { ReservationWithRelations, toReservationRecord as toRecord, RESERVATION_INCLUDE } from './reservation-record.mapper';
 
 /** Hallazgo critico PR#6 ("IDOR"): where de scope completo, reusado en cada lectura/mutacion puntual. */
 function scopeWhere(id: string, scope: ReservationScope) {
@@ -94,6 +94,8 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
           customerId: input.customerId,
           vehicleId: input.vehicleId,
           channelMode: input.channelMode,
+          canComeToOffice: input.canComeToOffice,
+          customerLocation: input.customerLocation,
           startAt: input.startAt,
           endAt: input.endAt,
           requiredPaymentAmount: input.requiredPaymentAmount,
@@ -101,7 +103,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
           paymentPolicyVersion: input.paymentPolicyVersion,
           createdBy: input.createdBy,
         },
-        include: { customer: true, vehicle: true },
+        include: RESERVATION_INCLUDE,
       });
     } catch (error) {
       // UNIQUE reservations.inquiry_id (revalidacion PR#7): una consulta
@@ -126,7 +128,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     const client = tx ?? this.prisma;
     const row: ReservationWithRelations | null = await client.reservation.findFirst({
       where: scopeWhere(id, scope),
-      include: { customer: true, vehicle: true },
+      include: RESERVATION_INCLUDE,
     });
     return row ? toRecord(row) : null;
   }
@@ -139,7 +141,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
         branchId: filter.branchId,
         status: filter.status,
       },
-      include: { customer: true, vehicle: true },
+      include: RESERVATION_INCLUDE,
       // Hallazgo medio "listado sin paginacion": cursor estable
       // (createdAt DESC, id DESC como desempate) + limite maximo, en vez
       // de traer la tabla completa.
@@ -205,7 +207,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     }
     const updated: ReservationWithRelations = await client.reservation.findFirstOrThrow({
       where: scopeWhere(id, scope),
-      include: { customer: true, vehicle: true },
+      include: RESERVATION_INCLUDE,
     });
     return toRecord(updated);
   }
@@ -288,7 +290,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
 
     const updated: ReservationWithRelations = await tx.reservation.findFirstOrThrow({
       where: scopeWhere(id, scope),
-      include: { customer: true, vehicle: true },
+      include: RESERVATION_INCLUDE,
     });
     return toRecord(updated);
   }
@@ -339,7 +341,7 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
 
     const updated: ReservationWithRelations = await tx.reservation.findFirstOrThrow({
       where: scopeWhere(input.id, input),
-      include: { customer: true, vehicle: true },
+      include: RESERVATION_INCLUDE,
     });
     return toRecord(updated);
   }

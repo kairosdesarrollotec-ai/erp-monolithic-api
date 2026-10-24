@@ -132,7 +132,7 @@ export class CloseFinancialHandler {
             depositApplicable,
             depositStatus: plan?.status,
             depositAdjusted: depositApplied,
-            fuelPenaltyReference: updated.fuelLevelAtReturn ? calculateFuelPenalty(updated.fuelLevelAtReturn) : undefined,
+            fuelPenaltyReference: updated.fuelLevelAtReturn ? calculateFuelPenalty(updated.fuelLevelAtReturn, updated.vehicleFuelPenaltyPerLine) : undefined,
           },
         },
         tx,

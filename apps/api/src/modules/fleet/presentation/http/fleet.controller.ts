@@ -37,6 +37,11 @@ import { ListVehiclesResponse, VehicleResponse } from './dto/vehicle.response';
 import { toVehicleResponse } from './vehicle.mapper';
 import { VehiclePhotoStoragePort } from '../../application/ports/vehicle-photo-storage.port';
 
+import { RecordVehicleOperationalFormatHandler } from '../../application/commands/record-vehicle-operational-format.handler';
+import { ListVehicleOperationalRecordsHandler } from '../../application/queries/list-vehicle-operational-records.handler';
+import { ListVehicleOperationalRemindersHandler } from '../../application/queries/list-vehicle-operational-reminders.handler';
+import { RecordVehicleOperationalFormatDto } from './dto/record-vehicle-operational-format.dto';
+
 @Controller('fleet')
 @UseGuards(FirebaseAuthGuard)
 export class FleetController {
@@ -48,6 +53,9 @@ export class FleetController {
     private readonly getVehicleHandler: GetVehicleHandler,
     private readonly requestPhotoUploadSessionHandler: RequestPhotoUploadSessionHandler,
     private readonly photoStorage: VehiclePhotoStoragePort,
+    private readonly recordVehicleOperationalFormatHandler: RecordVehicleOperationalFormatHandler,
+    private readonly listVehicleOperationalRecordsHandler: ListVehicleOperationalRecordsHandler,
+    private readonly listVehicleOperationalRemindersHandler: ListVehicleOperationalRemindersHandler,
   ) {}
 
   private async withSignedPhotoUrl(response: VehicleResponse): Promise<VehicleResponse> {
@@ -95,6 +103,11 @@ export class FleetController {
         dto.assignedBranchId,
         dto.depositMinimum,
         dto.fuelPrice,
+        dto.suitableForTrocha,
+        dto.rateNormal,
+        dto.ratePlus,
+        dto.rateLibre,
+        dto.fuelPenaltyPerLine,
       ),
     );
 
@@ -186,9 +199,74 @@ export class FleetController {
         dto.photoUrl,
         dto.assignedBranchId,
         dto.thirdPathEligible,
+        dto.suitableForTrocha,
+        dto.rateNormal,
+        dto.ratePlus,
+        dto.rateLibre,
+        dto.fuelPenaltyPerLine,
       ),
     );
 
     return this.withSignedPhotoUrl(toVehicleResponse(vehicle));
+  }
+
+  @Post('vehicles/:id/operational-records')
+  @HttpCode(HttpStatus.CREATED)
+  async recordOperationalFormat(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordVehicleOperationalFormatDto,
+  ) {
+    return this.recordVehicleOperationalFormatHandler.execute({
+      firebaseUid: req.firebaseUid!,
+      companyId: dto.companyId,
+      branchId: dto.branchId,
+      vehicleId: id,
+      formatType: dto.formatType,
+      processType: dto.processType,
+      processId: dto.processId,
+      odometerKm: dto.odometerKm,
+      fuelLevelLines: dto.fuelLevelLines,
+      data: dto.data,
+      observations: dto.observations,
+      performedBy: dto.performedBy,
+      performedAt: dto.performedAt ? new Date(dto.performedAt) : undefined,
+    });
+  }
+
+  @Get('vehicles/:id/operational-records')
+  async listOperationalRecords(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('companyId', ParseUUIDPipe) companyId: string,
+    @Query('branchId', ParseUUIDPipe) branchId: string,
+    @Query('formatType') formatType?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.listVehicleOperationalRecordsHandler.execute({
+      firebaseUid: req.firebaseUid!,
+      companyId,
+      branchId,
+      vehicleId: id,
+      formatType,
+      limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
+    });
+  }
+
+  @Get('operational-reminders')
+  async listOperationalReminders(
+    @Req() req: AuthenticatedRequest,
+    @Query('companyId', ParseUUIDPipe) companyId: string,
+    @Query('branchId', ParseUUIDPipe) branchId: string,
+    @Query('status') status?: 'PENDING' | 'COMPLETED' | 'OVERDUE',
+  ) {
+    return this.listVehicleOperationalRemindersHandler.execute({
+      firebaseUid: req.firebaseUid!,
+      companyId,
+      branchId,
+      status,
+    });
   }
 }

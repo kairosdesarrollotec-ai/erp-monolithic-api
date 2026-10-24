@@ -41,6 +41,11 @@ describe('toVehicleResponse', () => {
       passengerCapacity: null,
       fuelPrice: null,
       thirdPathEligible: false,
+      suitableForTrocha: false,
+      rateNormal: null,
+      ratePlus: null,
+      rateLibre: null,
+      fuelPenaltyPerLine: null,
       createdAt: '2026-09-28T10:00:00.000Z',
       updatedAt: '2026-09-28T10:00:00.000Z',
     });

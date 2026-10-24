@@ -23,6 +23,7 @@ export interface RegisterInquirySnapshot {
   estimatedDays: number;
   travelStartDate?: Date;
   partySize?: number;
+  isDirtRoad?: boolean;
 }
 
 export class RegisterInquiryCommand {

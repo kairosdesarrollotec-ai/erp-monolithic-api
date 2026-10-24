@@ -19,5 +19,10 @@ export class CreateVehicleCommand {
     public readonly assignedBranchId?: string,
     public readonly depositMinimum?: number,
     public readonly fuelPrice?: number,
+    public readonly suitableForTrocha?: boolean,
+    public readonly rateNormal?: number,
+    public readonly ratePlus?: number,
+    public readonly rateLibre?: number,
+    public readonly fuelPenaltyPerLine?: number,
   ) {}
 }

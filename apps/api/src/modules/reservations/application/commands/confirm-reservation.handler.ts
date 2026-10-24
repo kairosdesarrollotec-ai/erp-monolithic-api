@@ -8,8 +8,10 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import {
   RequirementsIncompleteError,
   ReservationExceedsGuaranteeError,
+  ReservationRequirementsNotMetError,
   ReservationStateConflictError,
 } from '../../domain/reservation-errors';
+import { isRemoteReservation } from '../../domain/channel-mode';
 import { ConfirmReservationCommand } from './confirm-reservation.command';
 
 /**
@@ -77,6 +79,7 @@ export class ConfirmReservationHandler {
       throw new ReservationStateConflictError('confirmar', existing.status);
     }
     this.assertRequirementsComplete(existing.paymentValidatedAt, existing.documentsCompletedAt);
+    this.assertRemoteRequirements(existing);
     await this.assertWithinVehicleGuarantee(existing);
 
     return this.transactionManager.run(
@@ -89,6 +92,7 @@ export class ConfirmReservationHandler {
           throw new ReservationStateConflictError('confirmar', current.status);
         }
         this.assertRequirementsComplete(current.paymentValidatedAt, current.documentsCompletedAt);
+        this.assertRemoteRequirements(current);
 
         const confirmed = await this.reservations.confirm(command.id, scope, command.expectedVersion, tx);
 
@@ -151,4 +155,27 @@ export class ConfirmReservationHandler {
       throw new RequirementsIncompleteError(missing);
     }
   }
+
+  /**
+   * BR-RES-005 / BR-RES-006 / SC-RES-003 / SC-RES-004:
+   * En modalidad remota exige video 360° del vehículo y documento de aceptación firmado.
+   * Si falta alguno, se rechaza con 422 RESERVATION_REQUIREMENTS_NOT_MET y el vehículo
+   * permanece disponible para otros clientes.
+   */
+  private assertRemoteRequirements(reservation: ReservationRecord): void {
+    if (!isRemoteReservation(reservation)) return;
+
+    const missingRemote: string[] = [];
+    if (!reservation.video360Uploaded) {
+      missingRemote.push('video 360 del vehículo');
+    }
+    if (!reservation.signedAcceptanceUploaded) {
+      missingRemote.push('documento de aceptación firmado');
+    }
+
+    if (missingRemote.length > 0) {
+      throw new ReservationRequirementsNotMetError(missingRemote);
+    }
+  }
 }
+

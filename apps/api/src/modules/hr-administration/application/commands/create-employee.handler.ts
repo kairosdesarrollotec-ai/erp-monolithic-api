@@ -94,6 +94,12 @@ export class CreateEmployeeHandler {
             jobTitle: command.jobTitle.trim(),
             hireDate: command.hireDate,
             baseSalary: requestedSalary,
+            bankName: command.bankName ?? null,
+            bankAccountNumber: command.bankAccountNumber ?? null,
+            bankAccountCci: command.bankAccountCci ?? null,
+            contractType: command.contractType ?? null,
+            contractUrl: command.contractUrl ?? null,
+            contractNotes: command.contractNotes ?? null,
           },
           tx,
         );

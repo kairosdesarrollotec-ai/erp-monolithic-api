@@ -3,6 +3,7 @@ import type { AuditEventRepositoryPort } from '../../../audit/application/ports/
 import type { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { CandidateProcessState as PS, VacancyStatus as VS } from '../../domain/recruitment-domain-types';
 import {
+  CandidateRequirementsIncompleteError,
   CandidateStateTransitionError,
   DecisionReasonRequiredError,
   GerenciaDecisionRequiredError,
@@ -197,9 +198,19 @@ describe('Registrar resultado de entrevista: En negociación -> Entrevistado', (
     new RecordInterviewResultHandler(s.access, s.candidates, s.interviews, s.tm, s.clock, s.audit, s.vacancies);
   const prep = (s: S, state: PS) => {
     s.interviews.findScopedById.mockResolvedValue({ id: 'int-1', candidateId: CAND_ID } as never);
-    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: state }));
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: state, hasCv: true, salaryExpectation: 2500 }));
     s.interviews.recordResult.mockResolvedValue({ id: 'int-1', candidateId: CAND_ID } as never);
   };
+
+  it('DEC-REC-REQUIREMENTS-001: sin CV o sin pretensión salarial -> 422 CANDIDATE_REQUIREMENTS_INCOMPLETE', async () => {
+    const s = setup();
+    s.interviews.findScopedById.mockResolvedValue({ id: 'int-1', candidateId: CAND_ID } as never);
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: PS.EN_NEGOCIACION, hasCv: false, salaryExpectation: 2500 }));
+    await expect(build(s).execute(cmd())).rejects.toThrow(CandidateRequirementsIncompleteError);
+
+    s.candidates.findScopedById.mockResolvedValue(candidate({ processState: PS.EN_NEGOCIACION, hasCv: true, salaryExpectation: null }));
+    await expect(build(s).execute(cmd())).rejects.toThrow(CandidateRequirementsIncompleteError);
+  });
 
   it('pasa el candidato a ENTREVISTADO y la vacante a ENTREVISTADA', async () => {
     const s = setup();

@@ -85,6 +85,7 @@ export class RegisterInquiryHandler {
       estimatedDays: command.snapshot.estimatedDays,
       travelStartDate: command.snapshot.travelStartDate,
       partySize: command.snapshot.partySize,
+      isDirtRoad: command.snapshot.isDirtRoad ?? false,
       createdBy: command.firebaseUid,
     });
   }

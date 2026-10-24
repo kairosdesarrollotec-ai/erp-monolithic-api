@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
 
 export class QuoteDto {
   @IsUUID() companyId!: string;
@@ -8,4 +8,8 @@ export class QuoteDto {
   @IsString() @IsNotEmpty() destination!: string;
 
   @IsInt() @IsPositive() estimatedDays!: number;
+
+  @IsOptional()
+  @IsIn(['NORMAL', 'PLUS', 'LIBRE'])
+  plan?: 'NORMAL' | 'PLUS' | 'LIBRE';
 }
