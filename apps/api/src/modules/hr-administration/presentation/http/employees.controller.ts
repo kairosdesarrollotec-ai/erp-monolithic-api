@@ -105,6 +105,12 @@ export class EmployeesController {
         dto.baseSalary,
         dto.candidateId,
         dto.areaCode,
+        dto.bankName,
+        dto.bankAccountNumber,
+        dto.bankAccountCci,
+        dto.contractType,
+        dto.contractUrl,
+        dto.contractNotes,
       ),
     );
     return toEmployeeResponse(created, await this.scopeVisibility(req, created));

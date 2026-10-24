@@ -54,6 +54,7 @@ function toSummary(row: InquiryRow): InquirySummaryRecord {
     estimatedDays: row.estimatedDays,
     travelStartDate: row.travelStartDate,
     partySize: row.partySize,
+    isDirtRoad: row.isDirtRoad ?? false,
     dataOrigin: row.dataOrigin,
     status: row.status,
     closedReason: row.closedReason,
@@ -82,6 +83,7 @@ function toRecord(row: InquiryDetailRow): InquiryRecord {
       estimatedDays: quotation.estimatedDays,
       amount: quotation.amount.toFixed(2),
       currency: quotation.currency,
+      plan: quotation.plan ?? null,
       validUntil: quotation.validUntil,
       createdAt: quotation.createdAt,
     })),
@@ -131,6 +133,7 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
         estimatedDays: input.estimatedDays,
         travelStartDate: input.travelStartDate,
         partySize: input.partySize,
+        isDirtRoad: input.isDirtRoad ?? false,
         dataOrigin: 'CON02',
         createdBy: input.createdBy,
         // P-06: primera fila del historial (append-only) al registrar.
@@ -237,6 +240,7 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
           estimatedDays: input.estimatedDays,
           amount: new Prisma.Decimal(input.amount),
           currency: input.currency,
+          plan: input.plan ?? 'NORMAL',
           validUntil: input.validUntil,
         },
       });

@@ -59,4 +59,33 @@ describe('toReservationResponse', () => {
     expect(virtualResp.canComeToOffice).toBe(false);
     expect(virtualResp.customerLocation).toBe('FUERA_DE_AYACUCHO');
   });
+
+  it('HU-04 / BDD-RES-001: mapea requirements remotos (isRemote, video360Uploaded, signedAcceptanceUploaded) y missingRequirements', () => {
+    const presencialResp = toReservationResponse(record({ channelMode: 'PRESENCIAL', customerLocation: 'AYACUCHO', canComeToOffice: true }));
+    expect(presencialResp.requirements.isRemote).toBe(false);
+    expect(presencialResp.missingRequirements).not.toContain('VIDEO_360');
+    expect(presencialResp.missingRequirements).not.toContain('SIGNED_ACCEPTANCE');
+
+    const remoteResp = toReservationResponse(record({
+      channelMode: 'VIRTUAL',
+      video360Uploaded: false,
+      signedAcceptanceUploaded: false,
+    }));
+    expect(remoteResp.requirements.isRemote).toBe(true);
+    expect(remoteResp.requirements.video360Uploaded).toBe(false);
+    expect(remoteResp.requirements.signedAcceptanceUploaded).toBe(false);
+    expect(remoteResp.missingRequirements).toContain('VIDEO_360');
+    expect(remoteResp.missingRequirements).toContain('SIGNED_ACCEPTANCE');
+
+    const remoteFulfilled = toReservationResponse(record({
+      channelMode: 'VIRTUAL',
+      video360Uploaded: true,
+      signedAcceptanceUploaded: true,
+    }));
+    expect(remoteFulfilled.requirements.isRemote).toBe(true);
+    expect(remoteFulfilled.requirements.video360Uploaded).toBe(true);
+    expect(remoteFulfilled.requirements.signedAcceptanceUploaded).toBe(true);
+    expect(remoteFulfilled.missingRequirements).not.toContain('VIDEO_360');
+    expect(remoteFulfilled.missingRequirements).not.toContain('SIGNED_ACCEPTANCE');
+  });
 });

@@ -44,6 +44,9 @@ export interface ReservationResponse {
   requirements: {
     paymentValidatedAt: string | null;
     documentsCompletedAt: string | null;
+    isRemote?: boolean;
+    video360Uploaded?: boolean;
+    signedAcceptanceUploaded?: boolean;
   };
   missingRequirements: string[];
   /** Decision 8: comprobante del pago registrado (null si aun no se registro). */

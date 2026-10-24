@@ -25,6 +25,8 @@ export const NOTIFICATION_EVENT_CATALOG: readonly NotificationEventDescriptor[] 
   { eventType: 'CandidatoSeleccionado.v1', label: 'Candidato seleccionado' },
   { eventType: 'PersonalIncorporado.v1', label: 'Personal incorporado' },
   { eventType: 'RelacionLaboralTerminada.v1', label: 'Relacion laboral terminada' },
+  { eventType: 'PermisoSolicitado.v1', label: 'Permiso solicitado' },
+  { eventType: 'VacacionSolicitada.v1', label: 'Vacaciones solicitadas' },
 ];
 
 export function isKnownEventType(eventType: string): boolean {

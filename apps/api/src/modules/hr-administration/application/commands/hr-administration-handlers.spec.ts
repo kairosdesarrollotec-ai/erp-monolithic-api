@@ -22,6 +22,7 @@ import {
   InvalidFieldTripDatesError,
   InvalidLeaveResolutionError,
   LeaveAlreadyResolvedError,
+  FieldTripLevelRoleMismatchError,
   NoAuthorizationAvailableError,
   TerminationNotesRequiredError,
   VacationOverlapError,
@@ -80,7 +81,7 @@ const UID = 'uid-1';
 
 type Role = 'RRHH' | 'GERENCIA' | 'ADMINISTRACION' | 'AUDITORIA' | 'CAMPO';
 
-function setup(role: Role = 'RRHH') {
+function setup(role: Role = 'GERENCIA') {
   const access = new HrAdministrationAccessService(buildWorkContext(role), buildMatrixAuth());
   const tm = buildTransactionManager();
   const clock = new FixedClock();
@@ -117,6 +118,7 @@ function setup(role: Role = 'RRHH') {
     create: jest.fn(),
     findByEmployee: jest.fn(),
     findActiveByArea: jest.fn(),
+    findActiveByCompany: jest.fn(),
     findCalendar: jest.fn(),
   } as unknown as jest.Mocked<VacationRepositoryPort>;
   const fieldTrips = {
@@ -591,16 +593,18 @@ describe('RequestLeaveHandler / ResolveLeaveHandler (BR-ADP-003)', () => {
     ).rejects.toBeInstanceOf(InvalidDateRangeError);
   });
 
-  it('solo quien tiene AUTHORIZE_LEAVE resuelve: Administración queda fuera (BR-ADP-003)', async () => {
-    const s = setup('ADMINISTRACION');
-    s.leaves.findById.mockResolvedValue({ ...leave(), employee: tripEmployee });
-    const handler = new ResolveLeaveHandler(s.access, s.leaves, s.displayNames, s.tm, s.clock, s.audit);
-    await expect(handler.execute(new ResolveLeaveCommand(UID, 'leave-1', 'AUTORIZADO'))).rejects.toBeInstanceOf(ForbiddenException);
-    expect(s.leaves.resolve).not.toHaveBeenCalled();
+  it('solo quien tiene AUTHORIZE_LEAVE resuelve: Administración y RRHH quedan fuera (C5)', async () => {
+    for (const role of ['ADMINISTRACION', 'RRHH'] as const) {
+      const s = setup(role);
+      s.leaves.findById.mockResolvedValue({ ...leave(), employee: tripEmployee });
+      const handler = new ResolveLeaveHandler(s.access, s.leaves, s.displayNames, s.tm, s.clock, s.audit);
+      await expect(handler.execute(new ResolveLeaveCommand(UID, 'leave-1', 'AUTORIZADO'))).rejects.toBeInstanceOf(ForbiddenException);
+      expect(s.leaves.resolve).not.toHaveBeenCalled();
+    }
   });
 
   it('autoriza (Solicitado -> Autorizado) guardando quién y cuándo', async () => {
-    const s = setup('RRHH');
+    const s = setup('GERENCIA');
     s.leaves.findById.mockResolvedValue({ ...leave(), employee: tripEmployee });
     s.leaves.resolve.mockResolvedValue(leave({ status: 'AUTORIZADO', authorizedById: UID, authorizedByName: 'Autorizador de prueba' }));
     const handler = new ResolveLeaveHandler(s.access, s.leaves, s.displayNames, s.tm, s.clock, s.audit);
@@ -614,7 +618,7 @@ describe('RequestLeaveHandler / ResolveLeaveHandler (BR-ADP-003)', () => {
   });
 
   it('una solicitud ya resuelta no se resuelve dos veces', async () => {
-    const s = setup('RRHH');
+    const s = setup('GERENCIA');
     s.leaves.findById.mockResolvedValue({ ...leave({ status: 'DENEGADO' }), employee: tripEmployee });
     const handler = new ResolveLeaveHandler(s.access, s.leaves, s.displayNames, s.tm, s.clock, s.audit);
     await expect(handler.execute(new ResolveLeaveCommand(UID, 'leave-1', 'AUTORIZADO'))).rejects.toBeInstanceOf(
@@ -623,7 +627,7 @@ describe('RequestLeaveHandler / ResolveLeaveHandler (BR-ADP-003)', () => {
   });
 
   it('rechaza estados de resolución legados (APROBADO/RECHAZADO)', async () => {
-    const s = setup('RRHH');
+    const s = setup('GERENCIA');
     const handler = new ResolveLeaveHandler(s.access, s.leaves, s.displayNames, s.tm, s.clock, s.audit);
     await expect(
       handler.execute(new ResolveLeaveCommand(UID, 'leave-1', 'APROBADO' as unknown as 'AUTORIZADO')),
@@ -636,13 +640,14 @@ describe('ScheduleVacationHandler (BR-ADP-002)', () => {
     new ScheduleVacationCommand(UID, 'emp-1', new Date(`${start}T00:00:00Z`), new Date(`${end}T00:00:00Z`));
 
   it('sin superposición en el área queda PROGRAMADA (SC-ADP-001.02) y corre en transacción Serializable', async () => {
-    const s = setup('ADMINISTRACION');
+    const s = setup('GERENCIA');
     s.employees.findById.mockResolvedValue(buildEmployee());
+    s.vacations.findActiveByCompany.mockResolvedValue([vacation()]);
     s.vacations.findActiveByArea.mockResolvedValue([vacation()]);
     s.vacations.create.mockResolvedValue(vacation({ id: 'vac-2', employeeId: 'emp-1', startDate: new Date('2026-12-01T00:00:00Z') }));
     const handler = new ScheduleVacationHandler(s.access, s.vacations, s.employees, s.tm, s.clock, s.audit);
     await handler.execute(cmd('2026-12-01', '2026-12-10'));
-    expect(s.vacations.findActiveByArea).toHaveBeenCalledWith(COMPANY_ID, 'OPERACIONES', s.tm.tx);
+    expect(s.vacations.findActiveByCompany).toHaveBeenCalledWith(COMPANY_ID, s.tm.tx);
     expect(s.vacations.create).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'PROGRAMADA', approvedById: UID, areaId: 'OPERACIONES' }),
       s.tm.tx,
@@ -655,6 +660,7 @@ describe('ScheduleVacationHandler (BR-ADP-002)', () => {
   it('si otra persona del área ya tiene esas fechas, rechaza con VACATION_OVERLAP (prioridad a quien pidió primero)', async () => {
     const s = setup();
     s.employees.findById.mockResolvedValue(buildEmployee());
+    s.vacations.findActiveByCompany.mockResolvedValue([vacation()]);
     s.vacations.findActiveByArea.mockResolvedValue([vacation()]);
     const handler = new ScheduleVacationHandler(s.access, s.vacations, s.employees, s.tm, s.clock, s.audit);
     await expect(handler.execute(cmd('2026-11-10', '2026-11-20'))).rejects.toBeInstanceOf(VacationOverlapError);
@@ -675,11 +681,13 @@ describe('ScheduleVacationHandler (BR-ADP-002)', () => {
     await expect(handler.execute(cmd('2026-12-01', '2026-12-10'))).rejects.toBeInstanceOf(EmployeeTerminatedError);
   });
 
-  it('Auditoría no programa vacaciones', async () => {
-    const s = setup('AUDITORIA');
-    s.employees.findById.mockResolvedValue(buildEmployee());
-    const handler = new ScheduleVacationHandler(s.access, s.vacations, s.employees, s.tm, s.clock, s.audit);
-    await expect(handler.execute(cmd('2026-12-01', '2026-12-10'))).rejects.toBeInstanceOf(ForbiddenException);
+  it('Auditoría, RRHH y Administración no programan vacaciones (C5)', async () => {
+    for (const role of ['AUDITORIA', 'RRHH', 'ADMINISTRACION'] as const) {
+      const s = setup(role);
+      s.employees.findById.mockResolvedValue(buildEmployee());
+      const handler = new ScheduleVacationHandler(s.access, s.vacations, s.employees, s.tm, s.clock, s.audit);
+      await expect(handler.execute(cmd('2026-12-01', '2026-12-10'))).rejects.toBeInstanceOf(ForbiddenException);
+    }
   });
 });
 
@@ -754,6 +762,50 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     );
   });
 
+  it('AuthorizeFieldTrip: Gerencia aprueba nivel 1 directamente', async () => {
+    const s = setup('GERENCIA');
+    s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_1' }));
+    s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 1 }));
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 1, 'aprobado por gerencia'));
+    expect(result.authorizationLevel).toBe(1);
+    expect(result.status).toBe('AUTORIZADA');
+  });
+
+  it('AuthorizeFieldTrip: Gerencia aprueba nivel 2 tras escalar', async () => {
+    const s = setup('GERENCIA');
+    s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_2' }));
+    s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 2 }));
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 2, 'aprobado L2'));
+    expect(result.authorizationLevel).toBe(2);
+    expect(result.status).toBe('AUTORIZADA');
+  });
+
+  it('AuthorizeFieldTrip: Cecilia (ADMINISTRACION) aprueba nivel 3 de la cascada (DEC-ADP-FIELD-TRIP-001)', async () => {
+    const s = setup('ADMINISTRACION');
+    s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_3' }));
+    s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 3 }));
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 3, 'aprobado por cecilia'));
+    expect(result.authorizationLevel).toBe(3);
+    expect(result.status).toBe('AUTORIZADA');
+  });
+
+  it('AuthorizeFieldTrip: ADMINISTRACION no puede aprobar nivel 1 ni nivel 2 (exclusivo Gerencia)', async () => {
+    const s = setup('ADMINISTRACION');
+    s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_1' }));
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 1))).rejects.toBeInstanceOf(
+      FieldTripLevelRoleMismatchError,
+    );
+
+    s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_2' }));
+    await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 2))).rejects.toBeInstanceOf(
+      FieldTripLevelRoleMismatchError,
+    );
+  });
+
   it('AdvanceFieldTripTimeout: tras vencer el nivel 3 termina en NO_AUTORIZADA con mensaje y sin 4to nivel', async () => {
     const s = setup('RRHH');
     s.clock.set(new Date('2026-10-09T08:30:00Z'));
@@ -763,7 +815,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     const handler = new AdvanceFieldTripTimeoutHandler(s.access, s.fieldTrips, s.cascade, s.tm, s.clock, s.audit, s.alerts);
     const result = await handler.execute(new AdvanceFieldTripTimeoutCommand(UID, 'ft-1'));
     expect(result.fieldTrip.status).toBe('NO_AUTORIZADA');
-    expect(result.message).toContain('Nadie autorizó');
+    expect(result.message).toBe('Nadie autorizó. Consulta manualmente con Fiorella o José');
     expect(s.audit.recordHrAdministrationEvent).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'FIELD_TRIP_NOT_AUTHORIZED' }),
       s.tm.tx,

@@ -303,6 +303,7 @@ model Company {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")
   name           String
+  fieldTripTimeoutMinutes Int @default(5) @map("field_trip_timeout_minutes")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -325,6 +326,10 @@ model Company {
   vacancies    Vacancy[]
   employees    Employee[]
   hrAreas      HrArea[]
+  companyExpenses CompanyExpense[]
+  hrDocuments  HrDocument[]
+  hrDocumentVersions HrDocumentVersion[]
+  hrDocumentReads HrDocumentRead[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -535,6 +540,14 @@ model Vehicle {
   photoUrl           String?  @map("photo_url")
   /// DEC-ALQ-THIRDPATH-001 (22-oct-2026): vehiculo "de menor costo relativo" elegible para la tercera via notarial (BR-ALQ-004). Solo lo edita Gerencia (FLEET.MANAGE_THIRD_PATH).
   thirdPathEligible  Boolean  @default(false) @map("third_path_eligible")
+  /// DEC-FLT-TROCHA-001 (23-oct-2026): Apto para trocha / caminos afirmados. Filtro de Consulta si el cliente marca trocha.
+  suitableForTrocha  Boolean  @default(false) @map("suitable_for_trocha")
+  /// Tarifas diarias de los 3 planes de alquiler (Normal: 200 km/24h, Plus: 300 km/24h, Libre: km libre/24h).
+  rateNormal         Decimal? @map("rate_normal") @db.Decimal(10, 2)
+  ratePlus           Decimal? @map("rate_plus") @db.Decimal(10, 2)
+  rateLibre          Decimal? @map("rate_libre") @db.Decimal(10, 2)
+  /// Monto de penalidad por linea faltante de combustible (PEN) segun tarifario VR.01 (editable en Flota).
+  fuelPenaltyPerLine Decimal? @map("fuel_penalty_per_line") @db.Decimal(10, 2)
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
 
@@ -544,6 +557,8 @@ model Vehicle {
   quotations       Quotation[]
   rentals          Rental[]
   returns          RentalReturn[]
+  operationalRecords VehicleOperationalRecord[]
+  formatReminders    VehicleFormatReminder[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId])
@@ -623,6 +638,8 @@ model Inquiry {
   /// (nombre, documento, nacionalidad) se persiste en Customer. Inquiry
   /// conserva solo el contexto del viaje.
   destination            String?
+  /// DEC-CON-TROCHA-001 (23-oct-2026): Indica si el destino o ruta incluye trocha.
+  isDirtRoad             Boolean             @default(false) @map("is_dirt_road")
   estimatedDays          Int?                @map("estimated_days")
   /// CON-02 "periodo" / "fecha" y "personas" (opcionales en el contrato).
   travelStartDate        DateTime?           @map("travel_start_date") @db.Date
@@ -694,6 +711,8 @@ model Quotation {
   vehicleId          String   @map("vehicle_id")
   rateCardVersionId  String   @map("rate_card_version_id")
   destination        String
+  /// Plan cotizado: NORMAL | PLUS | LIBRE.
+  plan               String   @default("NORMAL")
   estimatedDays      Int      @map("estimated_days")
   amount             Decimal  @db.Decimal(12, 2)
   currency           String   @db.Char(3)
@@ -998,6 +1017,7 @@ model Rental {
   documents        RentalDocument[]
   rentalReturn     RentalReturn?
   incidents        Incident[]
+  companyExpenses  CompanyExpense[]
 
   @@unique([id, operatingCompanyId])
   @@index([operatingCompanyId, status, createdAt(sort: Desc)])
@@ -1130,6 +1150,7 @@ model ReservationDocument {
   reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 
   @@index([reservationId])
+  @@index([reservationId, documentType])
   @@map("reservation_documents")
 }
 
@@ -1323,6 +1344,16 @@ model RentalReturn {
   lateChargeNotes          String?            @map("late_charge_notes")
   lateChargeRegisteredById String?            @map("late_charge_registered_by_id")
   lateChargeRegisteredAt   DateTime?          @map("late_charge_registered_at")
+  /// DEC-DEV-IMMOBILIZATION-001 (23-oct-2026): Aceptacion del informe de Motrix/mecanica por el cliente antes de cerrar.
+  mechanicReportAccepted   Boolean            @default(false) @map("mechanic_report_accepted")
+  mechanicReportAcceptedAt DateTime?          @map("mechanic_report_accepted_at")
+  mechanicReportAcceptedBy String?            @map("mechanic_report_accepted_by")
+  mechanicReportNotes      String?            @map("mechanic_report_notes") @db.VarChar(1000)
+  /// DEC-DEV-LEGAL-001 (23-oct-2026): Escalamiento a via legal (anotacion + escalamiento a Gerencia).
+  legalEscalated           Boolean            @default(false) @map("legal_escalated")
+  legalEscalatedAt         DateTime?          @map("legal_escalated_at")
+  legalEscalatedBy         String?            @map("legal_escalated_by")
+  legalNotes               String?            @map("legal_notes") @db.VarChar(1000)
   scheduledAt           DateTime           @map("scheduled_at")
   receivedAt            DateTime?          @map("received_at")
   inspectedAt           DateTime?          @map("inspected_at")
@@ -1885,6 +1916,12 @@ model Employee {
   fieldTripLateCount    Int                @default(0) @map("field_trip_late_count")
   isFieldTripObserved   Boolean            @default(false) @map("is_field_trip_observed")
   baseSalary            Decimal?           @map("base_salary") @db.Decimal(10, 2)
+  bankName              String?            @map("bank_name") @db.VarChar(100)
+  bankAccountNumber     String?            @map("bank_account_number") @db.VarChar(50)
+  bankAccountCci        String?            @map("bank_account_cci") @db.VarChar(50)
+  contractType          String?            @map("contract_type") @db.VarChar(50)
+  contractUrl           String?            @map("contract_url") @db.VarChar(500)
+  contractNotes         String?            @map("contract_notes") @db.Text
   /// Cuenta de acceso (Firebase) del colaborador: permite que un trabajador de campo encuentre su propia ficha
   /// (`GET /me/employee`) sin elegir empleado a mano. Un usuario, como máximo un colaborador por empresa.
   firebaseUid           String?            @map("firebase_uid") @db.VarChar(128)
@@ -1902,6 +1939,7 @@ model Employee {
   termination      EmploymentTermination?
   memos            HrMemo[]
   trainings        TrainingAttendee[]
+  documentReads    HrDocumentRead[]
 
   @@unique([operatingCompanyId, documentNumber], map: "employees_company_document_key")
   @@unique([operatingCompanyId, firebaseUid], map: "employees_company_firebase_uid_key")
@@ -2012,6 +2050,8 @@ model VacationRequest {
   approvedById String?       @map("approved_by_id")
   approvedAt  DateTime?      @map("approved_at")
   notes       String?        @db.Text
+  /// R4 (23-oct): Gerencia puede conceder menos dias que los solicitados al aprobar.
+  grantedDays       Int?           @map("granted_days")
   /// 22-oct (Respuestas #10): reprogramar/cancelar conserva las fechas originales y quien/cuando/por que.
   originalStartDate DateTime? @map("original_start_date") @db.Date
   originalEndDate   DateTime? @map("original_end_date") @db.Date
@@ -2288,3 +2328,143 @@ model EvidenceDeletionRequest {
   @@index([status, expiresAt], map: "idx_evidence_deletion_expiry")
   @@map("evidence_deletion_requests")
 }
+
+/// BR-ALQ-002 / HU-28 / SC-ALQ-001 (23-oct-2026): Registro minimo de gastos asumidos por la empresa (ej. gasto notarial).
+/// Prohibido registrarlo como pago del cliente.
+model CompanyExpense {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  branchId           String?  @map("branch_id")
+  type               String   @default("GASTO_NOTARIAL")
+  amount             Decimal  @db.Decimal(10, 2)
+  currency           String   @default("PEN") @db.Char(3)
+  expenseDate        DateTime @default(now()) @map("expense_date")
+  rentalId           String?  @map("rental_id")
+  vehiclePlate       String?  @map("vehicle_plate")
+  reference          String?
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  createdBy          String   @map("created_by")
+
+  operatingCompany Company @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId])
+  rental           Rental? @relation(fields: [rentalId], references: [id], onDelete: SetNull)
+
+  @@index([operatingCompanyId, type, expenseDate(sort: Desc)])
+  @@map("company_expenses")
+}
+
+/// R5 - Fichas operativas digitales por vehículo (Formatos 01-09)
+model VehicleOperationalRecord {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  branchId           String   @map("branch_id")
+  vehicleId          String   @map("vehicle_id")
+  formatType         String   @map("format_type") @db.VarChar(40)
+  processType        String?  @map("process_type") @db.VarChar(40)
+  processId          String?  @map("process_id") @db.VarChar(100)
+  odometerKm         Int?     @map("odometer_km")
+  fuelLevelLines     Int?     @map("fuel_level_lines")
+  data               Json     @default("{}")
+  observations       String?
+  performedBy        String   @map("performed_by")
+  performedAt        DateTime @default(now()) @map("performed_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  vehicle            Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  completedReminders VehicleFormatReminder[]
+
+  @@index([organizationId, operatingCompanyId, branchId], map: "idx_vehicle_operational_records_scope")
+  @@index([vehicleId, formatType, performedAt], map: "idx_vehicle_operational_records_vehicle_format")
+  @@map("vehicle_operational_records")
+}
+
+/// R5 - Recordatorios periódicos para formatos operativos (FIVI interdiario y FITVM mensual)
+model VehicleFormatReminder {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  branchId           String   @map("branch_id")
+  vehicleId          String   @map("vehicle_id")
+  formatType         String   @map("format_type") @db.VarChar(40)
+  dueDate            DateTime @map("due_date")
+  status             String   @default("PENDING") @db.VarChar(20)
+  completedRecordId  String?  @map("completed_record_id")
+  completedAt        DateTime? @map("completed_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  vehicle            Vehicle                   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  completedRecord    VehicleOperationalRecord? @relation(fields: [completedRecordId], references: [id], onDelete: SetNull)
+
+  @@unique([vehicleId, formatType, dueDate], map: "uq_vehicle_format_reminders_period")
+  @@index([operatingCompanyId, status, dueDate], map: "idx_vehicle_format_reminders_scope_status")
+  @@map("vehicle_format_reminders")
+}
+
+/// HU-31 (23-oct-2026, R6 / C7) - Definición canónica de documento de Talento Humano.
+model HrDocument {
+  id                 String              @id @default(uuid())
+  organizationId     String              @map("organization_id")
+  operatingCompanyId String              @map("operating_company_id")
+  code               String              @db.VarChar(50)
+  title              String              @db.VarChar(200)
+  category           String              @db.VarChar(50)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  operatingCompany   Company             @relation(fields: [operatingCompanyId], references: [id], onDelete: Cascade)
+  versions           HrDocumentVersion[]
+
+  @@unique([operatingCompanyId, code], map: "uq_hr_documents_company_code")
+  @@index([operatingCompanyId, category, createdAt], map: "idx_hr_documents_scope_category")
+  @@map("hr_documents")
+}
+
+/// HU-31 (C7) - Versiones de documentos de Talento Humano con append-only y una única versión vigente por documento.
+model HrDocumentVersion {
+  id                 String             @id @default(uuid())
+  organizationId     String             @map("organization_id")
+  operatingCompanyId String             @map("operating_company_id")
+  documentId         String             @map("document_id")
+  version            Int                @default(1)
+  fileUrl            String             @map("file_url")
+  fileHash           String?            @map("file_hash") @db.VarChar(128)
+  fileName           String?            @map("file_name") @db.VarChar(255)
+  mimeType           String             @default("application/pdf") @map("mime_type") @db.VarChar(100)
+  sizeBytes          Int?               @map("size_bytes")
+  isCurrent          Boolean            @default(true) @map("is_current")
+  publishedBy        String             @map("published_by") @db.VarChar(128)
+  publishedAt        DateTime           @default(now()) @map("published_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+
+  operatingCompany   Company            @relation(fields: [operatingCompanyId], references: [id], onDelete: Cascade)
+  document           HrDocument         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  reads              HrDocumentRead[]
+
+  @@unique([documentId, version], map: "uq_hr_document_versions_doc_ver")
+  @@index([documentId, isCurrent], map: "idx_hr_doc_ver_doc_current")
+  @@map("hr_document_versions")
+}
+
+/// HU-31 - Registro de lectura y aceptación de la versión vigente por colaborador.
+model HrDocumentRead {
+  id                 String             @id @default(uuid())
+  organizationId     String             @map("organization_id")
+  operatingCompanyId String             @map("operating_company_id")
+  documentVersionId  String             @map("document_version_id")
+  employeeId         String             @map("employee_id")
+  readAt             DateTime           @default(now()) @map("read_at")
+  readByUid          String             @map("read_by_uid") @db.VarChar(128)
+  createdAt          DateTime           @default(now()) @map("created_at")
+
+  operatingCompany   Company            @relation(fields: [operatingCompanyId], references: [id], onDelete: Cascade)
+  documentVersion    HrDocumentVersion  @relation(fields: [documentVersionId], references: [id], onDelete: Cascade)
+  employee           Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([documentVersionId, employeeId], map: "uq_hr_document_reads_ver_emp")
+  @@index([employeeId], map: "idx_hr_document_reads_employee")
+  @@map("hr_document_reads")
+}
+

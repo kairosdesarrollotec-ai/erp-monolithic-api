@@ -212,6 +212,14 @@ export interface ReturnResponse {
   etag: string;
   damages: ReturnDamageResponse[];
   immobilizationCharges: ImmobilizationChargeResponse[];
+  mechanicReportAccepted: boolean | null;
+  mechanicReportAcceptedAt: string | null;
+  mechanicReportAcceptedBy: string | null;
+  mechanicReportNotes: string | null;
+  legalEscalated: boolean | null;
+  legalEscalatedAt: string | null;
+  legalEscalatedBy: string | null;
+  legalNotes: string | null;
 }
 
 export interface ReturnEvidenceResponse {

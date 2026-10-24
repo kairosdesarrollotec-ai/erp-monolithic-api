@@ -1,9 +1,8 @@
 /**
- * B8 (Respuestas 2026-10-20/21): los fallos de login NO bloquean la cuenta; se registran como evento de
- * seguridad (audit_events, entityType 'auth', retencion minima 1 anio: audit_events no se purga) y,
- * al llegar a >= 10 fallos CONSECUTIVOS del mismo identificador en 15 minutos, se alerta a Administracion.
+ * DEC-AUTH-LOCKOUT-001 (R2, 23-oct-2026): 5 fallos consecutivos en 15 min provocan bloqueo temporal
+ * de 15 min con desbloqueo automatico y emision de alerta a Administracion en el tablero.
  */
-export const LOGIN_FAILURE_ALERT_THRESHOLD = 10;
+export const LOGIN_FAILURE_ALERT_THRESHOLD = 5;
 export const LOGIN_FAILURE_WINDOW_MINUTES = 15;
 export const LOGIN_FAILURE_ALERT_ACTION = 'LOGIN_FAILURE_THRESHOLD';
 /** Retencion minima del evento de seguridad (dias). audit_events no tiene purga; este valor documenta el piso. */

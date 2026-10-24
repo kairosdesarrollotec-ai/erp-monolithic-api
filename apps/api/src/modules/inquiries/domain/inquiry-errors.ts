@@ -86,3 +86,23 @@ export class InquiryNotTouristUseError extends DomainUnprocessableError {
     super('La consulta no tiene uso turistico: no se puede cotizar ni convertir. Cierrala sin conversion indicando el motivo.');
   }
 }
+
+/** DEC-CON-TROCHA-001 - La consulta incluye trocha pero el vehículo seleccionado no es apto para trocha. */
+export class VehicleNotSuitableForTrochaError extends DomainUnprocessableError {
+  readonly code = 'VEHICLE_NOT_SUITABLE_FOR_TROCHA';
+
+  constructor() {
+    super('El vehículo seleccionado no es apto para trocha / carretera afirmada.');
+  }
+}
+
+/** DEC-R1-FIX-001 - El vehículo no tiene tarifa configurada para el plan elegido. */
+export class PlanRateNotConfiguredError extends DomainUnprocessableError {
+  readonly code = 'PLAN_RATE_NOT_CONFIGURED';
+
+  constructor(plan: string) {
+    super(`Falta configurar la tarifa del plan ${plan} para este vehículo.`);
+  }
+}
+
+

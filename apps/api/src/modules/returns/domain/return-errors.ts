@@ -299,3 +299,26 @@ export class InvalidZoneMarkError extends DomainUnprocessableError {
     super(detail);
   }
 }
+
+/** DEC-DEV-REPORT-001 (23-oct-2026): El informe mecánico/Motrix debe ser aceptado por el cliente antes de cerrar. */
+export class MechanicReportNotAcceptedError extends DomainUnprocessableError {
+  readonly code = 'MECHANIC_REPORT_NOT_ACCEPTED';
+
+  constructor() {
+    super(
+      'La devolución registra daños: la inmovilización exige que el cliente acepte el informe mecánico/Motrix antes de cerrar el expediente.',
+    );
+  }
+}
+
+/** DEC-DEV-OFFLINE-001 (23-oct-2026): No se puede cerrar con cambios pendientes de sincronización offline. */
+export class ReturnOfflineChangesPendingError extends DomainUnprocessableError {
+  readonly code = 'RETURN_OFFLINE_CHANGES_PENDING';
+
+  constructor() {
+    super(
+      'No se puede cerrar la devolución mientras existan cambios pendientes de sincronización offline. Sincroniza todos los datos primero.',
+    );
+  }
+}
+

@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.10.0');
+    expect(spec.info.version).toBe('0.15.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -62,19 +62,25 @@ describe('hr-administration.yaml contract specification', () => {
       '/hr-areas',
       '/hr-areas/{code}/deactivate',
       '/hr-areas/{code}/reactivate',
+      '/hr-documents',
+      '/hr-documents/active',
+      '/hr-documents/{id}/confirm-read',
       '/leaves/{id}/evidence',
       '/leaves/{id}/evidence/upload-url',
       '/leaves/{id}/resolve',
       '/me/attendance',
       '/me/employee',
+      '/me/leaves',
+      '/me/vacations',
       '/trainings',
       '/vacations/calendar',
       '/vacations/{id}/cancel',
       '/vacations/{id}/reschedule',
+      '/vacations/{id}/resolve',
     ]);
   });
 
-  it('expone exactamente las 46 operaciones esperadas', () => {
+  it('expone exactamente las 54 operaciones esperadas', () => {
     const ops: string[] = [];
     for (const item of Object.values<any>(spec.paths)) {
       for (const op of Object.values<any>(item)) {
@@ -87,12 +93,14 @@ describe('hr-administration.yaml contract specification', () => {
         'applyMonthDeductions',
         'cancelVacation',
         'clearBranchGeofence',
+        'confirmHrDocumentRead',
         'getBranchGeofence',
         'getMyAttendance',
         'listAttendancePendingReview',
         'logMyAttendance',
         'reviewAttendance',
         'rescheduleVacation',
+        'resolveVacation',
         'setBranchGeofence',
         'authorizeFieldTrip',
         'createEmployee',
@@ -109,13 +117,17 @@ describe('hr-administration.yaml contract specification', () => {
         'getFieldTrip',
         'getMyEmployee',
         'getVacationsCalendar',
+        'listActiveHrDocuments',
         'listEmployees',
         'listFieldTrips',
         'listHrAreas',
         'listLeaveEvidence',
+        'listMyLeaves',
+        'listMyVacations',
         'linkEmployeeAccount',
         'listTrainings',
         'logAttendance',
+        'publishHrDocument',
         'reactivateHrArea',
         'reclassifyAttendance',
         'recordLeaveEvidence',
@@ -125,6 +137,8 @@ describe('hr-administration.yaml contract specification', () => {
         'requestFieldTrip',
         'requestLeave',
         'requestLeaveEvidenceUploadUrl',
+        'requestMyLeave',
+        'requestMyVacation',
         'resolveLeave',
         'scheduleVacation',
         'terminateEmployment',
@@ -319,5 +333,17 @@ describe('hr-administration.yaml 0.8.0 (Respuestas de negocio 2026-10-20, frente
     const emp = spec.components.schemas.EmployeeResponse;
     expect(emp.properties.documentNumber.nullable).toBe(true);
     expect(emp.required).toContain('restrictedFields');
+  });
+});
+
+describe('hr-administration.yaml 0.13.0 (Frente R4: autoservicio y resolución de vacaciones)', () => {
+  it('declara /me/leaves, /me/vacations y /vacations/{id}/resolve con grantedDays', () => {
+    expect(spec.paths['/me/leaves'].get.operationId).toBe('listMyLeaves');
+    expect(spec.paths['/me/leaves'].post.operationId).toBe('requestMyLeave');
+    expect(spec.paths['/me/vacations'].get.operationId).toBe('listMyVacations');
+    expect(spec.paths['/me/vacations'].post.operationId).toBe('requestMyVacation');
+    expect(spec.paths['/vacations/{id}/resolve'].patch.operationId).toBe('resolveVacation');
+    expect(spec.components.schemas.ResolveVacationRequest.properties.grantedDays).toBeDefined();
+    expect(spec.components.schemas.VacationRequestResponse.properties.grantedDays).toBeDefined();
   });
 });

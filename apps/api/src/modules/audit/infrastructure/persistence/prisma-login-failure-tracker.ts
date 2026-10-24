@@ -73,7 +73,7 @@ export class PrismaLoginFailureTracker implements LoginFailureTrackerPort {
         itemType: 'ALERT',
         priority: 90,
         title: 'Intentos de acceso fallidos repetidos',
-        detail: `${input.failures} fallos consecutivos de inicio de sesion en ${input.windowMinutes} min para ${input.email}. La cuenta no se bloquea; revise el registro de auditoria.`,
+        detail: `${input.failures} fallos consecutivos de inicio de sesion en ${input.windowMinutes} min para ${input.email}. Acceso bloqueado temporalmente por 15 min; revise el registro de auditoria.`,
         deepLink: '/administracion/auditoria',
         sourceType: 'SECURITY',
         sourceId: input.email,

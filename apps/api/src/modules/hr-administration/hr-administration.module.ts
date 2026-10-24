@@ -53,6 +53,8 @@ import { ResolveLeaveHandler } from './application/commands/resolve-leave.handle
 import { ScheduleVacationHandler } from './application/commands/schedule-vacation.handler';
 import { RescheduleVacationHandler } from './application/commands/reschedule-vacation.handler';
 import { CancelVacationHandler } from './application/commands/cancel-vacation.handler';
+import { ResolveVacationHandler } from './application/commands/resolve-vacation.handler';
+import { RequestVacationHandler } from './application/commands/request-vacation.handler';
 import { RequestFieldTripHandler } from './application/commands/request-field-trip.handler';
 import { AuthorizeFieldTripHandler } from './application/commands/authorize-field-trip.handler';
 import { AdvanceFieldTripTimeoutHandler } from './application/commands/advance-field-trip-timeout.handler';
@@ -93,6 +95,15 @@ import { FieldTripsController } from './presentation/http/field-trips.controller
 import { MeEmployeeController } from './presentation/http/me-employee.controller';
 import { TrainingsController } from './presentation/http/trainings.controller';
 
+import { HrDocumentsController } from './presentation/http/hr-documents.controller';
+import { HrDocumentRepositoryPort } from './application/ports/hr-document-repository.port';
+import { PrismaHrDocumentRepository } from './infrastructure/persistence/prisma-hr-document.repository';
+import { HrDocumentStoragePort } from './application/ports/hr-document-storage.port';
+import { LocalHrDocumentStorageService } from './infrastructure/storage/local-hr-document-storage.service';
+import { PublishHrDocumentHandler } from './application/commands/publish-hr-document.handler';
+import { ListActiveHrDocumentsHandler } from './application/queries/list-active-hr-documents.handler';
+import { ConfirmHrDocumentReadHandler } from './application/commands/confirm-hr-document-read.handler';
+
 /**
  * Módulo de Administración de Personal (ADP-01 a ADP-10): colaboradores, asistencia y descuentos de fin de mes,
  * permisos (con evidencia adjunta), vacaciones (capacidad por área), salidas a campo (cascada de 3 niveles con avance
@@ -110,6 +121,7 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     MeEmployeeController,
     TrainingsController,
     HrAreasController,
+    HrDocumentsController,
   ],
   providers: [
     HrAdministrationAccessService,
@@ -147,6 +159,8 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     ScheduleVacationHandler,
     RescheduleVacationHandler,
     CancelVacationHandler,
+    ResolveVacationHandler,
+    RequestVacationHandler,
     RequestFieldTripHandler,
     AuthorizeFieldTripHandler,
     AdvanceFieldTripTimeoutHandler,
@@ -180,6 +194,11 @@ import { TrainingsController } from './presentation/http/trainings.controller';
     GetEmployeeTrainingsHandler,
     ListTrainingsHandler,
     ListLeaveEvidenceHandler,
+    { provide: HrDocumentRepositoryPort, useClass: PrismaHrDocumentRepository },
+    { provide: HrDocumentStoragePort, useClass: LocalHrDocumentStorageService },
+    PublishHrDocumentHandler,
+    ListActiveHrDocumentsHandler,
+    ConfirmHrDocumentReadHandler,
   ],
   exports: [HrAdministrationAccessService],
 })

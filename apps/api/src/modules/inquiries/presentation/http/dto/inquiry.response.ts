@@ -21,6 +21,7 @@ export interface InquirySummaryResponse {
   estimatedDays: number | null;
   travelStartDate: string | null;
   partySize: number | null;
+  isDirtRoad?: boolean;
   dataOrigin: InquiryDataOrigin;
   closedReason: string | null;
   version: number;
@@ -55,6 +56,7 @@ export interface InquiryResponse extends InquirySummaryResponse {
     estimatedDays: number;
     amount: string;
     currency: string;
+    plan?: string | null;
     validUntil: string;
     createdAt: string;
   }[];

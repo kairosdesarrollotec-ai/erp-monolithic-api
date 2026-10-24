@@ -16,5 +16,11 @@ export class CreateEmployeeCommand {
     public readonly candidateId?: string | null,
     /** H-02: codigo del catalogo de areas de la empresa. Si viene, manda sobre `areaId`/`areaName` (que pueden ir vacios). */
     public readonly areaCode?: string | null,
+    public readonly bankName?: string | null,
+    public readonly bankAccountNumber?: string | null,
+    public readonly bankAccountCci?: string | null,
+    public readonly contractType?: string | null,
+    public readonly contractUrl?: string | null,
+    public readonly contractNotes?: string | null,
   ) {}
 }

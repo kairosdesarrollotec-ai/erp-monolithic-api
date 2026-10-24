@@ -14,9 +14,15 @@ import { FleetAccessService } from './application/services/fleet-access.service'
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
+import { OutboxModule } from '../outbox/outbox.module';
+
+import { RecordVehicleOperationalFormatHandler } from './application/commands/record-vehicle-operational-format.handler';
+import { ListVehicleOperationalRecordsHandler } from './application/queries/list-vehicle-operational-records.handler';
+import { ListVehicleOperationalRemindersHandler } from './application/queries/list-vehicle-operational-reminders.handler';
+import { VehicleFormatReminderScheduler } from './application/services/vehicle-format-reminder.scheduler';
 
 @Module({
-  imports: [UsersModule, AuthorizationModule, AuditModule],
+  imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule],
   controllers: [FleetController],
   providers: [
     FleetAccessService,
@@ -26,9 +32,13 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     ListVehiclesHandler,
     GetVehicleHandler,
     RequestPhotoUploadSessionHandler,
+    RecordVehicleOperationalFormatHandler,
+    ListVehicleOperationalRecordsHandler,
+    ListVehicleOperationalRemindersHandler,
+    VehicleFormatReminderScheduler,
     { provide: FleetVehicleRepositoryPort, useClass: PrismaFleetVehicleRepository },
     { provide: VehiclePhotoStoragePort, useClass: GcsVehiclePhotoService },
   ],
-  exports: [FleetVehicleRepositoryPort],
+  exports: [FleetVehicleRepositoryPort, VehicleFormatReminderScheduler],
 })
 export class FleetModule {}

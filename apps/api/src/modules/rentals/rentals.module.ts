@@ -15,6 +15,7 @@ import { ApproveNotaryExceptionHandler } from './application/commands/approve-no
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
 import { CancelRentalHandler } from './application/commands/cancel-rental.handler';
+import { RecordCompanyExpenseHandler } from './application/commands/record-company-expense.handler';
 import { RequestEvidenceUploadSessionHandler } from './application/commands/request-evidence-upload-session.handler';
 import { RecordEvidenceHandler } from './application/commands/record-evidence.handler';
 import { RentalEvidenceRemovalService } from './application/services/rental-evidence-removal.service';
@@ -69,6 +70,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     FormalizeContractHandler,
     CompleteDeliveryHandler,
     CancelRentalHandler,
+    RecordCompanyExpenseHandler,
     RequestEvidenceUploadSessionHandler,
     RecordEvidenceHandler,
     DeleteEvidenceHandler,

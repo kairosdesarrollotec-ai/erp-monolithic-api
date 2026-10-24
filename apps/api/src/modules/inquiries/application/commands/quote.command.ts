@@ -8,5 +8,6 @@ export class QuoteCommand {
     public readonly vehicleId: string,
     public readonly destination: string,
     public readonly estimatedDays: number,
+    public readonly plan?: 'NORMAL' | 'PLUS' | 'LIBRE',
   ) {}
 }

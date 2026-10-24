@@ -2,9 +2,16 @@ export type ReservationDocumentContentType =
   | 'image/jpeg'
   | 'image/webp'
   | 'image/png'
-  | 'application/pdf';
+  | 'application/pdf'
+  | 'video/mp4'
+  | 'video/webm';
 
-export type ReservationDocumentType = 'PAYMENT_VOUCHER' | 'ID_DOCUMENT' | 'OTHER';
+export type ReservationDocumentType =
+  | 'PAYMENT_VOUCHER'
+  | 'ID_DOCUMENT'
+  | 'VIDEO_360'
+  | 'SIGNED_ACCEPTANCE'
+  | 'OTHER';
 
 export abstract class ReservationDocumentStoragePort {
   abstract generateSignedUploadUrl(params: {
