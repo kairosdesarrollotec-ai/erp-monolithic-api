@@ -134,6 +134,8 @@ export interface ReturnRecord {
   alerts?: ReturnAlerts;
   /** Retraso frente a la hora pactada con tolerancia de 30 min (BR-DEV-003); solo lo pueblan las consultas. null = no aplica. */
   lateness?: ReturnLateness | null;
+  /** Cargo sugerido/calculado para el retraso; solo lo pueblan las consultas. */
+  latenessCharge?: ReturnLatenessCharge | null;
   /** Tarifa de penalidad por combustible por línea faltante del vehículo */
   vehicleFuelPenaltyPerLine?: number | null;
   mechanicReportAccepted?: boolean | null;

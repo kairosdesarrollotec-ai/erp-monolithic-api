@@ -51,7 +51,7 @@ export class HrDocumentsController {
       new PublishHrDocumentCommand(
         req.firebaseUid!,
         dto.companyId,
-        '',
+        dto.branchId,
         dto.code,
         dto.title,
         dto.category,
@@ -71,7 +71,7 @@ export class HrDocumentsController {
     @Query() query: ListActiveHrDocumentsQueryDto,
   ): Promise<ActiveHrDocumentsListResponse> {
     return this.listHandler.execute(
-      new ListActiveHrDocumentsQuery(req.firebaseUid!, query.companyId, query.category),
+      new ListActiveHrDocumentsQuery(req.firebaseUid!, query.companyId, query.branchId, query.category),
     );
   }
 
@@ -80,9 +80,10 @@ export class HrDocumentsController {
   async confirmRead(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ListActiveHrDocumentsQueryDto,
   ): Promise<ConfirmHrDocumentReadResponse> {
     return this.confirmReadHandler.execute(
-      new ConfirmHrDocumentReadCommand(req.firebaseUid!, id),
+      new ConfirmHrDocumentReadCommand(req.firebaseUid!, id, query.companyId, query.branchId),
     );
   }
 }

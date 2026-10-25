@@ -25,6 +25,7 @@ import type {
   EmploymentTerminationResponse,
   FieldTripResponse,
   HrMemoResponse,
+  HrDocumentResponse,
   LeaveEvidenceResponse,
   LeaveRequestResponse,
   MonthlyAttendanceSummaryResponse,

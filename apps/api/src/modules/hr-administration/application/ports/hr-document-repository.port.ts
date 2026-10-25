@@ -1,4 +1,4 @@
-import type { HrDocument, HrDocumentRead, HrDocumentVersion, Prisma } from '@prisma/client';
+import type { HrDocumentRead, HrDocumentVersion, Prisma } from '@prisma/client';
 
 export interface HrDocumentWithCurrentVersion {
   id: string; // documentId

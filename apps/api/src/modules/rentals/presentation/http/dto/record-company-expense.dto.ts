@@ -14,6 +14,8 @@ import {
 export class RecordCompanyExpenseDto {
   @IsUUID() companyId!: string;
 
+  @IsUUID() branchId!: string;
+
   @IsIn(['GASTO_NOTARIAL'])
   expenseType!: 'GASTO_NOTARIAL';
 

@@ -177,6 +177,7 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo; el listado se limita a esa sede }
         - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/EmployeeStatus' } }
         - { name: areaId, in: query, required: false, schema: { type: string } }
@@ -292,6 +293,8 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
       responses:
         '200':
           description: Detalle completo del colaborador
@@ -1347,6 +1350,8 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
       responses:
         '200':
           description: Lectura confirmada y auditada
@@ -1711,7 +1716,7 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid, description: Sede del contexto de trabajo; su geocerca es la que se evalúa }
         type: { type: string, enum: [CHECK_IN, CHECK_OUT], default: CHECK_IN }
-        status: { type: string, enum: [PRESENTE, TARDANZA], default: PRESENTE, description: Solo en CHECK_IN. Faltas y permisos los registra Personal. }
+        status: { type: string, enum: [PRESENTE, TARDANZA], description: Solo en CHECK_IN. Faltas y permisos los registra Personal. }
         minutesLate: { type: integer, minimum: 1, description: Obligatorio si status=TARDANZA }
         capturedAt: { type: string, format: date-time, description: 'Hora del dispositivo (ISO 8601 con offset/Z). Máx. 24 h de antigüedad (marcas offline) y no futura.' }
         latitude: { type: number, minimum: -90, maximum: 90 }
@@ -2151,16 +2156,17 @@ components:
 
     PublishHrDocumentRequest:
       type: object
-      required: [companyId, code, title, category, fileUrl]
+      required: [companyId, branchId, code, title, category, fileUrl]
       properties:
         companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
         code: { type: string, example: 'RIT-001' }
         title: { type: string, example: 'Reglamento Interno de Trabajo 2026' }
         category: { $ref: '#/components/schemas/HrDocumentCategory' }
         fileUrl: { type: string, example: 'https://storage.kairos.pe/hr-docs/rit-001-v2.pdf' }
         fileHash: { type: string, nullable: true }
         fileName: { type: string, nullable: true }
-        mimeType: { type: string, default: 'application/pdf' }
+        mimeType: { type: string }
         sizeBytes: { type: integer, nullable: true }
 
     HrDocumentResponse:
@@ -2201,4 +2207,3 @@ components:
         documentId: { type: string, format: uuid }
         employeeId: { type: string, format: uuid }
         readAt: { type: string, format: date-time }
-

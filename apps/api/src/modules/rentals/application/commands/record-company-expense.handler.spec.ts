@@ -46,9 +46,11 @@ describe('RecordCompanyExpenseHandler', () => {
       companyExpense: {
         create: jest.fn().mockResolvedValue({
           id: 'exp-1',
-          companyId: 'comp-1',
+          organizationId: 'org-1',
+          operatingCompanyId: 'comp-1',
+          branchId: 'branch-1',
           rentalId: 'rent-100',
-          expenseType: 'GASTO_NOTARIAL',
+          type: 'GASTO_NOTARIAL',
           amount: '150.00',
           currency: 'PEN',
           expenseDate: new Date('2026-10-23T10:00:00Z'),
@@ -95,6 +97,7 @@ describe('RecordCompanyExpenseHandler', () => {
       'uid-user',
       'rent-100',
       'comp-1',
+      'branch-1',
       'GASTO_NOTARIAL',
       150,
       '2026-10-23T10:00:00Z',
@@ -115,6 +118,7 @@ describe('RecordCompanyExpenseHandler', () => {
       'uid-user',
       'rent-100',
       'comp-1',
+      'branch-1',
       'GASTO_NOTARIAL',
       150,
       '2026-10-23T10:00:00Z',
@@ -128,9 +132,10 @@ describe('RecordCompanyExpenseHandler', () => {
 
     expect(prisma.companyExpense.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        companyId: 'comp-1',
+        operatingCompanyId: 'comp-1',
+        branchId: 'branch-1',
         rentalId: 'rent-100',
-        expenseType: 'GASTO_NOTARIAL',
+        type: 'GASTO_NOTARIAL',
         reference: 'Alquiler rent-100 / ABC-123',
         notes: 'Gastos notariales contrato',
       }),
@@ -155,6 +160,7 @@ describe('RecordCompanyExpenseHandler', () => {
       'uid-user',
       'rent-unknown',
       'comp-1',
+      'branch-1',
       'GASTO_NOTARIAL',
       150,
       '2026-10-23T10:00:00Z',

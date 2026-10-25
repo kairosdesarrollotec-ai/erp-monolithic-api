@@ -84,7 +84,19 @@ export interface RecordRecruitmentEventInput {
 export interface RecordHrAdministrationEventInput {
   organizationId: string;
   actorUserId: string;
-  entityType: 'employee' | 'attendance' | 'leave' | 'vacation' | 'field_trip' | 'termination' | 'memo' | 'training' | 'hr_area' | 'branch_geofence';
+  entityType:
+    | 'employee'
+    | 'attendance'
+    | 'leave'
+    | 'vacation'
+    | 'field_trip'
+    | 'termination'
+    | 'memo'
+    | 'training'
+    | 'hr_area'
+    | 'branch_geofence'
+    | 'hr_document'
+    | 'hr_document_read';
   entityId: string;
   action: string;
   changes: Record<string, unknown>;

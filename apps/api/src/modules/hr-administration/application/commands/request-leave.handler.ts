@@ -3,7 +3,6 @@ import type { LeaveRequest } from '@prisma/client';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { LeaveRepositoryPort } from '../ports/leave-repository.port';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';

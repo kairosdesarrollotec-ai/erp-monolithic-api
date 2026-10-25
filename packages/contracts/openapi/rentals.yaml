@@ -637,7 +637,7 @@ paths:
           description: NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT (el gasto notarial lo asume la empresa, no puede cobrarse al cliente)
           content:
             application/problem+json:
-              schema: { $ref: '#/components/schemas/RentalProblemDetail' }
+              schema: { $ref: '#/components/schemas/RentalErrorResponse' }
 
   /rentals/{id}/commands/complete-delivery:
     post:
@@ -1742,4 +1742,3 @@ components:
         notes: { type: string, nullable: true }
         createdBy: { type: string }
         createdAt: { type: string, format: date-time }
-

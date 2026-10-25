@@ -303,6 +303,10 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/VehicleId'
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string }
         - name: companyId
           in: query
           required: true
@@ -449,6 +453,7 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/VehicleId'
+        - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
@@ -1042,6 +1047,7 @@ components:
           nullable: true
         data:
           type: object
+          additionalProperties: {}
           description: Mapa de campos y evaluaciones (B/M/NA) del formato según ficha técnica
         observations:
           type: string
@@ -1086,6 +1092,7 @@ components:
           nullable: true
         data:
           type: object
+          additionalProperties: {}
         observations:
           type: string
           nullable: true

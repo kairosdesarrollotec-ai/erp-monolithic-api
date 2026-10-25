@@ -87,7 +87,7 @@ describe('ListActiveHrDocumentsHandler (HU-31)', () => {
 
   it('Lista documentos activos e informa el estado de lectura del colaborador', async () => {
     const result = await handler.execute(
-      new ListActiveHrDocumentsQuery('uid-campo', 'comp-1'),
+      new ListActiveHrDocumentsQuery('uid-campo', 'comp-1', 'branch-1'),
     );
 
     expect(result.total).toBe(2);
@@ -102,7 +102,7 @@ describe('ListActiveHrDocumentsHandler (HU-31)', () => {
 
   it('Filtra por categoría cuando se especifica', async () => {
     const result = await handler.execute(
-      new ListActiveHrDocumentsQuery('uid-campo', 'comp-1', 'POLICY'),
+      new ListActiveHrDocumentsQuery('uid-campo', 'comp-1', 'branch-1', 'POLICY'),
     );
 
     expect(result.total).toBe(1);
@@ -124,7 +124,7 @@ describe('ListActiveHrDocumentsHandler (HU-31)', () => {
     (repo.listActive as jest.Mock).mockResolvedValue(docsWithNewVersion);
 
     const result = await handler.execute(
-      new ListActiveHrDocumentsQuery('uid-campo', 'comp-1'),
+      new ListActiveHrDocumentsQuery('uid-campo', 'comp-1', 'branch-1'),
     );
 
     expect(result.items[0].code).toBe('RIT-001');
@@ -133,4 +133,3 @@ describe('ListActiveHrDocumentsHandler (HU-31)', () => {
     expect(result.items[0].readAt).toBeNull();
   });
 });
-

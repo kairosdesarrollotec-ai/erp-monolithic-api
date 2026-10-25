@@ -53,10 +53,17 @@ import { TemplatesModule } from '../templates/templates.module';
 import { RentalCreationGuard } from './application/services/rental-creation.guard';
 import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
+import { RentalCompanyExpensesController } from './presentation/http/rental-company-expenses.controller';
 
 @Module({
   imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule, TemplatesModule, SyncConflictsModule],
-  controllers: [RentalsController, RentalsEvidenceController, RentalsExtensionsController, RentalDocumentsController],
+  controllers: [
+    RentalsController,
+    RentalsEvidenceController,
+    RentalsExtensionsController,
+    RentalDocumentsController,
+    RentalCompanyExpensesController,
+  ],
   providers: [
     CreateRentalHandler,
     CreateRentalFromReservationHandler,

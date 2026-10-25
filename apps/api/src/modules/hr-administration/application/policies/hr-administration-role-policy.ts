@@ -44,11 +44,12 @@ export const HR_ADMINISTRATION_ACTIONS = [
 ] as const;
 
 export type HrAdministrationAction = (typeof HR_ADMINISTRATION_ACTIONS)[number];
+type HrAdministrationPolicyRole = WorkerRole | 'MECANICO';
 
-const LEADERSHIP_ROLES: ReadonlySet<WorkerRole> = new Set(['GERENCIA', 'RRHH']);
-const ALL_STAFF_ROLES: ReadonlySet<WorkerRole> = new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE', 'MECANICO']);
+const LEADERSHIP_ROLES: ReadonlySet<HrAdministrationPolicyRole> = new Set(['GERENCIA', 'RRHH']);
+const ALL_STAFF_ROLES: ReadonlySet<HrAdministrationPolicyRole> = new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS', 'AUDITORIA', 'CAMPO', 'FRONT_OFFICE', 'MECANICO']);
 
-const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, ReadonlySet<WorkerRole>>> = {
+const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, ReadonlySet<HrAdministrationPolicyRole>>> = {
   VIEW_EMPLOYEES: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS']),
   MANAGE_EMPLOYEES: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION']),
   LOG_ATTENDANCE: new Set(['GERENCIA', 'RRHH', 'ADMINISTRACION', 'FINANZAS']),

@@ -6,6 +6,9 @@ export class PublishHrDocumentDto {
   @IsUUID()
   companyId!: string;
 
+  @IsUUID()
+  branchId!: string;
+
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
@@ -46,6 +49,9 @@ export class PublishHrDocumentDto {
 export class ListActiveHrDocumentsQueryDto {
   @IsUUID()
   companyId!: string;
+
+  @IsUUID()
+  branchId!: string;
 
   @IsOptional()
   @IsIn(VALID_CATEGORIES)

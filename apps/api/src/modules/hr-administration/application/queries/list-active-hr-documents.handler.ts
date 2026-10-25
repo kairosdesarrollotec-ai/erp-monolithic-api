@@ -20,6 +20,7 @@ export class ListActiveHrDocumentsHandler {
     const context = await this.workContext.authorize({
       firebaseUid: query.firebaseUid,
       companyId: query.companyId,
+      branchId: query.branchId,
     });
 
     await this.matrixAuth.assertAllowed(
@@ -27,7 +28,7 @@ export class ListActiveHrDocumentsHandler {
       context.roleId,
       'HR_ADMINISTRATION',
       'VIEW_HR_DOCUMENTS',
-      { companyId: context.companyId },
+      { companyId: context.companyId, branchId: context.branchId },
     );
 
     const docs = await this.hrDocuments.listActive(query.companyId, query.category);

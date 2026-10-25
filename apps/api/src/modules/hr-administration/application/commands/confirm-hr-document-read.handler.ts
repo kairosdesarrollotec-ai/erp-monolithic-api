@@ -24,6 +24,8 @@ export class ConfirmHrDocumentReadHandler {
   async execute(command: ConfirmHrDocumentReadCommand): Promise<ConfirmHrDocumentReadResponse> {
     const context = await this.workContext.authorize({
       firebaseUid: command.firebaseUid,
+      companyId: command.companyId,
+      branchId: command.branchId,
     });
 
     await this.matrixAuth.assertAllowed(

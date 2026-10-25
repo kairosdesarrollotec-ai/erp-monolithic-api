@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
@@ -33,18 +32,20 @@ export class RecordCompanyExpenseHandler {
     const context = await this.workContext.authorize({
       firebaseUid: command.firebaseUid,
       companyId: command.companyId,
+      branchId: command.branchId,
     });
     await this.matrixAuth.assertAllowed(
       context.organizationId,
       context.roleId,
       'RENTAL',
       'FORMALIZE_CONTRACT',
-      { companyId: context.companyId },
+      { companyId: context.companyId, branchId: context.branchId },
     );
 
     const rental = await this.rentals.findById(command.rentalId, {
       organizationId: context.organizationId,
       operatingCompanyId: command.companyId,
+      branchId: command.branchId,
     });
     if (!rental) {
       throw new NotFoundException('Alquiler no encontrado.');
@@ -52,10 +53,12 @@ export class RecordCompanyExpenseHandler {
 
     const expense = await this.prisma.companyExpense.create({
       data: {
-        companyId: command.companyId,
+        organizationId: context.organizationId,
+        operatingCompanyId: command.companyId,
+        branchId: command.branchId,
         rentalId: command.rentalId,
-        expenseType: command.expenseType,
-        amount: new Prisma.Decimal(command.amount),
+        type: command.expenseType,
+        amount: command.amount,
         currency: command.currency,
         expenseDate: new Date(command.expenseDate),
         reference: command.reference.trim(),
@@ -71,7 +74,7 @@ export class RecordCompanyExpenseHandler {
       action: 'COMPANY_EXPENSE_RECORDED',
       changes: {
         expenseId: expense.id,
-        expenseType: expense.expenseType,
+        expenseType: expense.type,
         amount: Number(expense.amount),
         currency: expense.currency,
         reference: expense.reference,
@@ -80,13 +83,13 @@ export class RecordCompanyExpenseHandler {
 
     return {
       id: expense.id,
-      companyId: expense.companyId,
+      companyId: expense.operatingCompanyId,
       rentalId: expense.rentalId,
-      expenseType: expense.expenseType as 'GASTO_NOTARIAL',
+      expenseType: expense.type as 'GASTO_NOTARIAL',
       amount: Number(expense.amount),
       currency: expense.currency,
       expenseDate: expense.expenseDate.toISOString(),
-      reference: expense.reference,
+      reference: expense.reference ?? '',
       notes: expense.notes,
       createdBy: expense.createdBy,
       createdAt: expense.createdAt.toISOString(),

@@ -3,6 +3,7 @@ export class RecordCompanyExpenseCommand {
     public readonly firebaseUid: string,
     public readonly rentalId: string,
     public readonly companyId: string,
+    public readonly branchId: string,
     public readonly expenseType: 'GASTO_NOTARIAL',
     public readonly amount: number,
     public readonly expenseDate: string,
