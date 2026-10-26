@@ -6,7 +6,7 @@ CREATE TABLE "vehicle_operational_records" (
   "organization_id" TEXT NOT NULL,
   "operating_company_id" TEXT NOT NULL,
   "branch_id" TEXT NOT NULL,
-  "vehicle_id" TEXT NOT NULL REFERENCES "vehicles"("id") ON DELETE CASCADE,
+  "vehicle_id" TEXT NOT NULL,
   "format_type" VARCHAR(40) NOT NULL,
   "process_type" VARCHAR(40),
   "process_id" VARCHAR(100),
@@ -15,9 +15,13 @@ CREATE TABLE "vehicle_operational_records" (
   "data" JSONB NOT NULL DEFAULT '{}',
   "observations" TEXT,
   "performed_by" TEXT NOT NULL,
-  "performed_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  "performed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE "vehicle_operational_records"
+  ADD CONSTRAINT "vehicle_operational_records_vehicle_id_fkey"
+  FOREIGN KEY ("vehicle_id") REFERENCES "vehicles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE INDEX "idx_vehicle_operational_records_scope"
   ON "vehicle_operational_records" ("organization_id", "operating_company_id", "branch_id");
