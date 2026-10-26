@@ -11,6 +11,7 @@ import { RentalsController } from './rentals.controller';
 import { RentalsEvidenceController } from './rentals-evidence.controller';
 import { RentalsExtensionsController } from './rentals-extensions.controller';
 import { RentalDocumentsController } from './rental-documents.controller';
+import { RentalCompanyExpensesController } from './rental-company-expenses.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
 import { EvaluateNotaryDto } from './dto/evaluate-notary.dto';
@@ -109,6 +110,7 @@ function controllerRoutes() {
     ...routesOf(RentalsController, '/rentals'),
     ...routesOf(RentalsEvidenceController, '/rentals'),
     ...routesOf(RentalsExtensionsController, '/rentals'),
+    ...routesOf(RentalCompanyExpensesController, '/rentals'),
     ...routesOf(RentalDocumentsController, '/rentals/:id/documents'),
   ];
 }
@@ -405,4 +407,3 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     expect(resSchema.required).toEqual(expect.arrayContaining(['id', 'companyId', 'rentalId', 'expenseType', 'amount', 'currency', 'expenseDate', 'reference', 'createdBy', 'createdAt']));
   });
 });
-

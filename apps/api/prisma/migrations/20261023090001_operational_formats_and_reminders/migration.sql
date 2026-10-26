@@ -34,17 +34,25 @@ CREATE TABLE "vehicle_format_reminders" (
   "organization_id" TEXT NOT NULL,
   "operating_company_id" TEXT NOT NULL,
   "branch_id" TEXT NOT NULL,
-  "vehicle_id" TEXT NOT NULL REFERENCES "vehicles"("id") ON DELETE CASCADE,
+  "vehicle_id" TEXT NOT NULL,
   "format_type" VARCHAR(40) NOT NULL,
-  "due_date" TIMESTAMPTZ NOT NULL,
+  "due_date" TIMESTAMP(3) NOT NULL,
   "status" VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-  "completed_record_id" TEXT REFERENCES "vehicle_operational_records"("id") ON DELETE SET NULL,
-  "completed_at" TIMESTAMPTZ,
-  "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "completed_record_id" TEXT,
+  "completed_at" TIMESTAMP(3),
+  "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "chk_format_reminder_status" CHECK ("status" IN ('PENDING', 'COMPLETED', 'OVERDUE')),
   CONSTRAINT "uq_vehicle_format_reminders_period" UNIQUE ("vehicle_id", "format_type", "due_date")
 );
+
+ALTER TABLE "vehicle_format_reminders"
+  ADD CONSTRAINT "vehicle_format_reminders_vehicle_id_fkey"
+  FOREIGN KEY ("vehicle_id") REFERENCES "vehicles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "vehicle_format_reminders"
+  ADD CONSTRAINT "vehicle_format_reminders_completed_record_id_fkey"
+  FOREIGN KEY ("completed_record_id") REFERENCES "vehicle_operational_records"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 CREATE INDEX "idx_vehicle_format_reminders_scope_status"
   ON "vehicle_format_reminders" ("operating_company_id", "status", "due_date");
