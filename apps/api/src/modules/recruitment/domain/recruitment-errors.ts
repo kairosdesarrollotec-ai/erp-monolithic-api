@@ -37,6 +37,18 @@ export class MechanicMissingTechnicalChannelsError extends DomainUnprocessableEr
   }
 }
 
+export class MechanicGeneralPortalsProhibitedError extends DomainUnprocessableError {
+  readonly code = 'MECHANIC_GENERAL_PORTALS_PROHIBITED';
+
+  constructor(portal?: string) {
+    super(
+      portal
+        ? `No está permitido usar portales de empleo generales («${portal}») para vacantes de personal mecánico. Usa canales técnicos especializados (SENATI, TECSUP o institutos técnicos).`
+        : 'No está permitido usar portales de empleo generales (Bumeran, Computrabajo, LinkedIn, Portal UNCH) para vacantes de personal mecánico. Usa canales técnicos especializados (SENATI, TECSUP o institutos técnicos).',
+    );
+  }
+}
+
 /** REC-02 cancelar (22-oct): solo NECESIDAD_REGISTRADA / PUBLICADA / PAUSADA; con candidatos en proceso o decidida/cancelada ya no. */
 export class VacancyNotCancellableError extends DomainUnprocessableError {
   readonly code = 'VACANCY_NOT_CANCELLABLE';

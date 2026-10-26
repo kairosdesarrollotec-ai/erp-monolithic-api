@@ -131,4 +131,150 @@ describe('C6: Inmutabilidad de precios y congelamiento de tarifas', () => {
     // El precio previo sigue intacto y congelado en la cotizacion original
     expect(firstQuoteCall.amount).toBe('450.00');
   });
+
+  it('tras cambiar una tarifa o garantia en Flota, una reserva previamente creada conserva su monto exigido original (requiredPaymentAmount)', async () => {
+    // 1. Reserva creada con politica de deposito vigente S/ 300.00
+    const reservation = {
+      id: 'res-1',
+      vehicleId: 'veh-1',
+      requiredPaymentAmount: '300.00',
+      currency: 'PEN',
+      paymentPolicyVersion: 1,
+      status: 'CONFIRMED',
+      operatingCompanyId: COMPANY,
+      branchId: BRANCH,
+    };
+
+    const reservationRepo = {
+      findById: jest.fn().mockResolvedValue(reservation),
+    };
+
+    // 2. Flota actualiza tarifa y deposito minimo del vehiculo de S/ 1000 a S/ 2000
+    const fleetVehicle = buildFleetVehicle({
+      id: 'veh-1',
+      dailyRate: 150,
+      depositMinimum: 1000,
+    });
+    const fleetRepo = buildFleetVehicleRepository(fleetVehicle);
+    const { access } = buildFleetAccessService('CAMPO');
+    const auditService = { recordFleetEvent: jest.fn().mockResolvedValue(undefined) };
+
+    const updateVehicleHandler = new UpdateVehicleHandler(fleetRepo, access, auditService as any);
+    await updateVehicleHandler.execute(
+      new UpdateVehicleCommand(
+        'uid-1',
+        'veh-1',
+        COMPANY,
+        BRANCH,
+        undefined, undefined, undefined, undefined, undefined,
+        250, // dailyRate
+        2000, // depositMinimum
+      ),
+    );
+
+    // 3. Se consulta la reserva existente: conserva requiredPaymentAmount original (300.00)
+    const existingReservation = await reservationRepo.findById('res-1');
+    expect(existingReservation.requiredPaymentAmount).toBe('300.00');
+    expect(existingReservation.paymentPolicyVersion).toBe(1);
+  });
+
+  it('tras cambiar tarifas en Flota, un alquiler formalizado conserva su garantia retenida (originalAmount) y tarifa de conductor', async () => {
+    // 1. Alquiler formalizado con deposito de S/ 1500.00 y conductor diario de S/ 80.00
+    const rental = {
+      id: 'rent-1',
+      vehicleId: 'veh-1',
+      companyDriverDailyRate: '80.00',
+      status: 'PENDING_DELIVERY',
+      deposit: {
+        id: 'dep-1',
+        rentalId: 'rent-1',
+        originalAmount: '1500.00',
+        currency: 'PEN',
+        status: 'HELD',
+      },
+    };
+
+    const rentalRepo = {
+      findById: jest.fn().mockResolvedValue(rental),
+    };
+
+    // 2. Flota actualiza tarifas del vehiculo: sube dailyRate, depositMinimum y fuelPenaltyPerLine
+    const fleetVehicle = buildFleetVehicle({
+      id: 'veh-1',
+      dailyRate: 150,
+      depositMinimum: 1500,
+      fuelPenaltyPerLine: 15,
+    });
+    const fleetRepo = buildFleetVehicleRepository(fleetVehicle);
+    const { access } = buildFleetAccessService('CAMPO');
+    const auditService = { recordFleetEvent: jest.fn().mockResolvedValue(undefined) };
+
+    const updateVehicleHandler = new UpdateVehicleHandler(fleetRepo, access, auditService as any);
+    await updateVehicleHandler.execute(
+      new UpdateVehicleCommand(
+        'uid-1',
+        'veh-1',
+        COMPANY,
+        BRANCH,
+        undefined, undefined, undefined, undefined, undefined,
+        300, // dailyRate
+        3000, // depositMinimum
+        undefined, undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined,
+        30, // fuelPenaltyPerLine
+      ),
+    );
+
+    // 3. El alquiler ya creado no recalcula su garantia ni su tarifa pactada
+    const existingRental = await rentalRepo.findById('rent-1');
+    expect(existingRental.deposit.originalAmount).toBe('1500.00');
+    expect(existingRental.companyDriverDailyRate).toBe('80.00');
+  });
+
+  it('el cambio de tarifas en Flota registra evento de auditoria con valores anteriores y nuevos de todos los campos tarifarios (rateNormal, ratePlus, rateLibre, fuelPenaltyPerLine, suitableForTrocha)', async () => {
+    const fleetVehicle = buildFleetVehicle({
+      id: 'veh-1',
+      rateNormal: 150,
+      ratePlus: 180,
+      rateLibre: 280,
+      fuelPenaltyPerLine: 15,
+      suitableForTrocha: false,
+    });
+    const fleetRepo = buildFleetVehicleRepository(fleetVehicle);
+    const { access } = buildFleetAccessService('CAMPO');
+    const recordFleetEventMock = jest.fn().mockResolvedValue(undefined);
+    const auditService = { recordFleetEvent: recordFleetEventMock };
+
+    const updateVehicleHandler = new UpdateVehicleHandler(fleetRepo, access, auditService as any);
+    await updateVehicleHandler.execute(
+      new UpdateVehicleCommand(
+        'uid-1',
+        'veh-1',
+        COMPANY,
+        BRANCH,
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+        true, // suitableForTrocha
+        200, // rateNormal
+        250, // ratePlus
+        350, // rateLibre
+        25, // fuelPenaltyPerLine
+      ),
+    );
+
+    expect(recordFleetEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: 'uid-1',
+        vehicleId: 'veh-1',
+        action: 'VEHICLE_UPDATED',
+        changes: expect.objectContaining({
+          rateNormal: { from: 150, to: 200 },
+          ratePlus: { from: 180, to: 250 },
+          rateLibre: { from: 280, to: 350 },
+          fuelPenaltyPerLine: { from: 15, to: 25 },
+          suitableForTrocha: { from: false, to: true },
+        }),
+      }),
+    );
+  });
 });

@@ -1,8 +1,10 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Recruitment & Selection API
-  version: 0.7.0
+  version: 0.8.0
   description: >
+    v0.8.0 (23-oct-2026, Frente P2): (1) Prohibición explícita de portales de empleo generales (Bumeran, Computrabajo,
+    LinkedIn, Portal UNCH) para vacantes de personal mecánico: responde 422 MECHANIC_GENERAL_PORTALS_PROHIBITED.
     v0.7.0 (23-oct-2026, Frente D): (1) DEC-REC-REQUIREMENTS-001: CV y pretensión salarial son obligatorios ANTES de registrar
     el resultado de la entrevista (POST /interviews/{id}/commands/record-result responde 422 CANDIDATE_REQUIREMENTS_INCOMPLETE
     si falta el CV o la pretensión salarial).
@@ -874,7 +876,7 @@ components:
           type: array
           minItems: 1
           items: { type: string }
-          description: 'Canales de difusion. Vacante de mecanico: al menos uno tecnico (SENATI, TECSUP o «Institutos tecnicos», sin importar mayusculas ni tildes); si no, 422 MECHANIC_TECHNICAL_CHANNELS_REQUIRED.'
+          description: 'Canales de difusion. Vacante de mecanico: al menos uno tecnico (SENATI, TECSUP o «Institutos tecnicos», sin importar mayusculas ni tildes; si no, 422 MECHANIC_TECHNICAL_CHANNELS_REQUIRED) y PROHIBIDO portales generales (Bumeran, Computrabajo, LinkedIn, Portal UNCH; si incluye alguno, 422 MECHANIC_GENERAL_PORTALS_PROHIBITED).'
 
     RegisterCandidateRequest:
       type: object
