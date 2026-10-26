@@ -408,3 +408,20 @@ export interface EmployeeDetailResponse extends EmployeeResponse {
   recentMemos: HrMemoResponse[];
   recentTrainings: TrainingResponse[];
 }
+
+export interface ExpectationDocumentResponse {
+  id: string;
+  employeeId: string;
+  companyId: string;
+  status: 'PENDIENTE' | 'FIRMADO';
+  deadlineDate: string;
+  isOverdue: boolean;
+  fileUrl: string | null;
+  signedAt: string | null;
+  registeredBy: string;
+  signedRegisteredBy: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+

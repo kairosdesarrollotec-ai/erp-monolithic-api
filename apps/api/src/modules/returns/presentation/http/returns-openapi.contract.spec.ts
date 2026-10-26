@@ -31,6 +31,7 @@ import { ListReturnAlertsQueryDto } from './dto/list-return-alerts-query.dto';
 import { ListReturnsQueryDto } from './dto/list-returns-query.dto';
 import { ReturnScopeQueryDto } from './dto/return-scope-query.dto';
 import { RecordZoneMarksDto } from './dto/record-zone-marks.dto';
+import { RecordHolderNotificationDto } from './dto/record-holder-notification.dto';
 import {
   toCosmeticTariffResponse,
   toImmobilizationChargeResponse,
@@ -151,7 +152,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
       .flatMap(([p, ops]: [string, any]) => Object.keys(ops).map((m) => `${m} ${p}`))
       .sort();
     expect(fromController).toEqual(fromSpec);
-    expect(fromSpec).toHaveLength(25);
+    expect(fromSpec).toHaveLength(26);
   });
 
   it('el código de exito declarado en OpenAPI es el que devuelve NestJS', () => {
@@ -170,7 +171,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
 
   it('todo comando POST (/commands/) declara If-Match obligatorio y respuestas 428 + 412', () => {
     const commandRoutes = routes.filter((r) => r.method === 'post' && r.openApiPath.includes('/commands/'));
-    expect(commandRoutes).toHaveLength(11);
+    expect(commandRoutes).toHaveLength(12);
     for (const route of commandRoutes) {
       const op: Operation = spec.paths[route.openApiPath][route.method];
       const headerParams = (op.parameters ?? []).map(deref).filter((p: any) => p.in === 'header');
@@ -198,6 +199,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     ['RequestReturnEvidenceUploadSessionRequest', RequestReturnEvidenceUploadSessionDto],
     ['RecordReturnEvidenceRequest', RecordReturnEvidenceDto],
     ['RecordReturnZoneMarksRequest', RecordZoneMarksDto],
+    ['RecordHolderNotificationRequest', RecordHolderNotificationDto],
   ])('%s: mismos campos y mismos obligatorios que el DTO', (schemaName, dto) => {
     const contract = flatten(spec.components.schemas[schemaName]);
     const fields = dtoFields(dto as new () => unknown);
@@ -233,7 +235,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('1.7.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
-    expect(spec.info.version).toBe('1.11.0');
+    expect(spec.info.version).toBe('1.12.0');
     const alcohol: Operation = spec.paths['/returns/{id}/commands/register-alcohol-test'].post;
     expect(JSON.stringify(alcohol.responses['422'])).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
     const op: Operation = spec.paths['/returns/{id}/commands/register-late-charge'].post;
@@ -579,7 +581,21 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expect(spec.components.schemas.ReturnAlertItem.required).toContain('lateCharge');
   });
 
-  it('contrato 1.11.0', () => {
-    expect(spec.info.version).toBe('1.11.0');
+  it('1.12.0: record-holder-notification registra notificación formal al titular ausente (SC-DEV-004.01, EX-DEV-001)', () => {
+    expect(spec.info.version).toBe('1.12.0');
+    const pathOp = spec.paths['/returns/{id}/commands/record-holder-notification'];
+    expect(pathOp).toBeDefined();
+    const post: Operation = pathOp.post;
+    expect(post.operationId).toBe('recordHolderNotification');
+    expect(Object.keys(post.responses)).toEqual(expect.arrayContaining(['200', '400', '401', '403', '404', '412', '428']));
+    const route = routes.find((r) => r.openApiPath === '/returns/{id}/commands/record-holder-notification');
+    expect(route).toMatchObject({ method: 'post', httpCode: 200, idempotent: true });
+    expect(dtoFields(RecordHolderNotificationDto).required).toEqual(
+      [...flatten(spec.components.schemas.RecordHolderNotificationRequest).required].sort(),
+    );
+  });
+
+  it('contrato 1.12.0', () => {
+    expect(spec.info.version).toBe('1.12.0');
   });
 });

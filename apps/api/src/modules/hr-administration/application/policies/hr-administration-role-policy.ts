@@ -41,6 +41,7 @@ export const HR_ADMINISTRATION_ACTIONS = [
   'MANAGE_HR_DOCUMENTS',
   'VIEW_HR_DOCUMENTS',
   'CONFIRM_HR_DOCUMENT_READ',
+  'MANAGE_EXPECTATION_DOCUMENT',
 ] as const;
 
 export type HrAdministrationAction = (typeof HR_ADMINISTRATION_ACTIONS)[number];
@@ -80,6 +81,8 @@ const HR_ADMINISTRATION_ROLE_POLICY: Readonly<Record<HrAdministrationAction, Rea
   // HU-31: consulta de documentos vigentes y confirmación de lectura por colaboradores
   VIEW_HR_DOCUMENTS: ALL_STAFF_ROLES,
   CONFIRM_HR_DOCUMENT_READ: ALL_STAFF_ROLES,
+  // REC-P13 / BDD-05 / BDD-00: Documento de expectativas por defecto a RRHH y GERENCIA
+  MANAGE_EXPECTATION_DOCUMENT: LEADERSHIP_ROLES,
 };
 
 export function isHrAdministrationRoleAllowed(role: WorkerRole, action: HrAdministrationAction): boolean {

@@ -167,5 +167,10 @@ export function toReturnRecord(row: ReturnWithRelations): ReturnRecord {
     legalEscalatedAt: row.legalEscalatedAt,
     legalEscalatedBy: row.legalEscalatedBy,
     legalNotes: row.legalNotes,
+    holderNotificationSent: row.holderNotificationSent,
+    holderNotificationSentAt: row.holderNotificationSentAt,
+    holderNotificationSentBy: row.holderNotificationSentBy,
+    holderNotificationChannel: row.holderNotificationChannel,
+    holderNotificationNotes: row.holderNotificationNotes,
   };
 }

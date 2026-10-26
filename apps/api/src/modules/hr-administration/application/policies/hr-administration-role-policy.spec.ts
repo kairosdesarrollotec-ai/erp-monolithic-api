@@ -19,8 +19,8 @@ const GERENCIA_ONLY_OR_NOT_HR: readonly HrAdministrationAction[] = [
 ];
 
 describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
-  it('define las 20 acciones canónicas de Administración de Personal', () => {
-    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(20);
+  it('define las 21 acciones canónicas de Administración de Personal', () => {
+    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(21);
     expect(HR_ADMINISTRATION_ACTIONS).toEqual([
       'VIEW_EMPLOYEES',
       'MANAGE_EMPLOYEES',
@@ -42,6 +42,7 @@ describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
       'MANAGE_HR_DOCUMENTS',
       'VIEW_HR_DOCUMENTS',
       'CONFIRM_HR_DOCUMENT_READ',
+      'MANAGE_EXPECTATION_DOCUMENT',
     ]);
   });
 

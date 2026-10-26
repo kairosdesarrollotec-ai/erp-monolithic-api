@@ -232,6 +232,14 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     legalEscalatedAt: record.legalEscalatedAt ? record.legalEscalatedAt.toISOString() : null,
     legalEscalatedBy: record.legalEscalatedBy ?? null,
     legalNotes: record.legalNotes ?? null,
+    holderNotification: record.responsibilitySignerIsHolder === false ? {
+      sent: Boolean(record.holderNotificationSent),
+      sentAt: record.holderNotificationSentAt ? record.holderNotificationSentAt.toISOString() : null,
+      sentBy: record.holderNotificationSentBy ?? null,
+      channel: record.holderNotificationChannel ?? null,
+      observations: record.holderNotificationNotes ?? null,
+      pending: !record.holderNotificationSent,
+    } : null,
   };
 }
 

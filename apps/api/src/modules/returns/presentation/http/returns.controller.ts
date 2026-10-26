@@ -39,6 +39,8 @@ import { CloseFinancialHandler } from '../../application/commands/close-financia
 import { CloseFinancialCommand } from '../../application/commands/close-financial.command';
 import { CloseReturnHandler } from '../../application/commands/close-return.handler';
 import { CloseReturnCommand } from '../../application/commands/close-return.command';
+import { RecordHolderNotificationHandler } from '../../application/commands/record-holder-notification.handler';
+import { RecordHolderNotificationCommand } from '../../application/commands/record-holder-notification.command';
 import { GetReturnHandler } from '../../application/queries/get-return.handler';
 import { GetReturnQuery } from '../../application/queries/get-return.query';
 import { GetCosmeticTariffHandler } from '../../application/queries/get-cosmetic-tariff.handler';
@@ -80,6 +82,7 @@ import { ReturnScopeQueryDto } from './dto/return-scope-query.dto';
 import { RecordZoneMarksDto } from './dto/record-zone-marks.dto';
 import { RecordMechanicReportDto } from './dto/record-mechanic-report.dto';
 import { EscalateLegalDto } from './dto/escalate-legal.dto';
+import { RecordHolderNotificationDto } from './dto/record-holder-notification.dto';
 import { RecordZoneMarksHandler } from '../../application/commands/record-zone-marks.handler';
 import { RecordZoneMarksCommand } from '../../application/commands/record-zone-marks.command';
 import { RecordMechanicReportHandler } from '../../application/commands/record-mechanic-report.handler';
@@ -133,6 +136,7 @@ export class ReturnsController {
     private readonly escalateLegal: EscalateLegalHandler,
     private readonly recordZoneMarks: RecordZoneMarksHandler,
     private readonly listZoneMarks: ListZoneMarksHandler,
+    private readonly recordHolderNotification: RecordHolderNotificationHandler,
     private readonly getReturn: GetReturnHandler,
     private readonly getCosmeticTariff: GetCosmeticTariffHandler,
     private readonly listReturns: ListReturnsHandler,
@@ -575,6 +579,31 @@ export class ReturnsController {
         dto.branchId,
         parseVersionIfMatch(ifMatch),
         dto.notes,
+      ),
+    );
+    return toReturnResponse(updated);
+  }
+
+  @Post(':id/commands/record-holder-notification')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async recordHolderNotificationCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordHolderNotificationDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReturnResponse> {
+    const updated = await this.recordHolderNotification.execute(
+      new RecordHolderNotificationCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.channel,
+        parseBusinessInstant(dto.contactedAt),
+        dto.notifiedBy,
+        dto.observations,
       ),
     );
     return toReturnResponse(updated);

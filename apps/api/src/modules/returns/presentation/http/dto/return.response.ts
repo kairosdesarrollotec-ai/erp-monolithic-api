@@ -220,6 +220,16 @@ export interface ReturnResponse {
   legalEscalatedAt: string | null;
   legalEscalatedBy: string | null;
   legalNotes: string | null;
+  holderNotification?: HolderNotificationResponse | null;
+}
+
+export interface HolderNotificationResponse {
+  sent: boolean;
+  sentAt: string | null;
+  sentBy: string | null;
+  channel: string | null;
+  observations: string | null;
+  pending: boolean;
 }
 
 export interface ReturnEvidenceResponse {

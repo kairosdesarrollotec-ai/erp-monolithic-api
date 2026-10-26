@@ -14,6 +14,7 @@ import { resolveResponsibilityDocument } from '../../domain/responsibility-docum
 import { missingReturnEvidence } from '../../domain/return-evidence-requirements';
 import { appendNotes } from '../../domain/return-rules';
 import { assertCanTransitionReturn, ReturnStatus } from '../../domain/return-status';
+import { ReturnDashboardAlertPort } from '../ports/return-dashboard-alert.port';
 import { SyncClosureGatePort } from '../../../sync-conflicts/application/ports/sync-closure-gate.port';
 import { CompleteInspectionCommand } from './complete-inspection.command';
 
@@ -37,6 +38,7 @@ export class CompleteInspectionHandler {
      * tenga conflictos de sincronizacion sin resolver (409 SYNC_CONFLICT_PENDING). Opcional solo para los specs previos.
      */
     @Optional() private readonly syncGate?: SyncClosureGatePort,
+    @Optional() private readonly dashboardAlerts?: ReturnDashboardAlertPort,
   ) {}
 
   async execute(command: CompleteInspectionCommand): Promise<ReturnRecord> {
@@ -132,6 +134,25 @@ export class CompleteInspectionHandler {
         },
         tx,
       );
+
+      if (!responsibility.signerIsHolder && this.dashboardAlerts) {
+        await this.dashboardAlerts.createDashboardItems([
+          {
+            organizationId: context.organizationId,
+            operatingCompanyId: context.companyId,
+            branchId: context.branchId,
+            role: 'FRONT_OFFICE',
+            itemType: 'ALERT',
+            priority: 70,
+            title: 'Notificar formalmente al titular ausente',
+            detail: `Vehículo recibido por ${responsibility.signerName} (${responsibility.signerRelationToHolder || 'tercero'}). Notificar formalmente al titular al día siguiente (SC-DEV-004.01).`,
+            deepLink: `/devoluciones/${updated.id}/cierre`,
+            sourceType: 'RETURN',
+            sourceId: updated.id,
+            sourceEventId: `return-holder-notification:${updated.id}`,
+          },
+        ]).catch(() => undefined);
+      }
 
       return updated;
     });

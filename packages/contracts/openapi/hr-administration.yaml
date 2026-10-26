@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.15.0
+  version: 0.16.0
   description: >
+    0.16.0 (26-oct-2026, Frente B6):
+    - REC-P13 / BDD-05 / BDD-00: Documento de expectativas del colaborador (a los 2 días de ingreso):
+      (1) GET /employees/{id}/expectation-document: consulta estado (PENDIENTE/FIRMADO), plazo de 2 días hábiles/naturales desde hireDate (deadlineDate), si se encuentra vencido (isOverdue), archivo firmado adjunto (fileUrl), quién lo registró y observaciones.
+      (2) POST /employees/{id}/commands/record-expectation-document: registra el documento firmado adjuntando fileUrl, signedAt y notas opcionales; cambia estado a FIRMADO, audita EMPLOYEE_EXPECTATION_DOCUMENT_RECORDED y emite evento outbox DocumentoExpectativasRegistrado.v1.
+      (3) Permiso en matriz ADM-02: HR_ADMINISTRATION.MANAGE_EXPECTATION_DOCUMENT concedido por defecto a RRHH y GERENCIA.
     0.15.0 (23-oct-2026, Frente C7):
     - DEC-HR-DOC-VERSION-001 (HU-31): Modelo de documentos TH con versiones append-only (hr_document_versions) e índice único parcial para versión vigente única por documento (idx_hr_doc_single_current). Confirmación de lectura ligada a la versión vigente.
     - DEC-HR-APPROVAL-001 (C5): Aprobación/denegación de permisos (AUTHORIZE_LEAVE) y concesión de vacaciones (SCHEDULE_VACATION) exclusivo de GERENCIA por defecto.
@@ -849,6 +854,53 @@ paths:
         '404': { description: Colaborador no encontrado }
         '409': { description: El colaborador ya fue terminado previamente (EMPLOYMENT_ALREADY_TERMINATED) }
         '422': { description: Reglas de BR-ADP-006 incumplidas - renuncia sin pago de la quincena pendiente (FINAL_SETTLEMENT_REQUIRED), despido sin motivo documentado (TERMINATION_NOTES_REQUIRED) o aviso inválido (INVALID_TERMINATION_NOTICE) }
+
+  /employees/{id}/expectation-document:
+    get:
+      operationId: getExpectationDocument
+      summary: Consultar documento de expectativas del colaborador (REC-P13, BDD-05, BDD-00)
+      description: >
+        Devuelve el estado del documento de expectativas del colaborador (PENDIENTE o FIRMADO),
+        el plazo legal de 2 días de ingreso (hireDate + 2 días), si se encuentra vencido (isOverdue),
+        la URL del documento firmado y datos de registro.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Documento de expectativas del colaborador
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExpectationDocumentResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_EMPLOYEES }
+        '404': { description: Colaborador no encontrado }
+
+  /employees/{id}/commands/record-expectation-document:
+    post:
+      operationId: recordExpectationDocument
+      summary: Registrar documento de expectativas firmado (REC-P13, BDD-05)
+      description: >
+        Permite adjuntar el archivo firmado del documento de expectativas del colaborador,
+        cambiando su estado a FIRMADO y auditando la acción.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordExpectationDocumentRequest' }
+      responses:
+        '200':
+          description: Documento de expectativas registrado exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExpectationDocumentResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_EXPECTATION_DOCUMENT }
+        '404': { description: Colaborador no encontrado }
 
   /field-trips/{id}/reject:
     post:
@@ -2207,3 +2259,32 @@ components:
         documentId: { type: string, format: uuid }
         employeeId: { type: string, format: uuid }
         readAt: { type: string, format: date-time }
+
+    RecordExpectationDocumentRequest:
+      type: object
+      required: [fileUrl]
+      properties:
+        fileUrl: { type: string, example: 'https://storage.kairos.pe/expectations/doc-001.pdf' }
+        signedAt: { type: string, format: date-time, nullable: true }
+        notes: { type: string, maxLength: 1000, nullable: true }
+
+    ExpectationDocumentResponse:
+      type: object
+      required: [id, employeeId, companyId, status, deadlineDate, isOverdue, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [PENDIENTE, FIRMADO]
+        deadlineDate: { type: string, format: date }
+        isOverdue: { type: boolean }
+        fileUrl: { type: string, nullable: true }
+        signedAt: { type: string, format: date-time, nullable: true }
+        registeredBy: { type: string }
+        signedRegisteredBy: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+

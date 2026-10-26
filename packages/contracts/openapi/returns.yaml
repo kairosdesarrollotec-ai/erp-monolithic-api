@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.11.0
+  version: 1.12.0
   description: >
+    1.12.0 - DEC-DEV-ABSENT-HOLDER-001 (SC-DEV-004.01, EX-DEV-001): (1) Notificación formal al titular ausente al día siguiente
+    de la recepción vehicular por un tercero: POST /returns/{id}/commands/record-holder-notification (channel, contactedAt,
+    notifiedBy, observations), auditado con RETURN_HOLDER_NOTIFICATION_RECORDED y outbox NotificacionTitularAusenteRegistrada.v1.
+    (2) Tarea in-app proyectada a dashboard_items al registrar la recepción con titular ausente (responsibilitySignerIsHolder=false).
+    (3) ReturnResponse.holderNotification {sent, sentAt, sentBy, channel, observations, pending}.
     1.11.0 - DEC-DEV-REPORT-001 / DEC-DEV-LEGAL-001 / DEC-DEV-OFFLINE-001 (23-oct-2026, Frente C): (1) Inmovilización y reporte mecánico: si la
     devolución registra daños técnicos/estéticos (hasDamages=true), el vehículo queda inmovilizado y NO se puede cerrar la devolución
     (POST /returns/{id}/commands/close) sin que una persona con permiso de cierre registre que el cliente aceptó el informe mecánico/Motrix
@@ -801,6 +806,35 @@ paths:
         '412': { description: Versión no coincide (If-Match) }
         '428': { description: Falta header If-Match }
 
+  /returns/{id}/commands/record-holder-notification:
+    post:
+      operationId: recordHolderNotification
+      summary: Registrar notificación formal al titular ausente (SC-DEV-004.01, EX-DEV-001)
+      description: >
+        Permite a un usuario con permiso operativo registrar la notificación formal realizada al titular ausente
+        del alquiler cuando la recepción vehicular fue efectuada por un tercero.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordHolderNotificationRequest' }
+      responses:
+        '200':
+          description: Notificación formal registrada exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token no autenticado }
+        '403': { description: No autorizado para el contexto o permiso insuficiente (RETURN.COMPLETE_INSPECTION) }
+        '404': { description: Devolución no encontrada }
+        '412': { description: Versión no coincide (If-Match) }
+        '428': { description: Falta header If-Match }
+
   /returns/{id}/evidence/upload-url:
     post:
       operationId: requestReturnEvidenceUploadSession
@@ -1401,6 +1435,40 @@ components:
         branchId: { type: string, format: uuid }
         notes: { type: string, minLength: 1 }
 
+    RecordHolderNotificationRequest:
+      type: object
+      required: [companyId, branchId, channel, contactedAt, notifiedBy]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        channel:
+          type: string
+          description: Medio o canal utilizado fuera del sistema (WHATSAPP, TELEFONO, EMAIL, CARTA, etc.)
+          example: WHATSAPP
+        contactedAt:
+          type: string
+          format: date-time
+          description: Fecha y hora en que se contactó formalmente al titular
+        notifiedBy:
+          type: string
+          description: Identificador o nombre de la persona que realizó la notificación
+          example: Juan Operador
+        observations:
+          type: string
+          nullable: true
+          description: Observaciones o detalle de la comunicación con el titular
+
+    HolderNotificationResponse:
+      type: object
+      required: [sent, pending]
+      properties:
+        sent: { type: boolean }
+        sentAt: { type: string, format: date-time, nullable: true }
+        sentBy: { type: string, nullable: true }
+        channel: { type: string, nullable: true }
+        observations: { type: string, nullable: true }
+        pending: { type: boolean, description: True si el vehículo fue entregado por un tercero y aún no se formaliza la notificación al titular }
+
     RequestReturnEvidenceUploadSessionRequest:
       type: object
       required: [companyId, branchId, type, zone, contentType, contentLength]
@@ -1638,4 +1706,9 @@ components:
         legalEscalatedAt: { type: string, format: date-time, nullable: true }
         legalEscalatedBy: { type: string, nullable: true }
         legalNotes: { type: string, nullable: true }
+        holderNotification:
+          nullable: true
+          description: Registro de la notificación formal al titular ausente (SC-DEV-004.01)
+          allOf:
+            - $ref: '#/components/schemas/HolderNotificationResponse'
 

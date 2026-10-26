@@ -103,6 +103,10 @@ import { LocalHrDocumentStorageService } from './infrastructure/storage/local-hr
 import { PublishHrDocumentHandler } from './application/commands/publish-hr-document.handler';
 import { ListActiveHrDocumentsHandler } from './application/queries/list-active-hr-documents.handler';
 import { ConfirmHrDocumentReadHandler } from './application/commands/confirm-hr-document-read.handler';
+import { ExpectationDocumentRepositoryPort } from './application/ports/expectation-document-repository.port';
+import { PrismaExpectationDocumentRepository } from './infrastructure/persistence/prisma-expectation-document.repository';
+import { RecordExpectationDocumentHandler } from './application/commands/record-expectation-document.handler';
+import { GetExpectationDocumentHandler } from './application/queries/get-expectation-document.handler';
 
 /**
  * Módulo de Administración de Personal (ADP-01 a ADP-10): colaboradores, asistencia y descuentos de fin de mes,
@@ -199,6 +203,9 @@ import { ConfirmHrDocumentReadHandler } from './application/commands/confirm-hr-
     PublishHrDocumentHandler,
     ListActiveHrDocumentsHandler,
     ConfirmHrDocumentReadHandler,
+    { provide: ExpectationDocumentRepositoryPort, useClass: PrismaExpectationDocumentRepository },
+    RecordExpectationDocumentHandler,
+    GetExpectationDocumentHandler,
   ],
   exports: [HrAdministrationAccessService],
 })

@@ -145,6 +145,11 @@ export class PrismaReturnRepository implements ReturnRepositoryPort {
         legalEscalatedAt: input.legalEscalatedAt,
         legalEscalatedBy: input.legalEscalatedBy,
         legalNotes: input.legalNotes,
+        holderNotificationSent: input.holderNotificationSent,
+        holderNotificationSentAt: input.holderNotificationSentAt,
+        holderNotificationSentBy: input.holderNotificationSentBy,
+        holderNotificationChannel: input.holderNotificationChannel,
+        holderNotificationNotes: input.holderNotificationNotes,
         version: { increment: 1 },
       },
     });

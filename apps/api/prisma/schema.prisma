@@ -330,6 +330,7 @@ model Company {
   hrDocuments  HrDocument[]
   hrDocumentVersions HrDocumentVersion[]
   hrDocumentReads HrDocumentRead[]
+  expectationDocuments ExpectationDocument[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -1354,6 +1355,12 @@ model RentalReturn {
   legalEscalatedAt         DateTime?          @map("legal_escalated_at")
   legalEscalatedBy         String?            @map("legal_escalated_by")
   legalNotes               String?            @map("legal_notes") @db.VarChar(1000)
+  /// SC-DEV-004.01 / EX-DEV-001: Notificacion formal al titular ausente al dia siguiente de recepcion por tercero.
+  holderNotificationSent    Boolean   @default(false) @map("holder_notification_sent")
+  holderNotificationSentAt  DateTime? @map("holder_notification_sent_at")
+  holderNotificationSentBy  String?   @map("holder_notification_sent_by")
+  holderNotificationChannel String?   @map("holder_notification_channel")
+  holderNotificationNotes   String?   @map("holder_notification_notes")
   scheduledAt           DateTime           @map("scheduled_at")
   receivedAt            DateTime?          @map("received_at")
   inspectedAt           DateTime?          @map("inspected_at")
@@ -1940,12 +1947,36 @@ model Employee {
   memos            HrMemo[]
   trainings        TrainingAttendee[]
   documentReads    HrDocumentRead[]
+  expectationDocument ExpectationDocument?
 
   @@unique([operatingCompanyId, documentNumber], map: "employees_company_document_key")
   @@unique([operatingCompanyId, firebaseUid], map: "employees_company_firebase_uid_key")
   @@index([organizationId, operatingCompanyId, branchId, status], map: "employees_scope_status_idx")
   @@index([areaId, status], map: "employees_area_status_idx")
   @@map("employees")
+}
+
+/// REC-P13: Documento de expectativas del colaborador (a los 2 días de ingreso).
+model ExpectationDocument {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  employeeId         String   @unique @map("employee_id")
+  status             String   @default("PENDIENTE") // 'PENDIENTE' | 'FIRMADO'
+  deadlineDate       DateTime @map("deadline_date") @db.Date
+  fileUrl            String?  @map("file_url") @db.VarChar(500)
+  signedAt           DateTime? @map("signed_at")
+  registeredBy       String   @map("registered_by") @db.VarChar(128)
+  signedRegisteredBy String?  @map("signed_registered_by") @db.VarChar(128)
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  operatingCompany Company  @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  employee         Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([status, deadlineDate], map: "idx_emp_expectations_status_deadline")
+  @@map("employee_expectation_documents")
 }
 
 /// BDD-ADP-001 ADP-P01..04 / BR-ADP-001 - Registro diario de asistencia y faltas.

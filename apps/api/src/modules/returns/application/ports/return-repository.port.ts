@@ -146,6 +146,11 @@ export interface ReturnRecord {
   legalEscalatedAt?: Date | null;
   legalEscalatedBy?: string | null;
   legalNotes?: string | null;
+  holderNotificationSent?: boolean;
+  holderNotificationSentAt?: Date | null;
+  holderNotificationSentBy?: string | null;
+  holderNotificationChannel?: string | null;
+  holderNotificationNotes?: string | null;
 }
 
 export interface CreateReturnInput {
@@ -205,6 +210,11 @@ export interface UpdateReturnInput {
   legalEscalatedAt?: Date | null;
   legalEscalatedBy?: string | null;
   legalNotes?: string | null;
+  holderNotificationSent?: boolean;
+  holderNotificationSentAt?: Date | null;
+  holderNotificationSentBy?: string | null;
+  holderNotificationChannel?: string | null;
+  holderNotificationNotes?: string | null;
 }
 
 export interface ListReturnsFilter extends ReturnScope {
