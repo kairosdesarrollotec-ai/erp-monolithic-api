@@ -43,7 +43,16 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
         organizationId: query.organizationId,
         operatingCompanyId: query.operatingCompanyId,
       },
-      select: { id: true, branchId: true, dailyRate: true, status: true },
+      select: {
+        id: true,
+        branchId: true,
+        dailyRate: true,
+        status: true,
+        suitableForTrocha: true,
+        rateNormal: true,
+        ratePlus: true,
+        rateLibre: true,
+      },
     });
 
     if (!vehicle) {
@@ -72,7 +81,7 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
     // Correccion (oct 2026): el precio de cotizacion es el dailyRate del
     // vehiculo (administrado en FLO-02), no un tarifario separado por
     // empresa - ver el comentario en fleet-availability.port.ts.
-    if (vehicle.dailyRate === null) {
+    if (vehicle.dailyRate == null && !vehicle.rateNormal) {
       return {
         eligible: false,
         reason: 'Este vehículo no tiene tarifa configurada en Flota. Configúrala en la ficha del vehículo antes de cotizar.',
@@ -94,6 +103,16 @@ export class PrismaFleetAvailabilityAdapter extends FleetAvailabilityPort {
       };
     }
 
-    return { eligible: true, vehicleId: vehicle.id, dailyRate: vehicle.dailyRate.toString() };
+    const dailyRate = vehicle.rateNormal ? vehicle.rateNormal.toString() : (vehicle.dailyRate ? vehicle.dailyRate.toString() : '0');
+
+    return {
+      eligible: true,
+      vehicleId: vehicle.id,
+      dailyRate,
+      suitableForTrocha: vehicle.suitableForTrocha ?? false,
+      rateNormal: vehicle.rateNormal ? vehicle.rateNormal.toString() : null,
+      ratePlus: vehicle.ratePlus ? vehicle.ratePlus.toString() : null,
+      rateLibre: vehicle.rateLibre ? vehicle.rateLibre.toString() : null,
+    };
   }
 }

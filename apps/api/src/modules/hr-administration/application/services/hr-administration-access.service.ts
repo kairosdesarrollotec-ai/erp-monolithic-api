@@ -91,4 +91,8 @@ export class HrAdministrationAccessService {
       { companyId: context.companyId, branchId: context.branchId },
     );
   }
+
+  async authorizeWorkContext(input: { firebaseUid: string; companyId: string; branchId: string }): Promise<AuthorizedWorkContext> {
+    return this.workContext.authorize(input);
+  }
 }

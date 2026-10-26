@@ -7,7 +7,12 @@ import { RecruitmentAccessService } from '../services/recruitment-access.service
 import { CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { CandidateInterviewRecord, InterviewRepositoryPort } from '../ports/interview-repository.port';
 import { VacancyRepositoryPort } from '../ports/vacancy-repository.port';
-import { CandidateNotFoundError, GerenciaDecisionRequiredError, InterviewNotFoundError } from '../../domain/recruitment-errors';
+import {
+  CandidateNotFoundError,
+  CandidateRequirementsIncompleteError,
+  GerenciaDecisionRequiredError,
+  InterviewNotFoundError,
+} from '../../domain/recruitment-errors';
 import { CandidateProcessState, VacancyStatus } from '../../domain/recruitment-domain-types';
 import { advanceVacancyProgress, transitionCandidateProcess } from '../services/recruitment-progress';
 import { assertCandidateNotDecided } from '../../domain/recruitment-rules';
@@ -52,6 +57,18 @@ export class RecordInterviewResultHandler {
       }
 
       assertCandidateNotDecided(candidate.decision);
+
+      // DEC-REC-REQUIREMENTS-001 (Frente D): CV y pretensión salarial obligatorios antes del resultado de entrevista
+      if (!candidate.hasCv && !candidate.cv) {
+        throw new CandidateRequirementsIncompleteError(
+          'El candidato debe contar con CV adjunto antes de registrar el resultado de la entrevista.',
+        );
+      }
+      if (candidate.salaryExpectation === null || candidate.salaryExpectation === undefined || candidate.salaryExpectation <= 0) {
+        throw new CandidateRequirementsIncompleteError(
+          'El candidato debe contar con pretensión salarial registrada antes de registrar el resultado de la entrevista.',
+        );
+      }
 
       const evaluatedAt = this.clock.now();
       const updated = await this.interviews.recordResult(

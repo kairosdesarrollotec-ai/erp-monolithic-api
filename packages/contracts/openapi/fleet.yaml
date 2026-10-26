@@ -1,8 +1,15 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.8.0
+  version: 0.10.0
   description: >
+    0.10.0 — DEC-OPS-FORMATS-001 (23-oct-2026, R5):
+    Agrega soporte para fichas operativas digitales (Formatos 01-09) vinculadas al vehículo
+    (POST/GET /fleet/vehicles/{id}/operational-records) y recordatorios programados de inspección
+    (GET /fleet/operational-reminders para FIVI interdiario y FITVM mensual).
+    0.9.0 — DEC-FLT-TROCHA-001 / DEC-FLT-PLANS-001 / DEC-FLT-FUEL-001 (23-oct-2026, ADITIVO):
+    Vehículo suma `suitableForTrocha` (boolean, default false), tarifas diarias para 3 planes (`rateNormal`, `ratePlus`, `rateLibre`)
+    y penalidad de combustible por línea faltante (`fuelPenaltyPerLine`). Se aceptan en POST y PATCH y se exponen en VehicleResponse.
     0.8.0 — DEC-ALQ-THIRDPATH-001 (Russbel 22-oct-2026, ADITIVO): el vehiculo suma `thirdPathEligible` (boolean, default false;
     "vehiculo de menor costo" elegible para la tercera via notarial). VehicleResponse lo devuelve siempre; UpdateVehicleRequest lo acepta
     opcional y SOLO Gerencia puede cambiarlo (permiso nuevo FLEET.MANAGE_THIRD_PATH, 403 ROLE_NOT_ALLOWED para los demas roles).
@@ -296,6 +303,10 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/VehicleId'
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string }
         - name: companyId
           in: query
           required: true
@@ -433,6 +444,123 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KairosErrorResponse'
+
+  /fleet/vehicles/{id}/operational-records:
+    post:
+      operationId: recordVehicleOperationalFormat
+      summary: Registrar ficha operativa digital del vehículo (Formatos 01 al 09)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordVehicleOperationalFormatRequest'
+      responses:
+        '201':
+          description: Ficha operativa registrada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleOperationalRecordResponse'
+        '400':
+          description: Datos de ficha inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NestErrorResponse'
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Permiso insuficiente para registrar fichas operativas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '404':
+          description: Vehículo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+
+    get:
+      operationId: listVehicleOperationalRecords
+      summary: Listar fichas operativas del vehículo
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleId'
+        - name: formatType
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtrar por tipo de formato (p. ej. FORMATO_01_FIVI)
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Listado de fichas operativas del vehículo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleOperationalRecordsListResponse'
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Permiso insuficiente
+
+  /fleet/operational-reminders:
+    get:
+      operationId: listVehicleOperationalReminders
+      summary: Listar recordatorios de formatos operativos periódicos (FIVI/FITVM)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: branchId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDING, COMPLETED, OVERDUE]
+      responses:
+        '200':
+          description: Listado de recordatorios de formatos operativos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleOperationalRemindersListResponse'
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: Permiso insuficiente
 
 components:
   securitySchemes:
@@ -579,6 +707,26 @@ components:
           type: number
           minimum: 0
           description: Precio del combustible por unidad para este vehículo (PEN). Insumo de la multa por combustible (aún no calculada). Opcional; se completa cuando exista la tarifa.
+        suitableForTrocha:
+          type: boolean
+          default: false
+          description: Indica si el vehículo es apto para circular por trochas o caminos no afirmados.
+        rateNormal:
+          type: number
+          minimum: 0
+          description: Tarifa diaria para el plan Normal (200 km/24 h) en PEN.
+        ratePlus:
+          type: number
+          minimum: 0
+          description: Tarifa diaria para el plan Plus (300 km/24 h) en PEN.
+        rateLibre:
+          type: number
+          minimum: 0
+          description: Tarifa diaria para el plan Libre (km libre/24 h) en PEN.
+        fuelPenaltyPerLine:
+          type: number
+          minimum: 0
+          description: Monto de penalidad por línea faltante de combustible (PEN) según tarifario VR.01.
         photoUrl:
           type: string
           format: uri
@@ -635,6 +783,29 @@ components:
         thirdPathEligible:
           type: boolean
           description: 'Marca de tercera via notarial (BR-ALQ-004). Requiere FLEET.MANAGE_THIRD_PATH (solo Gerencia). Si se omite no cambia.'
+        suitableForTrocha:
+          type: boolean
+          description: 'Marca de apto para trocha. Si se omite no cambia.'
+        rateNormal:
+          type: number
+          minimum: 0
+          nullable: true
+          description: Tarifa diaria Plan Normal (200 km).
+        ratePlus:
+          type: number
+          minimum: 0
+          nullable: true
+          description: Tarifa diaria Plan Plus (300 km).
+        rateLibre:
+          type: number
+          minimum: 0
+          nullable: true
+          description: Tarifa diaria Plan Libre.
+        fuelPenaltyPerLine:
+          type: number
+          minimum: 0
+          nullable: true
+          description: Monto por línea faltante de combustible (PEN).
         passengerCapacity:
           type: integer
           minimum: 1
@@ -726,6 +897,25 @@ components:
         thirdPathEligible:
           type: boolean
           description: 'Vehiculo de menor costo elegible para tercera via notarial (marca de Gerencia).'
+        suitableForTrocha:
+          type: boolean
+          description: 'Apto para circular por trochas o caminos no afirmados.'
+        rateNormal:
+          type: number
+          nullable: true
+          description: 'Tarifa diaria Plan Normal (PEN).'
+        ratePlus:
+          type: number
+          nullable: true
+          description: 'Tarifa diaria Plan Plus (PEN).'
+        rateLibre:
+          type: number
+          nullable: true
+          description: 'Tarifa diaria Plan Libre (PEN).'
+        fuelPenaltyPerLine:
+          type: number
+          nullable: true
+          description: 'Penalidad por línea faltante de combustible (PEN).'
         passengerCapacity:
           type: integer
           nullable: true
@@ -822,3 +1012,159 @@ components:
         detail:
           type: string
           description: Descripción legible del error para el usuario o el log.
+
+    RecordVehicleOperationalFormatRequest:
+      type: object
+      required:
+        - companyId
+        - branchId
+        - formatType
+        - performedBy
+        - data
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        branchId:
+          type: string
+          format: uuid
+        formatType:
+          type: string
+          description: Código del formato (FORMATO_01_FIVI .. FORMATO_09_MANTENIMIENTO)
+          example: FORMATO_01_FIVI
+        processType:
+          type: string
+          nullable: true
+          example: FLEET_ROUTINE
+        processId:
+          type: string
+          nullable: true
+        odometerKm:
+          type: integer
+          nullable: true
+        fuelLevelLines:
+          type: integer
+          nullable: true
+        data:
+          type: object
+          additionalProperties: {}
+          description: Mapa de campos y evaluaciones (B/M/NA) del formato según ficha técnica
+        observations:
+          type: string
+          nullable: true
+        performedBy:
+          type: string
+        performedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    VehicleOperationalRecordResponse:
+      type: object
+      required:
+        - id
+        - vehicleId
+        - formatType
+        - data
+        - performedBy
+        - performedAt
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        vehicleId:
+          type: string
+          format: uuid
+        formatType:
+          type: string
+        processType:
+          type: string
+          nullable: true
+        processId:
+          type: string
+          nullable: true
+        odometerKm:
+          type: integer
+          nullable: true
+        fuelLevelLines:
+          type: integer
+          nullable: true
+        data:
+          type: object
+          additionalProperties: {}
+        observations:
+          type: string
+          nullable: true
+        performedBy:
+          type: string
+        performedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    VehicleOperationalRecordsListResponse:
+      type: object
+      required:
+        - items
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleOperationalRecordResponse'
+        total:
+          type: integer
+
+    VehicleOperationalReminderResponse:
+      type: object
+      required:
+        - id
+        - vehicleId
+        - formatType
+        - dueDate
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        vehicleId:
+          type: string
+          format: uuid
+        plate:
+          type: string
+          nullable: true
+        formatType:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, OVERDUE]
+        completedRecordId:
+          type: string
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    VehicleOperationalRemindersListResponse:
+      type: object
+      required:
+        - items
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleOperationalReminderResponse'
+        total:
+          type: integer

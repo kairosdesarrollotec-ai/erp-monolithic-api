@@ -134,8 +134,18 @@ export interface ReturnRecord {
   alerts?: ReturnAlerts;
   /** Retraso frente a la hora pactada con tolerancia de 30 min (BR-DEV-003); solo lo pueblan las consultas. null = no aplica. */
   lateness?: ReturnLateness | null;
-  /** DEC-DEV-LATE-CHARGE-001: cargo SUGERIDO por retraso (informativo, cobro manual); solo lo pueblan las consultas. */
+  /** Cargo sugerido/calculado para el retraso; solo lo pueblan las consultas. */
   latenessCharge?: ReturnLatenessCharge | null;
+  /** Tarifa de penalidad por combustible por línea faltante del vehículo */
+  vehicleFuelPenaltyPerLine?: number | null;
+  mechanicReportAccepted?: boolean | null;
+  mechanicReportAcceptedAt?: Date | null;
+  mechanicReportAcceptedBy?: string | null;
+  mechanicReportNotes?: string | null;
+  legalEscalated?: boolean | null;
+  legalEscalatedAt?: Date | null;
+  legalEscalatedBy?: string | null;
+  legalNotes?: string | null;
 }
 
 export interface CreateReturnInput {
@@ -187,6 +197,14 @@ export interface UpdateReturnInput {
   finalSettlementAmount?: number;
   notes?: string;
   updatedBy: string;
+  mechanicReportAccepted?: boolean;
+  mechanicReportAcceptedAt?: Date | null;
+  mechanicReportAcceptedBy?: string | null;
+  mechanicReportNotes?: string | null;
+  legalEscalated?: boolean;
+  legalEscalatedAt?: Date | null;
+  legalEscalatedBy?: string | null;
+  legalNotes?: string | null;
 }
 
 export interface ListReturnsFilter extends ReturnScope {

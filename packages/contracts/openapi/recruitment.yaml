@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Recruitment & Selection API
-  version: 0.6.0
+  version: 0.7.0
   description: >
+    v0.7.0 (23-oct-2026, Frente D): (1) DEC-REC-REQUIREMENTS-001: CV y pretensión salarial son obligatorios ANTES de registrar
+    el resultado de la entrevista (POST /interviews/{id}/commands/record-result responde 422 CANDIDATE_REQUIREMENTS_INCOMPLETE
+    si falta el CV o la pretensión salarial).
     v0.6.0 (22-oct-2026, Respuestas Russbel #5 + P2): (1) la terminacion laboral de Personal crea AUTOMATICAMENTE la vacante
     (estado NECESIDAD_REGISTRADA, `source` RENUNCIA = origen «renuncia/salida» tanto para renuncia como para despido y prueba
     negativa; area y cargo salen de la ficha del colaborador, o de la vacante original si la salida es por prueba negativa): el
@@ -566,6 +569,11 @@ paths:
         '404': { description: Entrevista no encontrada }
         '409':
           description: Candidato ya decidido (CANDIDATE_ALREADY_DECIDED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetail' }
+        '422':
+          description: CV y pretensión salarial son obligatorios antes de registrar el resultado de la entrevista (CANDIDATE_REQUIREMENTS_INCOMPLETE)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ProblemDetail' }

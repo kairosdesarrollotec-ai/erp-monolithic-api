@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.14.0
+  version: 1.15.0
   description: >
+    1.15.0 - DEC-ALQ-NOTARY-001 (23-oct-2026, Frente B). (a) Gasto notarial: la empresa paga el trámite (BR-ALQ-002, HU-28, SC-ALQ-001).
+    Nuevo POST /rentals/{id}/company-expenses para registrar gastos de la empresa (monto, fecha, referencia, tipo GASTO_NOTARIAL).
+    PROHIBIDO clasificarlo como pago del cliente -> 422 NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT.
     1.14.0 - Decisiones de Russbel 22-oct-2026 (BACK-1). (a) DEC-CON-001-FINAL: POST /rentals exige inquiryId de una Consulta COTIZADA vigente
     del mismo cliente y vehiculo (422 INQUIRY_REQUIRED / INQUIRY_VEHICLE_MISMATCH / INQUIRY_CUSTOMER_MISMATCH / QUOTATION_EXPIRED) y la marca
     CONVERTIDA (outbox ConsultaConvertida.v1). (b) DEC-ALQ-CANCEL-001: nuevo POST /rentals/{id}/commands/cancel. (c) BR-CON-004: validate-documents
@@ -604,6 +607,37 @@ paths:
         '412': { description: Versión no coincide (If-Match) }
         '422': { description: INVALID_CANCEL_REASON }
         '428': { description: Falta header If-Match }
+
+  /rentals/{id}/company-expenses:
+    post:
+      operationId: recordRentalCompanyExpense
+      summary: Registrar gasto de la empresa asociado al alquiler (gasto notarial) (DEC-ALQ-NOTARY-001)
+      description: >
+        Registra un gasto asumido por la empresa (BR-ALQ-002, HU-28, SC-ALQ-001).
+        PROHIBIDO clasificarlo como pago del cliente (responde 422 NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordCompanyExpenseRequest' }
+      responses:
+        '201':
+          description: Gasto de la empresa registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompanyExpenseResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso RENTAL.MANAGE o RENTAL.FORMALIZE_CONTRACT }
+        '404': { description: Alquiler no encontrado }
+        '422':
+          description: NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT (el gasto notarial lo asume la empresa, no puede cobrarse al cliente)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/RentalErrorResponse' }
 
   /rentals/{id}/commands/complete-delivery:
     post:
@@ -1674,4 +1708,37 @@ components:
         rentalId: { type: string, format: uuid }
         documentType: { $ref: '#/components/schemas/RentalDocumentType' }
         objectUrl: { type: string, format: uri }
+        createdAt: { type: string, format: date-time }
+
+    CompanyExpenseType:
+      type: string
+      enum: [GASTO_NOTARIAL]
+
+    RecordCompanyExpenseRequest:
+      type: object
+      required: [companyId, expenseType, amount, expenseDate, reference]
+      properties:
+        companyId: { type: string, format: uuid }
+        expenseType: { $ref: '#/components/schemas/CompanyExpenseType' }
+        amount: { type: number, minimum: 0.01 }
+        currency: { type: string, default: PEN }
+        expenseDate: { type: string, format: date-time }
+        reference: { type: string, minLength: 1 }
+        notes: { type: string }
+        paidByCustomer: { type: boolean, default: false, description: 'Debe ser false. Si es true responde 422 NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT' }
+
+    CompanyExpenseResponse:
+      type: object
+      required: [id, companyId, rentalId, expenseType, amount, currency, expenseDate, reference, createdBy, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        rentalId: { type: string, format: uuid, nullable: true }
+        expenseType: { $ref: '#/components/schemas/CompanyExpenseType' }
+        amount: { type: number }
+        currency: { type: string }
+        expenseDate: { type: string, format: date-time }
+        reference: { type: string }
+        notes: { type: string, nullable: true }
+        createdBy: { type: string }
         createdAt: { type: string, format: date-time }

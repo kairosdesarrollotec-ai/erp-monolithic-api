@@ -11,6 +11,7 @@ import { RentalsController } from './rentals.controller';
 import { RentalsEvidenceController } from './rentals-evidence.controller';
 import { RentalsExtensionsController } from './rentals-extensions.controller';
 import { RentalDocumentsController } from './rental-documents.controller';
+import { RentalCompanyExpensesController } from './rental-company-expenses.controller';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { CreateRentalFromReservationDto } from './dto/create-rental-from-reservation.dto';
 import { EvaluateNotaryDto } from './dto/evaluate-notary.dto';
@@ -109,6 +110,7 @@ function controllerRoutes() {
     ...routesOf(RentalsController, '/rentals'),
     ...routesOf(RentalsEvidenceController, '/rentals'),
     ...routesOf(RentalsExtensionsController, '/rentals'),
+    ...routesOf(RentalCompanyExpensesController, '/rentals'),
     ...routesOf(RentalDocumentsController, '/rentals/:id/documents'),
   ];
 }
@@ -248,7 +250,7 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
   });
 
   it('DEC-ALQ-CAPWARN-001/002 (contrato 1.11.0): RentalResponse expone vehiclePassengerCapacity (nullable) y companionsCount (RESPONSIBLE)', () => {
-    expect(spec.info.version).toBe('1.14.0');
+    expect(spec.info.version).toBe('1.15.0');
     const contract = flatten(spec.components.schemas.RentalResponse);
     expect(contract.properties.vehiclePassengerCapacity.nullable).toBe(true);
     expect(contract.properties.vehiclePassengerCapacity.type).toBe('integer');
@@ -392,5 +394,16 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
     const pattern = new RegExp(spec.components.schemas.SetCompanyDriverDailyRateRequest.properties.dailyRate.pattern);
     for (const ok of ['1', '120', '120.5', '120.50', '99999999.99']) expect(pattern.test(ok)).toBe(true);
     for (const bad of ['0', '0.00', '-5', '12.345', '100000000', 'abc', '']) expect(pattern.test(bad)).toBe(false);
+  });
+
+  it('DEC-ALQ-NOTARY-001 (contrato 1.15.0): POST /rentals/{id}/company-expenses y NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT', () => {
+    const op: any = spec.paths['/rentals/{id}/company-expenses'].post;
+    expect(op.operationId).toBe('recordRentalCompanyExpense');
+    expect(op.responses['201']).toBeDefined();
+    expect(op.responses['422']).toBeDefined();
+    const reqSchema = flatten(spec.components.schemas.RecordCompanyExpenseRequest);
+    expect(reqSchema.required).toEqual(expect.arrayContaining(['companyId', 'expenseType', 'amount', 'expenseDate', 'reference']));
+    const resSchema = flatten(spec.components.schemas.CompanyExpenseResponse);
+    expect(resSchema.required).toEqual(expect.arrayContaining(['id', 'companyId', 'rentalId', 'expenseType', 'amount', 'currency', 'expenseDate', 'reference', 'createdBy', 'createdAt']));
   });
 });

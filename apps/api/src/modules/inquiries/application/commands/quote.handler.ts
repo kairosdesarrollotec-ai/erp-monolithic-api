@@ -5,7 +5,13 @@ import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
-import { InquiryNotTouristUseError, InquiryNotTransitionableError, VehicleNotEligibleError } from '../../domain/inquiry-errors';
+import {
+  InquiryNotTouristUseError,
+  InquiryNotTransitionableError,
+  PlanRateNotConfiguredError,
+  VehicleNotEligibleError,
+  VehicleNotSuitableForTrochaError,
+} from '../../domain/inquiry-errors';
 import { QuoteCommand } from './quote.command';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
@@ -108,8 +114,34 @@ export class QuoteHandler {
       throw new VehicleNotEligibleError(eligibility.reason);
     }
 
+    // DEC-CON-TROCHA-001: Si la consulta indica trocha, el vehiculo debe ser apto para trocha.
+    if (existing.isDirtRoad && !eligibility.suitableForTrocha) {
+      throw new VehicleNotSuitableForTrochaError();
+    }
+
+    const plan = command.plan ?? 'NORMAL';
+    let dailyRate: number;
+    if (plan === 'PLUS') {
+      if (eligibility.ratePlus == null) {
+        throw new PlanRateNotConfiguredError('PLUS');
+      }
+      dailyRate = Number(eligibility.ratePlus);
+    } else if (plan === 'LIBRE') {
+      if (eligibility.rateLibre == null) {
+        throw new PlanRateNotConfiguredError('LIBRE');
+      }
+      dailyRate = Number(eligibility.rateLibre);
+    } else {
+      // NORMAL
+      const normalRate = eligibility.rateNormal ?? eligibility.dailyRate;
+      if (normalRate == null) {
+        throw new PlanRateNotConfiguredError('NORMAL');
+      }
+      dailyRate = Number(normalRate);
+    }
+
     const now = this.clock.now();
-    const amount = (Number(eligibility.dailyRate) * command.estimatedDays).toFixed(2);
+    const amount = (dailyRate * command.estimatedDays).toFixed(2);
     const validUntil = new Date(now.getTime() + QUOTE_VALIDITY_HOURS * MS_PER_HOUR);
 
     return this.inquiries.quote(
@@ -121,6 +153,7 @@ export class QuoteHandler {
         destination: command.destination,
         estimatedDays: command.estimatedDays,
         amount,
+        plan,
         // PEN: moneda unica actual de Flota (Vehicle.dailyRate no tiene
         // columna de moneda - mismo alcance que el resto del dominio, que
         // ya asume soles sin excepcion documentada).
@@ -131,7 +164,7 @@ export class QuoteHandler {
         interaction: {
           channel: existing.channel,
           outcome: 'COTIZADA',
-          note: `Cotizacion ${amount} PEN por ${command.estimatedDays} dia(s), vehiculo ${eligibility.vehicleId}.`,
+          note: `Cotizacion ${amount} PEN (${plan}) por ${command.estimatedDays} dia(s), vehiculo ${eligibility.vehicleId}.`,
         },
       },
       ['REGISTRADA', 'COTIZADA'],

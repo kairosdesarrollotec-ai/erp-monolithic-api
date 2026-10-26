@@ -86,6 +86,53 @@ describe('UpdateVehicleHandler', () => {
     expect(call.changes).toHaveProperty('brand', { from: vehicle.brand, to: 'Hyundai' });
   });
 
+  it('C6: audita cambios en rate_normal, rate_plus, rate_libre, fuel_penalty_per_line y suitable_for_trocha con quién, cuándo y diff', async () => {
+    const vehicle = buildFleetVehicle({
+      rateNormal: 250,
+      ratePlus: 280,
+      rateLibre: 400,
+      fuelPenaltyPerLine: 50,
+      suitableForTrocha: false,
+    });
+    const repository = buildFleetVehicleRepository(vehicle);
+    const { access } = buildFleetAccessService('CAMPO');
+    const audit = buildAudit();
+    const handler = new UpdateVehicleHandler(repository, access, audit);
+
+    await handler.execute(
+      new UpdateVehicleCommand(
+        'uid-admin',
+        'veh-1',
+        COMPANY,
+        BRANCH,
+        undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+        true, // suitableForTrocha
+        270,  // rateNormal
+        300,  // ratePlus
+        450,  // rateLibre
+        60,   // fuelPenaltyPerLine
+      ),
+    );
+
+    expect(audit.recordFleetEvent).toHaveBeenCalledTimes(1);
+    const call = audit.recordFleetEvent.mock.calls[0][0];
+    expect(call).toMatchObject({
+      organizationId: ORG,
+      actorUserId: 'uid-admin',
+      vehicleId: 'veh-1',
+      action: 'VEHICLE_UPDATED',
+    });
+    expect(call.changes).toEqual(
+      expect.objectContaining({
+        suitableForTrocha: { from: false, to: true },
+        rateNormal: { from: 250, to: 270 },
+        ratePlus: { from: 280, to: 300 },
+        rateLibre: { from: 400, to: 450 },
+        fuelPenaltyPerLine: { from: 50, to: 60 },
+      }),
+    );
+  });
+
   it('B7: no audita si el vehiculo no existe', async () => {
     const repository = buildFleetVehicleRepository(null);
     const { access } = buildFleetAccessService('CAMPO');

@@ -15,10 +15,11 @@ import { buildVehicleDataWarnings } from '../../../../common/domain/vehicle-data
  * select/include deja de coincidir con el shape usado abajo.
  */
 export type ReservationWithRelations = Prisma.ReservationGetPayload<{
-  include: { customer: true; vehicle: true };
+  include: { customer: true; vehicle: true; documents?: true };
 }>;
 
 export function toReservationRecord(row: ReservationWithRelations): ReservationRecord {
+  const docs = (row as { documents?: Array<{ documentType: string }> }).documents ?? [];
   return {
     id: row.id,
     organizationId: row.organizationId,
@@ -37,6 +38,8 @@ export function toReservationRecord(row: ReservationWithRelations): ReservationR
     }),
     status: row.status,
     channelMode: row.channelMode,
+    canComeToOffice: row.canComeToOffice,
+    customerLocation: row.customerLocation,
     startAt: row.startAt,
     endAt: row.endAt,
     requiredPaymentAmount: row.requiredPaymentAmount.toString(),
@@ -44,6 +47,8 @@ export function toReservationRecord(row: ReservationWithRelations): ReservationR
     paymentPolicyVersion: row.paymentPolicyVersion,
     paymentValidatedAt: row.paymentValidatedAt,
     documentsCompletedAt: row.documentsCompletedAt,
+    video360Uploaded: docs.some((d) => d.documentType === 'VIDEO_360'),
+    signedAcceptanceUploaded: docs.some((d) => d.documentType === 'SIGNED_ACCEPTANCE'),
     confirmedAt: row.confirmedAt,
     payment:
       row.paymentMethod && row.paymentAmount != null
@@ -62,5 +67,6 @@ export function toReservationRecord(row: ReservationWithRelations): ReservationR
   };
 }
 
-/** `include` comun para leer una reserva con su cliente y vehiculo. */
-export const RESERVATION_INCLUDE = { customer: true, vehicle: true } as const;
+/** `include` comun para leer una reserva con su cliente, vehiculo y documentos. */
+export const RESERVATION_INCLUDE = { customer: true, vehicle: true, documents: true } as const;
+

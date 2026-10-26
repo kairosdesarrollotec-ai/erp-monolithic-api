@@ -8,6 +8,7 @@ import {
   FieldTripNotPendingError,
   FieldTripTimeoutNotElapsedError,
   InvalidAuthorizationLevelError,
+  InvalidFieldTripTimeoutParameterError,
   NoAuthorizationAvailableError,
 } from '../../domain/hr-administration-errors';
 import type { FieldTripRequest, Employee } from '@prisma/client';
@@ -217,12 +218,42 @@ describe('FieldTripCascadeService', () => {
 
       const res = await service.advanceTimeout({ fieldTripId: 'ft-1', now: NOW });
       expect(res.fieldTrip.status).toBe('NO_AUTORIZADA');
-      expect(res.message).toContain('Nadie autorizó');
+      expect(res.message).toBe('Nadie autorizó. Consulta manualmente con Fiorella o José');
       expect(mockFieldTripRepo.transition).toHaveBeenCalledWith(
         'ft-1',
         ['PENDIENTE_NIVEL_3'],
         { status: 'NO_AUTORIZADA' },
         undefined,
+      );
+    });
+
+    it('permite configurar tiempo por nivel entre 3 y 10 minutos (DEC-ADP-FIELD-TRIP-001)', async () => {
+      mockFieldTripRepo.findById.mockResolvedValue(
+        withEmployee({ status: 'PENDIENTE_NIVEL_1', level1TimeoutAt: new Date('2026-10-15T09:05:00Z') }),
+      );
+      mockFieldTripRepo.transition.mockResolvedValue({ ...baseFieldTrip, status: 'PENDIENTE_NIVEL_2' });
+
+      // 7 minutos (dentro del rango 3..10)
+      const res = await service.advanceTimeout({ fieldTripId: 'ft-1', now: NOW, timeoutMinutes: 7 });
+      expect(res.fieldTrip.status).toBe('PENDIENTE_NIVEL_2');
+      expect(mockFieldTripRepo.transition).toHaveBeenCalledWith(
+        'ft-1',
+        ['PENDIENTE_NIVEL_1'],
+        { status: 'PENDIENTE_NIVEL_2', level2TimeoutAt: new Date('2026-10-15T09:12:00Z') },
+        undefined,
+      );
+    });
+
+    it('rechaza tiempo por nivel menor a 3 o mayor a 10 minutos', async () => {
+      mockFieldTripRepo.findById.mockResolvedValue(
+        withEmployee({ status: 'PENDIENTE_NIVEL_1', level1TimeoutAt: new Date('2026-10-15T09:05:00Z') }),
+      );
+
+      await expect(service.advanceTimeout({ fieldTripId: 'ft-1', now: NOW, timeoutMinutes: 2 })).rejects.toThrow(
+        InvalidFieldTripTimeoutParameterError,
+      );
+      await expect(service.advanceTimeout({ fieldTripId: 'ft-1', now: NOW, timeoutMinutes: 11 })).rejects.toThrow(
+        InvalidFieldTripTimeoutParameterError,
       );
     });
 

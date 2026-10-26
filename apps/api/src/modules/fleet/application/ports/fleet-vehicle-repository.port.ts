@@ -16,6 +16,11 @@ export interface CreateVehicleInput {
   passengerCapacity: number;
   fuelPrice?: number | null;
   photoUrl?: string | null;
+  suitableForTrocha?: boolean;
+  rateNormal?: number | null;
+  ratePlus?: number | null;
+  rateLibre?: number | null;
+  fuelPenaltyPerLine?: number | null;
 }
 
 export interface UpdateVehicleInput {
@@ -31,6 +36,11 @@ export interface UpdateVehicleInput {
   fuelPrice?: number | null;
   photoUrl?: string | null;
   thirdPathEligible?: boolean;
+  suitableForTrocha?: boolean;
+  rateNormal?: number | null;
+  ratePlus?: number | null;
+  rateLibre?: number | null;
+  fuelPenaltyPerLine?: number | null;
 }
 
 export interface ListVehiclesFilters {

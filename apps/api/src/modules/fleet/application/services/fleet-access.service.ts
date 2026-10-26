@@ -5,7 +5,7 @@ import {
 } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 
-export type FleetAction = 'READ' | 'WRITE' | 'MANAGE_THIRD_PATH';
+export type FleetAction = 'READ' | 'WRITE' | 'CROSS_BRANCH' | 'MANAGE_THIRD_PATH' | 'REGISTER_VEHICLE_OPERATIONAL_FORMAT' | 'VIEW_VEHICLE_OPERATIONAL_FORMAT';
 
 export interface FleetScope {
   organizationId: string;

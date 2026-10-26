@@ -21,3 +21,20 @@ export function assertChannelModeCoherent(
     throw new ChannelModeMismatchError();
   }
 }
+
+/**
+ * BR-RES-005, SC-RES-007: Determina si la reserva opera en modalidad remota.
+ * Modalidad presencial: cliente ubicado en Ayacucho y que puede acercarse a la oficina (y PRESENCIAL).
+ * Remota en cualquier otro caso (cliente fuera de Ayacucho, sin posibilidad de acudir a oficina o canal virtual).
+ */
+export function isRemoteReservation(params: {
+  channelMode: ChannelMode | string;
+  canComeToOffice?: boolean | null;
+  customerLocation?: CustomerLocation | string | null;
+}): boolean {
+  if (params.customerLocation === 'FUERA_DE_AYACUCHO') return true;
+  if (params.canComeToOffice === false) return true;
+  if (params.channelMode === 'VIRTUAL') return true;
+  return false;
+}
+

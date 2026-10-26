@@ -67,4 +67,30 @@ export class PrismaReservationDocumentRepository implements ReservationDocumentR
     });
     return rows.map(toRecord);
   }
+
+  async hasDocumentType(
+    reservationId: string,
+    documentType: ReservationDocumentType,
+    tx?: Prisma.TransactionClient,
+  ): Promise<boolean> {
+    const client = tx ?? this.prisma;
+    const count = await client.reservationDocument.count({
+      where: { reservationId, documentType },
+    });
+    return count > 0;
+  }
+
+  async findByType(
+    reservationId: string,
+    documentType: ReservationDocumentType,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationDocumentRecord | null> {
+    const client = tx ?? this.prisma;
+    const row = await client.reservationDocument.findFirst({
+      where: { reservationId, documentType },
+      orderBy: { createdAt: 'desc' },
+    });
+    return row ? toRecord(row) : null;
+  }
 }
+

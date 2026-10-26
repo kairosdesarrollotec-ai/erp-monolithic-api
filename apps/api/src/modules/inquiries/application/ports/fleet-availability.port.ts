@@ -33,7 +33,15 @@ export interface VehicleEligibilityQuery {
 }
 
 export type VehicleEligibility =
-  | { eligible: true; vehicleId: string; dailyRate: string }
+  | {
+      eligible: true;
+      vehicleId: string;
+      dailyRate: string;
+      suitableForTrocha?: boolean;
+      rateNormal?: string | null;
+      ratePlus?: string | null;
+      rateLibre?: string | null;
+    }
   | { eligible: false; reason: string };
 
 export abstract class FleetAvailabilityPort {

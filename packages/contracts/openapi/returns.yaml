@@ -1,8 +1,15 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.10.0
+  version: 1.11.0
   description: >
+    1.11.0 - DEC-DEV-REPORT-001 / DEC-DEV-LEGAL-001 / DEC-DEV-OFFLINE-001 (23-oct-2026, Frente C): (1) Inmovilización y reporte mecánico: si la
+    devolución registra daños técnicos/estéticos (hasDamages=true), el vehículo queda inmovilizado y NO se puede cerrar la devolución
+    (POST /returns/{id}/commands/close) sin que una persona con permiso de cierre registre que el cliente aceptó el informe mecánico/Motrix
+    (POST /returns/{id}/commands/record-mechanic-report; de lo contrario responde 422 MECHANIC_REPORT_NOT_ACCEPTED). (2) Vía legal: nuevo
+    POST /returns/{id}/commands/escalate-legal para anotación y escalamiento a Gerencia. (3) Sincronización offline: no se puede cerrar una
+    devolución con cambios pendientes de sincronización offline (422 RETURN_OFFLINE_CHANGES_PENDING). (4) Multa de combustible calculada según
+    tarifa del vehículo por línea faltante.
     1.10.0 - (22-oct-2026, G2) BR-DEV-011 RELOJ DE INMOVILIZACION DESDE EL CIERRE (respuesta de negocio del 22-oct): los dias de
     paralizacion se cuentan desde que se CIERRA la devolucion (estado CERRADA, `closedAt`), ya no desde la recepcion (COMPORTAMIENTO
     CAMBIADO). (1) `POST charge-immobilization`: solo procede con la devolucion CERRADA; en CON_DANOS / CIERRE_FINANCIERO (reloj aun sin
@@ -731,11 +738,68 @@ paths:
         '412':
           description: Versión no coincide (If-Match)
         '422':
-          description: Existen incidencias técnicas abiertas pendientes (INCIDENT_STILL_OPEN, TDD §11.4)
+          description: Existen incidencias técnicas abiertas pendientes (INCIDENT_STILL_OPEN, TDD §11.4), el cliente no ha aceptado el informe mecánico (MECHANIC_REPORT_NOT_ACCEPTED), o hay cambios offline pendientes de sincronización (RETURN_OFFLINE_CHANGES_PENDING)
         '428':
           description: Falta header If-Match
         '500':
           description: Error interno del servidor
+
+  /returns/{id}/commands/record-mechanic-report:
+    post:
+      operationId: recordMechanicReport
+      summary: Registrar aceptación del cliente del informe mecánico / Motrix (DEC-DEV-REPORT-001)
+      description: >
+        Permite a un usuario con permiso de cierre registrar que el cliente aceptó el informe mecánico
+        y se compromete al pago de los daños. Requisito obligatorio para poder cerrar una devolución con daños.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordMechanicReportRequest' }
+      responses:
+        '200':
+          description: Aceptación del informe mecánico registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token no autenticado }
+        '403': { description: No autorizado para el contexto o permiso insuficiente (RETURN.CLOSE) }
+        '404': { description: Devolución no encontrada }
+        '412': { description: Versión no coincide (If-Match) }
+        '428': { description: Falta header If-Match }
+
+  /returns/{id}/commands/escalate-legal:
+    post:
+      operationId: escalateLegal
+      summary: Anotación y escalamiento a Gerencia por vía legal (DEC-DEV-LEGAL-001)
+      description: >
+        Registra la anotación de caso legal y escala la notificación a Gerencia.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EscalateLegalRequest' }
+      responses:
+        '200':
+          description: Escalamiento legal registrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token no autenticado }
+        '403': { description: No autorizado para el contexto o permiso insuficiente (RETURN.CLOSE) }
+        '404': { description: Devolución no encontrada }
+        '412': { description: Versión no coincide (If-Match) }
+        '428': { description: Falta header If-Match }
 
   /returns/{id}/evidence/upload-url:
     post:
@@ -1318,6 +1382,24 @@ components:
         signatureData: { type: string }
         generateWarrantyAct: { type: boolean }
         notes: { type: string }
+        hasPendingOfflineChanges: { type: boolean, default: false, description: 'Si es true responde 422 RETURN_OFFLINE_CHANGES_PENDING' }
+
+    RecordMechanicReportRequest:
+      type: object
+      required: [companyId, branchId, accepted]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        accepted: { type: boolean }
+        notes: { type: string }
+
+    EscalateLegalRequest:
+      type: object
+      required: [companyId, branchId, notes]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        notes: { type: string, minLength: 1 }
 
     RequestReturnEvidenceUploadSessionRequest:
       type: object
@@ -1548,3 +1630,12 @@ components:
         immobilizationCharges:
           type: array
           items: { $ref: '#/components/schemas/ImmobilizationChargeResponse' }
+        mechanicReportAccepted: { type: boolean, nullable: true }
+        mechanicReportAcceptedAt: { type: string, format: date-time, nullable: true }
+        mechanicReportAcceptedBy: { type: string, nullable: true }
+        mechanicReportNotes: { type: string, nullable: true }
+        legalEscalated: { type: boolean, nullable: true }
+        legalEscalatedAt: { type: string, format: date-time, nullable: true }
+        legalEscalatedBy: { type: string, nullable: true }
+        legalNotes: { type: string, nullable: true }
+

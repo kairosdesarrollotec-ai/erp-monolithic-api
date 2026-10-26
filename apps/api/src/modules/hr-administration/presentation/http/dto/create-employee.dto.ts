@@ -83,4 +83,33 @@ export class CreateEmployeeDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   baseSalary?: number | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  bankName?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  bankAccountNumber?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  bankAccountCci?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  contractType?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  contractUrl?: string | null;
+
+  @IsOptional()
+  @IsString()
+  contractNotes?: string | null;
 }

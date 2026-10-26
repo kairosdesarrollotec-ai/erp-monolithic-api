@@ -145,13 +145,13 @@ function controllerRoutes() {
 describe('Contrato OpenAPI returns.yaml vs backend', () => {
   const routes = controllerRoutes();
 
-  it('cada ruta del controller existe en OpenAPI y viceversa (23 operaciones)', () => {
+  it('cada ruta del controller existe en OpenAPI y viceversa (25 operaciones)', () => {
     const fromController = routes.map((r) => `${r.method} ${r.openApiPath}`).sort();
     const fromSpec = Object.entries(spec.paths)
       .flatMap(([p, ops]: [string, any]) => Object.keys(ops).map((m) => `${m} ${p}`))
       .sort();
     expect(fromController).toEqual(fromSpec);
-    expect(fromSpec).toHaveLength(23);
+    expect(fromSpec).toHaveLength(25);
   });
 
   it('el código de exito declarado en OpenAPI es el que devuelve NestJS', () => {
@@ -170,7 +170,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
 
   it('todo comando POST (/commands/) declara If-Match obligatorio y respuestas 428 + 412', () => {
     const commandRoutes = routes.filter((r) => r.method === 'post' && r.openApiPath.includes('/commands/'));
-    expect(commandRoutes).toHaveLength(9);
+    expect(commandRoutes).toHaveLength(11);
     for (const route of commandRoutes) {
       const op: Operation = spec.paths[route.openApiPath][route.method];
       const headerParams = (op.parameters ?? []).map(deref).filter((p: any) => p.in === 'header');
@@ -233,7 +233,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('1.7.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
-    expect(spec.info.version).toBe('1.10.0');
+    expect(spec.info.version).toBe('1.11.0');
     const alcohol: Operation = spec.paths['/returns/{id}/commands/register-alcohol-test'].post;
     expect(JSON.stringify(alcohol.responses['422'])).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
     const op: Operation = spec.paths['/returns/{id}/commands/register-late-charge'].post;
@@ -579,7 +579,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     expect(spec.components.schemas.ReturnAlertItem.required).toContain('lateCharge');
   });
 
-  it('contrato 1.8.0', () => {
-    expect(spec.info.version).toBe('1.10.0');
+  it('contrato 1.11.0', () => {
+    expect(spec.info.version).toBe('1.11.0');
   });
 });

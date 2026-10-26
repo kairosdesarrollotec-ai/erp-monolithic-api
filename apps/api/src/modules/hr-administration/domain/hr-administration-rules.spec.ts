@@ -145,7 +145,7 @@ describe('HR Administration Domain Rules (ADP-01 a ADP-10)', () => {
       const result = getNextCascadeStatus('PENDIENTE_NIVEL_3');
       expect(result.nextStatus).toBe('NO_AUTORIZADA');
       expect(result.message).toContain('Nadie autorizó');
-      expect(result.message).toContain('manual, fuera del sistema');
+      expect(result.message).toContain('Consulta manualmente con Fiorella o José');
     });
 
     it('lanza FieldTripNotPendingError si se intenta avanzar un estado no pendiente', () => {

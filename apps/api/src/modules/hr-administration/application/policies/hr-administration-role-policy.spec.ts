@@ -7,11 +7,20 @@ import {
 } from './hr-administration-role-policy';
 import { WORKER_ROLES } from '../../../users/domain/worker-role';
 
-const GERENCIA_ONLY_OR_NOT_HR: readonly HrAdministrationAction[] = ['MANAGE_AREAS', 'MANAGE_SALARY', 'REVIEW_ATTENDANCE', 'MANAGE_GEOFENCE'];
+const GERENCIA_ONLY_OR_NOT_HR: readonly HrAdministrationAction[] = [
+  'AUTHORIZE_LEAVE',
+  'SCHEDULE_VACATION',
+  'MANAGE_AREAS',
+  'MANAGE_SALARY',
+  'REVIEW_ATTENDANCE',
+  'MANAGE_GEOFENCE',
+  'VIEW_EMPLOYEE_SENSITIVE_DATA',
+  'MANAGE_HR_DOCUMENTS',
+];
 
 describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
-  it('define las 16 acciones canónicas de Administración de Personal', () => {
-    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(16);
+  it('define las 20 acciones canónicas de Administración de Personal', () => {
+    expect(HR_ADMINISTRATION_ACTIONS).toHaveLength(20);
     expect(HR_ADMINISTRATION_ACTIONS).toEqual([
       'VIEW_EMPLOYEES',
       'MANAGE_EMPLOYEES',
@@ -29,6 +38,10 @@ describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
       'REVIEW_ATTENDANCE',
       'MANAGE_GEOFENCE',
       'VIEW_EMPLOYEE_DOCUMENT',
+      'VIEW_EMPLOYEE_SENSITIVE_DATA',
+      'MANAGE_HR_DOCUMENTS',
+      'VIEW_HR_DOCUMENTS',
+      'CONFIRM_HR_DOCUMENT_READ',
     ]);
   });
 
@@ -42,11 +55,11 @@ describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
   });
 
   describe('Permisos de ADMINISTRACION (gestión operativa)', () => {
-    it('permite registrar asistencias, colaboradores, vacaciones y salidas a campo', () => {
+    it('permite registrar asistencias, colaboradores y salidas a campo, y deniega vacaciones (C5)', () => {
       expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'VIEW_EMPLOYEES')).toBe(true);
       expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'MANAGE_EMPLOYEES')).toBe(true);
       expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'LOG_ATTENDANCE')).toBe(true);
-      expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'SCHEDULE_VACATION')).toBe(true);
+      expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'SCHEDULE_VACATION')).toBe(false);
       expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'REQUEST_FIELD_TRIP')).toBe(true);
       expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'EVALUATE_FIELD_TRIP_RETURN')).toBe(true);
     });
@@ -56,8 +69,8 @@ describe('HrAdministrationRolePolicy (Matriz ADM-02 versión 0)', () => {
       expect(() => assertHrAdministrationRoleAllowed('ADMINISTRACION', 'AUTHORIZE_LEAVE')).toThrow(ForbiddenException);
     });
 
-    it('deniega autorizar salida a campo en cascada y desvinculación laboral (BR-ADP-004, BR-ADP-006)', () => {
-      expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'AUTHORIZE_FIELD_TRIP')).toBe(false);
+    it('permite autorizar salida a campo para nivel 3 (DEC-ADP-FIELD-TRIP-001) y deniega desvinculación laboral (BR-ADP-006)', () => {
+      expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'AUTHORIZE_FIELD_TRIP')).toBe(true);
       expect(isHrAdministrationRoleAllowed('ADMINISTRACION', 'TERMINATE_EMPLOYMENT')).toBe(false);
       expect(() => assertHrAdministrationRoleAllowed('ADMINISTRACION', 'TERMINATE_EMPLOYMENT')).toThrow(ForbiddenException);
     });
@@ -131,6 +144,38 @@ describe('LOG_OWN_ATTENDANCE y VIEW_EMPLOYEE_DOCUMENT (22-oct #9, HU-35)', () =>
     }
     for (const role of ['AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE'] as const) {
       expect(isHrAdministrationRoleAllowed(role, 'VIEW_EMPLOYEE_DOCUMENT')).toBe(false);
+    }
+  });
+});
+
+describe('HU-31 y HU-35 (23-oct-2026, Frente R6)', () => {
+  it('VIEW_EMPLOYEE_SENSITIVE_DATA solo lo permite GERENCIA por defecto', () => {
+    expect(isHrAdministrationRoleAllowed('GERENCIA', 'VIEW_EMPLOYEE_SENSITIVE_DATA')).toBe(true);
+    for (const role of ['RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE', 'MECANICO'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, 'VIEW_EMPLOYEE_SENSITIVE_DATA')).toBe(false);
+    }
+  });
+
+  it('MANAGE_HR_DOCUMENTS solo lo permite GERENCIA por defecto', () => {
+    expect(isHrAdministrationRoleAllowed('GERENCIA', 'MANAGE_HR_DOCUMENTS')).toBe(true);
+    for (const role of ['RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE', 'MECANICO'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, 'MANAGE_HR_DOCUMENTS')).toBe(false);
+    }
+  });
+
+  it('VIEW_HR_DOCUMENTS y CONFIRM_HR_DOCUMENT_READ lo permiten todos los roles del personal', () => {
+    for (const role of ['GERENCIA', 'RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE', 'MECANICO'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, 'VIEW_HR_DOCUMENTS')).toBe(true);
+      expect(isHrAdministrationRoleAllowed(role, 'CONFIRM_HR_DOCUMENT_READ')).toBe(true);
+    }
+  });
+
+  it('C5: solo GERENCIA aprueba permisos y vacaciones por defecto', () => {
+    expect(isHrAdministrationRoleAllowed('GERENCIA', 'AUTHORIZE_LEAVE')).toBe(true);
+    expect(isHrAdministrationRoleAllowed('GERENCIA', 'SCHEDULE_VACATION')).toBe(true);
+    for (const role of ['RRHH', 'ADMINISTRACION', 'AUDITORIA', 'FINANZAS', 'CAMPO', 'FRONT_OFFICE', 'MECANICO'] as const) {
+      expect(isHrAdministrationRoleAllowed(role, 'AUTHORIZE_LEAVE')).toBe(false);
+      expect(isHrAdministrationRoleAllowed(role, 'SCHEDULE_VACATION')).toBe(false);
     }
   });
 });

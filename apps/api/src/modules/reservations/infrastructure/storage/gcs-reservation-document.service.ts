@@ -11,6 +11,8 @@ const EXTENSION_BY_CONTENT_TYPE: Record<ReservationDocumentContentType, string> 
   'image/webp': 'webp',
   'image/png': 'png',
   'application/pdf': 'pdf',
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
 };
 
 @Injectable()

@@ -159,6 +159,8 @@ export class ConvertToReservationHandler {
             customerId: current.customerId!,
             vehicleId: quotation.vehicleId,
             channelMode: command.channelMode,
+            canComeToOffice: command.canComeToOffice,
+            customerLocation: command.customerLocation,
             startAt,
             endAt,
             requiredPaymentAmount: depositPolicy.amount,

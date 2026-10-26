@@ -15,6 +15,7 @@ import { ApproveNotaryExceptionHandler } from './application/commands/approve-no
 import { FormalizeContractHandler } from './application/commands/formalize-contract.handler';
 import { CompleteDeliveryHandler } from './application/commands/complete-delivery.handler';
 import { CancelRentalHandler } from './application/commands/cancel-rental.handler';
+import { RecordCompanyExpenseHandler } from './application/commands/record-company-expense.handler';
 import { RequestEvidenceUploadSessionHandler } from './application/commands/request-evidence-upload-session.handler';
 import { RecordEvidenceHandler } from './application/commands/record-evidence.handler';
 import { RentalEvidenceRemovalService } from './application/services/rental-evidence-removal.service';
@@ -52,10 +53,17 @@ import { TemplatesModule } from '../templates/templates.module';
 import { RentalCreationGuard } from './application/services/rental-creation.guard';
 import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
+import { RentalCompanyExpensesController } from './presentation/http/rental-company-expenses.controller';
 
 @Module({
   imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule, TemplatesModule, SyncConflictsModule],
-  controllers: [RentalsController, RentalsEvidenceController, RentalsExtensionsController, RentalDocumentsController],
+  controllers: [
+    RentalsController,
+    RentalsEvidenceController,
+    RentalsExtensionsController,
+    RentalDocumentsController,
+    RentalCompanyExpensesController,
+  ],
   providers: [
     CreateRentalHandler,
     CreateRentalFromReservationHandler,
@@ -69,6 +77,7 @@ import { RentalDocumentsController } from './presentation/http/rental-documents.
     FormalizeContractHandler,
     CompleteDeliveryHandler,
     CancelRentalHandler,
+    RecordCompanyExpenseHandler,
     RequestEvidenceUploadSessionHandler,
     RecordEvidenceHandler,
     DeleteEvidenceHandler,

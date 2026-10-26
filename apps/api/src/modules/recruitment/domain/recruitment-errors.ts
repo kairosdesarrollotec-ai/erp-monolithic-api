@@ -257,3 +257,16 @@ export class GerenciaDecisionRequiredError extends DomainForbiddenError {
     super(`${what} lo decide solo Gerencia General.`);
   }
 }
+
+/** DEC-REC-REQUIREMENTS-001 (23-oct-2026): CV y pretensión salarial son obligatorios antes de registrar el resultado de la entrevista. */
+export class CandidateRequirementsIncompleteError extends DomainUnprocessableError {
+  readonly code = 'CANDIDATE_REQUIREMENTS_INCOMPLETE';
+
+  constructor(detail?: string) {
+    super(
+      detail ??
+        'El candidato debe contar con CV adjunto y pretensión salarial registrada antes de registrar el resultado de la entrevista.',
+    );
+  }
+}
+

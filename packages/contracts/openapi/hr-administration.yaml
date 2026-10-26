@@ -1,8 +1,24 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Human Resources Administration API
-  version: 0.10.0
+  version: 0.15.0
   description: >
+    0.15.0 (23-oct-2026, Frente C7):
+    - DEC-HR-DOC-VERSION-001 (HU-31): Modelo de documentos TH con versiones append-only (hr_document_versions) e índice único parcial para versión vigente única por documento (idx_hr_doc_single_current). Confirmación de lectura ligada a la versión vigente.
+    - DEC-HR-APPROVAL-001 (C5): Aprobación/denegación de permisos (AUTHORIZE_LEAVE) y concesión de vacaciones (SCHEDULE_VACATION) exclusivo de GERENCIA por defecto.
+    0.14.0 (23-oct-2026, Frente R6):
+    - DEC-HR-DOCS-SENSITIVE-001 (HU-31 & HU-35):
+      (1) HU-31 Documentación de Talento Humano con versión vigente: POST /hr-documents (solo Gerencia), GET /hr-documents/active y POST /hr-documents/{id}/confirm-read. Versionado append-only, auditoría de lectura por colaborador.
+      (2) HU-35 Datos personales sensibles del colaborador (DNI, sueldo base, contrato y cuenta bancaria): protegidos por permiso específico HR_ADMINISTRATION.VIEW_EMPLOYEE_SENSITIVE_DATA (por defecto solo GERENCIA, editable en la matriz ADM-02). Sin este permiso, documentNumber, baseSalary, bankName, bankAccountNumber, bankAccountCci, contractType, contractUrl, contractNotes salen en null y se listan en restrictedFields.
+    0.13.0 (23-oct-2026, Frente R4):
+    - DEC-ADP-SELF-SERVICE-001 Autoservicio de vacaciones y permisos: GET/POST /me/leaves y GET/POST /me/vacations para el propio colaborador (resuelve su ficha por cuenta/contexto). Vacaciones se crean en SOLICITADA y emiten notificaciones in-app vía outbox (PermisoSolicitado.v1, VacacionSolicitada.v1).
+    - PATCH /vacations/{id}/resolve para resolución por Gerencia: soporta conceder menos días de los solicitados (grantedDays), reprogramar o rechazar/cancelar.
+    0.12.0 (23-oct-2026, Frente R3):
+    - DEC-ADP-FIELD-TRIP-001 Cascada de salidas a campo: exactamente 3 niveles con tiempo configurable por tenant (3..10 min, vigente 5 min). Nivel 1 y 2 = Gerencia; Nivel 3 = Administracion o Gerencia. Agotados los 3 niveles: NO_AUTORIZADA con mensaje de consulta manual a Gerencia. Permiso AUTHORIZE_FIELD_TRIP otorgado a ADMINISTRACION por defecto y editable en la matriz ADM-02.
+    0.11.0 (23-oct-2026, Frente D):
+    (1) DEC-ADP-VAC-001 Vacaciones: cupo máximo de 1 persona POR EMPRESA a la vez (actualizado de 1 por área a 1 por empresa;
+    sin lista de espera, se reprograma si no hay cupo; aprueba Gerencia).
+    (2) Alerta de fin de periodo de prueba: 15 días antes del vencimiento de los 3 meses a Gerencia.
     0.10.0 (22-oct-2026, Respuestas Russbel #4, #5, #9, #10 y HU-35; ADITIVO salvo lo marcado COMPORTAMIENTO CAMBIADO):
     (1) #10 Vacaciones en conflicto: POST /vacations/{id}/reschedule (nuevas fechas libres + motivo, estado REPROGRAMADA, conserva las
     fechas originales) y POST /vacations/{id}/cancel (estado CANCELADA, libera el cupo, motivo). Misma regla de capacidad que programar
@@ -161,6 +177,7 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
         - { name: branchId, in: query, required: true, schema: { type: string, format: uuid }, description: Sede del contexto de trabajo; el listado se limita a esa sede }
         - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/EmployeeStatus' } }
         - { name: areaId, in: query, required: false, schema: { type: string } }
@@ -276,6 +293,8 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
       responses:
         '200':
           description: Detalle completo del colaborador
@@ -502,7 +521,7 @@ paths:
   /employees/{id}/vacations:
     post:
       operationId: scheduleVacation
-      summary: Programar vacaciones con verificación de capacidad de área (máximo 1 persona a la vez, BR-ADP-002, DR-ADP-001)
+      summary: Programar vacaciones con verificación de capacidad por empresa (máximo 1 persona a la vez por empresa, DEC-ADP-VAC-001, BR-ADP-002, DR-ADP-001)
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -513,7 +532,7 @@ paths:
             schema: { $ref: '#/components/schemas/ScheduleVacationRequest' }
       responses:
         '201':
-          description: Vacaciones programadas exitosamente (estado PROGRAMADA, sin superposición en el área)
+          description: Vacaciones programadas exitosamente (estado PROGRAMADA, sin superposición en la empresa)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/VacationRequestResponse' }
@@ -522,7 +541,7 @@ paths:
         '403': { description: Rol sin permiso HR_ADMINISTRATION.SCHEDULE_VACATION }
         '404': { description: Colaborador no encontrado }
         '409':
-          description: Conflicto de superposición de vacaciones en el área - máximo 1 persona a la vez, prioridad a quien solicitó primero (VACATION_OVERLAP) o colaborador terminado (EMPLOYEE_TERMINATED)
+          description: Conflicto de superposición de vacaciones en la empresa - máximo 1 persona a la vez por empresa, prioridad a quien solicitó primero (VACATION_OVERLAP) o colaborador terminado (EMPLOYEE_TERMINATED)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ProblemDetail' }
@@ -605,6 +624,33 @@ paths:
         '404': { description: Vacaciones no encontradas (VACATION_NOT_FOUND) }
         '409': { description: Las vacaciones ya no se pueden modificar (VACATION_NOT_MODIFIABLE) }
         '422': { description: Motivo ausente o corto (VACATION_CHANGE_REASON_REQUIRED) }
+
+  /vacations/{id}/resolve:
+    patch:
+      operationId: resolveVacation
+      summary: Resolver solicitud de vacaciones (Gerencia aprueba con grantedDays, reprograma o rechaza)
+      description: >
+        Gerencia aprueba vacaciones (pasa a PROGRAMADA respetando cupo de 1 persona a la vez por empresa, soportando
+        conceder menos días de los solicitados con grantedDays), reprograma (REPROGRAMADA con motivo) o rechaza (CANCELADA con motivo).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveVacationRequest' }
+      responses:
+        '200':
+          description: Solicitud de vacaciones resuelta exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '400': { description: Días otorgados inválidos o datos incompletos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.SCHEDULE_VACATION o AUTHORIZE_LEAVE }
+        '404': { description: Solicitud de vacaciones no encontrada }
+        '409': { description: Conflicto de cupo por empresa o vacaciones ya resueltas }
 
   /vacations/calendar:
     get:
@@ -1133,6 +1179,88 @@ paths:
         '403': { description: Sin asignación vigente en esa empresa/sede }
         '404': { description: El usuario aún no está vinculado a una ficha de colaborador (EMPLOYEE_NOT_LINKED) }
 
+  /me/leaves:
+    get:
+      operationId: listMyLeaves
+      summary: Listar solicitudes de permiso del colaborador autenticado (autoservicio)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de solicitudes de permiso del propio colaborador
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/LeaveRequestResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin asignación vigente en esa empresa/sede }
+    post:
+      operationId: requestMyLeave
+      summary: Registrar solicitud de permiso propia (autoservicio)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestLeaveRequest' }
+      responses:
+        '201':
+          description: Permiso solicitado exitosamente (estado SOLICITADO)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveRequestResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin asignación vigente en esa empresa/sede }
+
+  /me/vacations:
+    get:
+      operationId: listMyVacations
+      summary: Listar solicitudes de vacaciones del colaborador autenticado (autoservicio)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lista de solicitudes de vacaciones del propio colaborador
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin asignación vigente en esa empresa/sede }
+    post:
+      operationId: requestMyVacation
+      summary: Solicitar vacaciones propias (autoservicio, estado SOLICITADA)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleVacationRequest' }
+      responses:
+        '201':
+          description: Vacaciones solicitadas exitosamente (estado SOLICITADA)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacationRequestResponse' }
+        '400': { description: Rango de fechas inválido }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Sin asignación vigente en esa empresa/sede }
+
   /trainings:
     post:
       operationId: registerTraining
@@ -1173,6 +1301,66 @@ paths:
                 items: { $ref: '#/components/schemas/TrainingResponse' }
         '401': { description: Token ausente o inválido }
         '403': { description: Rol sin permiso sobre Administración de Personal }
+
+  /hr-documents:
+    post:
+      operationId: publishHrDocument
+      summary: Publicar nueva versión de documento de Talento Humano (solo Gerencia)
+      tags: [Human Resources Administration]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishHrDocumentRequest' }
+      responses:
+        '201':
+          description: Documento publicado exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HrDocumentResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.MANAGE_HR_DOCUMENTS }
+        '422': { description: Error de validación o documento ya existente con versión menor }
+
+  /hr-documents/active:
+    get:
+      operationId: listActiveHrDocuments
+      summary: Listar documentos de Talento Humano vigentes para la empresa
+      tags: [Human Resources Administration]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: category, in: query, required: false, schema: { $ref: '#/components/schemas/HrDocumentCategory' } }
+      responses:
+        '200':
+          description: Documentos vigentes con estado de lectura del colaborador
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActiveHrDocumentsListResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.VIEW_HR_DOCUMENTS }
+
+  /hr-documents/{id}/confirm-read:
+    post:
+      operationId: confirmHrDocumentRead
+      summary: Confirmar la lectura de un documento de Talento Humano vigente
+      tags: [Human Resources Administration]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: branchId, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Lectura confirmada y auditada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConfirmHrDocumentReadResponse' }
+        '401': { description: Token ausente o inválido }
+        '403': { description: Rol sin permiso HR_ADMINISTRATION.CONFIRM_HR_DOCUMENT_READ }
+        '404': { description: Documento no encontrado o no está vigente }
 
 components:
   securitySchemes:
@@ -1263,6 +1451,12 @@ components:
         jobTitle: { type: string, example: 'Conductor / Auxiliar de Campo' }
         hireDate: { type: string, format: date }
         baseSalary: { type: number, nullable: true }
+        bankName: { type: string, nullable: true }
+        bankAccountNumber: { type: string, nullable: true }
+        bankAccountCci: { type: string, nullable: true }
+        contractType: { type: string, nullable: true }
+        contractUrl: { type: string, nullable: true }
+        contractNotes: { type: string, nullable: true }
 
     UpdateEmployeeRequest:
       type: object
@@ -1276,6 +1470,12 @@ components:
         areaName: { type: string }
         jobTitle: { type: string }
         baseSalary: { type: number, nullable: true, description: 'Solo Gerencia (HR_ADMINISTRATION.MANAGE_SALARY) puede cambiarlo; otro rol con un valor distinto al vigente -> 403 EMPLOYEE_SALARY_GERENCIA_ONLY. Reenviar el mismo valor es válido.' }
+        bankName: { type: string, nullable: true }
+        bankAccountNumber: { type: string, nullable: true }
+        bankAccountCci: { type: string, nullable: true }
+        contractType: { type: string, nullable: true }
+        contractUrl: { type: string, nullable: true }
+        contractNotes: { type: string, nullable: true }
         status: { $ref: '#/components/schemas/EmployeeStatus' }
         probationPassed: { type: boolean, nullable: true }
         payrollStartedAt: { type: string, format: date-time, nullable: true }
@@ -1289,7 +1489,7 @@ components:
         branchId: { type: string, format: uuid }
         candidateId: { type: string, format: uuid, nullable: true }
         documentType: { type: string }
-        documentNumber: { type: string, nullable: true, description: 'null si el rol no tiene HR_ADMINISTRATION.VIEW_EMPLOYEE_DOCUMENT (ver restrictedFields).' }
+        documentNumber: { type: string, nullable: true, description: 'null si el rol no tiene HR_ADMINISTRATION.VIEW_EMPLOYEE_DOCUMENT o VIEW_EMPLOYEE_SENSITIVE_DATA (ver restrictedFields).' }
         fullName: { type: string }
         email: { type: string, nullable: true }
         phone: { type: string, nullable: true }
@@ -1307,10 +1507,16 @@ components:
         terminationNoticeDays: { type: integer, nullable: true }
         fieldTripLateCount: { type: integer }
         isFieldTripObserved: { type: boolean }
-        baseSalary: { type: number, nullable: true, description: 'null = pendiente O restringido: solo lo ve quien tiene HR_ADMINISTRATION.MANAGE_SALARY (ver restrictedFields).' }
+        baseSalary: { type: number, nullable: true, description: 'null = pendiente O restringido: solo lo ve quien tiene HR_ADMINISTRATION.MANAGE_SALARY o VIEW_EMPLOYEE_SENSITIVE_DATA (ver restrictedFields).' }
+        bankName: { type: string, nullable: true }
+        bankAccountNumber: { type: string, nullable: true }
+        bankAccountCci: { type: string, nullable: true }
+        contractType: { type: string, nullable: true }
+        contractUrl: { type: string, nullable: true }
+        contractNotes: { type: string, nullable: true }
         restrictedFields:
           type: array
-          items: { type: string, enum: [documentNumber, baseSalary] }
+          items: { type: string, enum: [documentNumber, baseSalary, bankName, bankAccountNumber, bankAccountCci, contractType, contractUrl, contractNotes] }
           description: Campos enmascarados para el rol del solicitante (HU-35). Vacío si ve todo.
         accountLinked: { type: boolean, description: La ficha está vinculada a una cuenta de usuario por correo (DEC-ADP-LINK-EMAIL-001) }
         version: { type: integer, minimum: 1, description: Versión optimista de la ficha (DEC-ADP-EDIT-ETAG-001); mismo valor que el header ETag }
@@ -1510,7 +1716,7 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid, description: Sede del contexto de trabajo; su geocerca es la que se evalúa }
         type: { type: string, enum: [CHECK_IN, CHECK_OUT], default: CHECK_IN }
-        status: { type: string, enum: [PRESENTE, TARDANZA], default: PRESENTE, description: Solo en CHECK_IN. Faltas y permisos los registra Personal. }
+        status: { type: string, enum: [PRESENTE, TARDANZA], description: Solo en CHECK_IN. Faltas y permisos los registra Personal. }
         minutesLate: { type: integer, minimum: 1, description: Obligatorio si status=TARDANZA }
         capturedAt: { type: string, format: date-time, description: 'Hora del dispositivo (ISO 8601 con offset/Z). Máx. 24 h de antigüedad (marcas offline) y no futura.' }
         latitude: { type: number, minimum: -90, maximum: 90 }
@@ -1682,6 +1888,22 @@ components:
         endDate: { type: string, format: date }
         notes: { type: string, nullable: true }
 
+    ResolveVacationRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [PROGRAMADA, REPROGRAMADA, CANCELADA]
+        grantedDays:
+          type: integer
+          minimum: 1
+          description: Días otorgados por Gerencia (permite conceder menos días de los solicitados)
+        statusReason:
+          type: string
+          maxLength: 1000
+          description: Motivo obligatorio si se rechaza o reprograma
+
     VacationRequestResponse:
       type: object
       required: [id, employeeId, areaId, startDate, endDate, status, requestedAt, createdAt]
@@ -1698,6 +1920,7 @@ components:
         approvedById: { type: string, nullable: true }
         approvedAt: { type: string, format: date-time, nullable: true }
         notes: { type: string, nullable: true }
+        grantedDays: { type: integer, nullable: true, description: Días otorgados por Gerencia }
         originalStartDate: { type: string, format: date, nullable: true, description: Fechas antes de la primera reprogramación (null si nunca se reprogramó) }
         originalEndDate: { type: string, format: date, nullable: true }
         rescheduleCount: { type: integer }
@@ -1926,3 +2149,61 @@ components:
         statusCode: { type: integer }
         code: { type: string, example: VACATION_OVERLAP }
         detail: { type: string }
+
+    HrDocumentCategory:
+      type: string
+      enum: [REGULATION, POLICY, FORMAT]
+
+    PublishHrDocumentRequest:
+      type: object
+      required: [companyId, branchId, code, title, category, fileUrl]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        code: { type: string, example: 'RIT-001' }
+        title: { type: string, example: 'Reglamento Interno de Trabajo 2026' }
+        category: { $ref: '#/components/schemas/HrDocumentCategory' }
+        fileUrl: { type: string, example: 'https://storage.kairos.pe/hr-docs/rit-001-v2.pdf' }
+        fileHash: { type: string, nullable: true }
+        fileName: { type: string, nullable: true }
+        mimeType: { type: string }
+        sizeBytes: { type: integer, nullable: true }
+
+    HrDocumentResponse:
+      type: object
+      required: [id, companyId, code, title, category, version, fileUrl, isActive, publishedBy, publishedAt, createdAt, hasRead]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        code: { type: string }
+        title: { type: string }
+        category: { $ref: '#/components/schemas/HrDocumentCategory' }
+        version: { type: integer }
+        fileUrl: { type: string }
+        fileHash: { type: string, nullable: true }
+        fileName: { type: string, nullable: true }
+        mimeType: { type: string }
+        sizeBytes: { type: integer, nullable: true }
+        isActive: { type: boolean }
+        publishedBy: { type: string }
+        publishedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        hasRead: { type: boolean, description: 'Indica si el colaborador actual ya confirmó la lectura de esta versión vigente.' }
+        readAt: { type: string, format: date-time, nullable: true }
+
+    ActiveHrDocumentsListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/HrDocumentResponse' }
+        total: { type: integer }
+
+    ConfirmHrDocumentReadResponse:
+      type: object
+      required: [documentId, employeeId, readAt]
+      properties:
+        documentId: { type: string, format: uuid }
+        employeeId: { type: string, format: uuid }
+        readAt: { type: string, format: date-time }

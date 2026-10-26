@@ -6,7 +6,11 @@ import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import { InquiryNotTouristUseError, InquiryNotTransitionableError, QuotationExpiredError } from '../../domain/inquiry-errors';
 import { CustomerBlockedError } from '../../../rentals/domain/rental-errors';
 import { ReservationRepositoryPort } from '../../../reservations/application/ports/reservation-repository.port';
-import { InquiryAlreadyHasReservationError, ReservationExceedsGuaranteeError } from '../../../reservations/domain/reservation-errors';
+import {
+  ChannelModeMismatchError,
+  InquiryAlreadyHasReservationError,
+  ReservationExceedsGuaranteeError,
+} from '../../../reservations/domain/reservation-errors';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import {
@@ -333,4 +337,63 @@ describe('ConvertToReservationHandler (caso de uso unico Consulta -> Reserva)', 
     await expect(handler.execute(command())).rejects.toBeInstanceOf(ForbiddenException);
     expect(transactions.run).not.toHaveBeenCalled();
   });
+
+  describe('BR-RES-005 / DAT-RES-001: coherencia channelMode y persistencia canComeToOffice/customerLocation', () => {
+    it('rechaza PRESENCIAL si canComeToOffice es false (422 CHANNEL_MODE_MISMATCH)', async () => {
+      const { handler } = build();
+      const cmd = new ConvertToReservationCommand(
+        'inq-1', 'uid-1', COMPANY, BRANCH, 2, 'PRESENCIAL', START, false, 'AYACUCHO',
+      );
+
+      await expect(handler.execute(cmd)).rejects.toBeInstanceOf(ChannelModeMismatchError);
+    });
+
+    it('rechaza PRESENCIAL si customerLocation es FUERA_DE_AYACUCHO (422 CHANNEL_MODE_MISMATCH)', async () => {
+      const { handler } = build();
+      const cmd = new ConvertToReservationCommand(
+        'inq-1', 'uid-1', COMPANY, BRANCH, 2, 'PRESENCIAL', START, true, 'FUERA_DE_AYACUCHO',
+      );
+
+      await expect(handler.execute(cmd)).rejects.toBeInstanceOf(ChannelModeMismatchError);
+    });
+
+    it('admite VIRTUAL cuando canComeToOffice es false y persiste ambos campos', async () => {
+      const { handler, reservations, transactions } = build();
+      const cmd = new ConvertToReservationCommand(
+        'inq-1', 'uid-1', COMPANY, BRANCH, 2, 'VIRTUAL', START, false, 'FUERA_DE_AYACUCHO',
+      );
+
+      const result = await handler.execute(cmd);
+
+      expect(reservations.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          channelMode: 'VIRTUAL',
+          canComeToOffice: false,
+          customerLocation: 'FUERA_DE_AYACUCHO',
+        }),
+        transactions.tx,
+      );
+      expect(result.reservation.id).toBe('res-1');
+    });
+
+    it('admite PRESENCIAL cuando canComeToOffice es true y customerLocation es AYACUCHO, y persiste ambos campos', async () => {
+      const { handler, reservations, transactions } = build();
+      const cmd = new ConvertToReservationCommand(
+        'inq-1', 'uid-1', COMPANY, BRANCH, 2, 'PRESENCIAL', START, true, 'AYACUCHO',
+      );
+
+      const result = await handler.execute(cmd);
+
+      expect(reservations.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          channelMode: 'PRESENCIAL',
+          canComeToOffice: true,
+          customerLocation: 'AYACUCHO',
+        }),
+        transactions.tx,
+      );
+      expect(result.reservation.id).toBe('res-1');
+    });
+  });
 });
+

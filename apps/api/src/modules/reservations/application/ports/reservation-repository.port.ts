@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { VehicleDataWarning } from '../../../../common/domain/vehicle-data-warnings';
 import { ReservationStatus } from '../../domain/reservation-status';
-import { ChannelMode } from '../../domain/channel-mode';
+import { ChannelMode, CustomerLocation } from '../../domain/channel-mode';
 import { PaymentMethod } from '../../domain/reservation-payment-method';
 
 export interface ReservationRecord {
@@ -19,6 +19,8 @@ export interface ReservationRecord {
   vehicleWarnings?: VehicleDataWarning[];
   status: ReservationStatus;
   channelMode: ChannelMode;
+  canComeToOffice?: boolean | null;
+  customerLocation?: CustomerLocation | null;
   startAt: Date;
   endAt: Date;
   requiredPaymentAmount: string;
@@ -26,6 +28,9 @@ export interface ReservationRecord {
   paymentPolicyVersion: number;
   paymentValidatedAt: Date | null;
   documentsCompletedAt: Date | null;
+  /** Requisitos remotos (BR-RES-005, BR-RES-006, SC-RES-003). */
+  video360Uploaded?: boolean;
+  signedAcceptanceUploaded?: boolean;
   confirmedAt: Date | null;
   /** Decision 8 (22-oct-2026): comprobante del pago registrado (null mientras no se registre). */
   payment?: ReservationPaymentRecord | null;
@@ -61,6 +66,8 @@ export interface CreateReservationInput {
   customerId: string;
   vehicleId: string;
   channelMode: ChannelMode;
+  canComeToOffice?: boolean | null;
+  customerLocation?: CustomerLocation | null;
   startAt: Date;
   endAt: Date;
   requiredPaymentAmount: string;

@@ -1,4 +1,5 @@
 import { ReservationRecord } from '../../application/ports/reservation-repository.port';
+import { isRemoteReservation } from '../../domain/channel-mode';
 import { ReservationResponse, SaleResolutionResponse } from './dto/reservation.response';
 import type { ReservationSaleResolutionRecord } from '../../domain/reservation-sale-resolution';
 
@@ -27,11 +28,18 @@ export function toReservationResponse(record: ReservationRecord, extras: Reserva
   const missingRequirements: string[] = [];
   if (!record.paymentValidatedAt) missingRequirements.push('PAYMENT_VALIDATION');
   if (!record.documentsCompletedAt) missingRequirements.push('DOCUMENTS_COMPLETE');
+  const isRemote = isRemoteReservation(record);
+  if (isRemote) {
+    if (!record.video360Uploaded) missingRequirements.push('VIDEO_360');
+    if (!record.signedAcceptanceUploaded) missingRequirements.push('SIGNED_ACCEPTANCE');
+  }
 
   return {
     id: record.id,
     status: record.status,
     channelMode: record.channelMode,
+    canComeToOffice: record.canComeToOffice ?? null,
+    customerLocation: record.customerLocation ?? null,
     version: record.version,
     customer: { id: record.customerId, name: record.customerName },
     vehicle: { id: record.vehicleId, plate: record.vehiclePlate, label: record.vehicleLabel },
@@ -42,6 +50,9 @@ export function toReservationResponse(record: ReservationRecord, extras: Reserva
     requirements: {
       paymentValidatedAt: record.paymentValidatedAt ? record.paymentValidatedAt.toISOString() : null,
       documentsCompletedAt: record.documentsCompletedAt ? record.documentsCompletedAt.toISOString() : null,
+      isRemote,
+      video360Uploaded: Boolean(record.video360Uploaded),
+      signedAcceptanceUploaded: Boolean(record.signedAcceptanceUploaded),
     },
     missingRequirements,
     payment: record.payment

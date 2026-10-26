@@ -53,8 +53,14 @@ export function calculateImmobilizationCharge(
  * ONE_QUARTER: 3 líneas faltantes (S/ 150.00)
  * EMPTY: 4 líneas faltantes (S/ 200.00)
  */
-export function calculateFuelPenalty(fuelLevel: ReturnFuelLevel): number {
-  const linePrice = getCosmeticDamageRate('COMBUSTIBLE_POR_LINEA') ?? 50.0;
+export function calculateFuelPenalty(
+  fuelLevel: ReturnFuelLevel,
+  customPenaltyPerLine?: number | null,
+): number {
+  const linePrice =
+    customPenaltyPerLine && customPenaltyPerLine > 0
+      ? customPenaltyPerLine
+      : (getCosmeticDamageRate('COMBUSTIBLE_POR_LINEA') ?? 50.0);
   switch (fuelLevel) {
     case 'FULL':
       return 0;
