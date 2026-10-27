@@ -54,6 +54,10 @@ import { RentalCreationGuard } from './application/services/rental-creation.guar
 import { RecentAuthGuard } from '../users/infrastructure/auth/recent-auth.guard';
 import { RentalDocumentsController } from './presentation/http/rental-documents.controller';
 import { RentalCompanyExpensesController } from './presentation/http/rental-company-expenses.controller';
+import { RequestRentalAirportServiceHandler } from './application/commands/request-airport-service.handler';
+import { GetRentalAirportServiceHandler } from './application/queries/get-rental-airport-service.handler';
+import { AirportServiceRepositoryPort } from '../reservations/application/ports/airport-service-repository.port';
+import { PrismaAirportServiceRepository } from '../reservations/infrastructure/persistence/prisma-airport-service.repository';
 
 @Module({
   imports: [UsersModule, AuthorizationModule, AuditModule, OutboxModule, FleetModule, TemplatesModule, SyncConflictsModule],
@@ -98,11 +102,14 @@ import { RentalCompanyExpensesController } from './presentation/http/rental-comp
     ListRentalDocumentsHandler,
     RentalCreationGuard,
     RecentAuthGuard,
+    RequestRentalAirportServiceHandler,
+    GetRentalAirportServiceHandler,
     { provide: RentalRepositoryPort, useClass: PrismaRentalRepository },
     { provide: RentalEvidenceRepositoryPort, useClass: PrismaRentalEvidenceRepository },
     { provide: RentalEvidenceStoragePort, useClass: GcsRentalEvidenceService },
     { provide: RentalDocumentRepositoryPort, useClass: PrismaRentalDocumentRepository },
     { provide: RentalDocumentStoragePort, useClass: GcsRentalDocumentService },
+    { provide: AirportServiceRepositoryPort, useClass: PrismaAirportServiceRepository },
   ],
   exports: [RentalRepositoryPort, RentalCreationGuard, RentalEvidenceRemovalService],
 })

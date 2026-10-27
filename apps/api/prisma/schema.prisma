@@ -835,6 +835,7 @@ model Reservation {
   rental      Rental?
   documents   ReservationDocument[]
   resolutions ReservationResolution[]
+  reminder    ReservationReminder?
 
   // Hallazgo critico PR#6 ("IDOR entre sedes/empresas"): este indice
   // respalda el filtro de scope completo (organizationId +
@@ -886,8 +887,11 @@ model ReservationResolution {
   /// NULL = pendiente de decision del cliente; 'ACCEPTED' | 'REJECTED'.
   customerDecision     String?   @map("customer_decision") @db.VarChar(20)
   alternativeVehicleId String?   @map("alternative_vehicle_id")
-  /// 'PENDING_TRANSFER' cuando el cliente rechazo (Gerencia transfiere la devolucion).
+  /// 'PENDING_TRANSFER' cuando el cliente rechazo (Gerencia transfiere la devolucion); 'TRANSFERRED' al confirmar voucher.
   refundStatus         String?   @map("refund_status") @db.VarChar(30)
+  transferVoucher      String?   @map("transfer_voucher") @db.VarChar(120)
+  transferredAt        DateTime? @map("transferred_at")
+  transferredBy        String?   @map("transferred_by")
   resolutionNote       String?   @map("resolution_note")
   resolvedBy           String?   @map("resolved_by")
   resolvedAt           DateTime? @map("resolved_at")
@@ -896,6 +900,63 @@ model ReservationResolution {
 
   @@index([reservationId, flaggedAt], map: "reservation_resolutions_reservation_idx")
   @@map("reservation_resolutions")
+}
+
+enum ReservationReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// C3 (DEC-RES-REMINDER-001): recordatorio 3 h antes del recojo de la reserva (reutiliza patron return_reminders).
+model ReservationReminder {
+  id                 String                    @id @default(uuid())
+  organizationId     String                    @map("organization_id")
+  operatingCompanyId String                    @map("operating_company_id")
+  branchId           String                    @map("branch_id")
+  reservationId      String                    @unique @map("reservation_id")
+  status             ReservationReminderStatus @default(PENDING)
+  dueAt              DateTime                  @map("due_at")
+  messageText        String                    @map("message_text")
+  generatedAt        DateTime                  @default(now()) @map("generated_at")
+  sentAt             DateTime?                 @map("sent_at")
+  sentBy             String?                   @map("sent_by")
+  resultNote         String?                   @map("result_note")
+  attempts           Int                       @default(0)
+  version            Int                       @default(1)
+  createdAt          DateTime                  @default(now()) @map("created_at")
+  updatedAt          DateTime                  @default(now()) @updatedAt @map("updated_at")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, operatingCompanyId, branchId, status, dueAt], map: "idx_reservation_reminders_scope_status_due")
+  @@map("reservation_reminders")
+}
+
+enum AirportServiceTargetType {
+  RESERVATION
+  RENTAL
+}
+
+/// C1: Solicitud de servicio de aeropuerto como cargo adicional simple (EX-RES-003, BDD-ALQ 7.1.1).
+model AirportServiceRequest {
+  id                 String                   @id @default(uuid())
+  organizationId     String                   @map("organization_id")
+  operatingCompanyId String                   @map("operating_company_id")
+  branchId           String                   @map("branch_id")
+  targetType         AirportServiceTargetType @map("target_type")
+  targetId           String                   @map("target_id")
+  scheduledAt        DateTime                 @map("scheduled_at")
+  location           String                   @db.VarChar(255)
+  additionalAmount   Decimal                  @map("additional_amount") @db.Decimal(12, 2)
+  notes              String?
+  registeredBy       String                   @map("registered_by")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @default(now()) @updatedAt @map("updated_at")
+
+  @@index([targetType, targetId], map: "idx_airport_service_target")
+  @@index([organizationId, operatingCompanyId, branchId, scheduledAt], map: "idx_airport_service_scope")
+  @@map("airport_service_requests")
 }
 
 /// TR-06 (SDD-KAIROS-TRANSVERSAL.md 18.2, HU-24) - proyeccion de lectura
@@ -1116,6 +1177,10 @@ model RentalContract {
   /// DEC-ALQ-COMPANY-DRIVER-004: credito de reserva sin garantia a la cual aplicarse (saldo a favor, sin reembolso
   /// automatico). Si hay garantia el excedente vive en rental_deposits.reservation_credit_excess.
   reservationCreditExcess Decimal @default(0) @map("reservation_credit_excess") @db.Decimal(12, 2)
+  /// C5: huella fisica tomada por contrato (no biometria)
+  fingerprintTaken    Boolean   @default(false) @map("fingerprint_taken")
+  fingerprintMarkedBy String?   @map("fingerprint_marked_by")
+  fingerprintMarkedAt DateTime? @map("fingerprint_marked_at")
   createdAt     DateTime  @default(now()) @map("created_at")
 
   rental      Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)

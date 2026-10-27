@@ -1,12 +1,50 @@
 import { ReservationRecord } from '../../application/ports/reservation-repository.port';
 import { isRemoteReservation } from '../../domain/channel-mode';
-import { ReservationResponse, SaleResolutionResponse } from './dto/reservation.response';
+import {
+  AirportServiceResponse,
+  ReservationReminderResponse,
+  ReservationResponse,
+  SaleResolutionResponse,
+} from './dto/reservation.response';
 import type { ReservationSaleResolutionRecord } from '../../domain/reservation-sale-resolution';
+import type { ReservationReminderRecord } from '../../domain/reservation-reminder';
+import type { AirportServiceRecord } from '../../domain/airport-service';
 
 export interface ReservationResponseExtras {
   /** Solo el detalle la carga; `undefined` = no se consulto (la clave se omite), `null` = nunca hubo venta. */
   saleResolution?: ReservationSaleResolutionRecord | null;
+  reminder?: ReservationReminderRecord | null;
+  airportService?: AirportServiceRecord | null;
   now?: Date;
+}
+
+export function toReservationReminderResponse(record: ReservationReminderRecord): ReservationReminderResponse {
+  return {
+    id: record.id,
+    reservationId: record.reservationId,
+    status: record.status,
+    dueAt: record.dueAt.toISOString(),
+    messageText: record.messageText,
+    generatedAt: record.generatedAt.toISOString(),
+    sentAt: record.sentAt ? record.sentAt.toISOString() : null,
+    sentBy: record.sentBy ?? null,
+    resultNote: record.resultNote ?? null,
+    attempts: record.attempts,
+  };
+}
+
+export function toAirportServiceResponse(record: AirportServiceRecord): AirportServiceResponse {
+  return {
+    id: record.id,
+    targetType: record.targetType,
+    targetId: record.targetId,
+    scheduledAt: record.scheduledAt.toISOString(),
+    location: record.location,
+    additionalAmount: record.additionalAmount,
+    notes: record.notes ?? null,
+    registeredBy: record.registeredBy,
+    createdAt: record.createdAt.toISOString(),
+  };
 }
 
 export function toSaleResolutionResponse(record: ReservationSaleResolutionRecord): SaleResolutionResponse {
@@ -19,6 +57,9 @@ export function toSaleResolutionResponse(record: ReservationSaleResolutionRecord
     flaggedAt: record.flaggedAt.toISOString(),
     alternativeVehicleId: record.alternativeVehicleId,
     refundStatus: record.refundStatus,
+    transferVoucher: record.transferVoucher ?? null,
+    transferredAt: record.transferredAt ? record.transferredAt.toISOString() : null,
+    transferredBy: record.transferredBy ?? null,
     resolutionNote: record.resolutionNote,
     resolvedAt: record.resolvedAt ? record.resolvedAt.toISOString() : null,
   };
@@ -71,5 +112,11 @@ export function toReservationResponse(record: ReservationRecord, extras: Reserva
     ...(extras.saleResolution === undefined
       ? {}
       : { saleResolution: extras.saleResolution ? toSaleResolutionResponse(extras.saleResolution) : null }),
+    ...(extras.reminder === undefined
+      ? {}
+      : { reminder: extras.reminder ? toReservationReminderResponse(extras.reminder) : null }),
+    ...(extras.airportService === undefined
+      ? {}
+      : { airportService: extras.airportService ? toAirportServiceResponse(extras.airportService) : null }),
   };
 }

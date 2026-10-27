@@ -36,6 +36,13 @@ export class FormalizeContractDto {
   documentRef!: string;
 
   /**
+   * C5: Huella física tomada en el contrato en papel (no biometría). Obligatorio marcarlo al formalizar.
+   * El valor false se permite pero queda auditado.
+   */
+  @IsBoolean()
+  fingerprintTaken!: boolean;
+
+  /**
    * Garantia. Con conductor de la empresa (`withCompanyDriver=true`) NO se exige ni se cobra (DEC-ALQ-COMPANY-DRIVER-004) y
    * enviarla > 0 responde 422 DEPOSIT_NOT_APPLICABLE_WITH_COMPANY_DRIVER. Sin conductor de la empresa es OPCIONAL si Flota
    * define la garantia del vehiculo (el servidor usa la exigida: tarifa de Flota, x2 con DOUBLE_DEPOSIT); si se envia no

@@ -63,6 +63,27 @@ describe('buildDefaultRolePermissionMatrix (version 0 implicita)', () => {
     expect(allowed('FRONT_OFFICE', 'RESERVATION', 'CHANGE_VEHICLE')).toBe(true);
     expect(allowed('GERENCIA', 'RESERVATION', 'CHANGE_VEHICLE')).toBe(true);
     expect(allowed('AUDITORIA', 'RESERVATION', 'CHANGE_VEHICLE')).toBe(false);
+
+    // C4: CONFIRM_SALE_REFUND para Gerencia y Finanzas
+    expect(allowed('GERENCIA', 'RESERVATION', 'CONFIRM_SALE_REFUND')).toBe(true);
+    expect(allowed('FINANZAS', 'RESERVATION', 'CONFIRM_SALE_REFUND')).toBe(true);
+    expect(allowed('FRONT_OFFICE', 'RESERVATION', 'CONFIRM_SALE_REFUND')).toBe(false);
+    expect(allowed('CAMPO', 'RESERVATION', 'CONFIRM_SALE_REFUND')).toBe(false);
+
+    // C3: REGISTER_REMINDER para Front Office, Administracion, Gerencia
+    expect(allowed('FRONT_OFFICE', 'RESERVATION', 'REGISTER_REMINDER')).toBe(true);
+    expect(allowed('ADMINISTRACION', 'RESERVATION', 'REGISTER_REMINDER')).toBe(true);
+    expect(allowed('GERENCIA', 'RESERVATION', 'REGISTER_REMINDER')).toBe(true);
+    expect(allowed('AUDITORIA', 'RESERVATION', 'REGISTER_REMINDER')).toBe(false);
+
+    // C1: REQUEST_AIRPORT_SERVICE para Administracion y Gerencia (en Reserva y Alquiler)
+    for (const mod of ['RESERVATION', 'RENTAL'] as const) {
+      expect(allowed('ADMINISTRACION', mod, 'REQUEST_AIRPORT_SERVICE')).toBe(true);
+      expect(allowed('GERENCIA', mod, 'REQUEST_AIRPORT_SERVICE')).toBe(true);
+      expect(allowed('PLATFORM_ADMIN', mod, 'REQUEST_AIRPORT_SERVICE')).toBe(true);
+      expect(allowed('FRONT_OFFICE', mod, 'REQUEST_AIRPORT_SERVICE')).toBe(false);
+      expect(allowed('CAMPO', mod, 'REQUEST_AIRPORT_SERVICE')).toBe(false);
+    }
   });
 
   it('PAYMENT se siembra desde payment-role-policy y REPORT queda denegado (sin regla documentada)', () => {

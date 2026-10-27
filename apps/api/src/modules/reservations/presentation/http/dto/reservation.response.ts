@@ -10,7 +10,10 @@ export interface SaleResolutionResponse {
   offerNote: string | null;
   flaggedAt: string;
   alternativeVehicleId: string | null;
-  refundStatus: 'PENDING_TRANSFER' | null;
+  refundStatus: 'PENDING_TRANSFER' | 'TRANSFERRED' | null;
+  transferVoucher?: string | null;
+  transferredAt?: string | null;
+  transferredBy?: string | null;
   resolutionNote: string | null;
   resolvedAt: string | null;
 }
@@ -22,6 +25,31 @@ export interface ReservationPaymentResponse {
   payerName: string;
   voucherDocumentId: string | null;
   registeredBy: string | null;
+}
+
+export interface ReservationReminderResponse {
+  id: string;
+  reservationId: string;
+  status: 'PENDING' | 'SENT' | 'FAILED';
+  dueAt: string;
+  messageText: string;
+  generatedAt: string;
+  sentAt: string | null;
+  sentBy: string | null;
+  resultNote: string | null;
+  attempts: number;
+}
+
+export interface AirportServiceResponse {
+  id: string;
+  targetType: 'RESERVATION' | 'RENTAL';
+  targetId: string;
+  scheduledAt: string;
+  location: string;
+  additionalAmount: string;
+  notes: string | null;
+  registeredBy: string;
+  createdAt: string;
 }
 
 /** TDD-RES-001.md seccion 11 - forma de respuesta HTTP de una reserva. */
@@ -57,4 +85,8 @@ export interface ReservationResponse {
   startDatePassed: boolean;
   /** RES-07: ultima resolucion por venta del vehiculo. Solo el detalle (GET /reservations/{id}) la incluye. */
   saleResolution?: SaleResolutionResponse | null;
+  /** C3: Estado del recordatorio 3 h antes del recojo (null si aún no se ha registrado). */
+  reminder?: ReservationReminderResponse | null;
+  /** C1: Solicitud de servicio de aeropuerto si existe para esta reserva. */
+  airportService?: AirportServiceResponse | null;
 }

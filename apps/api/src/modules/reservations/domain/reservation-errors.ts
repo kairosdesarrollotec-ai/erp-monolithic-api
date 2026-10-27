@@ -112,6 +112,14 @@ export class ReservationStateConflictError extends DomainConflictError {
   }
 }
 
+export class ReservationSaleRefundConflictError extends DomainConflictError {
+  readonly code = 'RESERVATION_STATE_CONFLICT';
+
+  constructor(detail: string = 'Solo se puede confirmar el reembolso de una reserva cancelada por venta de vehículo.') {
+    super(detail);
+  }
+}
+
 /**
  * Hallazgo CRITICO de revalidacion PR#7 ("cardinalidad Inquiry ->
  * Reservation no garantizada"): la base rechaza (UNIQUE

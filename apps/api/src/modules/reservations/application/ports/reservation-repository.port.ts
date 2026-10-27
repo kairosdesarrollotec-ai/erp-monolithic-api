@@ -185,4 +185,11 @@ export abstract class ReservationRepositoryPort {
     input: CancelReservationInput,
     tx: Prisma.TransactionClient,
   ): Promise<ReservationRecord>;
+
+  abstract incrementVersion(
+    id: string,
+    scope: ReservationScope,
+    expectedVersion: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationRecord>;
 }

@@ -17,7 +17,7 @@ import {
   SaleRefundStatus,
   SaleResolutionAlreadyOpenError,
 } from '../../domain/reservation-sale-resolution';
-import { ReservationVersionConflictError } from '../../domain/reservation-errors';
+import { ReservationSaleRefundConflictError, ReservationVersionConflictError } from '../../domain/reservation-errors';
 import { toReservationRecord, RESERVATION_INCLUDE } from './reservation-record.mapper';
 
 function scopeWhere(id: string, scope: ReservationScope) {
@@ -177,6 +177,54 @@ export class PrismaReservationSaleResolutionRepository implements ReservationSal
     return open;
   }
 
+  async confirmRefundTransfer(
+    input: {
+      id: string;
+      expectedVersion: number;
+      transferVoucher: string;
+      transferredAt: Date;
+      transferredBy: string;
+      scope: ReservationScope;
+    },
+    tx: Prisma.TransactionClient,
+  ): Promise<ReservationRecord> {
+    const res = await tx.reservationResolution.findFirst({
+      where: {
+        reservationId: input.id,
+        customerDecision: 'REJECTED',
+        refundStatus: 'PENDING_TRANSFER',
+      },
+      orderBy: { flaggedAt: 'desc' },
+    });
+    if (!res) {
+      throw new ReservationSaleRefundConflictError('La reserva no tiene un reembolso por venta pendiente de transferencia.');
+    }
+
+    const updated = await tx.reservation.updateMany({
+      where: {
+        ...scopeWhere(input.id, input.scope),
+        version: input.expectedVersion,
+        status: 'CANCELLED',
+      },
+      data: {
+        version: { increment: 1 },
+      },
+    });
+    if (updated.count !== 1) throw new ReservationVersionConflictError();
+
+    await tx.reservationResolution.update({
+      where: { id: res.id },
+      data: {
+        refundStatus: 'TRANSFERRED',
+        transferVoucher: input.transferVoucher,
+        transferredAt: input.transferredAt,
+        transferredBy: input.transferredBy,
+      },
+    });
+
+    return this.reload(input.id, input.scope, tx);
+  }
+
   private async releaseCommitment(reservationId: string, tx: Prisma.TransactionClient): Promise<void> {
     await tx.vehicleCommitment.updateMany({
       where: { sourceType: 'RESERVATION', sourceId: reservationId, status: { in: ['ACTIVE', 'CONSOLIDATED'] } },
@@ -209,6 +257,7 @@ export class PrismaReservationSaleResolutionRepository implements ReservationSal
         })
       : null;
     const decision = row.customerDecision;
+    const anyRow = row as any;
     return {
       id: row.id,
       reservationId: row.reservationId,
@@ -222,7 +271,10 @@ export class PrismaReservationSaleResolutionRepository implements ReservationSal
       flaggedBy: row.flaggedBy,
       flaggedAt: row.flaggedAt,
       alternativeVehicleId: row.alternativeVehicleId,
-      refundStatus: row.refundStatus === 'PENDING_TRANSFER' ? 'PENDING_TRANSFER' : null,
+      refundStatus: row.refundStatus === 'PENDING_TRANSFER' ? 'PENDING_TRANSFER' : row.refundStatus === 'TRANSFERRED' ? 'TRANSFERRED' : null,
+      transferVoucher: anyRow.transferVoucher ?? null,
+      transferredAt: anyRow.transferredAt ?? null,
+      transferredBy: anyRow.transferredBy ?? null,
       resolutionNote: row.resolutionNote,
       resolvedBy: row.resolvedBy,
       resolvedAt: row.resolvedAt,

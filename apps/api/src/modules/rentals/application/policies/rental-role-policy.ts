@@ -16,7 +16,8 @@ export type RentalAction =
   | 'REJECT_EXTENSION'
   | 'MANAGE_CONTRACT_TEMPLATES'
   | 'REPORT_EXTENSION_BREACH'
-  | 'CANCEL';
+  | 'CANCEL'
+  | 'REQUEST_AIRPORT_SERVICE';
 
 const OPERATIONAL_ROLES: ReadonlySet<WorkerRole> = new Set([
   'FRONT_OFFICE',
@@ -47,6 +48,7 @@ const RENTAL_ROLE_POLICY: Readonly<Record<RentalAction, ReadonlySet<WorkerRole>>
   REPORT_EXTENSION_BREACH: new Set(['GERENCIA']),
   // DEC-ALQ-CANCEL-001 (22-oct-2026): cancelar antes de la entrega (documentos invalidos / cliente rechaza notaria) lo hace el personal operativo.
   CANCEL: OPERATIONAL_ROLES,
+  REQUEST_AIRPORT_SERVICE: new Set(['GERENCIA', 'ADMINISTRACION']),
 };
 
 // ROLES DINAMICOS (fase 2): esta politica ya NO decide en runtime; solo SIEMBRA la version 0 de la matriz ADM-02
