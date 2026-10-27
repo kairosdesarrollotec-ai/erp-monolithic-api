@@ -291,6 +291,15 @@ export class InvalidLateChargeError extends DomainUnprocessableError {
   }
 }
 
+/** DEC-DEV-FUEL-PENALTY-001: ajuste manual de penalidad por combustible. */
+export class InvalidFuelPenaltyError extends DomainUnprocessableError {
+  readonly code = 'INVALID_FUEL_PENALTY';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}
+
 /** DEV-05 / PD-07: zona o marca fuera del catalogo, zona repetida o lista vacia en `POST /returns/{id}/zone-marks`. */
 export class InvalidZoneMarkError extends DomainUnprocessableError {
   readonly code = 'INVALID_ZONE_MARK';
@@ -318,6 +327,18 @@ export class ReturnOfflineChangesPendingError extends DomainUnprocessableError {
   constructor() {
     super(
       'No se puede cerrar la devolución mientras existan cambios pendientes de sincronización offline. Sincroniza todos los datos primero.',
+    );
+  }
+}
+
+/** HU-03 (SC-DEV-004.01, EX-DEV-001): la verificación de identidad es obligatoria en recepción provisional. */
+export class ReturnIdentityRequiredError extends DomainUnprocessableError {
+  readonly code = 'RETURN_IDENTITY_REQUIRED';
+
+  constructor(detail?: string) {
+    super(
+      detail ??
+        'La verificación de identidad de quien entrega el vehículo es obligatoria antes de completar la recepción provisional.',
     );
   }
 }

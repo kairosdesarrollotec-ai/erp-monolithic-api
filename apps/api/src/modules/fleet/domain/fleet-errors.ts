@@ -1,10 +1,21 @@
-import { DomainBadRequestError, DomainConflictError } from '../../../common/domain/domain-errors';
+import { DomainBadRequestError, DomainConflictError, DomainUnprocessableError } from '../../../common/domain/domain-errors';
 
 export class VehiclePlateAlreadyExistsError extends DomainConflictError {
   readonly code = 'VEHICLE_PLATE_ALREADY_EXISTS';
 
   constructor(plate: string) {
     super(`Ya existe un vehículo registrado con la placa ${plate}.`);
+  }
+}
+
+/**
+ * HU-15 / SDD §12.1: Bloqueo de puesta fuera de servicio (baja) de vehículo con contrato/reserva activa o compromiso vigente.
+ */
+export class VehicleHasActiveCommitmentError extends DomainUnprocessableError {
+  readonly code = 'VEHICLE_HAS_ACTIVE_COMMITMENT';
+
+  constructor(detail?: string) {
+    super(detail ?? 'No se puede poner fuera de servicio el vehículo: tiene alquileres activos, reservas confirmadas o compromisos vigentes.');
   }
 }
 

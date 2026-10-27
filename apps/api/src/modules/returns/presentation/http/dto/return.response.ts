@@ -221,6 +221,26 @@ export interface ReturnResponse {
   legalEscalatedBy: string | null;
   legalNotes: string | null;
   holderNotification?: HolderNotificationResponse | null;
+  identityVerification?: ReturnIdentityVerificationResponse | null;
+  fuelPenalty?: FuelPenaltyResponse | null;
+}
+
+export interface FuelPenaltyResponse {
+  amount: number;
+  notes: string | null;
+  registeredById: string;
+  registeredAt: string;
+}
+
+export interface ReturnIdentityVerificationResponse {
+  verified: boolean;
+  documentType: string | null;
+  documentNumber: string | null;
+  matchesHolder: boolean | null;
+  result: 'CONFORME' | 'NO_CONFORME' | null;
+  verifiedAt: string | null;
+  verifiedBy: string | null;
+  observation?: string | null;
 }
 
 export interface HolderNotificationResponse {

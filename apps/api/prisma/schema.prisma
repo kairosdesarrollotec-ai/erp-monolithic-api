@@ -1426,11 +1426,25 @@ model RentalReturn {
   holderNotificationSentBy  String?   @map("holder_notification_sent_by")
   holderNotificationChannel String?   @map("holder_notification_channel")
   holderNotificationNotes   String?   @map("holder_notification_notes")
+  /// HU-03: Verificación de identidad de quien entrega el vehículo en recepción (titular vs tercero).
+  returnIdentityVerified      Boolean   @default(false) @map("return_identity_verified")
+  returnIdentityDocumentType  String?   @map("return_identity_document_type") @db.VarChar(32)
+  returnIdentityDocumentNumber String?  @map("return_identity_document_number") @db.VarChar(64)
+  returnIdentityMatchesHolder Boolean?  @map("return_identity_matches_holder")
+  returnIdentityResult        String?   @map("return_identity_result") @db.VarChar(32)
+  returnIdentityVerifiedAt    DateTime? @map("return_identity_verified_at")
+  returnIdentityVerifiedBy    String?   @map("return_identity_verified_by") @db.VarChar(128)
+  returnIdentityNotes         String?   @map("return_identity_notes") @db.VarChar(1000)
   scheduledAt           DateTime           @map("scheduled_at")
   receivedAt            DateTime?          @map("received_at")
   inspectedAt           DateTime?          @map("inspected_at")
   closedAt              DateTime?          @map("closed_at")
   finalSettlementAmount Decimal?           @map("final_settlement_amount") @db.Decimal(12, 2)
+  /// DEC-DEV-FUEL-PENALTY-001: Penalidad por combustible descontada de la garantía o ajustada por operador.
+  fuelPenaltyAmount           Decimal?  @map("fuel_penalty_amount") @db.Decimal(12, 2)
+  fuelPenaltyNotes            String?   @map("fuel_penalty_notes")
+  fuelPenaltyRegisteredById   String?   @map("fuel_penalty_registered_by_id")
+  fuelPenaltyRegisteredAt     DateTime? @map("fuel_penalty_registered_at")
   notes                 String?
   createdAt             DateTime           @default(now()) @map("created_at")
   createdBy             String             @map("created_by")
@@ -1897,6 +1911,8 @@ model EmployeeOnboarding {
   probationFeeNotes        String?   @map("probation_fee_notes") @db.VarChar(500)
   probationFeesRecordedAt  DateTime? @map("probation_fees_recorded_at")
   probationFeesRecordedBy  String?   @map("probation_fees_recorded_by")
+  /// HU-33 / BR-REC-005 - Alerta de fin de periodo de prueba (15 días antes de cumplir 3 meses) enviada a Gerencia General.
+  probationAlertSentAt     DateTime? @map("probation_alert_sent_at")
   version                  Int       @default(1)
   createdAt                DateTime  @default(now()) @map("created_at")
 

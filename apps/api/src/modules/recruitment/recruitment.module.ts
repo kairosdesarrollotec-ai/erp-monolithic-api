@@ -47,6 +47,8 @@ import { InterviewersController } from './presentation/http/interviewers.control
 import { VacanciesController } from './presentation/http/vacancies.controller';
 import { CandidatesController } from './presentation/http/candidates.controller';
 import { InterviewsController } from './presentation/http/interviews.controller';
+import { ProbationAlertService } from './application/services/probation-alert.service';
+import { ProbationAlertScheduler } from './infrastructure/scheduling/probation-alert.scheduler';
 
 /**
  * Módulo de Reclutamiento y Selección (REC-01 a REC-08).
@@ -90,6 +92,8 @@ import { InterviewsController } from './presentation/http/interviews.controller'
     GetCandidateDetailHandler,
     ListInterviewersHandler,
     ListCandidatesHandler,
+    ProbationAlertService,
+    ProbationAlertScheduler,
   ],
   exports: [RecruitmentAccessService, VacancyRepositoryPort, CandidateRepositoryPort],
 })

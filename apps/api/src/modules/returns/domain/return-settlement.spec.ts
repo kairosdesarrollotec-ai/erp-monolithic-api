@@ -40,4 +40,56 @@ describe('buildDepositSettlementPlan (BR-DEV-001 / BR-DEV-011)', () => {
       buildDepositSettlementPlan({ originalAmount: 500, refundAmount: 450, retainedAmount: 50, immobilizationTotal: 100 }),
     ).toThrow(InvalidFinancialSettlementError);
   });
+
+  it('retención menor a la multa de combustible -> InvalidFinancialSettlementError específico', () => {
+    expect(() =>
+      buildDepositSettlementPlan({
+        originalAmount: 500,
+        refundAmount: 450,
+        retainedAmount: 50,
+        immobilizationTotal: 0,
+        fuelPenaltyAmount: 100,
+      }),
+    ).toThrow('Lo retenido (50.00) no cubre la multa por combustible (100.00).');
+  });
+
+  it('retención menor a retraso + combustible -> InvalidFinancialSettlementError distinguiendo cargos', () => {
+    expect(() =>
+      buildDepositSettlementPlan({
+        originalAmount: 500,
+        refundAmount: 400,
+        retainedAmount: 100,
+        immobilizationTotal: 0,
+        lateChargeAmount: 60,
+        fuelPenaltyAmount: 50,
+      }),
+    ).toThrow('Lo retenido (100.00) no cubre los cargos de retraso (60.00) y multa de combustible (50.00) (total: 110.00).');
+  });
+
+  it('retención que cubre multa de combustible y retraso -> éxito con desglose', () => {
+    const plan = buildDepositSettlementPlan({
+      originalAmount: 500,
+      refundAmount: 350,
+      retainedAmount: 150,
+      immobilizationTotal: 0,
+      lateChargeAmount: 50,
+      fuelPenaltyAmount: 100,
+    });
+    expect(plan.status).toBe('PARTIALLY_RETAINED');
+    expect(plan.adjustments.map((a) => [a.type, a.amount])).toEqual([
+      ['RELEASE', 350],
+      ['DISCOUNT', 150],
+    ]);
+  });
+
+  it('sin faltante de combustible (fuelPenaltyAmount = 0) -> no exige retención extra', () => {
+    const plan = buildDepositSettlementPlan({
+      originalAmount: 500,
+      refundAmount: 500,
+      retainedAmount: 0,
+      immobilizationTotal: 0,
+      fuelPenaltyAmount: 0,
+    });
+    expect(plan.status).toBe('RETURNED');
+  });
 });

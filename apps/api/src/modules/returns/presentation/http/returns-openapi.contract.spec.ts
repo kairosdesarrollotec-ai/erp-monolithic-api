@@ -18,6 +18,7 @@ import { CompleteInspectionDto, ResponsibilityDocumentDto } from './dto/complete
 import { ResolveAlcoholEscalationDto } from './dto/resolve-alcohol-escalation.dto';
 import { AssessDamageDto } from './dto/assess-damage.dto';
 import { ChargeImmobilizationDto } from './dto/charge-immobilization.dto';
+import { RegisterFuelPenaltyDto } from './dto/register-fuel-penalty.dto';
 import { CloseFinancialDto } from './dto/close-financial.dto';
 import { CloseReturnDto } from './dto/close-return.dto';
 import {
@@ -146,13 +147,13 @@ function controllerRoutes() {
 describe('Contrato OpenAPI returns.yaml vs backend', () => {
   const routes = controllerRoutes();
 
-  it('cada ruta del controller existe en OpenAPI y viceversa (25 operaciones)', () => {
+  it('cada ruta del controller existe en OpenAPI y viceversa (27 operaciones)', () => {
     const fromController = routes.map((r) => `${r.method} ${r.openApiPath}`).sort();
     const fromSpec = Object.entries(spec.paths)
       .flatMap(([p, ops]: [string, any]) => Object.keys(ops).map((m) => `${m} ${p}`))
       .sort();
     expect(fromController).toEqual(fromSpec);
-    expect(fromSpec).toHaveLength(26);
+    expect(fromSpec).toHaveLength(27);
   });
 
   it('el código de exito declarado en OpenAPI es el que devuelve NestJS', () => {
@@ -171,7 +172,7 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
 
   it('todo comando POST (/commands/) declara If-Match obligatorio y respuestas 428 + 412', () => {
     const commandRoutes = routes.filter((r) => r.method === 'post' && r.openApiPath.includes('/commands/'));
-    expect(commandRoutes).toHaveLength(12);
+    expect(commandRoutes).toHaveLength(13);
     for (const route of commandRoutes) {
       const op: Operation = spec.paths[route.openApiPath][route.method];
       const headerParams = (op.parameters ?? []).map(deref).filter((p: any) => p.in === 'header');
@@ -200,12 +201,22 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     ['RecordReturnEvidenceRequest', RecordReturnEvidenceDto],
     ['RecordReturnZoneMarksRequest', RecordZoneMarksDto],
     ['RecordHolderNotificationRequest', RecordHolderNotificationDto],
+    ['RegisterReturnFuelPenaltyRequest', RegisterFuelPenaltyDto],
   ])('%s: mismos campos y mismos obligatorios que el DTO', (schemaName, dto) => {
     const contract = flatten(spec.components.schemas[schemaName]);
     const fields = dtoFields(dto as new () => unknown);
     expect(Object.keys(contract.properties).sort()).toEqual(fields.all);
-    // Obligatorio en el contrato pero validado por el dominio con 422 (no 400): ver CompleteInspectionDto.
-    const domainEnforcedRequired: Record<string, string[]> = { CompleteInspectionRequest: ['responsibilityDocument'] };
+    // Obligatorio en el contrato pero validado por el dominio con 422 (no 400): ver CompleteInspectionDto y ReceiveProvisionalDto.
+    const domainEnforcedRequired: Record<string, string[]> = {
+      CompleteInspectionRequest: ['responsibilityDocument'],
+      ReceiveProvisionalRequest: [
+        'identityVerified',
+        'identityDocumentType',
+        'identityDocumentNumber',
+        'identityMatchesHolder',
+        'identityResult',
+      ],
+    };
     const expectedRequired = [...fields.required, ...(domainEnforcedRequired[schemaName] ?? [])].sort();
     expect([...contract.required].sort()).toEqual(expectedRequired);
   });
@@ -234,14 +245,18 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     }
   });
 
-  it('1.7.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
-    expect(spec.info.version).toBe('1.12.0');
+  it('1.15.0: register-alcohol-test documenta 422 ALCOHOL_TEST_PHOTO_REQUIRED y register-late-charge es 200 idempotente con If-Match', () => {
+    expect(spec.info.version).toBe('1.15.0');
     const alcohol: Operation = spec.paths['/returns/{id}/commands/register-alcohol-test'].post;
     expect(JSON.stringify(alcohol.responses['422'])).toContain('ALCOHOL_TEST_PHOTO_REQUIRED');
     const op: Operation = spec.paths['/returns/{id}/commands/register-late-charge'].post;
     expect(Object.keys(op.responses)).toEqual(expect.arrayContaining(['200', '403', '404', '409', '412', '422', '428']));
     const route = routes.find((r) => r.openApiPath === '/returns/{id}/commands/register-late-charge');
     expect(route).toMatchObject({ method: 'post', httpCode: 200, idempotent: true });
+    const fuelOp: Operation = spec.paths['/returns/{id}/commands/register-fuel-penalty'].post;
+    expect(Object.keys(fuelOp.responses)).toEqual(expect.arrayContaining(['200', '400', '403', '404', '409', '412', '422', '428']));
+    const fuelRoute = routes.find((r) => r.openApiPath === '/returns/{id}/commands/register-fuel-penalty');
+    expect(fuelRoute).toMatchObject({ method: 'post', httpCode: 200, idempotent: true });
   });
 
   it('ALCOHOL_TEST_DISAPPROVAL ya no existe en el contrato (el alcolímetro desfavorable responde 200)', () => {
@@ -582,7 +597,6 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
   });
 
   it('1.12.0: record-holder-notification registra notificación formal al titular ausente (SC-DEV-004.01, EX-DEV-001)', () => {
-    expect(spec.info.version).toBe('1.12.0');
     const pathOp = spec.paths['/returns/{id}/commands/record-holder-notification'];
     expect(pathOp).toBeDefined();
     const post: Operation = pathOp.post;
@@ -595,7 +609,18 @@ describe('Contrato OpenAPI returns.yaml vs backend', () => {
     );
   });
 
-  it('contrato 1.12.0', () => {
-    expect(spec.info.version).toBe('1.12.0');
+  it('contrato 1.14.0/1.15.0: verificación de identidad obligatoria en recepción provisional (SC-DEV-001, HU-03)', () => {
+    expect(spec.info.version).toBe('1.15.0');
+    const receiveProps = spec.components.schemas.ReceiveProvisionalRequest.properties;
+    expect(receiveProps).toHaveProperty('identityVerified');
+    expect(receiveProps).toHaveProperty('identityDocumentType');
+    expect(receiveProps).toHaveProperty('identityDocumentNumber');
+    expect(receiveProps).toHaveProperty('identityMatchesHolder');
+    expect(receiveProps).toHaveProperty('identityResult');
+    const returnProps = spec.components.schemas.ReturnResponse.properties;
+    expect(returnProps).toHaveProperty('identityVerification');
+    const receiveOp = spec.paths['/returns/receive-provisional'].post;
+    expect(receiveOp.responses).toHaveProperty('422');
+    expect(JSON.stringify(receiveOp.responses['422'])).toContain('RETURN_IDENTITY_REQUIRED');
   });
 });

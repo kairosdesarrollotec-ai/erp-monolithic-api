@@ -82,12 +82,22 @@ export class CloseFinancialHandler {
       const immobilizationTotal = roundMoney(
         (current.immobilizationCharges ?? []).reduce((acc, c) => acc + c.totalAmount, 0),
       );
+      const lateChargeTotal = roundMoney(current.lateChargeAmount ?? 0);
+      const fuelPenaltyTotal = roundMoney(
+        current.fuelPenaltyAmount !== null && current.fuelPenaltyAmount !== undefined
+          ? current.fuelPenaltyAmount
+          : current.fuelLevelAtReturn
+            ? calculateFuelPenalty(current.fuelLevelAtReturn, current.vehicleFuelPenaltyPerLine)
+            : 0,
+      );
       const plan = deposit
         ? buildDepositSettlementPlan({
             originalAmount: Number(deposit.originalAmount),
             refundAmount,
             retainedAmount,
             immobilizationTotal,
+            lateChargeAmount: lateChargeTotal,
+            fuelPenaltyAmount: fuelPenaltyTotal,
           })
         : null;
 
@@ -129,10 +139,12 @@ export class CloseFinancialHandler {
             refundAmount,
             retainedAmount,
             immobilizationTotal,
+            lateChargeTotal,
+            fuelPenaltyTotal,
             depositApplicable,
             depositStatus: plan?.status,
             depositAdjusted: depositApplied,
-            fuelPenaltyReference: updated.fuelLevelAtReturn ? calculateFuelPenalty(updated.fuelLevelAtReturn, updated.vehicleFuelPenaltyPerLine) : undefined,
+            fuelPenaltyReference: fuelPenaltyTotal,
           },
         },
         tx,

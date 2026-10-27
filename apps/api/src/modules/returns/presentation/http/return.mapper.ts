@@ -240,6 +240,22 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
       observations: record.holderNotificationNotes ?? null,
       pending: !record.holderNotificationSent,
     } : null,
+    identityVerification: record.returnIdentityVerified ? {
+      verified: Boolean(record.returnIdentityVerified),
+      documentType: record.returnIdentityDocumentType ?? null,
+      documentNumber: record.returnIdentityDocumentNumber ?? null,
+      matchesHolder: record.returnIdentityMatchesHolder ?? null,
+      result: (record.returnIdentityResult as 'CONFORME' | 'NO_CONFORME') ?? null,
+      verifiedAt: record.returnIdentityVerifiedAt ? record.returnIdentityVerifiedAt.toISOString() : null,
+      verifiedBy: record.returnIdentityVerifiedBy ?? null,
+      observation: record.returnIdentityNotes ?? null,
+    } : null,
+    fuelPenalty: record.fuelPenaltyAmount !== null && record.fuelPenaltyAmount !== undefined ? {
+      amount: record.fuelPenaltyAmount,
+      notes: record.fuelPenaltyNotes ?? null,
+      registeredById: record.fuelPenaltyRegisteredById ?? '',
+      registeredAt: record.fuelPenaltyRegisteredAt ? record.fuelPenaltyRegisteredAt.toISOString() : '',
+    } : null,
   };
 }
 
