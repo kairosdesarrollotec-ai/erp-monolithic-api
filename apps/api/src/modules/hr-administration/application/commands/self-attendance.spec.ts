@@ -139,6 +139,30 @@ describe('LogMyAttendanceHandler (#9)', () => {
     await expect(b.handler.execute(cmd({ at: new Date('2026-10-22T03:00:00Z') }))).resolves.toBeDefined();
   });
 
+  it('rechaza una hora capturada en el futuro más allá de la tolerancia', async () => {
+    const b = build();
+    // NOW es 15:00:00Z. 15:10:00Z supera los 5 min de tolerancia
+    await expect(b.handler.execute(cmd({ at: new Date('2026-10-22T15:10:00Z') }))).rejects.toThrow('capturedAt no puede estar en el futuro.');
+  });
+
+  it('sincronización diferida: registra receivedAt y marca isDeferred en auditoría', async () => {
+    const b = build();
+    // Captura 2 horas antes de NOW
+    const captured = new Date('2026-10-22T13:00:00Z');
+    await b.handler.execute(cmd({ at: captured }));
+    expect(b.audit.recordHrAdministrationEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'ATTENDANCE_SELF_LOGGED',
+        changes: expect.objectContaining({
+          capturedAt: captured,
+          receivedAt: NOW,
+          isDeferred: true,
+        }),
+      }),
+      b.tm.tx,
+    );
+  });
+
   it('el dia es el de Lima de capturedAt (03:00Z del 22 es el 21 en Lima)', async () => {
     const b = build();
     await b.handler.execute(cmd({ at: new Date('2026-10-22T03:00:00Z') }));

@@ -17,8 +17,39 @@ export class ReceiveProvisionalDto {
   @IsBoolean()
   customerPresent?: boolean;
 
+  /**
+   * OBLIGATORIO en el contrato (HU-03). En el DTO se declaran opcionales a propósito:
+   * su ausencia debe responder 422 RETURN_IDENTITY_REQUIRED desde el dominio (no 400).
+   */
+  @IsOptional()
+  @IsBoolean()
+  identityVerified?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  identityDocumentType?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  identityDocumentNumber?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  identityMatchesHolder?: boolean;
+
+  @IsOptional()
+  @IsIn(['CONFORME', 'NO_CONFORME'])
+  identityResult?: 'CONFORME' | 'NO_CONFORME';
+
   @IsOptional()
   @IsString()
   @MaxLength(1000)
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  observation?: string;
 }

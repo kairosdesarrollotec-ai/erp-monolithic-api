@@ -173,4 +173,25 @@ describe('AssessDamageHandler (DEV-06 / DEV-07 / BR-DEV-006)', () => {
     const { handler } = build('CAMPO');
     await expect(handler.execute(aesthetic())).rejects.toThrow(ForbiddenException);
   });
+
+  it('ADMINISTRACION sin CLASSIFY_DAMAGE_SEVERITY (default ADM-02 / BR-DEV-007) es denegado con 403', async () => {
+    const { handler } = build('ADMINISTRACION');
+    await expect(handler.execute(aesthetic())).rejects.toThrow(ForbiddenException);
+  });
+
+  it('exige ambas acciones: ASSESS_DAMAGE y CLASSIFY_DAMAGE_SEVERITY según matriz ADM-02', async () => {
+    const { deps, handler } = build('GERENCIA');
+    const result = await handler.execute(aesthetic());
+    expect(result.damage.severity).toBe('LEVE');
+
+    const originalAuthorize = deps.access.authorize.bind(deps.access);
+    jest.spyOn(deps.access, 'authorize').mockImplementation(async (cmd, action) => {
+      if (action === 'CLASSIFY_DAMAGE_SEVERITY') {
+        throw new ForbiddenException({ code: 'ROLE_NOT_ALLOWED', detail: 'Denegado por matriz ADM-02' });
+      }
+      return originalAuthorize(cmd, action);
+    });
+
+    await expect(handler.execute(aesthetic())).rejects.toThrow(ForbiddenException);
+  });
 });

@@ -330,6 +330,7 @@ model Company {
   hrDocuments  HrDocument[]
   hrDocumentVersions HrDocumentVersion[]
   hrDocumentReads HrDocumentRead[]
+  expectationDocuments ExpectationDocument[]
 
   /// Hallazgo CRITICO de revision de seguimiento de PR#4 (revalidacion de
   /// 9e33c4f): sin esta clave compuesta, `organizationId` de una
@@ -834,6 +835,7 @@ model Reservation {
   rental      Rental?
   documents   ReservationDocument[]
   resolutions ReservationResolution[]
+  reminder    ReservationReminder?
 
   // Hallazgo critico PR#6 ("IDOR entre sedes/empresas"): este indice
   // respalda el filtro de scope completo (organizationId +
@@ -885,8 +887,11 @@ model ReservationResolution {
   /// NULL = pendiente de decision del cliente; 'ACCEPTED' | 'REJECTED'.
   customerDecision     String?   @map("customer_decision") @db.VarChar(20)
   alternativeVehicleId String?   @map("alternative_vehicle_id")
-  /// 'PENDING_TRANSFER' cuando el cliente rechazo (Gerencia transfiere la devolucion).
+  /// 'PENDING_TRANSFER' cuando el cliente rechazo (Gerencia transfiere la devolucion); 'TRANSFERRED' al confirmar voucher.
   refundStatus         String?   @map("refund_status") @db.VarChar(30)
+  transferVoucher      String?   @map("transfer_voucher") @db.VarChar(120)
+  transferredAt        DateTime? @map("transferred_at")
+  transferredBy        String?   @map("transferred_by") @db.VarChar(120)
   resolutionNote       String?   @map("resolution_note")
   resolvedBy           String?   @map("resolved_by")
   resolvedAt           DateTime? @map("resolved_at")
@@ -895,6 +900,63 @@ model ReservationResolution {
 
   @@index([reservationId, flaggedAt], map: "reservation_resolutions_reservation_idx")
   @@map("reservation_resolutions")
+}
+
+enum ReservationReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// C3 (DEC-RES-REMINDER-001): recordatorio 3 h antes del recojo de la reserva (reutiliza patron return_reminders).
+model ReservationReminder {
+  id                 String                    @id @default(uuid())
+  organizationId     String                    @map("organization_id")
+  operatingCompanyId String                    @map("operating_company_id")
+  branchId           String                    @map("branch_id")
+  reservationId      String                    @unique @map("reservation_id")
+  status             ReservationReminderStatus @default(PENDING)
+  dueAt              DateTime                  @map("due_at")
+  messageText        String                    @map("message_text")
+  generatedAt        DateTime                  @default(now()) @map("generated_at")
+  sentAt             DateTime?                 @map("sent_at")
+  sentBy             String?                   @map("sent_by")
+  resultNote         String?                   @map("result_note")
+  attempts           Int                       @default(0)
+  version            Int                       @default(1)
+  createdAt          DateTime                  @default(now()) @map("created_at")
+  updatedAt          DateTime                  @default(now()) @updatedAt @map("updated_at")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, operatingCompanyId, branchId, status, dueAt], map: "idx_reservation_reminders_scope_status_due")
+  @@map("reservation_reminders")
+}
+
+enum AirportServiceTargetType {
+  RESERVATION
+  RENTAL
+}
+
+/// C1: Solicitud de servicio de aeropuerto como cargo adicional simple (EX-RES-003, BDD-ALQ 7.1.1).
+model AirportServiceRequest {
+  id                 String                   @id @default(uuid())
+  organizationId     String                   @map("organization_id")
+  operatingCompanyId String                   @map("operating_company_id")
+  branchId           String                   @map("branch_id")
+  targetType         AirportServiceTargetType @map("target_type")
+  targetId           String                   @map("target_id")
+  scheduledAt        DateTime                 @map("scheduled_at")
+  location           String                   @db.VarChar(255)
+  additionalAmount   Decimal                  @map("additional_amount") @db.Decimal(12, 2)
+  notes              String?
+  registeredBy       String                   @map("registered_by")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @default(now()) @updatedAt @map("updated_at")
+
+  @@index([targetType, targetId], map: "idx_airport_service_target")
+  @@index([organizationId, operatingCompanyId, branchId, scheduledAt], map: "idx_airport_service_scope")
+  @@map("airport_service_requests")
 }
 
 /// TR-06 (SDD-KAIROS-TRANSVERSAL.md 18.2, HU-24) - proyeccion de lectura
@@ -1115,6 +1177,10 @@ model RentalContract {
   /// DEC-ALQ-COMPANY-DRIVER-004: credito de reserva sin garantia a la cual aplicarse (saldo a favor, sin reembolso
   /// automatico). Si hay garantia el excedente vive en rental_deposits.reservation_credit_excess.
   reservationCreditExcess Decimal @default(0) @map("reservation_credit_excess") @db.Decimal(12, 2)
+  /// C5: huella fisica tomada por contrato (no biometria)
+  fingerprintTaken    Boolean   @default(false) @map("fingerprint_taken")
+  fingerprintMarkedBy String?   @map("fingerprint_marked_by")
+  fingerprintMarkedAt DateTime? @map("fingerprint_marked_at")
   createdAt     DateTime  @default(now()) @map("created_at")
 
   rental      Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
@@ -1354,11 +1420,31 @@ model RentalReturn {
   legalEscalatedAt         DateTime?          @map("legal_escalated_at")
   legalEscalatedBy         String?            @map("legal_escalated_by")
   legalNotes               String?            @map("legal_notes") @db.VarChar(1000)
+  /// SC-DEV-004.01 / EX-DEV-001: Notificacion formal al titular ausente al dia siguiente de recepcion por tercero.
+  holderNotificationSent    Boolean   @default(false) @map("holder_notification_sent")
+  holderNotificationSentAt  DateTime? @map("holder_notification_sent_at")
+  holderNotificationSentBy  String?   @map("holder_notification_sent_by")
+  holderNotificationChannel String?   @map("holder_notification_channel")
+  holderNotificationNotes   String?   @map("holder_notification_notes")
+  /// HU-03: Verificación de identidad de quien entrega el vehículo en recepción (titular vs tercero).
+  returnIdentityVerified      Boolean   @default(false) @map("return_identity_verified")
+  returnIdentityDocumentType  String?   @map("return_identity_document_type") @db.VarChar(32)
+  returnIdentityDocumentNumber String?  @map("return_identity_document_number") @db.VarChar(64)
+  returnIdentityMatchesHolder Boolean?  @map("return_identity_matches_holder")
+  returnIdentityResult        String?   @map("return_identity_result") @db.VarChar(32)
+  returnIdentityVerifiedAt    DateTime? @map("return_identity_verified_at")
+  returnIdentityVerifiedBy    String?   @map("return_identity_verified_by") @db.VarChar(128)
+  returnIdentityNotes         String?   @map("return_identity_notes") @db.VarChar(1000)
   scheduledAt           DateTime           @map("scheduled_at")
   receivedAt            DateTime?          @map("received_at")
   inspectedAt           DateTime?          @map("inspected_at")
   closedAt              DateTime?          @map("closed_at")
   finalSettlementAmount Decimal?           @map("final_settlement_amount") @db.Decimal(12, 2)
+  /// DEC-DEV-FUEL-PENALTY-001: Penalidad por combustible descontada de la garantía o ajustada por operador.
+  fuelPenaltyAmount           Decimal?  @map("fuel_penalty_amount") @db.Decimal(12, 2)
+  fuelPenaltyNotes            String?   @map("fuel_penalty_notes")
+  fuelPenaltyRegisteredById   String?   @map("fuel_penalty_registered_by_id")
+  fuelPenaltyRegisteredAt     DateTime? @map("fuel_penalty_registered_at")
   notes                 String?
   createdAt             DateTime           @default(now()) @map("created_at")
   createdBy             String             @map("created_by")
@@ -1825,6 +1911,8 @@ model EmployeeOnboarding {
   probationFeeNotes        String?   @map("probation_fee_notes") @db.VarChar(500)
   probationFeesRecordedAt  DateTime? @map("probation_fees_recorded_at")
   probationFeesRecordedBy  String?   @map("probation_fees_recorded_by")
+  /// HU-33 / BR-REC-005 - Alerta de fin de periodo de prueba (15 días antes de cumplir 3 meses) enviada a Gerencia General.
+  probationAlertSentAt     DateTime? @map("probation_alert_sent_at")
   version                  Int       @default(1)
   createdAt                DateTime  @default(now()) @map("created_at")
 
@@ -1940,12 +2028,36 @@ model Employee {
   memos            HrMemo[]
   trainings        TrainingAttendee[]
   documentReads    HrDocumentRead[]
+  expectationDocument ExpectationDocument?
 
   @@unique([operatingCompanyId, documentNumber], map: "employees_company_document_key")
   @@unique([operatingCompanyId, firebaseUid], map: "employees_company_firebase_uid_key")
   @@index([organizationId, operatingCompanyId, branchId, status], map: "employees_scope_status_idx")
   @@index([areaId, status], map: "employees_area_status_idx")
   @@map("employees")
+}
+
+/// REC-P13: Documento de expectativas del colaborador (a los 2 días de ingreso).
+model ExpectationDocument {
+  id                 String   @id @default(uuid())
+  organizationId     String   @map("organization_id")
+  operatingCompanyId String   @map("operating_company_id")
+  employeeId         String   @unique @map("employee_id")
+  status             String   @default("PENDIENTE") // 'PENDIENTE' | 'FIRMADO'
+  deadlineDate       DateTime @map("deadline_date") @db.Date
+  fileUrl            String?  @map("file_url") @db.VarChar(500)
+  signedAt           DateTime? @map("signed_at")
+  registeredBy       String   @map("registered_by") @db.VarChar(128)
+  signedRegisteredBy String?  @map("signed_registered_by") @db.VarChar(128)
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  operatingCompany Company  @relation(fields: [operatingCompanyId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  employee         Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([status, deadlineDate], map: "idx_emp_expectations_status_deadline")
+  @@map("employee_expectation_documents")
 }
 
 /// BDD-ADP-001 ADP-P01..04 / BR-ADP-001 - Registro diario de asistencia y faltas.

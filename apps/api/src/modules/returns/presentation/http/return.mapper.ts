@@ -232,6 +232,30 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     legalEscalatedAt: record.legalEscalatedAt ? record.legalEscalatedAt.toISOString() : null,
     legalEscalatedBy: record.legalEscalatedBy ?? null,
     legalNotes: record.legalNotes ?? null,
+    holderNotification: record.responsibilitySignerIsHolder === false ? {
+      sent: Boolean(record.holderNotificationSent),
+      sentAt: record.holderNotificationSentAt ? record.holderNotificationSentAt.toISOString() : null,
+      sentBy: record.holderNotificationSentBy ?? null,
+      channel: record.holderNotificationChannel ?? null,
+      observations: record.holderNotificationNotes ?? null,
+      pending: !record.holderNotificationSent,
+    } : null,
+    identityVerification: record.returnIdentityVerified ? {
+      verified: Boolean(record.returnIdentityVerified),
+      documentType: record.returnIdentityDocumentType ?? null,
+      documentNumber: record.returnIdentityDocumentNumber ?? null,
+      matchesHolder: record.returnIdentityMatchesHolder ?? null,
+      result: (record.returnIdentityResult as 'CONFORME' | 'NO_CONFORME') ?? null,
+      verifiedAt: record.returnIdentityVerifiedAt ? record.returnIdentityVerifiedAt.toISOString() : null,
+      verifiedBy: record.returnIdentityVerifiedBy ?? null,
+      observation: record.returnIdentityNotes ?? null,
+    } : null,
+    fuelPenalty: record.fuelPenaltyAmount !== null && record.fuelPenaltyAmount !== undefined ? {
+      amount: record.fuelPenaltyAmount,
+      notes: record.fuelPenaltyNotes ?? null,
+      registeredById: record.fuelPenaltyRegisteredById ?? '',
+      registeredAt: record.fuelPenaltyRegisteredAt ? record.fuelPenaltyRegisteredAt.toISOString() : '',
+    } : null,
   };
 }
 

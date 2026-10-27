@@ -184,4 +184,116 @@ describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
       expect(deps.returns.update).not.toHaveBeenCalled();
     });
   });
+
+  describe('cargo por retraso imputado en garantía (Decisión 23-oct)', () => {
+    it('si hay cargo por retraso registrado, lo retenido debe cubrirlo', async () => {
+      const { deps, handler } = build({ lateChargeAmount: 150 });
+
+      // Retenido 100 no cubre 150 -> falla
+      await expect(handler.execute(cmd(400, 100))).rejects.toThrow(InvalidFinancialSettlementError);
+      expect(deps.returns.update).not.toHaveBeenCalled();
+
+      // Retenido 150 cubre exactamente 150 -> éxito
+      const result = await handler.execute(cmd(350, 150));
+      expect(result.status).toBe('CIERRE_FINANCIERO');
+      expect(deps.settlement.settleDeposit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'PARTIALLY_RETAINED',
+          adjustments: [
+            expect.objectContaining({ type: 'RELEASE', amount: 350 }),
+            expect.objectContaining({ type: 'DISCOUNT', amount: 150 }),
+          ],
+        }),
+        fakeTx,
+      );
+    });
+
+    it('si hay cargos de paralización y retraso simultáneos, lo retenido debe cubrir ambos', async () => {
+      const { deps, handler } = build({
+        status: 'CON_DANOS',
+        damages: [buildDamage({ estimatedAmount: 100 })],
+        immobilizationCharges: [buildCharge({ totalAmount: 120 })],
+        lateChargeAmount: 80,
+      });
+
+      // Total requerido: 120 + 80 = 200. Retenido 150 -> falla
+      await expect(handler.execute(cmd(350, 150))).rejects.toThrow(InvalidFinancialSettlementError);
+
+      // Retenido 250 (cubre 200 + 50 de daños) -> éxito
+      const result = await handler.execute(cmd(250, 250));
+      expect(result.status).toBe('CIERRE_FINANCIERO');
+      expect(deps.settlement.settleDeposit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'PARTIALLY_RETAINED',
+          adjustments: [
+            expect.objectContaining({ type: 'RELEASE', amount: 250 }),
+            expect.objectContaining({ type: 'DISCOUNT', amount: 130 }), // 250 - 120 immobilization
+          ],
+        }),
+        fakeTx,
+      );
+    });
+
+    it('DEC-DEV-FUEL-PENALTY-001: con faltante de combustible no cubierto en retención -> rechaza con 422', async () => {
+      const { handler } = build({
+        status: 'SIN_DANOS',
+        fuelLevelAtReturn: 'HALF',
+        vehicleFuelPenaltyPerLine: 50,
+      });
+
+      await expect(handler.execute(cmd(500, 0))).rejects.toThrow(
+        'Lo retenido (0.00) no cubre la multa por combustible (100.00).',
+      );
+    });
+
+    it('DEC-DEV-FUEL-PENALTY-001: con faltante de combustible cubierto en retención -> éxito y liquida', async () => {
+      const { deps, handler } = build({
+        status: 'SIN_DANOS',
+        fuelLevelAtReturn: 'HALF',
+        vehicleFuelPenaltyPerLine: 50,
+      });
+
+      const result = await handler.execute(cmd(400, 100));
+      expect(result.status).toBe('CIERRE_FINANCIERO');
+      expect(deps.settlement.settleDeposit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'PARTIALLY_RETAINED',
+          adjustments: [
+            expect.objectContaining({ type: 'RELEASE', amount: 400 }),
+            expect.objectContaining({ type: 'DISCOUNT', amount: 100 }),
+          ],
+        }),
+        fakeTx,
+      );
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({
+            fuelPenaltyTotal: 100,
+          }),
+        }),
+        fakeTx,
+      );
+    });
+
+    it('DEC-DEV-FUEL-PENALTY-001: combustible con ajuste manual previo -> usa el monto ajustado', async () => {
+      const { handler } = build({
+        status: 'SIN_DANOS',
+        fuelLevelAtReturn: 'HALF',
+        fuelPenaltyAmount: 75,
+      });
+
+      await expect(handler.execute(cmd(450, 50))).rejects.toThrow(
+        'Lo retenido (50.00) no cubre la multa por combustible (75.00).',
+      );
+
+      const result = await handler.execute(cmd(425, 75));
+      expect(result.status).toBe('CIERRE_FINANCIERO');
+    });
+
+    it('conductor de la empresa sin garantía (deposit = null): liquidación 0/0 pasa sin error', async () => {
+      const { handler } = build({ status: 'SIN_DANOS', fuelLevelAtReturn: 'FULL' }, false);
+      const result = await handler.execute(cmd(0, 0));
+      expect(result.status).toBe('CIERRE_FINANCIERO');
+    });
+  });
 });

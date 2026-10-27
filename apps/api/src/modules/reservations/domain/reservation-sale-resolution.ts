@@ -23,7 +23,7 @@ export type StoredCustomerDecision = 'ACCEPTED' | 'REJECTED';
  * transferencia la hace Gerencia a mano (@SC-RES-006.01) y el sistema solo
  * deja constancia de que esta pendiente.
  */
-export type SaleRefundStatus = 'PENDING_TRANSFER';
+export type SaleRefundStatus = 'PENDING_TRANSFER' | 'TRANSFERRED';
 
 export type SaleResolutionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
@@ -47,6 +47,9 @@ export interface ReservationSaleResolutionRecord {
   /** Alternativa efectivamente elegida (solo ACCEPTED). */
   alternativeVehicleId: string | null;
   refundStatus: SaleRefundStatus | null;
+  transferVoucher?: string | null;
+  transferredAt?: Date | null;
+  transferredBy?: string | null;
   resolutionNote: string | null;
   resolvedBy: string | null;
   resolvedAt: Date | null;

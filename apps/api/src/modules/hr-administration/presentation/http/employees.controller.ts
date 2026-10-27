@@ -36,11 +36,16 @@ import { GetEmployeeMemosQuery } from '../../application/queries/get-employee-me
 import { GetEmployeeMemosHandler } from '../../application/queries/get-employee-memos.handler';
 import { GetEmployeeTrainingsQuery } from '../../application/queries/get-employee-trainings.query';
 import { GetEmployeeTrainingsHandler } from '../../application/queries/get-employee-trainings.handler';
+import { RecordExpectationDocumentCommand } from '../../application/commands/record-expectation-document.command';
+import { RecordExpectationDocumentHandler } from '../../application/commands/record-expectation-document.handler';
+import { GetExpectationDocumentQuery } from '../../application/queries/get-expectation-document.query';
+import { GetExpectationDocumentHandler } from '../../application/queries/get-expectation-document.handler';
 import { EmployeeFieldVisibilityService } from '../../application/services/employee-field-visibility.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { ListEmployeesQueryDto } from './dto/list-employees-query.dto';
 import { TerminateEmploymentDto } from './dto/terminate-employment.dto';
+import { RecordExpectationDocumentDto } from './dto/record-expectation-document.dto';
 import { parseDateOnly } from './dto/hr-date';
 import { areaFilterCode } from '../../domain/hr-area-rules';
 import type {
@@ -51,6 +56,7 @@ import type {
   UpdateEmployeeResponse,
   HrMemoResponse,
   TrainingResponse,
+  ExpectationDocumentResponse,
 } from './dto/hr-administration.response';
 import {
   toEmployeeDetailResponse,
@@ -74,6 +80,8 @@ export class EmployeesController {
     private readonly getEmployeeTrainings: GetEmployeeTrainingsHandler,
     private readonly linkEmployeeAccount: LinkEmployeeAccountHandler,
     private readonly visibility: EmployeeFieldVisibilityService,
+    private readonly getExpectationDocumentHandler?: GetExpectationDocumentHandler,
+    private readonly recordExpectationDocumentHandler?: RecordExpectationDocumentHandler,
   ) {}
 
   private scopeVisibility(req: AuthenticatedRequest, e: { operatingCompanyId: string; branchId: string }) {
@@ -232,5 +240,35 @@ export class EmployeesController {
       ),
     );
     return toEmploymentTerminationResponse(result.termination, result.employee.fullName);
+  }
+
+  /** REC-P13 / BDD-05 / BDD-00: Documento de expectativas del colaborador (a los 2 días de ingreso). */
+  @Get(':id/expectation-document')
+  async getExpectationDocument(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ExpectationDocumentResponse> {
+    return this.getExpectationDocumentHandler!.execute(
+      new GetExpectationDocumentQuery(id, req.firebaseUid!),
+    );
+  }
+
+  @Post(':id/commands/record-expectation-document')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(IdempotencyInterceptor)
+  async recordExpectationDocument(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordExpectationDocumentDto,
+  ): Promise<ExpectationDocumentResponse> {
+    return this.recordExpectationDocumentHandler!.execute(
+      new RecordExpectationDocumentCommand(
+        id,
+        req.firebaseUid!,
+        dto.fileUrl,
+        dto.signedAt ? new Date(dto.signedAt) : undefined,
+        dto.notes,
+      ),
+    );
   }
 }

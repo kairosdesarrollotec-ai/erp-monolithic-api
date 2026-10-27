@@ -673,4 +673,101 @@ describe('FormalizeContractHandler', () => {
       expect(withDoc.rentals.formalizeContract).toHaveBeenCalled();
     });
   });
+
+  describe('C5 - huella fisica en papel registrada y auditada', () => {
+    const withMin = (extra: Partial<RentalRecord> = {}): RentalRecord => ({ ...fakeRental, vehicleDepositMinimum: 500, ...extra });
+
+    it('formaliza con fingerprintTaken=true, persiste los datos de marcado y audita', async () => {
+      const deps = buildDeps({ rental: withMin() });
+      await deps.handler.execute(
+        new FormalizeContractCommand(
+          'rent-500',
+          'uid-operador-1',
+          'comp-1',
+          'branch-1',
+          4,
+          'doc-ref-1',
+          '500.00',
+          'PEN',
+          undefined,
+          undefined,
+          {
+            method: 'EFECTIVO',
+            operationNumber: 'REC-123',
+            payerName: 'Cliente Juan',
+            payerIsExternalAgent: false,
+            externalAgentVerified: false,
+          },
+          true,
+        ),
+      );
+
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fingerprintTaken: true,
+          fingerprintMarkedBy: 'uid-operador-1',
+          fingerprintMarkedAt: expect.any(Date),
+        }),
+        fakeTx,
+      );
+
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'CONTRACT_FORMALIZED',
+          changes: expect.objectContaining({
+            fingerprintTaken: true,
+            fingerprintMarkedBy: 'uid-operador-1',
+            fingerprintMarkedAt: expect.any(String),
+          }),
+        }),
+        fakeTx,
+      );
+    });
+
+    it('permite fingerprintTaken=false pero queda registrado y auditado (no es biometria)', async () => {
+      const deps = buildDeps({ rental: withMin() });
+      await deps.handler.execute(
+        new FormalizeContractCommand(
+          'rent-500',
+          'uid-operador-2',
+          'comp-1',
+          'branch-1',
+          4,
+          'doc-ref-2',
+          '500.00',
+          'PEN',
+          undefined,
+          undefined,
+          {
+            method: 'EFECTIVO',
+            operationNumber: 'REC-124',
+            payerName: 'Cliente Pedro',
+            payerIsExternalAgent: false,
+            externalAgentVerified: false,
+          },
+          false,
+        ),
+      );
+
+      expect(deps.rentals.formalizeContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fingerprintTaken: false,
+          fingerprintMarkedBy: 'uid-operador-2',
+          fingerprintMarkedAt: expect.any(Date),
+        }),
+        fakeTx,
+      );
+
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'CONTRACT_FORMALIZED',
+          changes: expect.objectContaining({
+            fingerprintTaken: false,
+            fingerprintMarkedBy: 'uid-operador-2',
+          }),
+        }),
+        fakeTx,
+      );
+    });
+  });
 });

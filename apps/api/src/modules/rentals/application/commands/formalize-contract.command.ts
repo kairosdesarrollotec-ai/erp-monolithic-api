@@ -35,5 +35,7 @@ export class FormalizeContractCommand {
     public readonly contractVariant?: ContractVariant,
     /** Comprobante del cobro de la garantia (obligatorio si la diferencia a cobrar es mayor que cero). */
     public readonly payment?: GuaranteePaymentCommandInput,
+    /** C5: Huella física tomada en el contrato en papel (no biometría). */
+    public readonly fingerprintTaken: boolean = false,
   ) {}
 }

@@ -157,9 +157,10 @@ describe('CancelReservationHandler', () => {
   });
 
   it('no-show (RES-08, EX-RES-004): Gerencia cancela con NO_SHOW usando CANCEL_NO_SHOW y se audita con la razon', async () => {
-    const existing = buildRecord();
+    const existing = buildRecord({ startAt: new Date('2026-09-20T14:00:00Z') });
     const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'GERENCIA');
-    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+    const clock = { now: () => new Date('2026-09-21T06:00:00Z') };
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth, clock);
 
     const result = await handler.execute(
       new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW', 'No se presento'),
@@ -171,6 +172,37 @@ describe('CancelReservationHandler', () => {
       expect.objectContaining({ changes: { reason: 'NO_SHOW', note: 'No se presento' } }),
       FAKE_TX,
     );
+  });
+
+  it('no-show (C6, RES-08): rechaza con 422 RESERVATION_NO_SHOW_TOO_EARLY si el dia pactado en hora de Lima aun no ha terminado', async () => {
+    // 2026-10-26T14:00:00Z = 09:00 en Lima (2026-10-26); termina a las 2026-10-27T04:59:59.999Z
+    const existing = buildRecord({ startAt: new Date('2026-10-26T14:00:00Z') });
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'GERENCIA');
+    // Reloj a las 18:00 Lima (23:00Z del mismo dia) -> dia aun no termina
+    const clock = { now: () => new Date('2026-10-26T23:00:00Z') };
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth, clock);
+
+    await expect(
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW', 'No se presento')),
+    ).rejects.toThrow(expect.objectContaining({
+      response: expect.objectContaining({
+        code: 'RESERVATION_NO_SHOW_TOO_EARLY',
+      }),
+    }));
+  });
+
+  it('no-show (C6, RES-08): permite marcar no-show una vez terminado el dia pactado en hora de Lima', async () => {
+    const existing = buildRecord({ startAt: new Date('2026-10-26T14:00:00Z') });
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'GERENCIA');
+    // Reloj a las 00:00:01 Lima del dia siguiente (2026-10-27T05:00:01Z) -> dia ya termino
+    const clock = { now: () => new Date('2026-10-27T05:00:01Z') };
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth, clock);
+
+    const result = await handler.execute(
+      new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW', 'No se presento'),
+    );
+
+    expect(result.status).toBe('CANCELLED');
   });
 
   it('rechaza si la reserva no existe', async () => {

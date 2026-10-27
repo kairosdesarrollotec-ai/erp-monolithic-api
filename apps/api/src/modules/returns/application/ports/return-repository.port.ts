@@ -146,6 +146,23 @@ export interface ReturnRecord {
   legalEscalatedAt?: Date | null;
   legalEscalatedBy?: string | null;
   legalNotes?: string | null;
+  holderNotificationSent?: boolean;
+  holderNotificationSentAt?: Date | null;
+  holderNotificationSentBy?: string | null;
+  holderNotificationChannel?: string | null;
+  holderNotificationNotes?: string | null;
+  returnIdentityVerified?: boolean;
+  returnIdentityDocumentType?: string | null;
+  returnIdentityDocumentNumber?: string | null;
+  returnIdentityMatchesHolder?: boolean | null;
+  returnIdentityResult?: string | null;
+  returnIdentityVerifiedAt?: Date | null;
+  returnIdentityVerifiedBy?: string | null;
+  returnIdentityNotes?: string | null;
+  fuelPenaltyAmount?: number | null;
+  fuelPenaltyNotes?: string | null;
+  fuelPenaltyRegisteredById?: string | null;
+  fuelPenaltyRegisteredAt?: Date | null;
 }
 
 export interface CreateReturnInput {
@@ -164,6 +181,14 @@ export interface CreateReturnInput {
   receivedAt?: Date;
   notes?: string;
   createdBy: string;
+  returnIdentityVerified?: boolean;
+  returnIdentityDocumentType?: string | null;
+  returnIdentityDocumentNumber?: string | null;
+  returnIdentityMatchesHolder?: boolean | null;
+  returnIdentityResult?: string | null;
+  returnIdentityVerifiedAt?: Date | null;
+  returnIdentityVerifiedBy?: string | null;
+  returnIdentityNotes?: string | null;
 }
 
 export interface UpdateReturnInput {
@@ -191,6 +216,10 @@ export interface UpdateReturnInput {
   lateChargeNotes?: string;
   lateChargeRegisteredById?: string;
   lateChargeRegisteredAt?: Date;
+  fuelPenaltyAmount?: number;
+  fuelPenaltyNotes?: string;
+  fuelPenaltyRegisteredById?: string;
+  fuelPenaltyRegisteredAt?: Date;
   receivedAt?: Date;
   inspectedAt?: Date;
   closedAt?: Date;
@@ -205,6 +234,19 @@ export interface UpdateReturnInput {
   legalEscalatedAt?: Date | null;
   legalEscalatedBy?: string | null;
   legalNotes?: string | null;
+  holderNotificationSent?: boolean;
+  holderNotificationSentAt?: Date | null;
+  holderNotificationSentBy?: string | null;
+  holderNotificationChannel?: string | null;
+  holderNotificationNotes?: string | null;
+  returnIdentityVerified?: boolean;
+  returnIdentityDocumentType?: string | null;
+  returnIdentityDocumentNumber?: string | null;
+  returnIdentityMatchesHolder?: boolean | null;
+  returnIdentityResult?: string | null;
+  returnIdentityVerifiedAt?: Date | null;
+  returnIdentityVerifiedBy?: string | null;
+  returnIdentityNotes?: string | null;
 }
 
 export interface ListReturnsFilter extends ReturnScope {

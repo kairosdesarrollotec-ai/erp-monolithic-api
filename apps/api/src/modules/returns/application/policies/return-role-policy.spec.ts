@@ -22,6 +22,10 @@ describe('assertReturnRoleAllowed (policy provisional, deny-by-default)', () => 
     ['RESOLVE_ALCOHOL_ESCALATION', 'ADMINISTRACION'],
     ['RESOLVE_ALCOHOL_ESCALATION', 'FINANZAS'],
     ['RESOLVE_ALCOHOL_ESCALATION', 'AUDITORIA'],
+    ['CLASSIFY_DAMAGE_SEVERITY', 'CAMPO'],
+    ['CLASSIFY_DAMAGE_SEVERITY', 'FRONT_OFFICE'],
+    ['CLASSIFY_DAMAGE_SEVERITY', 'ADMINISTRACION'],
+    ['CLASSIFY_DAMAGE_SEVERITY', 'FINANZAS'],
   ])('%s denegado para %s con error de dominio (no excepción de Nest)', (action, role) => {
     expect(() => assertReturnRoleAllowed(role as never, action)).toThrow(ReturnRoleNotAllowedError);
   });
@@ -30,6 +34,8 @@ describe('assertReturnRoleAllowed (policy provisional, deny-by-default)', () => 
     ['RECEIVE_PROVISIONAL', 'CAMPO'],
     ['REGISTER_ALCOHOL_TEST', 'CAMPO'],
     ['COMPLETE_INSPECTION', 'CAMPO'],
+    ['CLASSIFY_DAMAGE_SEVERITY', 'GERENCIA'],
+    ['CLASSIFY_DAMAGE_SEVERITY', 'PLATFORM_ADMIN'],
     ['ASSESS_DAMAGE', 'GERENCIA'],
     ['CLOSE_FINANCIAL', 'FINANZAS'],
     ['CLOSE', 'ADMINISTRACION'],

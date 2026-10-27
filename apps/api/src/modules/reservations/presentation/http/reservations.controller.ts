@@ -58,6 +58,18 @@ import { ListReservationDocumentsHandler } from '../../application/queries/list-
 import { RequestReservationDocumentUploadSessionDto } from './dto/request-reservation-document-upload-session.dto';
 import { RecordReservationDocumentDto } from './dto/record-reservation-document.dto';
 import { ReservationDocumentRecord } from '../../application/ports/reservation-document-repository.port';
+import { ConfirmSaleRefundTransferHandler } from '../../application/commands/confirm-sale-refund-transfer.handler';
+import { ConfirmSaleRefundTransferCommand } from '../../application/commands/confirm-sale-refund-transfer.command';
+import { ConfirmSaleRefundTransferDto } from './dto/confirm-sale-refund-transfer.dto';
+import { RegisterReservationReminderHandler } from '../../application/commands/register-reservation-reminder.handler';
+import { RegisterReservationReminderCommand } from '../../application/commands/register-reservation-reminder.command';
+import { RegisterReservationReminderDto } from './dto/register-reservation-reminder.dto';
+import { RequestReservationAirportServiceHandler } from '../../application/commands/request-airport-service.handler';
+import { RequestReservationAirportServiceCommand } from '../../application/commands/request-airport-service.command';
+import { RequestAirportServiceDto } from './dto/request-airport-service.dto';
+import { GetReservationAirportServiceHandler } from '../../application/queries/get-reservation-airport-service.handler';
+import { GetReservationAirportServiceQuery } from '../../application/queries/get-reservation-airport-service.query';
+import { AirportServiceResponse } from './dto/reservation.response';
 
 /**
  * TDD-RES-001.md seccion 11 - contrato HTTP de Reserva (HU-27). No expone
@@ -83,6 +95,10 @@ export class ReservationsController {
     private readonly requestDocumentUploadSession: RequestReservationDocumentUploadSessionHandler,
     private readonly recordDocument: RecordReservationDocumentHandler,
     private readonly listDocuments: ListReservationDocumentsHandler,
+    private readonly confirmSaleRefundTransfer: ConfirmSaleRefundTransferHandler,
+    private readonly registerReminder: RegisterReservationReminderHandler,
+    private readonly requestAirportService: RequestReservationAirportServiceHandler,
+    private readonly getAirportService: GetReservationAirportServiceHandler,
   ) {}
 
   /**
@@ -370,5 +386,112 @@ export class ReservationsController {
       branchId,
       reservationId: id,
     });
+  }
+
+  /** C4 (BR-RES-007): Confirma la transferencia bancaria del reembolso por venta del vehículo. */
+  @Post(':id/commands/confirm-sale-refund-transfer')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async confirmSaleRefundTransferCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ConfirmSaleRefundTransferDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReservationResponse> {
+    const updated = await this.confirmSaleRefundTransfer.execute(
+      new ConfirmSaleRefundTransferCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.transferVoucher,
+        new Date(dto.transferredAt),
+        dto.note,
+      ),
+    );
+    return toReservationResponse(updated);
+  }
+
+  /** C3 (BR-RES-009): Registra el envío del recordatorio manual asistido por WhatsApp 3 h antes del recojo. */
+  @Post(':id/commands/register-reminder')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async registerReminderCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RegisterReservationReminderDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReservationResponse> {
+    const updated = await this.registerReminder.execute(
+      new RegisterReservationReminderCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.result,
+        dto.sentAt ? new Date(dto.sentAt) : undefined,
+        dto.note,
+      ),
+    );
+    return toReservationResponse(updated);
+  }
+
+  /** C1 (EX-RES-003): Registra una solicitud de servicio de aeropuerto como cargo adicional manual. */
+  @Post(':id/commands/request-airport-service')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async requestAirportServiceCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RequestAirportServiceDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<AirportServiceResponse> {
+    const created = await this.requestAirportService.execute(
+      new RequestReservationAirportServiceCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        new Date(dto.scheduledAt),
+        dto.location,
+        dto.additionalAmount,
+        dto.notes,
+      ),
+    );
+    return {
+      id: created.id,
+      targetType: created.targetType,
+      targetId: created.targetId,
+      scheduledAt: created.scheduledAt.toISOString(),
+      location: created.location,
+      additionalAmount: created.additionalAmount,
+      notes: created.notes,
+      registeredBy: created.registeredBy,
+      createdAt: created.createdAt.toISOString(),
+    };
+  }
+
+  /** C1: Obtiene la solicitud de servicio de aeropuerto de la reserva. */
+  @Get(':id/airport-service')
+  async getAirportServiceEndpoint(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<AirportServiceResponse> {
+    const record = await this.getAirportService.execute(
+      new GetReservationAirportServiceQuery(id),
+    );
+    return {
+      id: record.id,
+      targetType: record.targetType,
+      targetId: record.targetId,
+      scheduledAt: record.scheduledAt.toISOString(),
+      location: record.location,
+      additionalAmount: record.additionalAmount,
+      notes: record.notes,
+      registeredBy: record.registeredBy,
+      createdAt: record.createdAt.toISOString(),
+    };
   }
 }

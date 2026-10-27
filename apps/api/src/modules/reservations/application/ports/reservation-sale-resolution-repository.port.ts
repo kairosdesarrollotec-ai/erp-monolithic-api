@@ -86,4 +86,17 @@ export abstract class ReservationSaleResolutionRepositoryPort {
    * `documents_completed_at`, incrementa version. Sin commitment (DRAFT no lo tiene).
    */
   abstract changeVehicle(input: ChangeVehicleInput, tx: Prisma.TransactionClient): Promise<ReservationRecord>;
+
+  /** C4: Confirma la transferencia bancaria del reembolso por venta (PENDING_TRANSFER -> TRANSFERRED). */
+  abstract confirmRefundTransfer(
+    input: {
+      id: string;
+      expectedVersion: number;
+      transferVoucher: string;
+      transferredAt: Date;
+      transferredBy: string;
+      scope: ReservationScope;
+    },
+    tx: Prisma.TransactionClient,
+  ): Promise<ReservationRecord>;
 }

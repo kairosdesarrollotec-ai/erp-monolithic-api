@@ -27,6 +27,15 @@ import { AuditModule } from '../audit/audit.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 
+import { ConfirmSaleRefundTransferHandler } from './application/commands/confirm-sale-refund-transfer.handler';
+import { RegisterReservationReminderHandler } from './application/commands/register-reservation-reminder.handler';
+import { ReservationReminderRepositoryPort } from './application/ports/reservation-reminder-repository.port';
+import { PrismaReservationReminderRepository } from './infrastructure/persistence/prisma-reservation-reminder.repository';
+import { RequestReservationAirportServiceHandler } from './application/commands/request-airport-service.handler';
+import { GetReservationAirportServiceHandler } from './application/queries/get-reservation-airport-service.handler';
+import { AirportServiceRepositoryPort } from './application/ports/airport-service-repository.port';
+import { PrismaAirportServiceRepository } from './infrastructure/persistence/prisma-airport-service.repository';
+
 /**
  * HU-27 (Reserva, RES-01/RES-04/RES-05). Importa UsersModule para
  * reutilizar WorkContextAuthorizationService y AuthorizationModule para
@@ -50,11 +59,17 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     RequestReservationDocumentUploadSessionHandler,
     RecordReservationDocumentHandler,
     ListReservationDocumentsHandler,
+    ConfirmSaleRefundTransferHandler,
+    RegisterReservationReminderHandler,
+    RequestReservationAirportServiceHandler,
+    GetReservationAirportServiceHandler,
     { provide: ReservationRepositoryPort, useClass: PrismaReservationRepository },
     { provide: ReservationSaleResolutionRepositoryPort, useClass: PrismaReservationSaleResolutionRepository },
     { provide: ReservationDocumentRepositoryPort, useClass: PrismaReservationDocumentRepository },
     { provide: ReservationDocumentStoragePort, useClass: GcsReservationDocumentService },
+    { provide: ReservationReminderRepositoryPort, useClass: PrismaReservationReminderRepository },
+    { provide: AirportServiceRepositoryPort, useClass: PrismaAirportServiceRepository },
   ],
-  exports: [ReservationRepositoryPort],
+  exports: [ReservationRepositoryPort, AirportServiceRepositoryPort],
 })
 export class ReservationsModule {}

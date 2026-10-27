@@ -25,18 +25,53 @@ export function buildDepositSettlementPlan(params: {
   refundAmount: number;
   retainedAmount: number;
   immobilizationTotal: number;
+  lateChargeAmount?: number | null;
+  fuelPenaltyAmount?: number | null;
 }): DepositSettlementPlan {
   const original = roundMoney(params.originalAmount);
   const refund = roundMoney(params.refundAmount);
   const retained = roundMoney(params.retainedAmount);
   const immobilization = roundMoney(params.immobilizationTotal);
+  const lateCharge = roundMoney(params.lateChargeAmount ?? 0);
+  const fuelPenalty = roundMoney(params.fuelPenaltyAmount ?? 0);
+  const priorCharges = roundMoney(immobilization + lateCharge + fuelPenalty);
 
   if (roundMoney(refund + retained) !== original) {
     throw new InvalidFinancialSettlementError(
       `El reembolso (${refund.toFixed(2)}) más lo retenido (${retained.toFixed(2)}) debe ser igual a la garantía constituida (${original.toFixed(2)}).`,
     );
   }
-  if (retained < immobilization) {
+  if (retained < priorCharges) {
+    if (fuelPenalty > 0 && lateCharge > 0 && immobilization > 0) {
+      throw new InvalidFinancialSettlementError(
+        `Lo retenido (${retained.toFixed(2)}) no cubre los cargos ya imputados de paralización (${immobilization.toFixed(2)}), retraso (${lateCharge.toFixed(2)}) y multa de combustible (${fuelPenalty.toFixed(2)}) (total: ${priorCharges.toFixed(2)}).`,
+      );
+    }
+    if (fuelPenalty > 0 && lateCharge > 0) {
+      throw new InvalidFinancialSettlementError(
+        `Lo retenido (${retained.toFixed(2)}) no cubre los cargos de retraso (${lateCharge.toFixed(2)}) y multa de combustible (${fuelPenalty.toFixed(2)}) (total: ${priorCharges.toFixed(2)}).`,
+      );
+    }
+    if (fuelPenalty > 0 && immobilization > 0) {
+      throw new InvalidFinancialSettlementError(
+        `Lo retenido (${retained.toFixed(2)}) no cubre los cargos de paralización (${immobilization.toFixed(2)}) y multa de combustible (${fuelPenalty.toFixed(2)}) (total: ${priorCharges.toFixed(2)}).`,
+      );
+    }
+    if (fuelPenalty > 0) {
+      throw new InvalidFinancialSettlementError(
+        `Lo retenido (${retained.toFixed(2)}) no cubre la multa por combustible (${fuelPenalty.toFixed(2)}).`,
+      );
+    }
+    if (lateCharge > 0 && immobilization > 0) {
+      throw new InvalidFinancialSettlementError(
+        `Lo retenido (${retained.toFixed(2)}) no cubre los cargos ya imputados de paralización (${immobilization.toFixed(2)}) y retraso (${lateCharge.toFixed(2)}) (total: ${priorCharges.toFixed(2)}).`,
+      );
+    }
+    if (lateCharge > 0) {
+      throw new InvalidFinancialSettlementError(
+        `Lo retenido (${retained.toFixed(2)}) no cubre el cargo por retraso ya registrado (${lateCharge.toFixed(2)}).`,
+      );
+    }
     throw new InvalidFinancialSettlementError(
       `Lo retenido (${retained.toFixed(2)}) no cubre los cargos de paralización ya imputados (${immobilization.toFixed(2)}) (BR-DEV-011).`,
     );

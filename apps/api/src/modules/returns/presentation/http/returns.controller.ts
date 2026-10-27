@@ -35,10 +35,14 @@ import { ChargeImmobilizationHandler } from '../../application/commands/charge-i
 import { ChargeImmobilizationCommand } from '../../application/commands/charge-immobilization.command';
 import { RegisterReturnLateChargeHandler } from '../../application/commands/register-late-charge.handler';
 import { RegisterReturnLateChargeCommand } from '../../application/commands/register-late-charge.command';
+import { RegisterReturnFuelPenaltyHandler } from '../../application/commands/register-fuel-penalty.handler';
+import { RegisterReturnFuelPenaltyCommand } from '../../application/commands/register-fuel-penalty.command';
 import { CloseFinancialHandler } from '../../application/commands/close-financial.handler';
 import { CloseFinancialCommand } from '../../application/commands/close-financial.command';
 import { CloseReturnHandler } from '../../application/commands/close-return.handler';
 import { CloseReturnCommand } from '../../application/commands/close-return.command';
+import { RecordHolderNotificationHandler } from '../../application/commands/record-holder-notification.handler';
+import { RecordHolderNotificationCommand } from '../../application/commands/record-holder-notification.command';
 import { GetReturnHandler } from '../../application/queries/get-return.handler';
 import { GetReturnQuery } from '../../application/queries/get-return.query';
 import { GetCosmeticTariffHandler } from '../../application/queries/get-cosmetic-tariff.handler';
@@ -70,6 +74,7 @@ import { CompleteInspectionDto } from './dto/complete-inspection.dto';
 import { AssessDamageDto } from './dto/assess-damage.dto';
 import { ChargeImmobilizationDto } from './dto/charge-immobilization.dto';
 import { RegisterReturnLateChargeDto } from './dto/register-late-charge.dto';
+import { RegisterFuelPenaltyDto } from './dto/register-fuel-penalty.dto';
 import { CloseFinancialDto } from './dto/close-financial.dto';
 import { CloseReturnDto } from './dto/close-return.dto';
 import { RegisterReturnReminderDto } from './dto/register-return-reminder.dto';
@@ -80,6 +85,7 @@ import { ReturnScopeQueryDto } from './dto/return-scope-query.dto';
 import { RecordZoneMarksDto } from './dto/record-zone-marks.dto';
 import { RecordMechanicReportDto } from './dto/record-mechanic-report.dto';
 import { EscalateLegalDto } from './dto/escalate-legal.dto';
+import { RecordHolderNotificationDto } from './dto/record-holder-notification.dto';
 import { RecordZoneMarksHandler } from '../../application/commands/record-zone-marks.handler';
 import { RecordZoneMarksCommand } from '../../application/commands/record-zone-marks.command';
 import { RecordMechanicReportHandler } from '../../application/commands/record-mechanic-report.handler';
@@ -127,12 +133,14 @@ export class ReturnsController {
     private readonly assessDamage: AssessDamageHandler,
     private readonly chargeImmobilization: ChargeImmobilizationHandler,
     private readonly registerLateCharge: RegisterReturnLateChargeHandler,
+    private readonly registerFuelPenalty: RegisterReturnFuelPenaltyHandler,
     private readonly closeFinancial: CloseFinancialHandler,
     private readonly closeReturn: CloseReturnHandler,
     private readonly recordMechanicReport: RecordMechanicReportHandler,
     private readonly escalateLegal: EscalateLegalHandler,
     private readonly recordZoneMarks: RecordZoneMarksHandler,
     private readonly listZoneMarks: ListZoneMarksHandler,
+    private readonly recordHolderNotification: RecordHolderNotificationHandler,
     private readonly getReturn: GetReturnHandler,
     private readonly getCosmeticTariff: GetCosmeticTariffHandler,
     private readonly listReturns: ListReturnsHandler,
@@ -202,6 +210,12 @@ export class ReturnsController {
         dto.fuelLevelAtReturn,
         dto.customerPresent,
         dto.notes,
+        dto.identityVerified,
+        dto.identityDocumentType,
+        dto.identityDocumentNumber,
+        dto.identityMatchesHolder,
+        dto.identityResult,
+        dto.observation,
       ),
     );
     return toReturnResponse(received);
@@ -461,6 +475,30 @@ export class ReturnsController {
     return toReturnResponse(updated);
   }
 
+  /** DEC-DEV-FUEL-PENALTY-001 (BDD-04 §9.6.1): multa por combustible faltante manual / ajustada. */
+  @Post(':id/commands/register-fuel-penalty')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async registerFuelPenaltyCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RegisterFuelPenaltyDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReturnResponse> {
+    const updated = await this.registerFuelPenalty.execute(
+      new RegisterReturnFuelPenaltyCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.amount,
+        dto.reason,
+      ),
+    );
+    return toReturnResponse(updated);
+  }
+
   /** BR-DEV-004 / DAT-DEV-001: registra el resultado del envío manual del recordatorio. If-Match = reminder.version. */
   @Post(':id/commands/register-reminder')
   @HttpCode(200)
@@ -575,6 +613,31 @@ export class ReturnsController {
         dto.branchId,
         parseVersionIfMatch(ifMatch),
         dto.notes,
+      ),
+    );
+    return toReturnResponse(updated);
+  }
+
+  @Post(':id/commands/record-holder-notification')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async recordHolderNotificationCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecordHolderNotificationDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<ReturnResponse> {
+    const updated = await this.recordHolderNotification.execute(
+      new RecordHolderNotificationCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        dto.channel,
+        parseBusinessInstant(dto.contactedAt),
+        dto.notifiedBy,
+        dto.observations,
       ),
     );
     return toReturnResponse(updated);

@@ -38,6 +38,9 @@ export class AssessDamageHandler {
 
   async execute(command: AssessDamageCommand): Promise<AssessDamageResult> {
     const { context, scope } = await this.access.authorize(command, 'ASSESS_DAMAGE');
+    if (command.severity) {
+      await this.access.authorize(command, 'CLASSIFY_DAMAGE_SEVERITY');
+    }
 
     // BR-DEV-006: validar/calcular antes de tocar la base (falla rápido con 422).
     const resolved = resolveDamageAssessment({

@@ -10,6 +10,7 @@ import {
 import {
   CandidateAlreadyDecidedError,
   MechanicMissingTechnicalChannelsError,
+  MechanicGeneralPortalsProhibitedError,
   OnboardingMissingNotarizedContractError,
   VacancyNotTransitionableError,
 } from './recruitment-errors';
@@ -38,14 +39,14 @@ describe('recruitment-rules', () => {
     });
   });
 
-  describe('assertMechanicChannels (BR-REC-004)', () => {
-    it('no exige canales tecnicos si no es mecanico', () => {
+  describe('assertMechanicChannels (BR-REC-004 y prohibición de portales generales)', () => {
+    it('no exige canales tecnicos si no es mecanico y permite portales generales', () => {
       expect(() => assertMechanicChannels(false, ['Computrabajo', 'LinkedIn'])).not.toThrow();
     });
 
-    it('exige SENATI o TECSUP si es mecanico', () => {
+    it('exige SENATI, TECSUP o institutos técnicos si es mecanico', () => {
       expect(() =>
-        assertMechanicChannels(true, ['Bolsa SENATI', 'LinkedIn']),
+        assertMechanicChannels(true, ['Bolsa SENATI', 'Volantes en taller']),
       ).not.toThrow();
 
       expect(() =>
@@ -53,8 +54,20 @@ describe('recruitment-rules', () => {
       ).not.toThrow();
 
       expect(() =>
-        assertMechanicChannels(true, ['LinkedIn', 'Computrabajo']),
+        assertMechanicChannels(true, ['Institutos técnicos']),
+      ).not.toThrow();
+
+      expect(() =>
+        assertMechanicChannels(true, ['Volantes en taller', 'Recomendación']),
       ).toThrow(MechanicMissingTechnicalChannelsError);
+    });
+
+    it('prohíbe portales generales (Bumeran, Computrabajo, LinkedIn, Portal UNCH) para mecánico incluso si hay canal técnico', () => {
+      for (const portal of ['Computrabajo', 'Bumeran', 'LinkedIn', 'Portal UNCH', 'bolsa unch']) {
+        expect(() =>
+          assertMechanicChannels(true, ['Bolsa SENATI', portal]),
+        ).toThrow(MechanicGeneralPortalsProhibitedError);
+      }
     });
   });
 

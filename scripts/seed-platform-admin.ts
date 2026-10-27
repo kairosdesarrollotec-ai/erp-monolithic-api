@@ -30,7 +30,8 @@
  * user_profiles.
  */
 
-import * as admin from 'firebase-admin';
+import { applicationDefault, cert, deleteApp, getApp, getApps, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { ensureSystemRoles } from '../apps/api/src/modules/admin/infrastructure/persistence/system-roles-seeder';
@@ -95,7 +96,7 @@ function parseArgs(): SeedConfig {
 // ---------------------------------------------------------------------------
 
 function initFirebase(): void {
-  if (admin.apps.length > 0) return;
+  if (getApps().length > 0) return;
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -103,12 +104,12 @@ function initFirebase(): void {
 
   if (projectId && clientEmail && rawKey) {
     const privateKey = rawKey.replace(/\\n/g, '\n');
-    admin.initializeApp({
-      credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+    initializeApp({
+      credential: cert({ projectId, clientEmail, privateKey }),
     });
   } else {
     // Intenta Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS)
-    admin.initializeApp();
+    initializeApp({ credential: applicationDefault() });
   }
 }
 
@@ -127,7 +128,7 @@ async function main(): Promise<void> {
 
   // 1. Firebase: crear o reutilizar usuario
   initFirebase();
-  const auth = admin.auth();
+  const auth = getAuth();
 
   let firebaseUid: string;
   try {
@@ -239,7 +240,7 @@ async function main(): Promise<void> {
     }
   } finally {
     await prisma.$disconnect();
-    await admin.app().delete();
+    await deleteApp(getApp());
   }
 }
 

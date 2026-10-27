@@ -76,6 +76,9 @@ export class PrismaRentalNotaryContractPersistence {
         signatureData: input.signatureData ?? null,
         contractVariant: input.contractVariant ?? null,
         depositRequired: input.depositRequired,
+        fingerprintTaken: input.fingerprintTaken ?? false,
+        fingerprintMarkedBy: input.fingerprintMarkedBy ?? null,
+        fingerprintMarkedAt: input.fingerprintMarkedAt ?? null,
         // Sin garantia el credito de reserva no tiene a que aplicarse: se guarda aqui como saldo a favor.
         reservationCreditExcess: new Prisma.Decimal(input.depositRequired ? '0' : input.reservationCreditExcess),
       },
@@ -87,6 +90,9 @@ export class PrismaRentalNotaryContractPersistence {
         signatureData: input.signatureData ?? null,
         contractVariant: input.contractVariant ?? null,
         depositRequired: input.depositRequired,
+        fingerprintTaken: input.fingerprintTaken ?? false,
+        fingerprintMarkedBy: input.fingerprintMarkedBy ?? null,
+        fingerprintMarkedAt: input.fingerprintMarkedAt ?? null,
         // Sin garantia el credito de reserva no tiene a que aplicarse: se guarda aqui como saldo a favor.
         reservationCreditExcess: new Prisma.Decimal(input.depositRequired ? '0' : input.reservationCreditExcess),
       },

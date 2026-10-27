@@ -16,6 +16,7 @@ export const HR_ALERT_EVENT_TYPES = [
   'RelacionLaboralTerminada.v1',
   'VacanteCreada.v1',
   'PasoAPlanilla.v1',
+  'FinPeriodoPruebaProximo.v1',
 ] as const;
 
 export const FIELD_TRIP_DASHBOARD_SOURCE_TYPE = 'FIELD_TRIP';
@@ -91,6 +92,15 @@ interface VacancyPayload {
 interface PayrollPayload {
   candidateId: string;
   fullName?: string | null;
+  organizationId: string;
+  operatingCompanyId: string;
+  branchId: string;
+}
+
+interface ProbationAlertPayload {
+  candidateId: string;
+  fullName?: string | null;
+  daysLeft?: number;
   organizationId: string;
   operatingCompanyId: string;
   branchId: string;
@@ -209,12 +219,29 @@ export function projectHrAlertEvent(event: HrAlertEventLike): HrAlertProjection 
       return {
         action: 'ALERT',
         scope: scopeOf(p),
+        replaceSource: { sourceType: RECRUITMENT_DASHBOARD_SOURCE_TYPE, sourceId: p.candidateId },
         item: {
           permission: 'RECEIVE_HR_ALERTS',
           priority: 55,
           title: `Pasó a planilla: ${p.fullName ?? 'colaborador'} aprobó el periodo de prueba.`,
           detail: null,
           deepLink: '/reclutamiento',
+          sourceType: RECRUITMENT_DASHBOARD_SOURCE_TYPE,
+          sourceId: p.candidateId,
+        },
+      };
+    }
+    case 'FinPeriodoPruebaProximo.v1': {
+      const p = event.payload as ProbationAlertPayload;
+      return {
+        action: 'ALERT',
+        scope: scopeOf(p),
+        item: {
+          permission: 'RECEIVE_HR_ALERTS',
+          priority: 85,
+          title: `Periodo de prueba por vencer: ${p.fullName ?? 'colaborador'} (${p.daysLeft ?? 15} días restantes).`,
+          detail: 'Requiere evaluación de Gerencia General antes de cumplir los 3 meses.',
+          deepLink: `/reclutamiento/candidatos/${p.candidateId}/periodo-de-prueba`,
           sourceType: RECRUITMENT_DASHBOARD_SOURCE_TYPE,
           sourceId: p.candidateId,
         },

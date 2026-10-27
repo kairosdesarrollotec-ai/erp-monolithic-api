@@ -27,6 +27,9 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RESERVATION', action: 'CANCEL_NO_SHOW', label: 'Reserva: cancelar (no-show)' },
   { module: 'RESERVATION', action: 'FLAG_SALE', label: 'Reserva: registrar venta del vehículo reservado' },
   { module: 'RESERVATION', action: 'RESOLVE_SALE', label: 'Reserva: resolver venta (alternativa o reembolso)' },
+  { module: 'RESERVATION', action: 'CONFIRM_SALE_REFUND', label: 'Reserva: confirmar transferencia del reembolso por venta (Gerencia y Finanzas)' },
+  { module: 'RESERVATION', action: 'REGISTER_REMINDER', label: 'Reserva: registrar envío del recordatorio 3 h antes del recojo' },
+  { module: 'RESERVATION', action: 'REQUEST_AIRPORT_SERVICE', label: 'Reserva: solicitar servicio de aeropuerto (Administración y Gerencia)' },
   { module: 'RESERVATION', action: 'CHANGE_VEHICLE', label: 'Reserva: cambiar vehículo (borrador)' },
   { module: 'INQUIRY', action: 'READ', label: 'Consulta: leer' },
   { module: 'INQUIRY', action: 'REGISTER', label: 'Consulta: registrar' },
@@ -49,6 +52,7 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'RENTAL', action: 'MANAGE_CONTRACT_TEMPLATES', label: 'Alquiler: gestionar plantillas de contrato' },
   { module: 'RENTAL', action: 'REPORT_EXTENSION_BREACH', label: 'Alquiler: registrar falta grave de ampliacion' },
   { module: 'RENTAL', action: 'CANCEL', label: 'Alquiler: cancelar antes de la entrega (documentos invalidos / cliente rechaza notaria)' },
+  { module: 'RENTAL', action: 'REQUEST_AIRPORT_SERVICE', label: 'Alquiler: solicitar servicio de aeropuerto (Administración y Gerencia)' },
   { module: 'INCIDENT', action: 'VIEW', label: 'Incidencia: ver bandeja y detalle' },
   { module: 'INCIDENT', action: 'CREATE', label: 'Incidencia: registrar' },
   { module: 'INCIDENT', action: 'ADD_ACTION', label: 'Incidencia: agregar acción al historial' },
@@ -60,13 +64,14 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'ADMIN', action: 'MANAGE_PARAMETERS', label: 'Administración: gestionar parámetros' },
   { module: 'ADMIN', action: 'MANAGE_PERMISSIONS', label: 'Administración: gestionar permisos' },
   { module: 'ADMIN', action: 'MANAGE_NOTIFICATIONS', label: 'Administración: gestionar notificaciones' },
-  // RETURN (11 acciones — return-role-policy.ts)
+  // RETURN (12 acciones — return-role-policy.ts)
   { module: 'RETURN', action: 'CREATE', label: 'Devolución: crear' },
   { module: 'RETURN', action: 'READ', label: 'Devolución: leer' },
   { module: 'RETURN', action: 'RECEIVE_PROVISIONAL', label: 'Devolución: recepción provisional' },
   { module: 'RETURN', action: 'REGISTER_ALCOHOL_TEST', label: 'Devolución: registrar alcolímetro' },
   { module: 'RETURN', action: 'RESOLVE_ALCOHOL_ESCALATION', label: 'Devolución: resolver escalación alcolímetro' },
   { module: 'RETURN', action: 'COMPLETE_INSPECTION', label: 'Devolución: completar inspección' },
+  { module: 'RETURN', action: 'CLASSIFY_DAMAGE_SEVERITY', label: 'Devolución: clasificar gravedad del daño (BR-DEV-007)' },
   { module: 'RETURN', action: 'ASSESS_DAMAGE', label: 'Devolución: valorar daño' },
   { module: 'RETURN', action: 'CHARGE_IMMOBILIZATION', label: 'Devolución: cobrar inmovilización' },
   { module: 'RETURN', action: 'CLOSE_FINANCIAL', label: 'Devolución: cierre financiero' },
@@ -122,6 +127,8 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
   { module: 'HR_ADMINISTRATION', action: 'MANAGE_HR_DOCUMENTS', label: 'Personal: publicar y versionar reglamentos, políticas y formatos de Talento Humano (solo Gerencia)' },
   { module: 'HR_ADMINISTRATION', action: 'VIEW_HR_DOCUMENTS', label: 'Personal: consultar reglamentos, políticas y formatos vigentes de Talento Humano' },
   { module: 'HR_ADMINISTRATION', action: 'CONFIRM_HR_DOCUMENT_READ', label: 'Personal: registrar la confirmación de lectura de documentos de Talento Humano' },
+  // REC-P13 / BDD-05 / BDD-00 (Documento de expectativas a los 2 días de ingreso)
+  { module: 'HR_ADMINISTRATION', action: 'MANAGE_EXPECTATION_DOCUMENT', label: 'Personal: gestionar documento de expectativas del colaborador (por defecto RRHH y Gerencia)' },
   // PAYMENT (5 acciones — BDD-PAG-001 / SDD-PAG-001 / TDD-PAG-001)
   { module: 'PAYMENT', action: 'READ_LIST', label: 'Pagos: listar garantías de alquiler' },
   { module: 'PAYMENT', action: 'READ_DETAIL', label: 'Pagos: ver detalle de garantía y ajustes' },

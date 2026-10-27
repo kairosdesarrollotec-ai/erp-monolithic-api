@@ -250,7 +250,7 @@ describe('Contrato OpenAPI rentals.yaml vs backend', () => {
   });
 
   it('DEC-ALQ-CAPWARN-001/002 (contrato 1.11.0): RentalResponse expone vehiclePassengerCapacity (nullable) y companionsCount (RESPONSIBLE)', () => {
-    expect(spec.info.version).toBe('1.15.0');
+    expect(spec.info.version).toBe('1.16.0');
     const contract = flatten(spec.components.schemas.RentalResponse);
     expect(contract.properties.vehiclePassengerCapacity.nullable).toBe(true);
     expect(contract.properties.vehiclePassengerCapacity.type).toBe('integer');

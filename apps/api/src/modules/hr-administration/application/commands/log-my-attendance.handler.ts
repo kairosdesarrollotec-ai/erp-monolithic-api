@@ -157,6 +157,8 @@ export class LogMyAttendanceHandler {
     geo: ReturnType<typeof evaluateGeofence>,
     tx: Parameters<AttendanceRepositoryPort['findById']>[1],
   ): Promise<void> {
+    const receivedAt = this.clock.now();
+    const isDeferred = Math.abs(receivedAt.getTime() - command.capturedAt.getTime()) > 60_000;
     await this.auditRepository.recordHrAdministrationEvent(
       {
         organizationId,
@@ -171,6 +173,8 @@ export class LogMyAttendanceHandler {
           status: record.status,
           minutesLate: record.minutesLate,
           capturedAt: command.capturedAt,
+          receivedAt,
+          isDeferred,
           geofenceEvaluated: geo.evaluated,
           outsideGeofence: geo.outsideGeofence,
           distanceMeters: geo.distanceMeters,

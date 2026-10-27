@@ -42,6 +42,9 @@ export interface RentalContractResponse {
   depositRequired: boolean;
   /** Credito de reserva sin garantia a la cual aplicarse (saldo a favor; "0.00" si no aplica). */
   reservationCreditExcess: string;
+  fingerprintTaken: boolean;
+  fingerprintMarkedBy?: string | null;
+  fingerprintMarkedAt?: string | null;
   createdAt: string;
 }
 

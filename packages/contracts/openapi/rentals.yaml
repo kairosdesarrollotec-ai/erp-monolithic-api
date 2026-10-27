@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Rentals API
-  version: 1.15.0
+  version: 1.16.0
   description: >
+    1.16.0 - Cierre MVP (Prompt 5, 26-oct-2026):
+    - C1: Solicitud de servicio de aeropuerto como cargo adicional manual (POST /rentals/{id}/commands/request-airport-service, GET /rentals/{id}/airport-service).
+    - C5: Huella física tomada en contrato en papel (FormalizeContractRequest.fingerprintTaken requerido, RentalContractResponse.fingerprintTaken).
     1.15.0 - DEC-ALQ-NOTARY-001 (23-oct-2026, Frente B). (a) Gasto notarial: la empresa paga el trámite (BR-ALQ-002, HU-28, SC-ALQ-001).
     Nuevo POST /rentals/{id}/company-expenses para registrar gastos de la empresa (monto, fecha, referencia, tipo GASTO_NOTARIAL).
     PROHIBIDO clasificarlo como pago del cliente -> 422 NOTARY_EXPENSE_CANNOT_BE_CUSTOMER_PAYMENT.
@@ -608,6 +611,50 @@ paths:
         '422': { description: INVALID_CANCEL_REASON }
         '428': { description: Falta header If-Match }
 
+  /rentals/{id}/commands/request-airport-service:
+    post:
+      operationId: requestRentalAirportService
+      summary: Registra una solicitud de servicio de aeropuerto como cargo adicional manual (C1, BDD-ALQ 7.1.1)
+      description: >
+        Roles: ADMINISTRACION y GERENCIA (accion RENTAL.REQUEST_AIRPORT_SERVICE de la matriz ADM-02).
+        El monto adicional no altera la tarifa base ni la garantía; queda registrado como cargo adicional.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestAirportServiceRequest' }
+      responses:
+        '200':
+          description: Solicitud de aeropuerto registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AirportServiceResponse' }
+        '403': { description: 'ROLE_NOT_ALLOWED o empresa/sede no autorizada' }
+        '404': { description: Alquiler no encontrado en el scope del usuario }
+        '409': { description: 'RENTAL_STATE_CONFLICT' }
+        '412': { description: RENTAL_VERSION_CONFLICT }
+        '428': { description: IF_MATCH_REQUIRED }
+
+  /rentals/{id}/airport-service:
+    get:
+      operationId: getRentalAirportService
+      summary: Obtiene la solicitud de servicio de aeropuerto del alquiler si existe (C1)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Solicitud encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AirportServiceResponse' }
+        '404': { description: No existe servicio de aeropuerto para este alquiler }
+
   /rentals/{id}/company-expenses:
     post:
       operationId: recordRentalCompanyExpense
@@ -1209,7 +1256,7 @@ components:
 
     FormalizeContractRequest:
       type: object
-      required: [companyId, branchId, documentRef]
+      required: [companyId, branchId, documentRef, fingerprintTaken]
       description: >
         Con conductor de la empresa (`withCompanyDriver=true`) no hay garantía (DEC-ALQ-COMPANY-DRIVER-004). En el resto,
         `depositAmount`/`depositCurrency` son opcionales si Flota define la garantía del vehículo (el servidor usa la exigida,
@@ -1219,6 +1266,11 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         documentRef: { type: string }
+        fingerprintTaken:
+          type: boolean
+          description: >
+            C5: Huella física tomada en el contrato en papel (no biometría). Obligatorio marcarlo
+            al formalizar el contrato; el valor false se permite pero queda auditado.
         depositAmount:
           type: string
           description: Garantía TOTAL del vehículo (incluye el monto de reserva que se traslada, si lo hay). Omitir con conductor de la empresa.
@@ -1415,6 +1467,9 @@ components:
           description: Combinación con la que se eligió la plantilla (p. ej. NATURAL_NO_DRIVER). Null en contratos anteriores.
         depositRequired: { type: boolean, description: false = con conductor de la empresa, sin garantía (DEC-ALQ-COMPANY-DRIVER-004). }
         reservationCreditExcess: { type: string, description: Crédito de reserva sin garantía a la cual aplicarse (saldo a favor; "0.00" si no aplica). }
+        fingerprintTaken: { type: boolean, description: 'C5: Si se tomó la huella física en el contrato' }
+        fingerprintMarkedBy: { type: string, nullable: true, description: 'Usuario que registró la huella física' }
+        fingerprintMarkedAt: { type: string, format: date-time, nullable: true, description: 'Fecha y hora del registro de la huella física' }
         createdAt: { type: string, format: date-time }
 
     ContractHolderType:
@@ -1741,4 +1796,51 @@ components:
         reference: { type: string }
         notes: { type: string, nullable: true }
         createdBy: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    CommandScopeRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+
+    RequestAirportServiceRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [scheduledAt, location, additionalAmount]
+          properties:
+            scheduledAt:
+              type: string
+              format: date-time
+              description: Fecha y hora programada para el servicio de aeropuerto
+            location:
+              type: string
+              minLength: 1
+              maxLength: 255
+              description: Lugar o descripción del servicio en aeropuerto
+            additionalAmount:
+              type: string
+              pattern: '^[0-9]+(\.[0-9]{1,2})?$'
+              description: Monto adicional manual que se suma como cargo del expediente
+            notes:
+              type: string
+              maxLength: 1000
+              description: Notas u observaciones adicionales
+
+    AirportServiceResponse:
+      type: object
+      required: [id, targetType, targetId, scheduledAt, location, additionalAmount, registeredBy, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        targetType:
+          type: string
+          enum: [RESERVATION, RENTAL]
+        targetId: { type: string, format: uuid }
+        scheduledAt: { type: string, format: date-time }
+        location: { type: string }
+        additionalAmount: { type: string }
+        notes: { type: string, nullable: true }
+        registeredBy: { type: string }
         createdAt: { type: string, format: date-time }

@@ -36,6 +36,7 @@ describe('toReservationResponse', () => {
       id: 'rs-1', status: 'REJECTED', reason: 'VEHICLE_SOLD',
       offeredVehicle: { id: 'veh-2', plate: 'BBB-222', label: 'Kia Rio - BBB-222' }, offerNote: 'Fotos enviadas',
       flaggedAt: '2026-10-13T10:00:00.000Z', alternativeVehicleId: null, refundStatus: 'PENDING_TRANSFER',
+      transferVoucher: null, transferredAt: null, transferredBy: null,
       resolutionNote: null, resolvedAt: '2026-10-13T12:00:00.000Z',
     });
   });

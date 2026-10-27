@@ -8,6 +8,7 @@ export type ReturnAction =
   | 'REGISTER_ALCOHOL_TEST'
   | 'RESOLVE_ALCOHOL_ESCALATION'
   | 'COMPLETE_INSPECTION'
+  | 'CLASSIFY_DAMAGE_SEVERITY'
   | 'ASSESS_DAMAGE'
   | 'CHARGE_IMMOBILIZATION'
   | 'CLOSE_FINANCIAL'
@@ -34,6 +35,8 @@ const RETURN_ROLE_POLICY: Readonly<Record<ReturnAction, ReadonlySet<WorkerRole>>
   // SUBGERENCIA en WorkerRole; cuando ADM-02 lo incorpore se agrega aquí.
   RESOLVE_ALCOHOL_ESCALATION: new Set(['GERENCIA']),
   COMPLETE_INSPECTION: FIELD_OPERATIONAL_ROLES,
+  // BR-DEV-007: Clasificación de gravedad del daño (por defecto exclusivo de Gerencia, ADM-02)
+  CLASSIFY_DAMAGE_SEVERITY: new Set(['GERENCIA']),
   ASSESS_DAMAGE: new Set(['ADMINISTRACION', 'GERENCIA']),
   CHARGE_IMMOBILIZATION: new Set(['ADMINISTRACION', 'GERENCIA', 'FINANZAS']),
   CLOSE_FINANCIAL: new Set(['FINANZAS', 'ADMINISTRACION', 'GERENCIA']),

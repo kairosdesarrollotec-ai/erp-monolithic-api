@@ -182,4 +182,68 @@ describe('Roles dinamicos y matriz con ambito (Postgres real)', () => {
 
     await expect(prisma.role.delete({ where: { id: role.id } })).rejects.toThrow();
   });
+
+  it('R2b: versionado inmutable de la matriz - version nueva restringe permisos de vacaciones/licencias a no-gerencia preservando historial anterior', async () => {
+    const testOrg = randomUUID();
+    const tRoles = await ensureSystemRoles(prisma, testOrg);
+    const rrhhId = tRoles.get('RRHH')!;
+    const adminId = tRoles.get('ADMINISTRACION')!;
+    const gerenciaId = tRoles.get('GERENCIA')!;
+
+    // Versión 1: RRHH y ADMINISTRACION tenían permiso allowed = true
+    await prisma.rolePermissionMatrixVersion.createMany({
+      data: [
+        { organizationId: testOrg, version: 1, roleId: rrhhId, action: 'HR_ADMINISTRATION.AUTHORIZE_LEAVE', allowed: true, createdBy: 'seed-v1' },
+        { organizationId: testOrg, version: 1, roleId: adminId, action: 'HR_ADMINISTRATION.AUTHORIZE_LEAVE', allowed: true, createdBy: 'seed-v1' },
+        { organizationId: testOrg, version: 1, roleId: gerenciaId, action: 'HR_ADMINISTRATION.AUTHORIZE_LEAVE', allowed: true, createdBy: 'seed-v1' },
+        { organizationId: testOrg, version: 1, roleId: rrhhId, action: 'HR_ADMINISTRATION.SCHEDULE_VACATION', allowed: true, createdBy: 'seed-v1' },
+        { organizationId: testOrg, version: 1, roleId: gerenciaId, action: 'HR_ADMINISTRATION.SCHEDULE_VACATION', allowed: true, createdBy: 'seed-v1' },
+      ],
+    });
+
+    const v1Snapshot = await matrix.getCurrentVersion(testOrg);
+    expect(v1Snapshot.version).toBe(1);
+    expect(v1Snapshot.entries.find((e) => e.roleId === rrhhId && e.action === 'AUTHORIZE_LEAVE')?.allowed).toBe(true);
+
+    // Simular la migración 20261023140001 (inserta version = max + 1 con allowed = false para non-gerencia)
+    const maxVer = (await prisma.rolePermissionMatrixVersion.aggregate({
+      where: { organizationId: testOrg },
+      _max: { version: true },
+    }))._max.version!;
+    expect(maxVer).toBe(1);
+
+    const oldRows = await prisma.rolePermissionMatrixVersion.findMany({
+      where: { organizationId: testOrg, version: maxVer },
+      include: { roleRecord: true },
+    });
+
+    await prisma.rolePermissionMatrixVersion.createMany({
+      data: oldRows.map((r) => ({
+        organizationId: testOrg,
+        version: maxVer + 1,
+        roleId: r.roleId,
+        companyId: r.companyId,
+        branchId: r.branchId,
+        action: r.action,
+        allowed: ['GERENCIA', 'PLATFORM_ADMIN'].includes(r.roleRecord.key ?? '') ? r.allowed : false,
+        createdBy: 'system_migration_20261023140001',
+      })),
+    });
+
+    // Motor de la matriz ahora lee versión 2 (la más alta)
+    const v2Snapshot = await matrix.getCurrentVersion(testOrg);
+    expect(v2Snapshot.version).toBe(2);
+
+    // En versión 2: RRHH y ADMINISTRACION ya no tienen permiso
+    expect(v2Snapshot.entries.find((e) => e.roleId === rrhhId && e.action === 'AUTHORIZE_LEAVE')?.allowed).toBe(false);
+    expect(v2Snapshot.entries.find((e) => e.roleId === adminId && e.action === 'AUTHORIZE_LEAVE')?.allowed).toBe(false);
+    expect(v2Snapshot.entries.find((e) => e.roleId === gerenciaId && e.action === 'AUTHORIZE_LEAVE')?.allowed).toBe(true);
+
+    // Inmutabilidad del historial: la versión 1 permanece intacta en la base de datos
+    const v1History = await prisma.rolePermissionMatrixVersion.findMany({
+      where: { organizationId: testOrg, version: 1 },
+    });
+    expect(v1History.find((r) => r.roleId === rrhhId && r.action === 'HR_ADMINISTRATION.AUTHORIZE_LEAVE')?.allowed).toBe(true);
+    expect(v1History.find((r) => r.roleId === adminId && r.action === 'HR_ADMINISTRATION.AUTHORIZE_LEAVE')?.allowed).toBe(true);
+  });
 });

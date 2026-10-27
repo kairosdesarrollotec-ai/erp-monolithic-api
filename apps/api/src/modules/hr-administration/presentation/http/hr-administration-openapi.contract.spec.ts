@@ -21,7 +21,7 @@ describe('hr-administration.yaml contract specification', () => {
   it('el archivo de contrato existe y define titulo y version correctos', () => {
     expect(fs.existsSync(SPEC_PATH)).toBe(true);
     expect(spec.info.title).toBe('KAIROS ERP - Human Resources Administration API');
-    expect(spec.info.version).toBe('0.15.0');
+    expect(spec.info.version).toBe('0.16.0');
   });
 
   it('los enums del contrato coinciden exactamente con los generados en Prisma Client', () => {
@@ -46,6 +46,8 @@ describe('hr-administration.yaml contract specification', () => {
       '/employees/{id}',
       '/employees/{id}/attendance',
       '/employees/{id}/attendance/evidence/upload-url',
+      '/employees/{id}/commands/record-expectation-document',
+      '/employees/{id}/expectation-document',
       '/employees/{id}/field-trips',
       '/employees/{id}/leaves',
       '/employees/{id}/link-account',
@@ -80,7 +82,7 @@ describe('hr-administration.yaml contract specification', () => {
     ]);
   });
 
-  it('expone exactamente las 54 operaciones esperadas', () => {
+  it('expone exactamente las 56 operaciones esperadas', () => {
     const ops: string[] = [];
     for (const item of Object.values<any>(spec.paths)) {
       for (const op of Object.values<any>(item)) {
@@ -114,6 +116,7 @@ describe('hr-administration.yaml contract specification', () => {
         'getEmployeeMemos',
         'getEmployeeTrainings',
         'getEmployeeVacations',
+        'getExpectationDocument',
         'getFieldTrip',
         'getMyEmployee',
         'getVacationsCalendar',
@@ -130,6 +133,7 @@ describe('hr-administration.yaml contract specification', () => {
         'publishHrDocument',
         'reactivateHrArea',
         'reclassifyAttendance',
+        'recordExpectationDocument',
         'recordLeaveEvidence',
         'registerTraining',
         'rejectFieldTrip',

@@ -52,6 +52,9 @@ export interface RentalContractRecord {
   depositRequired?: boolean;
   /** DEC-ALQ-COMPANY-DRIVER-004: credito de reserva sin garantia (saldo a favor). "0.00" si no aplica. */
   reservationCreditExcess?: string;
+  fingerprintTaken?: boolean;
+  fingerprintMarkedBy?: string | null;
+  fingerprintMarkedAt?: Date | null;
   createdAt: Date;
 }
 
@@ -232,6 +235,9 @@ export interface FormalizeContractInput {
   contractVariant?: string;
   updatedBy: string;
   signatureData?: string;
+  fingerprintTaken?: boolean;
+  fingerprintMarkedBy?: string | null;
+  fingerprintMarkedAt?: Date | null;
   /** Decision 8: comprobante del cobro de la garantia (solo si hubo cobro > 0). */
   payment?: FormalizeContractPaymentInput;
 }
@@ -501,6 +507,12 @@ export abstract class RentalRepositoryPort {
   abstract rejectExtension(input: RejectExtensionInput, tx?: Prisma.TransactionClient): Promise<RentalRecord>;
   abstract reportExtensionBreach(
     input: ReportExtensionBreachInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord>;
+  abstract incrementVersion(
+    id: string,
+    scope: RentalScope,
+    expectedVersion: number,
     tx?: Prisma.TransactionClient,
   ): Promise<RentalRecord>;
 }

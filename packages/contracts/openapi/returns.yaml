@@ -1,8 +1,23 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Returns API
-  version: 1.11.0
+  version: 1.15.0
   description: >
+    1.15.0 - DEC-DEV-FUEL-PENALTY-001 / DEC-DEV-APOCRYPHAL-DOC-001 (27-oct-2026):
+    (1) POST /returns/{id}/commands/register-fuel-penalty: registro/ajuste de multa por combustible faltante (BDD-04 §9.6.1).
+    (2) ReturnResponse.fuelPenalty {amount, notes, registeredById, registeredAt}.
+    (3) ReceiveProvisionalRequest.observation y ReturnIdentityVerificationResponse.observation para registrar inconsistencias de identidad (p. ej. doc apócrifo/no conforme sin bloquear recepción física).
+    1.14.0 - P3 (HU-03): Verificación de identidad obligatoria en recepción provisional (POST /returns/receive-provisional):
+    exige identityVerified (true), identityDocumentType, identityDocumentNumber, identityMatchesHolder, identityResult.
+    Responde 422 RETURN_IDENTITY_REQUIRED si falta la verificación.
+    1.13.0 - HU-03: Verificación de identidad en entrega/recepción provisional (titular vs vinculado/tercero).
+    (1) ReceiveProvisionalRequest: identityVerified, identityDocumentType, identityDocumentNumber, identityMatchesHolder, identityResult.
+    (2) ReturnResponse.identityVerification {verified, documentType, documentNumber, matchesHolder, result, verifiedAt, verifiedBy}.
+    1.12.0 - DEC-DEV-ABSENT-HOLDER-001 (SC-DEV-004.01, EX-DEV-001): (1) Notificación formal al titular ausente al día siguiente
+    de la recepción vehicular por un tercero: POST /returns/{id}/commands/record-holder-notification (channel, contactedAt,
+    notifiedBy, observations), auditado con RETURN_HOLDER_NOTIFICATION_RECORDED y outbox NotificacionTitularAusenteRegistrada.v1.
+    (2) Tarea in-app proyectada a dashboard_items al registrar la recepción con titular ausente (responsibilitySignerIsHolder=false).
+    (3) ReturnResponse.holderNotification {sent, sentAt, sentBy, channel, observations, pending}.
     1.11.0 - DEC-DEV-REPORT-001 / DEC-DEV-LEGAL-001 / DEC-DEV-OFFLINE-001 (23-oct-2026, Frente C): (1) Inmovilización y reporte mecánico: si la
     devolución registra daños técnicos/estéticos (hasDamages=true), el vehículo queda inmovilizado y NO se puede cerrar la devolución
     (POST /returns/{id}/commands/close) sin que una persona con permiso de cierre registre que el cliente aceptó el informe mecánico/Motrix
@@ -165,6 +180,8 @@ paths:
           description: Alquiler no encontrado en la empresa/sede
         '409':
           description: El alquiler no está en estado ACTIVE o RETURN_IN_PROGRESS (RENTAL_NOT_RETURNABLE), o su devolución ya avanzó más allá de PROGRAMADA (RENTAL_ALREADY_HAS_ACTIVE_RETURN)
+        '422':
+          description: Verificación de identidad obligatoria ausente o incompleta (RETURN_IDENTITY_REQUIRED, HU-03)
         '500':
           description: Error interno del servidor
 
@@ -620,6 +637,47 @@ paths:
         '500':
           description: Error interno del servidor
 
+  /returns/{id}/commands/register-fuel-penalty:
+    post:
+      operationId: registerReturnFuelPenalty
+      summary: Registrar o ajustar multa por combustible faltante (DEC-DEV-FUEL-PENALTY-001)
+      description: >
+        Permite a un usuario autorizado (Administración, Gerencia o Finanzas) registrar o ajustar
+        el monto de la penalización por combustible faltante. Se liquida contra la garantía en close-financial.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterReturnFuelPenaltyRequest' }
+      responses:
+        '200':
+          description: Multa por combustible registrada o ajustada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token de autenticación ausente o inválido
+        '403':
+          description: No autorizado para el contexto o rol insuficiente
+        '404':
+          description: Devolución no encontrada en la empresa/sede
+        '409':
+          description: Estado incompatible (devolución debe estar recibida y no cerrada/cancelada)
+        '412':
+          description: Versión no coincide (If-Match)
+        '422':
+          description: Monto inválido
+        '428':
+          description: Falta header If-Match
+        '500':
+          description: Error interno del servidor
+
   /returns/{id}/commands/register-reminder:
     post:
       operationId: registerReturnReminder
@@ -671,7 +729,7 @@ paths:
       summary: Realizar cierre y balance financiero de garantía y penalidades (DEV-08 / BR-DEV-001)
       description: >
         refundAmount + retainedAmount debe ser igual a la garantía constituida del alquiler y retainedAmount debe cubrir los cargos de
-        paralización ya imputados. finalSettlementAmount del expediente queda con el valor de retainedAmount. No procede con
+        paralización y retraso ya imputados. finalSettlementAmount del expediente queda con el valor de retainedAmount. No procede con
         incidencias abiertas (INCIDENT_STILL_OPEN -> 422, DR-DEV-001).
       security: [{ bearerAuth: [] }]
       parameters:
@@ -797,6 +855,35 @@ paths:
         '400': { description: Datos inválidos }
         '401': { description: Token no autenticado }
         '403': { description: No autorizado para el contexto o permiso insuficiente (RETURN.CLOSE) }
+        '404': { description: Devolución no encontrada }
+        '412': { description: Versión no coincide (If-Match) }
+        '428': { description: Falta header If-Match }
+
+  /returns/{id}/commands/record-holder-notification:
+    post:
+      operationId: recordHolderNotification
+      summary: Registrar notificación formal al titular ausente (SC-DEV-004.01, EX-DEV-001)
+      description: >
+        Permite a un usuario con permiso operativo registrar la notificación formal realizada al titular ausente
+        del alquiler cuando la recepción vehicular fue efectuada por un tercero.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordHolderNotificationRequest' }
+      responses:
+        '200':
+          description: Notificación formal registrada exitosamente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+        '400': { description: Datos inválidos }
+        '401': { description: Token no autenticado }
+        '403': { description: No autorizado para el contexto o permiso insuficiente (RETURN.COMPLETE_INSPECTION) }
         '404': { description: Devolución no encontrada }
         '412': { description: Versión no coincide (If-Match) }
         '428': { description: Falta header If-Match }
@@ -1222,7 +1309,7 @@ components:
 
     ReceiveProvisionalRequest:
       type: object
-      required: [companyId, branchId, rentalId, mileageAtReturn, fuelLevelAtReturn]
+      required: [companyId, branchId, rentalId, mileageAtReturn, fuelLevelAtReturn, identityVerified, identityDocumentType, identityDocumentNumber, identityMatchesHolder, identityResult]
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
@@ -1230,7 +1317,31 @@ components:
         mileageAtReturn: { type: integer, minimum: 0 }
         fuelLevelAtReturn: { $ref: '#/components/schemas/ReturnFuelLevel' }
         customerPresent: { type: boolean }
+        identityVerified: { type: boolean, description: Indica si se verificó la identidad de quien entrega el vehículo (HU-03). }
+        identityDocumentType: { type: string, description: Tipo de documento (DNI, CE, PASAPORTE, etc.). }
+        identityDocumentNumber: { type: string, description: Número del documento de identidad presentado. }
+        identityMatchesHolder: { type: boolean, description: Si coincide con el titular del contrato o conductor autorizado. }
+        identityResult: { type: string, enum: [CONFORME, NO_CONFORME], description: Resultado de la verificación de identidad. }
+        observation: { type: string, description: Observación o notas adicionales de la verificación de identidad (p. ej. doc apócrifo/sospechoso). }
         notes: { type: string }
+
+    RegisterReturnFuelPenaltyRequest:
+      type: object
+      required: [companyId, branchId, amount, reason]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        amount: { type: number, minimum: 0, description: Monto de la multa por combustible (S/.) }
+        reason: { type: string, minLength: 3, maxLength: 500, description: Sustento o motivo del cobro/ajuste }
+
+    ReturnFuelPenaltyResponse:
+      type: object
+      required: [amount]
+      properties:
+        amount: { type: number }
+        notes: { type: string, nullable: true }
+        registeredById: { type: string, nullable: true }
+        registeredAt: { type: string, format: date-time, nullable: true }
 
     RegisterReturnAlcoholTestRequest:
       type: object
@@ -1400,6 +1511,40 @@ components:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
         notes: { type: string, minLength: 1 }
+
+    RecordHolderNotificationRequest:
+      type: object
+      required: [companyId, branchId, channel, contactedAt, notifiedBy]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        channel:
+          type: string
+          description: Medio o canal utilizado fuera del sistema (WHATSAPP, TELEFONO, EMAIL, CARTA, etc.)
+          example: WHATSAPP
+        contactedAt:
+          type: string
+          format: date-time
+          description: Fecha y hora en que se contactó formalmente al titular
+        notifiedBy:
+          type: string
+          description: Identificador o nombre de la persona que realizó la notificación
+          example: Juan Operador
+        observations:
+          type: string
+          nullable: true
+          description: Observaciones o detalle de la comunicación con el titular
+
+    HolderNotificationResponse:
+      type: object
+      required: [sent, pending]
+      properties:
+        sent: { type: boolean }
+        sentAt: { type: string, format: date-time, nullable: true }
+        sentBy: { type: string, nullable: true }
+        channel: { type: string, nullable: true }
+        observations: { type: string, nullable: true }
+        pending: { type: boolean, description: True si el vehículo fue entregado por un tercero y aún no se formaliza la notificación al titular }
 
     RequestReturnEvidenceUploadSessionRequest:
       type: object
@@ -1638,4 +1783,33 @@ components:
         legalEscalatedAt: { type: string, format: date-time, nullable: true }
         legalEscalatedBy: { type: string, nullable: true }
         legalNotes: { type: string, nullable: true }
+        holderNotification:
+          nullable: true
+          description: Registro de la notificación formal al titular ausente (SC-DEV-004.01)
+          allOf:
+            - $ref: '#/components/schemas/HolderNotificationResponse'
+        identityVerification:
+          nullable: true
+          description: Verificación de identidad de quien entrega el vehículo (HU-03)
+          allOf:
+            - $ref: '#/components/schemas/ReturnIdentityVerificationResponse'
+        fuelPenalty:
+          nullable: true
+          description: Multa por combustible faltante registrada o ajustada (DEC-DEV-FUEL-PENALTY-001)
+          allOf:
+            - $ref: '#/components/schemas/ReturnFuelPenaltyResponse'
+
+    ReturnIdentityVerificationResponse:
+      type: object
+      required: [verified]
+      properties:
+        verified: { type: boolean }
+        documentType: { type: string, nullable: true }
+        documentNumber: { type: string, nullable: true }
+        matchesHolder: { type: boolean, nullable: true }
+        result: { type: string, enum: [CONFORME, NO_CONFORME], nullable: true }
+        observation: { type: string, nullable: true }
+        verifiedAt: { type: string, format: date-time, nullable: true }
+        verifiedBy: { type: string, nullable: true }
+
 

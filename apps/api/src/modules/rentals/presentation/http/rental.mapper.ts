@@ -93,6 +93,9 @@ export function toRentalResponse(record: RentalRecord): RentalResponse {
           contractVariant: record.contract.contractVariant ?? null,
           depositRequired: record.contract.depositRequired ?? true,
           reservationCreditExcess: record.contract.reservationCreditExcess ?? '0.00',
+          fingerprintTaken: record.contract.fingerprintTaken ?? false,
+          fingerprintMarkedBy: record.contract.fingerprintMarkedBy ?? null,
+          fingerprintMarkedAt: record.contract.fingerprintMarkedAt ? record.contract.fingerprintMarkedAt.toISOString() : null,
           createdAt: record.contract.createdAt.toISOString(),
         }
       : null,

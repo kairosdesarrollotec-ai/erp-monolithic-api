@@ -49,6 +49,9 @@ export type ReservationAction =
   | 'CANCEL_NO_SHOW'
   | 'FLAG_SALE'
   | 'RESOLVE_SALE'
+  | 'CONFIRM_SALE_REFUND'
+  | 'REGISTER_REMINDER'
+  | 'REQUEST_AIRPORT_SERVICE'
   | 'CHANGE_VEHICLE';
 
 const READ_ROLES: ReadonlySet<WorkerRole> = new Set(['FRONT_OFFICE', 'GERENCIA', 'AUDITORIA', 'ADMINISTRACION']);
@@ -68,6 +71,9 @@ const RESERVATION_ROLE_POLICY: Readonly<Record<ReservationAction, ReadonlySet<Wo
   // participa: la venta del vehiculo y el reembolso son decisiones de Gerencia/Administracion.
   FLAG_SALE: new Set(['GERENCIA', 'ADMINISTRACION']),
   RESOLVE_SALE: new Set(['GERENCIA', 'ADMINISTRACION']),
+  CONFIRM_SALE_REFUND: new Set(['GERENCIA', 'FINANZAS']),
+  REGISTER_REMINDER: OPERATIONAL_ROLES,
+  REQUEST_AIRPORT_SERVICE: new Set(['GERENCIA', 'ADMINISTRACION']),
   // RES-06 "Continuar con alternativa elegida": cambia el vehiculo de una reserva en DRAFT (sin compromiso;
   // no es reprogramacion, BR-RES-003). Mismo personal operativo que crea/completa la reserva.
   CHANGE_VEHICLE: OPERATIONAL_ROLES,

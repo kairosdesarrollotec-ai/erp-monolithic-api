@@ -1,8 +1,11 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Fleet API
-  version: 0.10.0
+  version: 0.11.0
   description: >
+    0.11.0 — HU-15: Bloqueo de puesta fuera de servicio (baja) de vehículo con contrato/reserva activa o compromiso vigente.
+    PATCH /fleet/vehicles/{id}/status a OUT_OF_SERVICE responde 422 VEHICLE_HAS_ACTIVE_COMMITMENT
+    si el vehículo tiene un alquiler activo (status IN ('ACTIVE', 'RETURN_IN_PROGRESS')), reserva confirmada activa/futura o compromiso vigente.
     0.10.0 — DEC-OPS-FORMATS-001 (23-oct-2026, R5):
     Agrega soporte para fichas operativas digitales (Formatos 01-09) vinculadas al vehículo
     (POST/GET /fleet/vehicles/{id}/operational-records) y recordatorios programados de inspección
@@ -440,6 +443,12 @@ paths:
                 $ref: '#/components/schemas/KairosErrorResponse'
         '404':
           description: VEHICLE_NOT_FOUND - el vehículo no existe en el scope de la empresa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KairosErrorResponse'
+        '422':
+          description: VEHICLE_HAS_ACTIVE_COMMITMENT - el vehículo tiene un alquiler activo o reserva confirmada y no puede pasar a OUT_OF_SERVICE.
           content:
             application/json:
               schema:

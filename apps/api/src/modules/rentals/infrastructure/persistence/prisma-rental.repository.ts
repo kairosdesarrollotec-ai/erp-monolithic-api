@@ -623,6 +623,15 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     );
   }
 
+  async incrementVersion(
+    id: string,
+    scope: RentalScope,
+    expectedVersion: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<RentalRecord> {
+    return this.bumpVersion(id, scope, expectedVersion, {}, tx);
+  }
+
   private async bumpVersion(
     id: string,
     scope: RentalScope,

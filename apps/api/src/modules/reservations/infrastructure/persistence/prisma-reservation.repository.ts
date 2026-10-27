@@ -190,6 +190,15 @@ export class PrismaReservationRepository implements ReservationRepositoryPort {
     return this.bumpVersion(id, scope, expectedVersion, { documentsCompletedAt: new Date() }, tx);
   }
 
+  async incrementVersion(
+    id: string,
+    scope: ReservationScope,
+    expectedVersion: number,
+    tx?: Prisma.TransactionClient,
+  ): Promise<ReservationRecord> {
+    return this.bumpVersion(id, scope, expectedVersion, {}, tx);
+  }
+
   private async bumpVersion(
     id: string,
     scope: ReservationScope,

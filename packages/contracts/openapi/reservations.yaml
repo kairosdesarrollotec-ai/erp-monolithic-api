@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: KAIROS ERP - Reservations API
-  version: 0.13.0
+  version: 0.14.0
   description: >
+    0.14.0 — Cierre MVP (Prompt 5, 26-oct-2026):
+    - C6: Rechazo de no-show antes de terminar el día pactado en hora de Lima (422 RESERVATION_NO_SHOW_TOO_EARLY).
+    - C4: Confirmación de transferencia de reembolso por venta de vehículo (POST /reservations/{id}/commands/confirm-sale-refund-transfer, SaleResolution.refundStatus TRANSFERRED con voucher y fecha).
+    - C3: Registro asistido de recordatorio 3 h antes del recojo (POST /reservations/{id}/commands/register-reminder, ReservationReminderResponse).
+    - C1: Solicitud de servicio de aeropuerto como cargo adicional (POST /reservations/{id}/commands/request-airport-service, GET /reservations/{id}/airport-service).
     0.13.0 — HU-04, BDD-RES-001 (BR-RES-005, BR-RES-006, SC-RES-003, SC-RES-004): Soporte de Reserva Remota.
     Se anaden tipos VIDEO_360 y SIGNED_ACCEPTANCE a ReservationDocumentType. ReservationResponse.requirements
     expone isRemote (boolean), video360Uploaded (boolean) y signedAcceptanceUploaded (boolean). Confirmacion de
@@ -255,6 +260,7 @@ paths:
         '404': { description: Reserva no encontrada en el scope del usuario }
         '409': { description: 'RESERVATION_STATE_CONFLICT - la reserva ya esta en un estado terminal (CANCELLED/CONVERTED) o en PENDING_SALE_RESOLUTION (usar resolve-sale)' }
         '412': { description: RESERVATION_VERSION_CONFLICT }
+        '422': { description: 'RESERVATION_NO_SHOW_TOO_EARLY - el no-show solo puede marcarse una vez terminado el día pactado (hora de Lima)' }
         '428': { description: IF_MATCH_REQUIRED }
 
   /reservations/{id}/commands/flag-sale:
@@ -352,6 +358,95 @@ paths:
         '412': { description: RESERVATION_VERSION_CONFLICT }
         '422': { description: 'ALTERNATIVE_VEHICLE_INVALID - el mismo vehiculo, de otra empresa/sede o no esta AVAILABLE; RESERVATION_EXCEEDS_GUARANTEE - el monto de la reserva supera la garantia del vehiculo nuevo (F-01)' }
         '428': { description: IF_MATCH_REQUIRED }
+
+  /reservations/{id}/commands/confirm-sale-refund-transfer:
+    post:
+      operationId: confirmReservationSaleRefundTransfer
+      summary: Confirma la transferencia bancaria del reembolso por venta del vehículo (C4, BR-RES-007)
+      description: >
+        Roles: GERENCIA y FINANZAS (accion RESERVATION.CONFIRM_SALE_REFUND de la matriz ADM-02).
+        Registra la fecha y voucher del reembolso para reservas canceladas por venta con cliente que rechazo alternativa.
+        Pasa el refundStatus de PENDING_TRANSFER a TRANSFERRED y desestima la alerta del tablero.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmSaleRefundTransferRequest' }
+      responses:
+        '200': { description: 'Reembolso confirmado; reserva actualizada con saleResolution.refundStatus = TRANSFERRED', content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
+        '403': { description: 'ROLE_NOT_ALLOWED o empresa/sede no autorizada' }
+        '404': { description: Reserva no encontrada en el scope del usuario }
+        '409': { description: 'RESERVATION_STATE_CONFLICT (la resolucion no esta en PENDING_TRANSFER o no fue rechazada)' }
+        '412': { description: RESERVATION_VERSION_CONFLICT }
+        '428': { description: IF_MATCH_REQUIRED }
+
+  /reservations/{id}/commands/register-reminder:
+    post:
+      operationId: registerReservationReminder
+      summary: Registra el envío del recordatorio 3 h antes del recojo (C3, manual asistido por WhatsApp)
+      description: >
+        Roles: FRONT_OFFICE, GERENCIA, ADMINISTRACION (accion RESERVATION.REGISTER_REMINDER de la matriz ADM-02).
+        Reutiliza el patrón de return_reminders. Registra fecha-hora, quién y resultado (SENT o FAILED).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterReservationReminderRequest' }
+      responses:
+        '200': { description: 'Recordatorio registrado exitosamente', content: { application/json: { schema: { $ref: '#/components/schemas/ReservationResponse' } } } }
+        '403': { description: 'ROLE_NOT_ALLOWED o empresa/sede no autorizada' }
+        '404': { description: Reserva no encontrada en el scope del usuario }
+        '409': { description: 'RESERVATION_STATE_CONFLICT' }
+        '412': { description: RESERVATION_VERSION_CONFLICT }
+        '422': { description: 'INVALID_REMINDER_RESULT (nota obligatoria ante fallo o fecha futura)' }
+        '428': { description: IF_MATCH_REQUIRED }
+
+  /reservations/{id}/commands/request-airport-service:
+    post:
+      operationId: requestReservationAirportService
+      summary: Registra una solicitud de servicio de aeropuerto como cargo adicional manual (C1, EX-RES-003)
+      description: >
+        Roles: ADMINISTRACION y GERENCIA (accion RESERVATION.REQUEST_AIRPORT_SERVICE de la matriz ADM-02).
+        El monto adicional no altera la tarifa base ni la garantía; queda registrado como cargo adicional.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestAirportServiceRequest' }
+      responses:
+        '200': { description: 'Solicitud de aeropuerto registrada', content: { application/json: { schema: { $ref: '#/components/schemas/AirportServiceResponse' } } } }
+        '403': { description: 'ROLE_NOT_ALLOWED o empresa/sede no autorizada' }
+        '404': { description: Reserva no encontrada en el scope del usuario }
+        '409': { description: 'RESERVATION_STATE_CONFLICT' }
+        '412': { description: RESERVATION_VERSION_CONFLICT }
+        '428': { description: IF_MATCH_REQUIRED }
+
+  /reservations/{id}/airport-service:
+    get:
+      operationId: getReservationAirportService
+      summary: Obtiene la solicitud de servicio de aeropuerto de la reserva si existe (C1)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: 'Solicitud encontrada (o null)', content: { application/json: { schema: { $ref: '#/components/schemas/AirportServiceResponse' } } } }
+        '404': { description: 'No existe servicio de aeropuerto para esta reserva' }
+
   /reservations/{id}/documents/upload-url:
     post:
       operationId: requestReservationDocumentUploadSession
@@ -535,7 +630,10 @@ components:
         offerNote: { type: string, nullable: true }
         flaggedAt: { type: string, format: date-time }
         alternativeVehicleId: { type: string, format: uuid, nullable: true, description: 'Alternativa elegida (solo ACCEPTED)' }
-        refundStatus: { type: string, enum: [PENDING_TRANSFER], nullable: true, description: 'Solo REJECTED: Gerencia debe transferir la devolucion inmediata (sin integracion de pagos)' }
+        refundStatus: { type: string, enum: [PENDING_TRANSFER, TRANSFERRED], nullable: true, description: 'Solo REJECTED: Gerencia debe transferir la devolucion inmediata (sin integracion de pagos)' }
+        transferVoucher: { type: string, nullable: true, description: 'C4: Nro de comprobante o voucher de la transferencia' }
+        transferredAt: { type: string, format: date-time, nullable: true, description: 'C4: Fecha y hora de confirmación de transferencia' }
+        transferredBy: { type: string, nullable: true, description: 'C4: Identificador o nombre de quién registró la transferencia' }
         resolutionNote: { type: string, nullable: true }
         resolvedAt: { type: string, format: date-time, nullable: true }
     VehicleDataWarning:
@@ -613,6 +711,16 @@ components:
           nullable: true
           allOf:
             - { $ref: '#/components/schemas/SaleResolution' }
+        reminder:
+          description: 'C3: Estado del recordatorio 3 h antes del recojo (null si aún no se ha registrado).'
+          nullable: true
+          allOf:
+            - { $ref: '#/components/schemas/ReservationReminderResponse' }
+        airportService:
+          description: 'C1: Solicitud de servicio de aeropuerto si existe para esta reserva.'
+          nullable: true
+          allOf:
+            - { $ref: '#/components/schemas/AirportServiceResponse' }
 
     ReservationDocumentType:
       type: string
@@ -667,3 +775,103 @@ components:
         documentType: { $ref: '#/components/schemas/ReservationDocumentType' }
         objectUrl: { type: string, format: uri }
         createdAt: { type: string, format: date-time }
+
+    ConfirmSaleRefundTransferRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [transferVoucher, transferredAt]
+          properties:
+            transferVoucher:
+              type: string
+              minLength: 1
+              maxLength: 120
+              description: Nro de comprobante o voucher de la transferencia bancaria
+            transferredAt:
+              type: string
+              format: date-time
+              description: Fecha y hora en que se ejecutó la transferencia
+            note:
+              type: string
+              maxLength: 500
+              description: Nota u observación opcional de Gerencia o Finanzas
+
+    RegisterReservationReminderRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [result]
+          properties:
+            result:
+              type: string
+              enum: [SENT, FAILED]
+              description: Resultado del envío manual asistido por WhatsApp
+            note:
+              type: string
+              maxLength: 500
+              description: Observación (obligatoria si result=FAILED)
+            sentAt:
+              type: string
+              format: date-time
+              description: Fecha y hora del envío (opcional, default ahora)
+
+    ReservationReminderResponse:
+      type: object
+      required: [id, reservationId, status, dueAt, messageText, generatedAt, attempts]
+      properties:
+        id: { type: string, format: uuid }
+        reservationId: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [PENDING, SENT, FAILED]
+        dueAt:
+          type: string
+          format: date-time
+          description: Fecha y hora límite (3 h antes del inicio pactado)
+        messageText: { type: string }
+        generatedAt: { type: string, format: date-time }
+        sentAt: { type: string, format: date-time, nullable: true }
+        sentBy: { type: string, nullable: true }
+        resultNote: { type: string, nullable: true }
+        attempts: { type: integer }
+
+    RequestAirportServiceRequest:
+      allOf:
+        - { $ref: '#/components/schemas/CommandScopeRequest' }
+        - type: object
+          required: [scheduledAt, location, additionalAmount]
+          properties:
+            scheduledAt:
+              type: string
+              format: date-time
+              description: Fecha y hora programada para el servicio de aeropuerto
+            location:
+              type: string
+              minLength: 1
+              maxLength: 255
+              description: Lugar o descripción del servicio en aeropuerto
+            additionalAmount:
+              type: string
+              pattern: '^[0-9]+(\.[0-9]{1,2})?$'
+              description: Monto adicional manual que se suma como cargo del expediente
+            notes:
+              type: string
+              maxLength: 1000
+              description: Notas u observaciones adicionales
+
+    AirportServiceResponse:
+      type: object
+      required: [id, targetType, targetId, scheduledAt, location, additionalAmount, registeredBy, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        targetType:
+          type: string
+          enum: [RESERVATION, RENTAL]
+        targetId: { type: string, format: uuid }
+        scheduledAt: { type: string, format: date-time }
+        location: { type: string }
+        additionalAmount: { type: string }
+        notes: { type: string, nullable: true }
+        registeredBy: { type: string }
+        createdAt: { type: string, format: date-time }
+

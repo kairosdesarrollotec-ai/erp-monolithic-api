@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException, Optional } from '@nestjs/common';
 import { ReservationRepositoryPort, ReservationRecord } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
+import { ClockPort } from '../../../../common/application/ports/clock.port';
+import { toLimaDateString, limaDateEndToUtc } from '../../../../common/time/lima-time';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { isTerminalReservationStatus, ReservationStatus } from '../../domain/reservation-status';
@@ -63,6 +65,7 @@ export class CancelReservationHandler {
     private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly transactionManager: TransactionManagerPort,
     private readonly matrixAuth: MatrixAuthorizationService,
+    @Optional() private readonly clock?: ClockPort,
   ) {}
 
   async execute(command: CancelReservationCommand): Promise<ReservationRecord> {
@@ -101,6 +104,19 @@ export class CancelReservationHandler {
     }
     assertNotPendingSaleResolution(existing.status);
 
+    if (command.reason === 'NO_SHOW') {
+      const now = this.clock?.now() ?? new Date();
+      const startDateLima = toLimaDateString(existing.startAt);
+      const endOfStartDayLima = limaDateEndToUtc(startDateLima);
+      if (now.getTime() <= endOfStartDayLima.getTime()) {
+        throw new UnprocessableEntityException({
+          statusCode: 422,
+          code: 'RESERVATION_NO_SHOW_TOO_EARLY',
+          detail: `No se puede marcar no-show antes de que termine el día pactado (${startDateLima}, hora de Lima).`,
+        });
+      }
+    }
+
     return this.transactionManager.run(
       async (tx) => {
         const current = await this.reservations.findById(command.id, scope, tx);
@@ -111,6 +127,19 @@ export class CancelReservationHandler {
           throw new ReservationStateConflictError('cancelar', current.status);
         }
         assertNotPendingSaleResolution(current.status);
+
+        if (command.reason === 'NO_SHOW') {
+          const now = this.clock?.now() ?? new Date();
+          const startDateLima = toLimaDateString(current.startAt);
+          const endOfStartDayLima = limaDateEndToUtc(startDateLima);
+          if (now.getTime() <= endOfStartDayLima.getTime()) {
+            throw new UnprocessableEntityException({
+              statusCode: 422,
+              code: 'RESERVATION_NO_SHOW_TOO_EARLY',
+              detail: `No se puede marcar no-show antes de que termine el día pactado (${startDateLima}, hora de Lima).`,
+            });
+          }
+        }
 
         const cancelled = await this.reservations.cancel(
           {

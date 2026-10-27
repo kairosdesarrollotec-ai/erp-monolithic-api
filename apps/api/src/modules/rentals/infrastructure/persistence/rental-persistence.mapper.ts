@@ -80,6 +80,9 @@ export function toRentalContractRecord(row: {
   contractVariant?: string | null;
   depositRequired?: boolean;
   reservationCreditExcess?: Prisma.Decimal | string;
+  fingerprintTaken?: boolean;
+  fingerprintMarkedBy?: string | null;
+  fingerprintMarkedAt?: Date | null;
   createdAt: Date;
 } | null): RentalContractRecord | null {
   if (!row) return null;
@@ -93,6 +96,9 @@ export function toRentalContractRecord(row: {
     contractVariant: row.contractVariant ?? null,
     depositRequired: row.depositRequired ?? true,
     reservationCreditExcess: row.reservationCreditExcess != null ? Number(row.reservationCreditExcess.toString()).toFixed(2) : '0.00',
+    fingerprintTaken: row.fingerprintTaken ?? false,
+    fingerprintMarkedBy: row.fingerprintMarkedBy ?? null,
+    fingerprintMarkedAt: row.fingerprintMarkedAt ?? null,
     createdAt: row.createdAt,
   };
 }

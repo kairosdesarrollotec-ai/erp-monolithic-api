@@ -74,6 +74,12 @@ import { toRentalResponse } from './rental.mapper';
 import { RENTAL_LIST_MAX_LIMIT } from '../../domain/rental-pagination';
 import { resolveWithCompanyDriver } from '../../domain/contract-variant';
 import { parseBusinessInstant } from '../../../../common/time/lima-time';
+import { RequestRentalAirportServiceHandler } from '../../application/commands/request-airport-service.handler';
+import { RequestRentalAirportServiceCommand } from '../../application/commands/request-airport-service.command';
+import { GetRentalAirportServiceHandler } from '../../application/queries/get-rental-airport-service.handler';
+import { GetRentalAirportServiceQuery } from '../../application/queries/get-rental-airport-service.query';
+import { RequestAirportServiceDto } from '../../../reservations/presentation/http/dto/request-airport-service.dto';
+import { AirportServiceResponse } from '../../../reservations/presentation/http/dto/reservation.response';
 
 @Controller('rentals')
 @UseGuards(FirebaseAuthGuard)
@@ -94,6 +100,8 @@ export class RentalsController {
     private readonly getRental: GetRentalHandler,
     private readonly listRentals: ListRentalsHandler,
     private readonly getContractTemplate: GetContractTemplateHandler,
+    private readonly requestAirportService: RequestRentalAirportServiceHandler,
+    private readonly getAirportService: GetRentalAirportServiceHandler,
   ) {}
 
   @Post()
@@ -435,6 +443,7 @@ export class RentalsController {
               voucherDocumentId: dto.payment.voucherDocumentId,
             }
           : undefined,
+        dto.fingerprintTaken === true,
       ),
     );
     return toRentalResponse(updated);
@@ -491,4 +500,60 @@ export class RentalsController {
     return toRentalResponse(updated);
   }
 
+  /** C1 (BDD-ALQ 7.1.1): Registra una solicitud de servicio de aeropuerto como cargo adicional manual. */
+  @Post(':id/commands/request-airport-service')
+  @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
+  async requestAirportServiceCommand(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RequestAirportServiceDto,
+    @Headers('if-match') ifMatch: string,
+  ): Promise<AirportServiceResponse> {
+    const created = await this.requestAirportService.execute(
+      new RequestRentalAirportServiceCommand(
+        id,
+        req.firebaseUid!,
+        dto.companyId,
+        dto.branchId,
+        parseVersionIfMatch(ifMatch),
+        new Date(dto.scheduledAt),
+        dto.location,
+        dto.additionalAmount,
+        dto.notes,
+      ),
+    );
+    return {
+      id: created.id,
+      targetType: created.targetType,
+      targetId: created.targetId,
+      scheduledAt: created.scheduledAt.toISOString(),
+      location: created.location,
+      additionalAmount: created.additionalAmount,
+      notes: created.notes,
+      registeredBy: created.registeredBy,
+      createdAt: created.createdAt.toISOString(),
+    };
+  }
+
+  /** C1: Obtiene la solicitud de servicio de aeropuerto del alquiler. */
+  @Get(':id/airport-service')
+  async getAirportServiceEndpoint(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<AirportServiceResponse> {
+    const record = await this.getAirportService.execute(
+      new GetRentalAirportServiceQuery(id),
+    );
+    return {
+      id: record.id,
+      targetType: record.targetType,
+      targetId: record.targetId,
+      scheduledAt: record.scheduledAt.toISOString(),
+      location: record.location,
+      additionalAmount: record.additionalAmount,
+      notes: record.notes,
+      registeredBy: record.registeredBy,
+      createdAt: record.createdAt.toISOString(),
+    };
+  }
 }

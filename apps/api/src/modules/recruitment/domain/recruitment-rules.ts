@@ -14,6 +14,7 @@ import {
   CandidateStageRegressionError,
   CandidateStateTransitionError,
   MechanicMissingTechnicalChannelsError,
+  MechanicGeneralPortalsProhibitedError,
   OnboardingChecklistIncompleteError,
   OnboardingMissingNotarizedContractError,
   VacancyNotTransitionableError,
@@ -179,12 +180,27 @@ export function isTechnicalChannel(channel: string): boolean {
   );
 }
 
+/** Portales generales de empleo prohibidos para vacantes de mecánico (Ficha AS-IS, BDD-05). */
+export function isGeneralPortal(channel: string): boolean {
+  const normalized = normalizeChannelText(channel);
+  return (
+    normalized.includes('bumeran') ||
+    normalized.includes('computrabajo') ||
+    normalized.includes('linkedin') ||
+    normalized.includes('unch')
+  );
+}
+
 export function assertMechanicChannels(isMechanic: boolean, channels: string[]): void {
   if (!isMechanic) {
     return;
   }
-  const hasTechnicalChannel = channels.some(isTechnicalChannel);
+  const generalPortal = channels.find(isGeneralPortal);
+  if (generalPortal) {
+    throw new MechanicGeneralPortalsProhibitedError(generalPortal);
+  }
 
+  const hasTechnicalChannel = channels.some(isTechnicalChannel);
   if (!hasTechnicalChannel) {
     throw new MechanicMissingTechnicalChannelsError();
   }
