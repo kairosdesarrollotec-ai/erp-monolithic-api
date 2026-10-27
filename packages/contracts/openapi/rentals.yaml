@@ -1798,6 +1798,13 @@ components:
         createdBy: { type: string }
         createdAt: { type: string, format: date-time }
 
+    CommandScopeRequest:
+      type: object
+      required: [companyId, branchId]
+      properties:
+        companyId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+
     RequestAirportServiceRequest:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
@@ -1837,4 +1844,3 @@ components:
         notes: { type: string, nullable: true }
         registeredBy: { type: string }
         createdAt: { type: string, format: date-time }
-
