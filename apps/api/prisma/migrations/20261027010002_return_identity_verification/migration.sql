@@ -5,5 +5,5 @@ ALTER TABLE "returns"
   ADD COLUMN IF NOT EXISTS "return_identity_document_number" VARCHAR(64),
   ADD COLUMN IF NOT EXISTS "return_identity_matches_holder" BOOLEAN,
   ADD COLUMN IF NOT EXISTS "return_identity_result" VARCHAR(32),
-  ADD COLUMN IF NOT EXISTS "return_identity_verified_at" TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS "return_identity_verified_at" TIMESTAMP(3),
   ADD COLUMN IF NOT EXISTS "return_identity_verified_by" VARCHAR(128);

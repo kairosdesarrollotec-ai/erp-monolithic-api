@@ -3,7 +3,7 @@ CREATE TABLE "employee_expectation_documents" (
   "id" TEXT NOT NULL PRIMARY KEY,
   "organization_id" TEXT NOT NULL,
   "operating_company_id" TEXT NOT NULL,
-  "employee_id" TEXT NOT NULL UNIQUE REFERENCES "employees"("id") ON DELETE CASCADE,
+  "employee_id" TEXT NOT NULL UNIQUE,
   "status" TEXT NOT NULL DEFAULT 'PENDIENTE',
   "deadline_date" DATE NOT NULL,
   "file_url" VARCHAR(500),
@@ -16,9 +16,13 @@ CREATE TABLE "employee_expectation_documents" (
 );
 
 ALTER TABLE "employee_expectation_documents"
-  ADD CONSTRAINT "employee_expectation_documents_operating_company_id_organization_id_fkey"
+  ADD CONSTRAINT "employee_expectation_documents_operating_company_id_organi_fkey"
   FOREIGN KEY ("operating_company_id", "organization_id")
   REFERENCES "companies"("id", "organization_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "employee_expectation_documents"
+  ADD CONSTRAINT "employee_expectation_documents_employee_id_fkey"
+  FOREIGN KEY ("employee_id") REFERENCES "employees"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE INDEX "idx_emp_expectations_status_deadline"
   ON "employee_expectation_documents" ("status", "deadline_date");

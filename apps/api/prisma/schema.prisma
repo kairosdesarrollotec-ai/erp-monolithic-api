@@ -891,7 +891,7 @@ model ReservationResolution {
   refundStatus         String?   @map("refund_status") @db.VarChar(30)
   transferVoucher      String?   @map("transfer_voucher") @db.VarChar(120)
   transferredAt        DateTime? @map("transferred_at")
-  transferredBy        String?   @map("transferred_by")
+  transferredBy        String?   @map("transferred_by") @db.VarChar(120)
   resolutionNote       String?   @map("resolution_note")
   resolvedBy           String?   @map("resolved_by")
   resolvedAt           DateTime? @map("resolved_at")
