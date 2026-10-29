@@ -248,7 +248,8 @@ paths:
         Valida que la matriz enviada sea completa (una entrada por cada
         combinacion rol x accion del catalogo) y que no habilite a la vez
         un par de acciones incompatibles (segregacion de funciones,
-        INCOMPATIBLE_ACTION_PAIRS). A partir de esta version, esta
+        INCOMPATIBLE_ACTION_PAIRS; hoy el negocio no ha definido pares,
+        asi que la lista esta vacia). A partir de esta version, esta
         matriz SI se consulta en tiempo real para autorizar las 5
         acciones de Administracion (antes solo se guardaba/visualizaba).
       security: [{ bearerAuth: [] }]

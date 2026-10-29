@@ -156,18 +156,15 @@ export const PERMISSION_ACTION_CATALOG: readonly PermissionActionDescriptor[] = 
  * Segregacion de funciones (contrato ADM-02 punto 8): "ciertas
  * combinaciones de permisos incompatibles no se permiten a la vez".
  *
- * PROVISIONAL/ilustrativo: la documentacion (PANTALLAS-V2-B-SOPORTE.md)
- * da como ejemplo "quien aprueba tambien ejecuta el mismo pago", pero
- * esa distincion (aprobar vs. ejecutar un pago) no existe todavia como
- * 2 acciones separadas en el backend - solo existe REGISTER_PAYMENT
- * (registrar) y CONFIRM (que depende de que el pago ya este validado).
- * Se usa ese mismo par como el candidato mas cercano a un control
- * maker-checker real, dejando el mecanismo de validacion listo para
- * cuando el negocio defina la regla definitiva.
+ * La documentacion (PANTALLAS-V2-B-SOPORTE.md) solo da un ejemplo ("quien
+ * aprueba tambien ejecuta el mismo pago") y el negocio NO ha definido pares
+ * concretos. El par provisional REGISTER_PAYMENT + CONFIRM de Reserva se
+ * retiro (29-oct): en el proceso real Front Office registra el pago y confirma,
+ * y las politicas por defecto de Administracion, Front Office y Gerencia ya
+ * tienen ambos permisos, por lo que impedia guardar la matriz. El mecanismo de
+ * validacion queda intacto: se agregan pares aqui cuando el negocio los defina.
  */
-export const INCOMPATIBLE_ACTION_PAIRS: readonly [string, string][] = [
-  ['RESERVATION.REGISTER_PAYMENT', 'RESERVATION.CONFIRM'],
-];
+export const INCOMPATIBLE_ACTION_PAIRS: [string, string][] = [];
 
 export function actionKey(module: PermissionActionDescriptor['module'], action: string): string {
   return `${module}.${action}`;
