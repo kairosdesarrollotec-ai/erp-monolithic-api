@@ -104,3 +104,14 @@ export class IncidentDecisionOutcomeNotApplicableError extends DomainUnprocessab
     super(`Las incidencias de tipo ${type} no registran un resultado estructurado de decision de Gerencia.`);
   }
 }
+
+/** A-06 (Decisiones 29-oct #2): no se registran incidencias sobre un alquiler que aun no fue entregado. */
+export class IncidentRentalNotDeliveredError extends DomainUnprocessableError {
+  readonly code = 'INCIDENT_RENTAL_NOT_DELIVERED';
+
+  constructor(status: string) {
+    super(
+      `El alquiler esta en estado ${status}: aun no fue entregado. Si el vehiculo tiene una incidencia, ofrece al cliente otro vehiculo de caracteristicas iguales o similares.`,
+    );
+  }
+}

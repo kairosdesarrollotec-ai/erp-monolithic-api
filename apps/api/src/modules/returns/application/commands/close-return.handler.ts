@@ -84,7 +84,8 @@ export class CloseReturnHandler {
       }
 
       // DEC-DEV-REPORT-001 (Frente C): si registra daños, inmovilización exige que el cliente acepte el informe mecánico antes de cerrar
-      const hasDamages = (damages.length > 0);
+      // Decisión de negocio 28-oct #2: el informe se exige solo ante daño técnico; el estético se cobra por tarifario.
+      const hasDamages = damages.some((d) => d.origin === 'TECHNICAL');
       if (hasDamages && !current.mechanicReportAccepted) {
         throw new MechanicReportNotAcceptedError();
       }

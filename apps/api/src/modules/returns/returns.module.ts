@@ -44,6 +44,8 @@ import { PrismaReturnCustomerRiskPersistence } from './infrastructure/persistenc
 import { PrismaReturnDepositSettlementPersistence } from './infrastructure/persistence/prisma-return-deposit-settlement.persistence';
 import { PrismaReturnOpenIncidentsPersistence } from './infrastructure/persistence/prisma-return-open-incidents.persistence';
 import { GcsReturnEvidenceService } from './infrastructure/storage/gcs-return-evidence.service';
+import { LocalReturnEvidenceService } from './infrastructure/storage/local-return-evidence.service';
+import { isLocalDevStorageEnabled } from '../../common/storage/local-dev-storage';
 import { DocumentTemplatesModule } from '../document-templates/document-templates.module';
 import { GenerateDueReturnRemindersHandler } from './application/commands/generate-due-return-reminders.handler';
 import { RegisterReturnReminderHandler } from './application/commands/register-return-reminder.handler';
@@ -59,6 +61,10 @@ import { ReturnReminderScheduler } from './infrastructure/scheduling/return-remi
 import { ReturnAlertScheduler } from './infrastructure/scheduling/return-alert.scheduler';
 import { PublishReturnDashboardAlertsHandler } from './application/commands/publish-return-dashboard-alerts.handler';
 import { ReturnDashboardAlertPort } from './application/ports/return-dashboard-alert.port';
+import { ReturnFuelReadingsPort } from './application/ports/return-fuel-readings.port';
+import { PrismaReturnFuelReadingsPersistence } from './infrastructure/persistence/prisma-return-fuel-readings.persistence';
+import { ReturnBellNotificationPort } from './application/ports/return-bell-notification.port';
+import { PrismaReturnBellNotificationPersistence } from './infrastructure/persistence/prisma-return-bell-notification.persistence';
 import { ReturnAlertRecipientsPort } from './application/ports/return-alert-recipients.port';
 import { MatrixReturnAlertRecipientsPersistence } from './infrastructure/persistence/matrix-return-alert-recipients.persistence';
 import { PrismaReturnDashboardAlertPersistence } from './infrastructure/persistence/prisma-return-dashboard-alert.persistence';
@@ -117,7 +123,11 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     { provide: ReturnRepositoryPort, useClass: PrismaReturnRepository },
     // DEV-05 / PD-07: marcas por zona persistidas.
     { provide: ReturnZoneMarkRepositoryPort, useClass: PrismaReturnZoneMarkPersistence },
-    { provide: ReturnEvidenceStoragePort, useClass: GcsReturnEvidenceService },
+    // Sin bucket de GCS en desarrollo: LOCAL_STORAGE_ENABLED=true usa disco local (/dev-storage).
+    {
+      provide: ReturnEvidenceStoragePort,
+      useClass: isLocalDevStorageEnabled() ? LocalReturnEvidenceService : GcsReturnEvidenceService,
+    },
     { provide: ReturnCustomerRiskPort, useClass: PrismaReturnCustomerRiskPersistence },
     { provide: ReturnDepositSettlementPort, useClass: PrismaReturnDepositSettlementPersistence },
     // DEV-09: incidencias ABIERTAS reales (tabla `incidents`, modulo Incidencias) bloquean close-financial y close.
@@ -128,6 +138,8 @@ import { GetResponsibilityTemplateHandler } from './application/queries/get-resp
     { provide: ReturnAlertRepositoryPort, useClass: PrismaReturnAlertPersistence },
     // DEC-DEVREM-002: proyección de la alerta de garantía de 24 h al tablero de Finanzas (dashboard_items).
     { provide: ReturnDashboardAlertPort, useClass: PrismaReturnDashboardAlertPersistence },
+    { provide: ReturnFuelReadingsPort, useClass: PrismaReturnFuelReadingsPersistence },
+    { provide: ReturnBellNotificationPort, useClass: PrismaReturnBellNotificationPersistence },
     { provide: ReturnAlertRecipientsPort, useClass: MatrixReturnAlertRecipientsPersistence },
     // DEC-DEV-COMMITMENT-001: libera el compromiso RENTAL del vehículo al cerrar la devolución.
     { provide: ReturnVehicleCommitmentPort, useClass: PrismaReturnVehicleCommitmentPersistence },

@@ -38,6 +38,16 @@ export class PrismaRentalExtensionPersistence {
     return rows.map(toRentalExtensionRecord);
   }
 
+  async findRentalIdsWithBreach(rentalIds: readonly string[], tx?: Prisma.TransactionClient): Promise<Set<string>> {
+    if (rentalIds.length === 0) return new Set();
+    const client = tx ?? this.prisma;
+    const rows = await client.rentalExtension.findMany({
+      where: { rentalId: { in: [...rentalIds] }, status: 'BREACH' },
+      select: { rentalId: true },
+    });
+    return new Set(rows.map((r) => r.rentalId));
+  }
+
   async findVehicleCommitmentOverlap(
     vehicleId: string,
     organizationId: string,
@@ -155,7 +165,7 @@ export class PrismaRentalExtensionPersistence {
     // Reutiliza el campo Customer.status ("NORMAL" | "AMBAR" | "ROJO"; ROJO es el estado terminal del semáforo, BR-DEV-008)
     await client.customer.update({
       where: { id: input.customerId },
-      data: { status: 'ROJO' },
+      data: { status: 'ROJO', statusReason: 'Falta grave: ampliación no regularizada (BR-ALQ-013).', statusChangedAt: new Date() },
     });
   }
 }

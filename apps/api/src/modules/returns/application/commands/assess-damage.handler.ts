@@ -99,6 +99,7 @@ export class AssessDamageHandler {
           organizationId: context.organizationId,
           operatingCompanyId: scope.operatingCompanyId,
           target: resolveRiskTargetAfterDamage(resolved.severity, command.customerAcceptsCost) ?? 'NORMAL',
+          reason: `Daño ${String(resolved.severity).toLowerCase()} en devolución${command.customerAcceptsCost ? '' : ' (el cliente no acepta el costo)'}.`,
         },
         tx,
       );

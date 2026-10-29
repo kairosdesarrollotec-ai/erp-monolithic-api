@@ -278,6 +278,9 @@ export class RentalsController {
         parseVersionIfMatch(ifMatch),
         dto.result,
         dto.notes,
+        dto.reniecVerified === true,
+        dto.mtcVerified === true,
+        dto.reniecExceptionReason,
       ),
     );
     return toRentalResponse(updated);

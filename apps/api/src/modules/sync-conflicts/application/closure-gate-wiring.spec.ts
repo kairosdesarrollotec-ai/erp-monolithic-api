@@ -54,7 +54,7 @@ describe('bloqueo de cierre por conflicto de sincronizacion', () => {
 
   it('complete-delivery (Alquiler) responde 409 SYNC_CONFLICT_PENDING antes de contar evidencia', async () => {
     const gate = await gateWithOpenConflict('ENTREGA');
-    const rentals = { findById: jest.fn().mockResolvedValue({ id: SOURCE_ID, status: 'PENDING_DELIVERY' }) };
+    const rentals = { findById: jest.fn().mockResolvedValue({ id: SOURCE_ID, status: 'PENDING_DELIVERY', alcoholTestResult: 'FAVORABLE' }) };
     const evidence = { countByType: jest.fn() };
     const tm = { run: jest.fn() };
     const workContext = { authorize: jest.fn().mockResolvedValue({ organizationId: 'org-1', companyId: 'comp-1', branchId: 'branch-1', roleId: 'r' }) };

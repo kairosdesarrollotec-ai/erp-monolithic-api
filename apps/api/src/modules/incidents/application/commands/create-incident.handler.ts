@@ -6,9 +6,19 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import { IncidentDetailRecord, IncidentRepositoryPort } from '../ports/incident-repository.port';
 import { IncidentLinksPort } from '../ports/incident-links.port';
 import { IncidentAccessService } from '../services/incident-access.service';
-import { IncidentRentalNotFoundError, IncidentReturnNotFoundError } from '../../domain/incident-errors';
+import { IncidentRentalNotDeliveredError, IncidentRentalNotFoundError, IncidentReturnNotFoundError } from '../../domain/incident-errors';
 import { assertSeverityAllowedForType, requireText } from '../../domain/incident-rules';
 import { CreateIncidentCommand } from './create-incident.command';
+
+/** A-06: estados de alquiler previos a la entrega (o cancelados sin entregar) donde no se registran incidencias. */
+const NOT_DELIVERED_RENTAL_STATUSES: ReadonlySet<string> = new Set([
+  'DRAFT',
+  'VALIDATION',
+  'NOTARY_EVALUATION',
+  'CONTRACTING',
+  'PENDING_DELIVERY',
+  'CANCELLED',
+]);
 
 /**
  * INC-01 "Registrar incidencia". Crea la incidencia en ABIERTA ligada a un Alquiler (y opcionalmente a una Devolucion
@@ -41,6 +51,9 @@ export class CreateIncidentHandler {
       const rental = await this.links.findRental(command.rentalId, scope, tx);
       if (!rental) {
         throw new IncidentRentalNotFoundError(command.rentalId);
+      }
+      if (rental.status && NOT_DELIVERED_RENTAL_STATUSES.has(rental.status)) {
+        throw new IncidentRentalNotDeliveredError(rental.status);
       }
       if (command.returnId) {
         const rentalReturn = await this.links.findReturn(command.returnId, scope, tx);

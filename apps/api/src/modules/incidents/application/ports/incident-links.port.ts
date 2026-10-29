@@ -3,6 +3,8 @@ import type { IncidentScope } from './incident-repository.port';
 
 export interface IncidentRentalRef {
   id: string;
+  /** Estado del alquiler (A-06: no se registran incidencias antes de la entrega). */
+  status?: string;
 }
 
 export interface IncidentReturnRef {

@@ -366,6 +366,26 @@ describe('LogAttendanceHandler (BR-ADP-001)', () => {
   const cmdNoEvidence = (status: LogAttendanceCommand['status'], minutesLate?: number) =>
     new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), status, minutesLate, undefined, null, null, null, null, null, 'Registro a nombre del colaborador');
 
+  describe('fechas validas (R-4 / R-5, Decisiones 29-oct #6)', () => {
+    it('fecha futura -> ATTENDANCE_DATE_INVALID y no crea', async () => {
+      const s = setup();
+      s.employees.findById.mockResolvedValue(buildEmployee());
+      const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
+      const future = new LogAttendanceCommand(UID, 'emp-1', new Date('2999-01-01T00:00:00Z'), 'FALTA_INJUSTIFICADA', undefined, undefined, null, null, null, null, null, 'Registro a nombre del colaborador');
+      await expect(handler.execute(future)).rejects.toMatchObject({ code: 'ATTENDANCE_DATE_INVALID' });
+      expect(s.attendance.create).not.toHaveBeenCalled();
+    });
+
+    it('fecha anterior al ingreso -> ATTENDANCE_DATE_INVALID y no crea', async () => {
+      const s = setup();
+      s.employees.findById.mockResolvedValue(buildEmployee()); // hireDate 2026-01-05
+      const handler = new LogAttendanceHandler(s.access, s.attendance, s.employees, s.tm, s.audit, s.memos);
+      const before = new LogAttendanceCommand(UID, 'emp-1', new Date('2026-01-04T00:00:00Z'), 'FALTA_INJUSTIFICADA', undefined, undefined, null, null, null, null, null, 'Registro a nombre del colaborador');
+      await expect(handler.execute(before)).rejects.toMatchObject({ code: 'ATTENDANCE_DATE_INVALID' });
+      expect(s.attendance.create).not.toHaveBeenCalled();
+    });
+  });
+
   describe('evidencia fotografica (DEC-ADP-ATT-EVIDENCE-001)', () => {
     const evidenceCmd = (evidence: LogAttendanceCommand['evidence']) =>
       new LogAttendanceCommand(UID, 'emp-1', new Date('2026-10-08T00:00:00Z'), 'PRESENTE', undefined, undefined, null, null, null, evidence, null, 'Registro a nombre del colaborador');

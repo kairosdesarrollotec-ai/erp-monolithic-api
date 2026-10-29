@@ -21,7 +21,7 @@ export class ListRentalsHandler {
 
     await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'READ', { companyId: context.companyId, branchId: context.branchId });
 
-    return this.rentals.list({
+    const items = await this.rentals.list({
       organizationId: context.organizationId,
       operatingCompanyId: query.companyId,
       branchId: query.branchId,
@@ -29,5 +29,8 @@ export class ListRentalsHandler {
       limit: query.limit,
       cursor: query.cursor,
     });
+    // Decisión 28-oct #11: el alquiler con falta grave de ampliación queda visible como "Incumplimiento grave" en la lista.
+    const breached = await this.rentals.findRentalIdsWithExtensionBreach(items.map((r) => r.id));
+    return items.map((r) => ({ ...r, hasExtensionBreach: breached.has(r.id) }));
   }
 }

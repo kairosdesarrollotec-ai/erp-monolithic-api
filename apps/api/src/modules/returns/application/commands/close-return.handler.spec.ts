@@ -111,9 +111,14 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
     expect(deps.fleetVehicles.updateStatus).toHaveBeenCalledWith('veh-1', expect.anything(), 'MAINTENANCE');
   });
 
-  it('DEC-DEV-REPORT-001: con daños y sin aceptación de informe mecánico -> 422 MECHANIC_REPORT_NOT_ACCEPTED', async () => {
-    const { handler } = build({ damages: [buildDamage()], mechanicReportAccepted: false });
+  it('DEC-DEV-REPORT-001: con daño técnico y sin aceptación de informe mecánico -> 422 MECHANIC_REPORT_NOT_ACCEPTED', async () => {
+    const { handler } = build({ damages: [buildTechnicalDamage()], mechanicReportAccepted: false });
     await expect(handler.execute(cmd())).rejects.toThrow(MechanicReportNotAcceptedError);
+  });
+
+  it('decisión 28-oct #2: con solo daño estético (tarifario) no se exige el informe mecánico', async () => {
+    const { handler } = build({ damages: [buildDamage()], mechanicReportAccepted: false });
+    await expect(handler.execute(cmd())).resolves.toMatchObject({ status: 'CERRADA' });
   });
 
   it('DEC-DEV-OFFLINE-001: con cambios offline pendientes -> 422 RETURN_OFFLINE_CHANGES_PENDING', async () => {

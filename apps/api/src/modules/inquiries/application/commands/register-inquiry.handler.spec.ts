@@ -94,6 +94,50 @@ describe('RegisterInquiryHandler', () => {
     expect(error.getResponse()).toEqual(expect.objectContaining({ code: 'COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS' }));
   });
 
+  it('CR-09: dias estimados 0 -> INVALID_ESTIMATED_DAYS y no crea nada', async () => {
+    const inquiries = buildInquiryRepository();
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
+    const cmd = new RegisterInquiryCommand('uid-1', COMPANY, BRANCH, 'WHATSAPP', true, { ...SNAPSHOT, estimatedDays: 0 }, undefined, PROSPECT);
+
+    await expect(handler.execute(cmd)).rejects.toMatchObject({ code: 'INVALID_ESTIMATED_DAYS' });
+    expect(inquiries.createCustomer).not.toHaveBeenCalled();
+    expect(inquiries.create).not.toHaveBeenCalled();
+  });
+
+  it('Decisiones 29-oct #3: cliente ROJO no puede registrar consulta', async () => {
+    const inquiries = buildInquiryRepository();
+    inquiries.findCustomerById.mockResolvedValue({
+      id: 'cust-r',
+      organizationId: ORG,
+      operatingCompanyId: COMPANY,
+      fullName: 'Rojo',
+      nationality: null,
+      countryEntryDate: null,
+      status: 'ROJO',
+    });
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
+
+    await expect(handler.execute(commandWithCustomer('cust-r'))).rejects.toMatchObject({ code: 'CUSTOMER_BLOCKED' });
+    expect(inquiries.create).not.toHaveBeenCalled();
+  });
+
+  it('cliente AMBAR si puede registrar consulta', async () => {
+    const inquiries = buildInquiryRepository();
+    inquiries.findCustomerById.mockResolvedValue({
+      id: 'cust-a',
+      organizationId: ORG,
+      operatingCompanyId: COMPANY,
+      fullName: 'Ambar',
+      nationality: null,
+      countryEntryDate: null,
+      status: 'AMBAR',
+    });
+    const handler = new RegisterInquiryHandler(inquiries, buildWorkContext(), buildMatrixAuth());
+
+    await handler.execute(commandWithCustomer('cust-a'));
+    expect(inquiries.create).toHaveBeenCalled();
+  });
+
   describe('aislamiento del cliente (hallazgo ALTO: organizacion + empresa)', () => {
     it('rechaza con 404 un cliente de OTRA empresa de la misma organizacion (cross-company)', async () => {
       const inquiries = buildInquiryRepository();

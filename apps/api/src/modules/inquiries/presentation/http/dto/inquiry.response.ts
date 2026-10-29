@@ -36,7 +36,7 @@ export interface InquiryResponse extends InquirySummaryResponse {
    * hospedaje). Vacio si el cliente no tiene nacionalidad registrada.
    * Solo informativo: Consulta no recibe documentos.
    */
-  requiredDocuments: { code: 'RECIBO_AGUA_O_LUZ' | 'CONSTANCIA_HOSPEDAJE'; label: string }[];
+  requiredDocuments: { code: 'DNI' | 'PASAPORTE_O_CE' | 'LICENCIA_CONDUCIR' | 'RECIBO_AGUA_O_LUZ' | 'CONSTANCIA_HOSPEDAJE'; label: string }[];
   /** Id de la cotizacion mas reciente (la vigente si `validUntil` es futuro); null si no hay. Evita depender del orden de `quotations`. */
   latestQuotationId: string | null;
   /** Cronologico ascendente (la ultima es la mas reciente). */

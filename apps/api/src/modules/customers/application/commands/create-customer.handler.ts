@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { CustomerRepositoryPort } from '../ports/customer-repository.port';
 import { CustomerAccessService } from '../services/customer-access.service';
 import { CustomerDocumentAlreadyExistsError } from '../../domain/customer-errors';
+import { assertValidIdentityDocument, assertValidPhone } from '../../../../common/domain/identity-document';
 import { CreateCustomerCommand } from './create-customer.command';
 import { Customer } from '../../domain/customer';
 
@@ -20,6 +21,9 @@ export class CreateCustomerHandler {
         detail: 'La fecha de ingreso al país solo aplica a clientes extranjeros.',
       });
     }
+
+    assertValidIdentityDocument(command.documentType, command.documentNumber);
+    assertValidPhone(command.phone);
 
     const { context } = await this.access.authorize(
       { firebaseUid: command.firebaseUid, companyId: command.companyId, branchId: command.branchId },

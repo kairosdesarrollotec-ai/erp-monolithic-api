@@ -4,7 +4,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { RecruitmentAccessService } from '../services/recruitment-access.service';
 import { CandidateRecord, CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { CandidateNotFoundError } from '../../domain/recruitment-errors';
-import { assertCandidateNotDecided, assertCandidateStageTransition } from '../../domain/recruitment-rules';
+import { assertCandidateNotDecided, assertCandidateNotDiscarded, assertCandidateStageTransition } from '../../domain/recruitment-rules';
 import { ChangeCandidateStageCommand } from './change-candidate-stage.command';
 
 @Injectable()
@@ -33,6 +33,7 @@ export class ChangeCandidateStageHandler {
       }
 
       assertCandidateNotDecided(existing.decision);
+      assertCandidateNotDiscarded(existing.processState);
       assertCandidateStageTransition(existing.stage, command.stage);
 
       const updated = await this.candidates.updateStage(

@@ -106,3 +106,21 @@ export class PlanRateNotConfiguredError extends DomainUnprocessableError {
 }
 
 
+
+/** Decisiones 29-oct #3: un cliente ROJO no se atiende en ningun proceso (tampoco registrar ni cotizar consultas). */
+export class InquiryCustomerRedError extends DomainUnprocessableError {
+  readonly code = 'CUSTOMER_BLOCKED';
+
+  constructor() {
+    super('El cliente esta en estado ROJO y no se le atiende en ningun proceso (consulta, reserva ni alquiler).');
+  }
+}
+
+/** CR-09: dias estimados invalidos (0, negativos o decimales). */
+export class InvalidEstimatedDaysError extends DomainUnprocessableError {
+  readonly code = 'INVALID_ESTIMATED_DAYS';
+
+  constructor() {
+    super('El numero estimado de dias debe ser un entero mayor a cero.');
+  }
+}

@@ -156,6 +156,8 @@ export interface CustomerRecord {
   fullName: string;
   nationality: InquiryNationality | null;
   countryEntryDate: Date | null;
+  /** Semaforo del cliente (NORMAL/AMBAR/ROJO). ROJO no se atiende en ningun proceso (Decisiones 29-oct #3). */
+  status?: string;
 }
 
 export interface CreateCustomerInput {

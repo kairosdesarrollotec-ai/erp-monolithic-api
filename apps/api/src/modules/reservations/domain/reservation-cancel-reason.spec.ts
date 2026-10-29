@@ -20,10 +20,12 @@ describe('reservation-cancel-reason (DEC-RES-CANCEL-001)', () => {
 
   it('el DTO rechaza motivos libres y acepta los dos del enum', async () => {
     const base = { companyId: '11111111-1111-4111-8111-111111111111', branchId: '22222222-2222-4222-8222-222222222222' };
-    const bad = await validate(plainToInstance(CancelReservationDto, { ...base, reason: 'porque si' }));
+    const bad = await validate(plainToInstance(CancelReservationDto, { ...base, reason: 'porque si', note: 'motivo escrito valido' }));
     expect(bad.some((e) => e.property === 'reason')).toBe(true);
     for (const reason of RESERVATION_CANCEL_REASONS) {
-      expect(await validate(plainToInstance(CancelReservationDto, { ...base, reason }))).toHaveLength(0);
+      expect(await validate(plainToInstance(CancelReservationDto, { ...base, reason, note: 'motivo escrito valido' }))).toHaveLength(0);
+      // CR-06: sin nota escrita (o muy corta) se rechaza.
+      expect((await validate(plainToInstance(CancelReservationDto, { ...base, reason, note: 'no' }))).some((e) => e.property === 'note')).toBe(true);
     }
   });
 });

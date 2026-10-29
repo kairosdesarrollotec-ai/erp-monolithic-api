@@ -53,10 +53,13 @@ describe('customer-risk-status (semáforo de solo avance, BR-DEV-008 / TD-DEV-00
       expect(resolveRiskTargetAfterDamage('MODERADO', true)).toBe('AMBAR');
     });
 
-    it('LEVE o MODERADO sin aceptación explícita -> sin cambio', () => {
+    it('MODERADO que el cliente no acepta -> AMBAR (Gerencia decide)', () => {
+      expect(resolveRiskTargetAfterDamage('MODERADO', false)).toBe('AMBAR');
+    });
+
+    it('LEVE sin aceptación explícita -> sin cambio', () => {
       expect(resolveRiskTargetAfterDamage('LEVE', undefined)).toBeNull();
       expect(resolveRiskTargetAfterDamage('LEVE', false)).toBeNull();
-      expect(resolveRiskTargetAfterDamage('MODERADO', false)).toBeNull();
     });
   });
 });

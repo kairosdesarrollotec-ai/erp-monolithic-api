@@ -6,6 +6,7 @@ import { FleetAvailabilityPort } from '../ports/fleet-availability.port';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { ProvisionalQuotingGuard } from '../services/provisional-quoting.guard';
 import {
+  InquiryCustomerRedError,
   InquiryNotTouristUseError,
   InquiryNotTransitionableError,
   PlanRateNotConfiguredError,
@@ -101,6 +102,14 @@ export class QuoteHandler {
     // P-05 (DT-CON-03): sin uso turistico no se cotiza; solo queda cerrar con motivo.
     if (!existing.touristUse) {
       throw new InquiryNotTouristUseError();
+    }
+
+    // Decisiones 29-oct #3: un cliente ROJO no se atiende en ningun proceso (tampoco se cotiza).
+    const customer = existing.customerId
+      ? await this.inquiries.findCustomerById(existing.customerId)
+      : null;
+    if (customer?.status === 'ROJO') {
+      throw new InquiryCustomerRedError();
     }
 
     const eligibility = await this.fleet.checkEligibility({

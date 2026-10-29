@@ -5,6 +5,7 @@ import {
   ReservationDocumentStoragePort,
   ReservationDocumentType,
 } from '../../application/ports/reservation-document-storage.port';
+import { isLocalDevStorageEnabled, localDevUploadTarget } from '../../../../common/storage/local-dev-storage';
 
 const EXTENSION_BY_CONTENT_TYPE: Record<ReservationDocumentContentType, string> = {
   'image/jpeg': 'jpg',
@@ -48,7 +49,8 @@ export class GcsReservationDocumentService implements ReservationDocumentStorage
     documentType: ReservationDocumentType;
     contentType: ReservationDocumentContentType;
   }): Promise<{ uploadUrl: string; objectUrl: string }> {
-    if (!this.storage || !this.bucketName) {
+    const localMode = (!this.storage || !this.bucketName) && isLocalDevStorageEnabled();
+    if (!localMode && (!this.storage || !this.bucketName)) {
       throw new ServiceUnavailableException(
         'GCS_BUCKET_NAME (o GCS_CLIENT_EMAIL / GCS_PRIVATE_KEY) no están configurados. Revisa las variables de entorno.',
       );
@@ -56,6 +58,14 @@ export class GcsReservationDocumentService implements ReservationDocumentStorage
 
     const ext = EXTENSION_BY_CONTENT_TYPE[params.contentType];
     const objectKey = `reservation-documents/${params.companyId}/${params.reservationId}/${params.documentType.toLowerCase()}/${crypto.randomUUID()}.${ext}`;
+
+    if (localMode) {
+      // Solo desarrollo (LOCAL_STORAGE_ENABLED=true): sin bucket de GCS.
+      return localDevUploadTarget(objectKey);
+    }
+    if (!this.storage || !this.bucketName) {
+      throw new ServiceUnavailableException('Almacenamiento no configurado.');
+    }
 
     const [uploadUrl] = await this.storage
       .bucket(this.bucketName)

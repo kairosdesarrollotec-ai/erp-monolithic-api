@@ -1,4 +1,12 @@
-import { InvalidReservationCancelReasonError } from './reservation-errors';
+import { InvalidReservationCancelReasonError, ReservationCancelNoteRequiredError } from './reservation-errors';
+
+export const RESERVATION_CANCEL_NOTE_MIN_LENGTH = 5;
+
+export function assertReservationCancelNote(note: string | undefined): void {
+  if ((note ?? '').trim().length < RESERVATION_CANCEL_NOTE_MIN_LENGTH) {
+    throw new ReservationCancelNoteRequiredError();
+  }
+}
 
 /**
  * DEC-RES-CANCEL-001 (Gerencia, 2026-10-15): una reserva solo se cancela por

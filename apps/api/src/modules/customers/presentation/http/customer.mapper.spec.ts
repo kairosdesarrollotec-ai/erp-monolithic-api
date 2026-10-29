@@ -33,6 +33,8 @@ describe('toCustomerResponse', () => {
       email: 'juan@test.com',
       phone: '999888777',
       address: 'Calle Real 100',
+      riskStatus: 'NORMAL',
+      riskReason: null,
       createdAt: '2026-09-28T12:00:00.000Z',
       updatedAt: '2026-09-28T12:00:00.000Z',
     });
@@ -61,5 +63,22 @@ describe('toCustomerResponse', () => {
     expect(res.email).toBeNull();
     expect(res.phone).toBeNull();
     expect(res.address).toBeNull();
+  });
+});
+
+describe('toCustomerResponse riskStatus (H-17)', () => {
+  it('expone el semáforo del cliente y asume NORMAL cuando no viene', () => {
+    const base = {
+      id: 'c3',
+      organizationId: 'org1',
+      operatingCompanyId: 'comp1',
+      fullName: 'Ana',
+      documentType: 'DNI',
+      documentNumber: '1',
+      createdAt: new Date('2026-09-28T12:00:00.000Z'),
+      updatedAt: new Date('2026-09-28T12:00:00.000Z'),
+    };
+    expect(toCustomerResponse({ ...base, riskStatus: 'ROJO' }).riskStatus).toBe('ROJO');
+    expect(toCustomerResponse(base).riskStatus).toBe('NORMAL');
   });
 });

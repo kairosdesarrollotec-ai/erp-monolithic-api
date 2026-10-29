@@ -64,6 +64,7 @@ describe('RegisterAlcoholTestHandler', () => {
 
     const matrixAuth = {
       assertAllowed: jest.fn().mockResolvedValue(undefined),
+      isAllowed: jest.fn().mockResolvedValue(false),
     } as unknown as jest.Mocked<MatrixAuthorizationService>;
 
     const transactionManager: jest.Mocked<TransactionManagerPort> = {
@@ -107,7 +108,7 @@ describe('RegisterAlcoholTestHandler', () => {
     );
 
     const result = await handler.execute(
-      new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE'),
+      new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE', undefined, true, true),
     );
 
     expect(result.status).toBe('NOTARY_EVALUATION');
@@ -232,9 +233,76 @@ describe('RegisterAlcoholTestHandler', () => {
     it('FAVORABLE no exige foto ni consulta evidencias', async () => {
       const deps = buildDeps();
       deps.evidenceRepository.list.mockResolvedValue([]);
-      await mk(deps).execute(new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE'));
+      await mk(deps).execute(new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE', undefined, true, true));
       expect(deps.evidenceRepository.list).not.toHaveBeenCalled();
       expect(deps.rentals.saveAlcoholTest).toHaveBeenCalled();
+    });
+  });
+
+  describe('A-02: confirmacion manual RENIEC/MTC', () => {
+    const mk = (deps: ReturnType<typeof buildDeps>) =>
+      new RegisterAlcoholTestHandler(
+        deps.rentals,
+        deps.workContext,
+        deps.matrixAuth,
+        deps.transactionManager,
+        deps.auditRepository,
+        deps.outboxRepository,
+        deps.evidenceRepository,
+      );
+    const fav = (...extra: [string?, boolean?, boolean?, string?]) =>
+      new RegisterAlcoholTestCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE', ...extra);
+
+    it('FAVORABLE sin RENIEC ni MTC confirmados -> 422 IDENTITY_VERIFICATION_REQUIRED y no guarda', async () => {
+      const deps = buildDeps();
+      await expect(mk(deps).execute(fav())).rejects.toMatchObject({ code: 'IDENTITY_VERIFICATION_REQUIRED' });
+      expect(deps.rentals.saveAlcoholTest).not.toHaveBeenCalled();
+    });
+
+    it('FAVORABLE con RENIEC pero sin MTC -> rechaza', async () => {
+      const deps = buildDeps();
+      await expect(mk(deps).execute(fav(undefined, true, false))).rejects.toMatchObject({ code: 'IDENTITY_VERIFICATION_REQUIRED' });
+    });
+
+    it('excepcion de RENIEC por un rol que no es Gerencia -> 403', async () => {
+      const deps = buildDeps();
+      await expect(mk(deps).execute(fav(undefined, false, true, 'Cliente sin acceso a RENIEC'))).rejects.toMatchObject({
+        response: { code: 'RENIEC_EXCEPTION_FORBIDDEN' },
+      });
+      expect(deps.rentals.saveAlcoholTest).not.toHaveBeenCalled();
+    });
+
+    it('Gerencia exceptua RENIEC con motivo (MTC confirmado) -> continua y audita el motivo', async () => {
+      const deps = buildDeps();
+      deps.workContext.authorize.mockResolvedValue({
+        organizationId: 'org-1',
+        companyId: 'comp-1',
+        branchId: 'branch-1',
+        ...testRole('GERENCIA'),
+      } as any);
+      (deps.matrixAuth.isAllowed as jest.Mock).mockResolvedValue(true);
+      await mk(deps).execute(fav(undefined, false, true, 'RENIEC fuera de servicio'));
+      expect(deps.rentals.saveAlcoholTest).toHaveBeenCalled();
+      expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({ reniecExceptionReason: 'RENIEC fuera de servicio', mtcVerified: true }),
+        }),
+        fakeTx,
+      );
+    });
+
+    it('MTC no admite excepcion: Gerencia con motivo pero sin MTC confirmado -> rechaza', async () => {
+      const deps = buildDeps();
+      deps.workContext.authorize.mockResolvedValue({
+        organizationId: 'org-1',
+        companyId: 'comp-1',
+        branchId: 'branch-1',
+        ...testRole('GERENCIA'),
+      } as any);
+      (deps.matrixAuth.isAllowed as jest.Mock).mockResolvedValue(true);
+      await expect(mk(deps).execute(fav(undefined, false, false, 'RENIEC caido'))).rejects.toMatchObject({
+        code: 'IDENTITY_VERIFICATION_REQUIRED',
+      });
     });
   });
 });

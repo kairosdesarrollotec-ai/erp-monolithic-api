@@ -7,7 +7,13 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { MissingDeliveryEvidenceError, RentalStateConflictError } from '../../domain/rental-errors';
+import {
+  AlcoholTestRequiredError,
+  AlcoholTestUnfavorableError,
+  ExpectedEndDateRequiredError,
+  MissingDeliveryEvidenceError,
+  RentalStateConflictError,
+} from '../../domain/rental-errors';
 import { RentalEvidenceRepositoryPort } from '../ports/rental-evidence-repository.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { RentalCreationGuard } from '../services/rental-creation.guard';
@@ -363,6 +369,44 @@ describe('CompleteDeliveryHandler', () => {
         contract: { id: 'c', rentalId: 'rent-1', templateId: null, documentRef: 'd', status: 'SIGNED', signedAt: null, contractVariant: 'NATURAL_NO_DRIVER', createdAt: new Date() },
       } as unknown as RentalRecord);
       await expect(run(deps)).resolves.toMatchObject({ status: 'ACTIVE' });
+    });
+  });
+
+  describe('decisiones de negocio 28-oct (H-21 alcolímetro obligatorio, H-24 fecha de devolución obligatoria)', () => {
+    function run(deps: ReturnType<typeof buildDeps>) {
+      const handler = new CompleteDeliveryHandler(
+        deps.rentals,
+        deps.fleetVehicles,
+        deps.workContext,
+        deps.matrixAuth,
+        deps.transactionManager,
+        deps.auditRepository,
+        deps.outboxRepository,
+        deps.evidenceRepository,
+        deps.creationGuard,
+        deps.clock,
+      );
+      return handler.execute(new CompleteDeliveryCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 4, 35, 3));
+    }
+
+    it('sin resultado de alcolímetro registrado no se entrega el vehículo', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue({ ...fakeRental, alcoholTestResult: null });
+      await expect(run(deps)).rejects.toThrow(AlcoholTestRequiredError);
+      expect(deps.rentals.completeDelivery).not.toHaveBeenCalled();
+    });
+
+    it('con alcolímetro desfavorable no se entrega el vehículo', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue({ ...fakeRental, alcoholTestResult: 'DESFAVORABLE' });
+      await expect(run(deps)).rejects.toThrow(AlcoholTestUnfavorableError);
+    });
+
+    it('un alquiler directo sin fecha de devolución prevista no se entrega', async () => {
+      const deps = buildDeps();
+      deps.rentals.findById.mockResolvedValue({ ...fakeRental, expectedEndAt: null });
+      await expect(run(deps)).rejects.toThrow(ExpectedEndDateRequiredError);
+      expect(deps.rentals.completeDelivery).not.toHaveBeenCalled();
     });
   });
 });

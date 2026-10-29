@@ -54,6 +54,23 @@ const command = (estimatedDays = 3, plan?: 'NORMAL' | 'PLUS' | 'LIBRE') =>
   new QuoteCommand('inq-1', 'uid-1', COMPANY, BRANCH, 1, 'veh-1', 'Vilcashuaman', estimatedDays, plan);
 
 describe('QuoteHandler', () => {
+  it('Decisiones 29-oct #3: cliente ROJO no se cotiza (CUSTOMER_BLOCKED) y no consulta Flota', async () => {
+    const { handler, inquiries, fleet } = build();
+    inquiries.findCustomerById.mockResolvedValue({
+      id: 'cust-1',
+      organizationId: ORG,
+      operatingCompanyId: COMPANY,
+      fullName: 'Rojo',
+      nationality: null,
+      countryEntryDate: null,
+      status: 'ROJO',
+    });
+
+    await expect(handler.execute(command(3))).rejects.toMatchObject({ code: 'CUSTOMER_BLOCKED' });
+    expect(fleet.checkEligibility).not.toHaveBeenCalled();
+    expect(inquiries.quote).not.toHaveBeenCalled();
+  });
+
   it('cotiza con el precio del vehiculo (Vehicle.dailyRate via FleetAvailabilityPort), vigencia de 72h calculada con el reloj inyectable', async () => {
     const { handler, inquiries, fleet } = build();
 

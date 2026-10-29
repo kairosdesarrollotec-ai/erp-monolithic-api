@@ -96,7 +96,7 @@ describe('ResolveAlcoholEscalationHandler (DEV-04 / BR-DEV-005 / PROP-014 provis
     const { deps, handler } = build();
     await handler.execute(cmd('CONTINUE_TO_INSPECTION', true));
     expect(deps.customerRisk.escalate).toHaveBeenCalledWith(
-      { customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target: 'ROJO' },
+      { customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target: 'ROJO', reason: expect.any(String) },
       fakeTx,
     );
     expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(

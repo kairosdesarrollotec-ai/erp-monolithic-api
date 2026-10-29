@@ -184,6 +184,8 @@ export interface ReturnResponse {
   customerPresent: boolean;
   mileageAtReturn: number | null;
   fuelLevelAtReturn: ReturnFuelLevel | null;
+  /** Precio por línea de combustible fijado en Flota para el vehículo (decisión 28-oct #1); null si aún no se definió. */
+  vehicleFuelPenaltyPerLine?: number | null;
   alcoholTestResult: AlcoholTestResult | null;
   alcoholTestNotes: string | null;
   alcoholEscalation: AlcoholEscalationResponse | null;

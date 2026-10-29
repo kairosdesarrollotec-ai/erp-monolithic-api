@@ -169,10 +169,10 @@ describe('PrismaIncidentRepository / PrismaIncidentLinksAdapter', () => {
   it('el adaptador de vinculos filtra rental y return por scope completo', async () => {
     const { client, tx } = build();
     const adapter = new PrismaIncidentLinksAdapter(client as unknown as PrismaService);
-    client.rental.findFirst.mockResolvedValue({ id: 'rent-1' });
+    client.rental.findFirst.mockResolvedValue({ id: 'rent-1', status: 'ACTIVE' });
     client.rentalReturn.findFirst.mockResolvedValue({ id: 'ret-1', rentalId: 'rent-1' });
 
-    await expect(adapter.findRental('rent-1', scope, tx)).resolves.toEqual({ id: 'rent-1' });
+    await expect(adapter.findRental('rent-1', scope, tx)).resolves.toEqual({ id: 'rent-1', status: 'ACTIVE' });
     await expect(adapter.findReturn('ret-1', scope, tx)).resolves.toEqual({ id: 'ret-1', rentalId: 'rent-1' });
     expect(client.rental.findFirst.mock.calls[0][0].where).toEqual({ id: 'rent-1', ...scope });
     expect(client.rentalReturn.findFirst.mock.calls[0][0].where).toEqual({ id: 'ret-1', ...scope });

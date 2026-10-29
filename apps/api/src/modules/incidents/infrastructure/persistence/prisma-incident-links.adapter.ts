@@ -18,7 +18,7 @@ export class PrismaIncidentLinksAdapter implements IncidentLinksPort {
         operatingCompanyId: scope.operatingCompanyId,
         branchId: scope.branchId,
       },
-      select: { id: true },
+      select: { id: true, status: true },
     });
   }
 

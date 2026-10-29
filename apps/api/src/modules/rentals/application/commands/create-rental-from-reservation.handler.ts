@@ -8,7 +8,7 @@ import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/out
 import { assertReservationWithinGuarantee } from '../../../reservations/domain/reservation-guarantee';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { toLimaDateString } from '../../../../common/time/lima-time';
-import { ReservationStartDatePassedError, ReservationStartNotReachedError } from '../../domain/rental-errors';
+import { CustomerBlockedError, ReservationStartDatePassedError, ReservationStartNotReachedError } from '../../domain/rental-errors';
 import { CreateRentalFromReservationCommand } from './create-rental-from-reservation.command';
 
 /**
@@ -85,6 +85,13 @@ export class CreateRentalFromReservationHandler {
         code: 'RESERVATION_NOT_CONFIRMED',
         detail: `No se puede iniciar el alquiler: la reserva se encuentra en estado ${reservation.status} (debe estar CONFIRMED).`,
       });
+    }
+
+    // Decisiones 29-oct #3: un cliente ROJO no se atiende en ningun proceso; la reserva ya existente no se cancela sola,
+    // pero no puede convertirse en alquiler.
+    const customer = await this.rentals.findCustomerById(reservation.customerId);
+    if (customer?.status === 'ROJO') {
+      throw new CustomerBlockedError();
     }
 
     // Russbel 22-oct-2026 (decision 3): Reserva -> Alquiler solo en la fecha pactada, segun el calendario de Lima.

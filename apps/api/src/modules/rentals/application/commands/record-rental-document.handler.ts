@@ -3,6 +3,7 @@ import { RentalDocumentRecord, RentalDocumentRepositoryPort } from '../ports/ren
 import { RentalDocumentType } from '../ports/rental-document-storage.port';
 import { RentalRepositoryPort } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { isTrustedObjectUrl } from '../../../../common/storage/local-dev-storage';
 
 export interface RecordRentalDocumentCommand {
   firebaseUid: string;
@@ -28,7 +29,7 @@ export class RecordRentalDocumentHandler {
       branchId: command.branchId,
     });
 
-    if (!command.objectUrl.startsWith('https://storage.googleapis.com/')) {
+    if (!isTrustedObjectUrl(command.objectUrl)) {
       throw new BadRequestException('objectUrl debe ser una URL de GCS válida (obtenida de upload-url).');
     }
 

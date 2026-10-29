@@ -113,9 +113,12 @@ export class CreateVehicleDto {
   @Min(0)
   rateLibre?: number;
 
-  @IsOptional()
+  /**
+   * Decisión de negocio 28-oct #1 (H-06): todo vehículo nuevo debe traer el precio por línea de combustible faltante (línea del
+   * RNC, Formato 06). La multa de la devolución = líneas faltantes entre entrega y devolución x este precio.
+   */
   @Type(() => Number)
   @IsNumber()
-  @Min(0)
-  fuelPenaltyPerLine?: number;
+  @Min(0.01, { message: 'fuelPenaltyPerLine es obligatorio y debe ser mayor a 0.' })
+  fuelPenaltyPerLine!: number;
 }

@@ -128,7 +128,7 @@ describe('EvaluateNotaryHandler', () => {
     deps.rentals.findById.mockResolvedValueOnce(fakeRental).mockResolvedValueOnce({ ...fakeRental, status: 'CONTRACTING', version: 4 });
     const handler = buildHandler(deps);
 
-    const result = await handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3));
+    const result = await handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3, true));
 
     expect(result.rental.status).toBe('CONTRACTING');
     expect(result.evaluation).toMatchObject({
@@ -174,14 +174,14 @@ describe('EvaluateNotaryHandler', () => {
     );
   });
 
-  it('MANUAL_REVIEW (cliente antiguo sin biometrico): tambien persiste la evaluacion para que Gerencia apruebe el tipo correcto', async () => {
+  it('A-01: sin biometria favorable marcada rechaza la evaluacion (BIOMETRIC_VERIFICATION_REQUIRED) y no persiste nada', async () => {
     const deps = buildDeps({ previousRentalsCount: 5, thirdPathEligible: true });
     const handler = buildHandler(deps);
 
-    const result = await handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3, false));
-
-    expect(result.evaluation).toMatchObject({ result: 'MANUAL_REVIEW', requiresApproval: true });
-    expect(deps.rentals.saveNotaryEvaluation).toHaveBeenCalledWith(expect.objectContaining({ result: 'MANUAL_REVIEW' }), fakeTx);
+    await expect(
+      handler.execute(new EvaluateNotaryCommand('rent-300', 'uid-1', 'comp-1', 'branch-1', 3, false)),
+    ).rejects.toMatchObject({ code: 'BIOMETRIC_VERIFICATION_REQUIRED' });
+    expect(deps.rentals.saveNotaryEvaluation).not.toHaveBeenCalled();
     expect(deps.rentals.transitionStatus).not.toHaveBeenCalled();
   });
 

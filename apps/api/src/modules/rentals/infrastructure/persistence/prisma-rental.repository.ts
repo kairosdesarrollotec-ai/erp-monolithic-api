@@ -359,6 +359,25 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     );
   }
 
+  async cancelOriginReservation(reservationId: string, scope: RentalScope, tx: Prisma.TransactionClient): Promise<boolean> {
+    // Libera cualquier compromiso residual de la reserva y la pasa de CONVERTED a CANCELLED (atomico por estado).
+    await tx.vehicleCommitment.updateMany({
+      where: { sourceType: 'RESERVATION', sourceId: reservationId, status: { in: ['ACTIVE', 'CONSOLIDATED'] } },
+      data: { status: 'RELEASED' },
+    });
+    const result = await tx.reservation.updateMany({
+      where: {
+        id: reservationId,
+        organizationId: scope.organizationId,
+        operatingCompanyId: scope.operatingCompanyId,
+        branchId: scope.branchId,
+        status: 'CONVERTED',
+      },
+      data: { status: 'CANCELLED', version: { increment: 1 } },
+    });
+    return result.count === 1;
+  }
+
   async countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number> {
     return this.prisma.rental.count({
       where: {
@@ -535,6 +554,13 @@ export class PrismaRentalRepository implements RentalRepositoryPort {
     tx?: Prisma.TransactionClient,
   ): Promise<RentalExtensionRecord[]> {
     return this.rentalExtensionPersistence.listByRentalId(rentalId, tx);
+  }
+
+  async findRentalIdsWithExtensionBreach(
+    rentalIds: readonly string[],
+    tx?: Prisma.TransactionClient,
+  ): Promise<Set<string>> {
+    return this.rentalExtensionPersistence.findRentalIdsWithBreach(rentalIds, tx);
   }
 
   async findVehicleCommitmentOverlap(

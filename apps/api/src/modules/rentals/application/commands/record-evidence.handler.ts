@@ -6,6 +6,7 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { RENTAL_ALCOHOL_TEST_EVIDENCE_ZONE } from '../../domain/alcohol-test-result';
 import { RentalStateConflictError } from '../../domain/rental-errors';
 import { RecordEvidenceCommand } from './record-evidence.command';
+import { isTrustedObjectUrl } from '../../../../common/storage/local-dev-storage';
 
 /**
  * ALQ-09 / BR-INS-003 / BR-INS-004 - registra en BD la evidencia que el
@@ -34,7 +35,7 @@ export class RecordEvidenceHandler {
 
     await this.matrixAuth.assertAllowed(context.organizationId, context.roleId, 'RENTAL', 'UPLOAD_EVIDENCE', { companyId: context.companyId, branchId: context.branchId });
 
-    if (!command.objectUrl.startsWith('https://storage.googleapis.com/')) {
+    if (!isTrustedObjectUrl(command.objectUrl)) {
       throw new BadRequestException('objectUrl debe ser una URL de GCS valida (obtenida de upload-url).');
     }
 

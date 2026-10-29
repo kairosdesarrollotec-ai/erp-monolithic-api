@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { RentalRepositoryPort } from '../../../rentals/application/ports/rental-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
@@ -9,13 +9,15 @@ import { ReturnOpenIncidentsPort } from '../ports/return-open-incidents.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import {
   ActiveIncidentsBlockCloseError,
+  ReturnDepositAlreadySettledError,
   ReturnNoDepositToSettleError,
   ReturnNotFoundError,
   ReturnStateConflictError,
 } from '../../domain/return-errors';
 import { appendNotes, findOpenIncidents, openIncidentLabel, roundMoney } from '../../domain/return-rules';
 import { buildDepositSettlementPlan } from '../../domain/return-settlement';
-import { calculateFuelPenalty } from '../../domain/damage-calculator';
+import { ReturnFuelReadingsPort } from '../ports/return-fuel-readings.port';
+import { calculateFuelPenalty, calculateFuelPenaltyByLines } from '../../domain/damage-calculator';
 import { assertCanTransitionReturn } from '../../domain/return-status';
 import { CloseFinancialCommand } from './close-financial.command';
 
@@ -35,6 +37,7 @@ export class CloseFinancialHandler {
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly openIncidentsPort: ReturnOpenIncidentsPort,
+    @Optional() private readonly fuelReadings?: ReturnFuelReadingsPort,
   ) {}
 
   async execute(command: CloseFinancialCommand): Promise<ReturnRecord> {
@@ -83,14 +86,32 @@ export class CloseFinancialHandler {
         (current.immobilizationCharges ?? []).reduce((acc, c) => acc + c.totalAmount, 0),
       );
       const lateChargeTotal = roundMoney(current.lateChargeAmount ?? 0);
+      // Decisión 28-oct #1: sin multa registrada a mano, se compara el RNC de entrega con el de devolución (líneas faltantes x
+      // precio por línea del vehículo, definido en Flota); sin lecturas o sin precio se usa el cálculo anterior por nivel de recepción.
+      let fuelByLines: number | null = null;
+      if (this.fuelReadings && (current.fuelPenaltyAmount === null || current.fuelPenaltyAmount === undefined)) {
+        const readings = await this.fuelReadings.findLines(
+          { vehicleId: current.vehicleId, rentalId: current.rentalId, returnId: current.id, scope },
+          tx,
+        );
+        fuelByLines = calculateFuelPenaltyByLines(readings.deliveryLines, readings.returnLines, current.vehicleFuelPenaltyPerLine);
+      }
       const fuelPenaltyTotal = roundMoney(
         current.fuelPenaltyAmount !== null && current.fuelPenaltyAmount !== undefined
           ? current.fuelPenaltyAmount
-          : current.fuelLevelAtReturn
-            ? calculateFuelPenalty(current.fuelLevelAtReturn, current.vehicleFuelPenaltyPerLine)
-            : 0,
+          : fuelByLines !== null
+            ? fuelByLines
+            : current.fuelLevelAtReturn
+              ? calculateFuelPenalty(current.fuelLevelAtReturn, current.vehicleFuelPenaltyPerLine)
+              : 0,
       );
-      const plan = deposit
+      // Decisión 28-oct (opción 1): si la garantía ya se liquidó antes (p. ej. retenida por una falta grave de ampliación, BR-ALQ-013),
+      // el cierre financiero continúa sin mover la garantía; no hay nada que devolver (refundAmount > 0 sería un error).
+      const depositAlreadySettled = !!deposit && deposit.status !== 'HELD';
+      if (depositAlreadySettled && refundAmount > 0) {
+        throw new ReturnDepositAlreadySettledError(deposit!.status);
+      }
+      const plan = deposit && !depositAlreadySettled
         ? buildDepositSettlementPlan({
             originalAmount: Number(deposit.originalAmount),
             refundAmount,
@@ -142,6 +163,7 @@ export class CloseFinancialHandler {
             lateChargeTotal,
             fuelPenaltyTotal,
             depositApplicable,
+            depositAlreadySettled,
             depositStatus: plan?.status,
             depositAdjusted: depositApplied,
             fuelPenaltyReference: fuelPenaltyTotal,
