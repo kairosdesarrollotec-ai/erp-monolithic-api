@@ -447,7 +447,7 @@ components:
                 type: object
                 required: [code, label]
                 properties:
-                  code: { type: string, enum: [RECIBO_AGUA_O_LUZ, CONSTANCIA_HOSPEDAJE] }
+                  code: { type: string, enum: [DNI, PASAPORTE_O_CE, LICENCIA_CONDUCIR, RECIBO_AGUA_O_LUZ, CONSTANCIA_HOSPEDAJE] }
                   label: { type: string }
             latestQuotationId:
               type: [string, 'null']
