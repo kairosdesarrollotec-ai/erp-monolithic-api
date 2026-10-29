@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReturnDamageRecord, ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnCustomerRiskPort } from '../ports/return-customer-risk.port';
+import { ReturnDashboardAlertPort } from '../ports/return-dashboard-alert.port';
+import { ReturnBellNotificationPort } from '../ports/return-bell-notification.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import { ReturnNotFoundError, ReturnStateConflictError } from '../../domain/return-errors';
 import { resolveDamageAssessment } from '../../domain/damage-assessment';
@@ -34,6 +36,8 @@ export class AssessDamageHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    @Optional() private readonly dashboardAlerts?: ReturnDashboardAlertPort,
+    @Optional() private readonly bell?: ReturnBellNotificationPort,
   ) {}
 
   async execute(command: AssessDamageCommand): Promise<AssessDamageResult> {
@@ -60,7 +64,7 @@ export class AssessDamageHandler {
       throw new ReturnStateConflictError('evaluar daños en', existing.status);
     }
 
-    return this.transactionManager.run(async (tx) => {
+    const result = await this.transactionManager.run(async (tx) => {
       const current = await this.returns.findById(command.id, scope, tx);
       if (!current) {
         throw new ReturnNotFoundError(command.id);
@@ -151,5 +155,52 @@ export class AssessDamageHandler {
 
       return { damage, rentalReturn: updated, customerRiskStatus: risk.current };
     });
+
+    // D-01 (29-oct): daño MODERADO y el cliente no acepta el costo -> Ámbar y se escala a Gerencia (tablero + campana).
+    if (resolved.severity === 'MODERADO' && command.customerAcceptsCost === false) {
+      await this.notifyManagement(result.rentalReturn, context.organizationId, scope.operatingCompanyId, scope.branchId);
+    }
+    return result;
+  }
+
+  /** No bloqueante: si falla el aviso, la evaluación del daño ya quedó registrada. */
+  private async notifyManagement(updated: ReturnRecord, organizationId: string, companyId: string, branchId: string): Promise<void> {
+    try {
+      const plate = updated.vehiclePlate ?? 'Vehículo';
+      const title = `Cliente no acepta el costo del daño moderado — ${plate}`;
+      const detail = 'El cliente quedó en ÁMBAR; Gerencia debe decidir cómo continúa.';
+      const deepLink = `/devoluciones/${updated.id}/cierre`;
+      if (this.dashboardAlerts) {
+        await this.dashboardAlerts.createDashboardItems([
+          {
+            organizationId,
+            operatingCompanyId: companyId,
+            branchId,
+            role: 'GERENCIA',
+            itemType: 'ALERT' as const,
+            priority: 90,
+            title,
+            detail,
+            deepLink,
+            sourceType: 'RETURN' as const,
+            sourceId: updated.id,
+            sourceEventId: `return-damage-cost-rejected:${updated.id}:GERENCIA`,
+          },
+        ]);
+      }
+      await this.bell?.notifyRoles({
+        organizationId,
+        operatingCompanyId: companyId,
+        branchId,
+        roles: ['GERENCIA'],
+        notificationType: 'RETURN_DAMAGE_COST_REJECTED',
+        title,
+        deepLink,
+        sourceEventPrefix: `return-damage-cost-rejected-bell:${updated.id}`,
+        isEscalated: true,
+      });
+    } catch {
+      // no bloqueante
+    }
   }
 }
