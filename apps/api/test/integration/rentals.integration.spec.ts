@@ -234,7 +234,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       evidenceRepository,
     );
     const alcoholed = await alcoholHandler.execute(
-      new RegisterAlcoholTestCommand(rentalId, UID, company, branch, validated.version, 'FAVORABLE'),
+      new RegisterAlcoholTestCommand(rentalId, UID, company, branch, validated.version, 'FAVORABLE', undefined, true, true),
     );
     expect(alcoholed.status).toBe('NOTARY_EVALUATION');
     expect(alcoholed.alcoholTestResult).toBe('FAVORABLE');

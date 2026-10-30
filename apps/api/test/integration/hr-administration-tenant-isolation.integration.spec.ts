@@ -109,7 +109,7 @@ describe('HR-Administration — aislamiento multiempresa (Postgres real)', () =>
     const employeeA = await createHandler.execute(
       new CreateEmployeeCommand(
         UID_A, companyA, branchA,
-        'DNI', `A${randomUUID().slice(0, 7)}`,
+        'DNI', '12345678',
         'Colaborador Empresa A',
         'area-ops', 'Operaciones', 'Conductor',
         new Date('2026-01-15'),
@@ -141,7 +141,7 @@ describe('HR-Administration — aislamiento multiempresa (Postgres real)', () =>
     const employeeB = await createHandler.execute(
       new CreateEmployeeCommand(
         UID_B, companyB, branchB,
-        'DNI', `B${randomUUID().slice(0, 7)}`,
+        'DNI', '87654321',
         'Colaborador Empresa B',
         'area-admin', 'Administración', 'Asistente',
         new Date('2026-02-01'),
