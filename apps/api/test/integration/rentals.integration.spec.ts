@@ -249,7 +249,7 @@ describe('Rentals — ciclo de vida completo (Postgres real)', () => {
       outbox,
     );
     const evaluated = await evaluateHandler.execute(
-      new EvaluateNotaryCommand(rentalId, UID, company, branch, alcoholed.version),
+      new EvaluateNotaryCommand(rentalId, UID, company, branch, alcoholed.version, true),
     );
 
     let contractingRental = evaluated.rental;
