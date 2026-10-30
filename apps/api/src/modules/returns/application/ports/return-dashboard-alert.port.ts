@@ -33,6 +33,8 @@ export abstract class ReturnDashboardAlertPort {
   /** P3: devoluciones CERRADA cerradas en o antes de `closedBefore` (reloj de paralizacion desde el cierre, 22-oct-2026) con al menos un dano tecnico. */
   abstract listImmobilizationCandidates(closedBefore: Date, limit: number, afterId?: string): Promise<ReturnRecord[]>;
   abstract findReturnsByIds(ids: readonly string[]): Promise<ReturnRecord[]>;
+  /** V-23: descarta (no borra) los items activos de una devolución cuya clave natural empieza por alguno de los prefijos. Idempotente. */
+  abstract dismissByReturn(returnId: string, keyPrefixes: readonly string[], at: Date): Promise<number>;
   /** Descarta (no borra) por id; idempotente (solo los aún activos). Devuelve los realmente descartados. */
   abstract dismissItems(ids: readonly string[], at: Date): Promise<number>;
 }

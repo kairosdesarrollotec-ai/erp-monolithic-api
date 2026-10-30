@@ -78,6 +78,11 @@ export class CancelRentalHandler {
         tx,
       );
 
+      // CR-03: cancelar el alquiler cancela todo el proceso, tambien la reserva de origen.
+      const originReservationCancelled = current.reservationId
+        ? await this.rentals.cancelOriginReservation(current.reservationId, scope, tx)
+        : false;
+
       const depositPendingRefund = !!current.deposit && current.deposit.status === 'HELD';
 
       await this.auditRepository.recordRentalEvent(
@@ -93,6 +98,7 @@ export class CancelRentalHandler {
             note: note ?? null,
             vehicleId: current.vehicleId,
             reservationId: current.reservationId,
+            originReservationCancelled,
             depositPendingRefund,
             depositAmount: current.deposit?.originalAmount ?? null,
           },

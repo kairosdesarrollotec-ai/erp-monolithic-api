@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
@@ -6,8 +6,12 @@ import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.p
 import { ReturnAccessService } from '../services/return-access.service';
 import { AlcoholTestPhotoRequiredError, ReturnNotFoundError, ReturnStateConflictError } from '../../domain/return-errors';
 import { RETURN_ALCOHOL_TEST_EVIDENCE_ZONE } from '../../domain/return-evidence-requirements';
+import type { WorkerRole } from '../../../users/domain/worker-role';
 import { assertCanTransitionReturn } from '../../domain/return-status';
 import { RegisterReturnAlcoholTestCommand } from './register-alcohol-test.command';
+import { ReturnAlertRecipientsPort } from '../ports/return-alert-recipients.port';
+import { ReturnBellNotificationPort } from '../ports/return-bell-notification.port';
+import { ReturnDashboardAlertPort } from '../ports/return-dashboard-alert.port';
 
 /**
  * DEV-04 / BR-DEV-005 / DR-DEV-003 - Alcolímetro de salida (tolerancia cero).
@@ -26,6 +30,9 @@ export class RegisterReturnAlcoholTestHandler {
     private readonly transactionManager: TransactionManagerPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    @Optional() private readonly recipients?: ReturnAlertRecipientsPort,
+    @Optional() private readonly dashboardAlerts?: ReturnDashboardAlertPort,
+    @Optional() private readonly bell?: ReturnBellNotificationPort,
   ) {}
 
   async execute(command: RegisterReturnAlcoholTestCommand): Promise<ReturnRecord> {
@@ -113,7 +120,64 @@ export class RegisterReturnAlcoholTestHandler {
         tx,
       );
 
+      if (!passing) {
+        await this.notifyManagement(updated, command.result, context.organizationId, command.companyId, command.branchId);
+      }
+
       return updated;
     });
+  }
+
+  /**
+   * H-02 (decisión de negocio 28-oct #4): la derivación a Gerencia por alcolímetro desfavorable/rechazado llega a la campana y
+   * al tablero de Gerencia y de los roles con el permiso de alertas de devolución. No bloqueante: un fallo no revierte el registro.
+   */
+  private async notifyManagement(
+    updated: ReturnRecord,
+    result: string,
+    organizationId: string,
+    companyId: string,
+    branchId: string,
+  ): Promise<void> {
+    if (!this.recipients) return;
+    try {
+      const scope = { organizationId, operatingCompanyId: companyId, branchId };
+      const roles = new Set<WorkerRole>(await this.recipients.rolesWithAlertPermission(scope));
+      roles.add('GERENCIA');
+      const plate = updated.vehiclePlate ?? 'Vehículo';
+      const title = `Alcolímetro ${result === 'RECHAZADO' ? 'rechazado' : 'desfavorable'} — ${plate}`;
+      const detail = `La devolución quedó en custodia preventiva y requiere decisión de Gerencia (BR-DEV-005).`;
+      const deepLink = `/devoluciones/${updated.id}/alcoholimetro`;
+      if (this.dashboardAlerts) {
+        await this.dashboardAlerts.createDashboardItems(
+          Array.from(roles).map((role) => ({
+            organizationId,
+            operatingCompanyId: companyId,
+            branchId,
+            role,
+            itemType: 'ALERT' as const,
+            priority: 95,
+            title,
+            detail,
+            deepLink,
+            sourceType: 'RETURN' as const,
+            sourceId: updated.id,
+            sourceEventId: `return-alcohol-escalation:${updated.id}:${role}`,
+          })),
+        );
+      }
+      await this.bell?.notifyRoles({
+        organizationId,
+        operatingCompanyId: companyId,
+        branchId,
+        roles: Array.from(roles),
+        notificationType: 'RETURN_ALCOHOL_ESCALATED',
+        title,
+        deepLink,
+        sourceEventPrefix: `return-alcohol-escalation-bell:${updated.id}`,
+      });
+    } catch {
+      // no bloqueante
+    }
   }
 }

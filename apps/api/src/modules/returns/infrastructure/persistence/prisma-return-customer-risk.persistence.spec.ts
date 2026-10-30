@@ -25,7 +25,7 @@ describe('PrismaReturnCustomerRiskPersistence (semáforo de solo avance)', () =>
     await expect(a.persistence.escalate(input('AMBAR'), a.tx)).resolves.toEqual({ previous: 'NORMAL', current: 'AMBAR' });
     expect(a.customer.updateMany).toHaveBeenCalledWith({
       where: { id: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', status: { notIn: ['AMBAR', 'ROJO'] } },
-      data: { status: 'AMBAR' },
+      data: { status: 'AMBAR', statusReason: null, statusChangedAt: expect.any(Date) },
     });
 
     const r = build('AMBAR');

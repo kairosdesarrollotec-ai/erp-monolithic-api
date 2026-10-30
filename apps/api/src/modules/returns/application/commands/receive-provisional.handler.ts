@@ -1,3 +1,4 @@
+import { ReturnBellNotificationPort } from '../ports/return-bell-notification.port';
 import { Injectable, Optional } from '@nestjs/common';
 import { RentalRepositoryPort } from '../../../rentals/application/ports/rental-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
@@ -36,6 +37,7 @@ export class ReceiveProvisionalHandler {
     private readonly outboxRepository: OutboxEventRepositoryPort,
     @Optional() private readonly recipients?: ReturnAlertRecipientsPort,
     @Optional() private readonly dashboardAlerts?: ReturnDashboardAlertPort,
+    @Optional() private readonly bell?: ReturnBellNotificationPort,
   ) {}
 
   async execute(command: ReceiveProvisionalCommand): Promise<ReturnRecord> {
@@ -183,6 +185,16 @@ export class ReceiveProvisionalHandler {
             }));
 
             await this.dashboardAlerts.createDashboardItems(alertItems);
+            await this.bell?.notifyRoles({
+              organizationId: context.organizationId,
+              operatingCompanyId: command.companyId,
+              branchId: command.branchId,
+              roles: Array.from(targetRoles),
+              notificationType: 'RETURN_IDENTITY_NOT_CONFORME',
+              title: `Recepción con documento NO CONFORME — ${received.vehiclePlate ?? 'Vehículo'}`,
+              deepLink: `/devoluciones/${received.id}/cierre`,
+              sourceEventPrefix: `return-identity-mismatch-bell:${received.id}`,
+            });
           } catch {
             // no bloqueante
           }

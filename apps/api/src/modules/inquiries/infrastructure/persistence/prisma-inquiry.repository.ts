@@ -191,7 +191,7 @@ export class PrismaInquiryRepository implements InquiryRepositoryPort {
   async findCustomerById(id: string): Promise<CustomerRecord | null> {
     return this.prisma.customer.findUnique({
       where: { id },
-      select: { id: true, organizationId: true, operatingCompanyId: true, fullName: true, nationality: true, countryEntryDate: true },
+      select: { id: true, organizationId: true, operatingCompanyId: true, fullName: true, nationality: true, countryEntryDate: true, status: true },
     });
   }
 

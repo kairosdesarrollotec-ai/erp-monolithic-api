@@ -60,6 +60,24 @@ export class AlcoholTestUnfavorableError extends DomainUnprocessableError {
   }
 }
 
+/** Decisión de negocio 28-oct #6 (H-21): el resultado del alcolímetro es obligatorio antes de entregar el vehículo. */
+export class AlcoholTestRequiredError extends DomainUnprocessableError {
+  readonly code = 'ALCOHOL_TEST_REQUIRED';
+
+  constructor() {
+    super('El resultado del alcolímetro es obligatorio antes de entregar el vehículo. Regístralo en la etapa de validaciones.');
+  }
+}
+
+/** Decisión de negocio 28-oct #8 (H-24): todo alquiler debe tener fecha de devolución prevista al entregarse. */
+export class ExpectedEndDateRequiredError extends DomainUnprocessableError {
+  readonly code = 'EXPECTED_END_DATE_REQUIRED';
+
+  constructor() {
+    super('El alquiler necesita una fecha de devolución prevista antes de entregar el vehículo.');
+  }
+}
+
 export class NotaryExceptionRequiresApprovalError extends DomainForbiddenError {
   readonly code = 'NOTARY_EXCEPTION_REQUIRES_APPROVAL';
 
@@ -134,8 +152,9 @@ export class VehicleUnavailableForExtensionError extends DomainUnprocessableErro
 export class CustomerBlockedError extends DomainUnprocessableError {
   readonly code = 'CUSTOMER_BLOCKED';
 
-  constructor() {
-    super('El cliente esta en estado ROJO y no puede iniciar un nuevo alquiler.');
+  /** V-25: el mensaje nombra la operación bloqueada (alquiler por defecto; reserva al reservar/confirmar). */
+  constructor(operation: 'alquiler' | 'reserva' = 'alquiler') {
+    super(`El cliente esta en estado ROJO y no puede iniciar un nuevo ${operation}.`);
   }
 }
 
@@ -481,3 +500,24 @@ export class NotaryExpenseCannotBeCustomerPaymentError extends DomainUnprocessab
   }
 }
 
+
+/** A-01 (29-oct-2026): evaluar notaria exige la verificacion biometrica favorable marcada por el personal. */
+export class BiometricVerificationRequiredError extends DomainUnprocessableError {
+  readonly code = 'BIOMETRIC_VERIFICATION_REQUIRED';
+
+  constructor() {
+    super('Marca la verificacion biometrica favorable antes de evaluar la notaria.');
+  }
+}
+
+/** A-02 (29-oct-2026): ENTREGA-02 no continua sin confirmar manualmente RENIEC y MTC. */
+export class IdentityVerificationRequiredError extends DomainUnprocessableError {
+  readonly code = 'IDENTITY_VERIFICATION_REQUIRED';
+
+  constructor(missing: string[]) {
+    super(
+      `Confirma manualmente la verificacion de ${missing.join(' y ')} antes de continuar. ` +
+        'Solo Gerencia puede exceptuar RENIEC (con motivo); MTC no admite excepcion.',
+    );
+  }
+}

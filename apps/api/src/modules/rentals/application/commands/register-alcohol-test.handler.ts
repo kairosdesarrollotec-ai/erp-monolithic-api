@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { RentalRepositoryPort, RentalRecord } from '../ports/rental-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { AlcoholTestPhotoRequiredError, RentalStateConflictError } from '../../domain/rental-errors';
+import { AlcoholTestPhotoRequiredError, IdentityVerificationRequiredError, RentalStateConflictError } from '../../domain/rental-errors';
 import {
   alcoholTestRequiresPhoto,
   isAlcoholTestPassing,
@@ -57,6 +57,31 @@ export class RegisterAlcoholTestHandler {
     }
 
     const isPassing = isAlcoholTestPassing(command.result);
+
+    // A-02 (Decisiones 29-oct #1): para continuar la entrega, RENIEC y MTC se confirman manualmente. Gerencia puede
+    // exceptuar RENIEC (con motivo); MTC no admite excepcion.
+    const reniecException = command.reniecExceptionReason?.trim();
+    if (isPassing) {
+      if (reniecException && !command.reniecVerified) {
+        // V-01: se valida por la accion de la matriz (la misma que habilita la excepcion en el front), no por el nombre del rol.
+        const canException = await this.matrixAuth.isAllowed(context.organizationId, context.roleId, 'RENTAL', 'APPROVE_NOTARY_EXCEPTION', {
+          companyId: context.companyId,
+          branchId: context.branchId,
+        });
+        if (!canException) {
+          throw new ForbiddenException({
+            code: 'RENIEC_EXCEPTION_FORBIDDEN',
+            detail: 'Solo Gerencia puede exceptuar la verificacion de RENIEC.',
+          });
+        }
+      }
+      const missing: string[] = [];
+      if (!command.reniecVerified && !reniecException) missing.push('RENIEC');
+      if (!command.mtcVerified) missing.push('MTC');
+      if (missing.length > 0) {
+        throw new IdentityVerificationRequiredError(missing);
+      }
+    }
     const targetStatus = isPassing ? 'NOTARY_EVALUATION' : 'CANCELLED';
 
     return this.transactionManager.run(async (tx) => {
@@ -89,6 +114,11 @@ export class RegisterAlcoholTestHandler {
         tx,
       );
 
+      // CR-03: la cancelacion por alcolimetro tambien cancela la reserva de origen (todo el proceso).
+      if (!isPassing && updated.reservationId) {
+        await this.rentals.cancelOriginReservation(updated.reservationId, scope, tx);
+      }
+
       await this.auditRepository.recordRentalEvent(
         {
           organizationId: context.organizationId,
@@ -100,6 +130,9 @@ export class RegisterAlcoholTestHandler {
             targetStatus,
             alcoholPhotoEvidenceId,
             notes: command.notes,
+            reniecVerified: command.reniecVerified,
+            mtcVerified: command.mtcVerified,
+            reniecExceptionReason: reniecException || undefined,
           },
         },
         tx,

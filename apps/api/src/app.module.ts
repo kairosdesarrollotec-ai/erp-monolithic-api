@@ -27,6 +27,7 @@ import { RetentionModule } from './modules/retention/retention.module';
 import { EvidenceModule } from './modules/evidence/evidence.module';
 import { SyncConflictsModule } from './modules/sync-conflicts/sync-conflicts.module';
 import { IdempotencyModule } from './common/http/idempotency.module';
+import { DevStorageModule } from './common/storage/dev-storage.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { IdempotencyModule } from './common/http/idempotency.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
     IdempotencyModule,
+    DevStorageModule,
     HealthModule,
     AuditModule,
     UsersModule,

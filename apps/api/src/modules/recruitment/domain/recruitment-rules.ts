@@ -7,6 +7,7 @@ import {
 } from './recruitment-domain-types';
 import {
   CandidateAlreadyDecidedError,
+  CandidateDiscardedError,
   CandidateCvInvalidFileError,
   CandidateCvObjectMismatchError,
   NegotiationInvalidError,
@@ -209,6 +210,13 @@ export function assertMechanicChannels(isMechanic: boolean, channels: string[]):
 export function assertCandidateNotDecided(decision: CandidateDecision | null | undefined): void {
   if (decision !== null && decision !== undefined) {
     throw new CandidateAlreadyDecidedError(decision);
+  }
+}
+
+/** R-10: DESCARTADO es terminal e irreversible. */
+export function assertCandidateNotDiscarded(processState: CandidateProcessState | null | undefined): void {
+  if (processState === CandidateProcessState.DESCARTADO) {
+    throw new CandidateDiscardedError();
   }
 }
 

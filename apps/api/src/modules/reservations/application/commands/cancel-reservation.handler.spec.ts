@@ -86,6 +86,14 @@ function buildDeps(existing: ReservationRecord | null, role = 'FRONT_OFFICE') {
 }
 
 describe('CancelReservationHandler', () => {
+  it('CR-06: sin motivo escrito -> RESERVATION_CANCEL_NOTE_REQUIRED y no consulta nada', async () => {
+    const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(buildRecord());
+    const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
+    await expect(
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE', '  ')),
+    ).rejects.toMatchObject({ code: 'RESERVATION_CANCEL_NOTE_REQUIRED' });
+  });
+
   it('cancela por cambio solicitado por el cliente y audita la razon (BR-RES-003)', async () => {
     const existing = buildRecord();
     const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);
@@ -124,7 +132,7 @@ describe('CancelReservationHandler', () => {
     const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing, 'GERENCIA');
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
-    await handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW'));
+    await handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW', 'Motivo de prueba'));
 
     expect(reservations.findById).toHaveBeenCalledWith('res-1', SCOPE);
   });
@@ -140,7 +148,7 @@ describe('CancelReservationHandler', () => {
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
-      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW')),
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW', 'Motivo de prueba')),
     ).rejects.toBeInstanceOf(ReservationStateConflictError);
     expect(reservations.cancel).not.toHaveBeenCalled();
   });
@@ -151,7 +159,7 @@ describe('CancelReservationHandler', () => {
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
-      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE')),
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE', 'Motivo de prueba')),
     ).rejects.toBeInstanceOf(ReservationStateConflictError);
     expect(reservations.cancel).not.toHaveBeenCalled();
   });
@@ -210,7 +218,7 @@ describe('CancelReservationHandler', () => {
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
-      handler.execute(new CancelReservationCommand('res-x', 'uid-1', 'company-1', 'branch-1', 1, 'NO_SHOW')),
+      handler.execute(new CancelReservationCommand('res-x', 'uid-1', 'company-1', 'branch-1', 1, 'NO_SHOW', 'Motivo de prueba')),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -223,7 +231,7 @@ describe('CancelReservationHandler', () => {
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
-      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW')),
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'NO_SHOW', 'Motivo de prueba')),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(reservations.cancel).not.toHaveBeenCalled();
   });
@@ -234,7 +242,7 @@ describe('CancelReservationHandler', () => {
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     const result = await handler.execute(
-      new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE'),
+      new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE', 'Motivo de prueba'),
     );
 
     expect(result.status).toBe('CANCELLED');
@@ -257,7 +265,7 @@ describe('CancelReservationHandler', () => {
 
     await expect(
       handler.execute(
-        new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE'),
+        new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE', 'Motivo de prueba'),
       ),
     ).rejects.toMatchObject({
       response: {
@@ -273,7 +281,7 @@ describe('CancelReservationHandler', () => {
     const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
     await expect(
-      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE')),
+      handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, 'CUSTOMER_REQUESTED_CHANGE', 'Motivo de prueba')),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(reservations.cancel).not.toHaveBeenCalled();
   });
@@ -286,7 +294,7 @@ describe('CancelReservationHandler', () => {
         const handler = new CancelReservationHandler(reservations, workContext, audit, outbox, transactionManager, matrixAuth);
 
         await expect(
-          handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, reason as any)),
+          handler.execute(new CancelReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 2, reason as any, 'Motivo de prueba')),
         ).rejects.toMatchObject({ code: 'INVALID_CANCEL_REASON', httpStatus: 400 });
         expect(reservations.cancel).not.toHaveBeenCalled();
       },

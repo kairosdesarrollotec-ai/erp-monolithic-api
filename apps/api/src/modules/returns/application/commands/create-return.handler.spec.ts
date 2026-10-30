@@ -74,6 +74,12 @@ describe('CreateReturnHandler (DEV-01)', () => {
     },
   );
 
+  it('V-08: con ampliación pendiente el mensaje pide autorizarla o rechazarla primero', async () => {
+    const { deps, handler } = build();
+    deps.rentals.findById.mockResolvedValue(buildRentalRecord({ status: 'EXTENSION_PENDING' }));
+    await expect(handler.execute(command)).rejects.toThrow(/Autorízala o recházala primero/);
+  });
+
   it('alquiler con devolución ya existente -> RentalAlreadyHasActiveReturnError', async () => {
     const { deps, handler } = build();
     deps.returns.findByRentalId.mockResolvedValue(buildReturnRecord());

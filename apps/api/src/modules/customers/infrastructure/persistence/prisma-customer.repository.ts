@@ -138,6 +138,8 @@ export class PrismaCustomerRepository extends CustomerRepositoryPort {
     email: string | null;
     phone: string | null;
     address: string | null;
+    status?: string | null;
+    statusReason?: string | null;
     createdAt: Date;
     updatedAt: Date;
   }): Customer {
@@ -153,6 +155,8 @@ export class PrismaCustomerRepository extends CustomerRepositoryPort {
       email: row.email,
       phone: row.phone,
       address: row.address,
+      riskStatus: row.status === 'AMBAR' || row.status === 'ROJO' ? row.status : 'NORMAL',
+      riskReason: row.statusReason ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

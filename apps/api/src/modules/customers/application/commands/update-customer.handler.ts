@@ -1,3 +1,4 @@
+import { assertValidIdentityDocument, assertValidPhone } from '../../../../common/domain/identity-document';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { CustomerRepositoryPort } from '../ports/customer-repository.port';
@@ -20,6 +21,9 @@ export class UpdateCustomerHandler {
         detail: 'La fecha de ingreso al país solo aplica a clientes extranjeros.',
       });
     }
+
+    assertValidIdentityDocument(command.documentType, command.documentNumber);
+    assertValidPhone(command.phone);
 
     const { context } = await this.access.authorize(
       { firebaseUid: command.firebaseUid, companyId: command.companyId, branchId: command.branchId },

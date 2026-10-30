@@ -14,3 +14,7 @@ apps/api/dist/
 
 # Framework interno de agentes/skills/reglas: vive en repo aparte, no en este
 .claude/
+
+# uploads locales de desarrollo (LOCAL_STORAGE_ENABLED)
+uploads/
+apps/api/uploads/

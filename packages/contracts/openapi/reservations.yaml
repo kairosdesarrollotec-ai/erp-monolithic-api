@@ -588,10 +588,10 @@ components:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }
         - type: object
-          required: [reason]
+          required: [reason, note]
           properties:
             reason: { type: string, enum: [CUSTOMER_REQUESTED_CHANGE, NO_SHOW] }
-            note: { type: string }
+            note: { type: string, minLength: 5, description: 'Motivo escrito obligatorio (CR-06). Sin el: 400 RESERVATION_CANCEL_NOTE_REQUIRED.' }
     FlagVehicleSaleRequest:
       allOf:
         - { $ref: '#/components/schemas/CommandScopeRequest' }

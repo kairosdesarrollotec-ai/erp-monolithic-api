@@ -9,6 +9,15 @@ import {
 import { formatLimaDMY } from '../../../common/time/lima-time';
 import { ReservationStatus } from './reservation-status';
 
+/** CR-06 (29-oct-2026): toda cancelacion de reserva exige un motivo escrito (el monto pagado se pierde, BR-RES-003). */
+export class ReservationCancelNoteRequiredError extends DomainBadRequestError {
+  readonly code = 'RESERVATION_CANCEL_NOTE_REQUIRED';
+
+  constructor() {
+    super('Indica el motivo de la cancelacion (minimo 5 caracteres).');
+  }
+}
+
 export class InvalidReservationCancelReasonError extends DomainBadRequestError {
   readonly code = 'INVALID_CANCEL_REASON';
 

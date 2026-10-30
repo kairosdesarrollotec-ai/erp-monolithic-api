@@ -2,6 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InquiryRepositoryPort, InquiryRecord } from '../ports/inquiry-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
+import { InquiryCustomerRedError, InvalidEstimatedDaysError } from '../../domain/inquiry-errors';
+import { assertValidIdentityDocument } from '../../../../common/domain/identity-document';
 import { RegisterInquiryCommand } from './register-inquiry.command';
 
 /**
@@ -31,6 +33,14 @@ export class RegisterInquiryHandler {
       });
     }
 
+    if (!Number.isInteger(command.snapshot.estimatedDays) || command.snapshot.estimatedDays <= 0) {
+      throw new InvalidEstimatedDaysError();
+    }
+
+    if (command.prospect) {
+      assertValidIdentityDocument(command.prospect.documentType, command.prospect.documentNumber);
+    }
+
     if (command.prospect?.countryEntryDate && command.prospect.nationality !== 'EXTRANJERO') {
       throw new BadRequestException({
         code: 'COUNTRY_ENTRY_DATE_ONLY_FOR_FOREIGNERS',
@@ -58,6 +68,10 @@ export class RegisterInquiryHandler {
           code: 'CUSTOMER_NOT_FOUND',
           detail: 'El cliente indicado no existe en esta empresa.',
         });
+      }
+      // Decisiones 29-oct #3: ROJO no se atiende en ningun proceso.
+      if (customer.status === 'ROJO') {
+        throw new InquiryCustomerRedError();
       }
       customerId = customer.id;
     } else {

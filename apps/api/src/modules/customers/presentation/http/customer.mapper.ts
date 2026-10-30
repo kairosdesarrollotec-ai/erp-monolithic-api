@@ -14,6 +14,8 @@ export function toCustomerResponse(customer: Customer): CustomerResponse {
     email: customer.email ?? null,
     phone: customer.phone ?? null,
     address: customer.address ?? null,
+    riskStatus: customer.riskStatus ?? 'NORMAL',
+    riskReason: customer.riskReason ?? null,
     createdAt: customer.createdAt.toISOString(),
     updatedAt: customer.updatedAt.toISOString(),
   };

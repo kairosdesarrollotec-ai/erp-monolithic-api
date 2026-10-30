@@ -1132,6 +1132,9 @@ components:
         branchId: { type: string, format: uuid }
         result: { $ref: '#/components/schemas/AlcoholTestResult' }
         notes: { type: string }
+        reniecVerified: { type: boolean, default: false, description: 'Confirmacion manual de RENIEC (obligatoria para continuar con FAVORABLE salvo excepcion de Gerencia). A-02.' }
+        mtcVerified: { type: boolean, default: false, description: 'Confirmacion manual de MTC (obligatoria para continuar con FAVORABLE; no admite excepcion). A-02.' }
+        reniecExceptionReason: { type: string, minLength: 5, description: 'Excepcion de RENIEC autorizada por Gerencia, con motivo. Otro rol -> 403 RENIEC_EXCEPTION_FORBIDDEN.' }
 
     EvaluateNotaryRequest:
       type: object
@@ -1139,7 +1142,7 @@ components:
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
-        biometricVerified: { type: boolean, default: false, description: 'Casilla que marca el personal tras la verificacion biometrica; se audita con quien la marco (DEC-ALQ-THIRDPATH-001).' }
+        biometricVerified: { type: boolean, default: false, description: 'Casilla que marca el personal tras la verificacion biometrica; se audita con quien la marco (DEC-ALQ-THIRDPATH-001). OBLIGATORIA para evaluar (A-01): sin ella 422 BIOMETRIC_VERIFICATION_REQUIRED.' }
 
     RequiredGuarantee:
       type: object
@@ -1401,11 +1404,15 @@ components:
 
     AuthorizeExtensionRequest:
       type: object
-      required: [companyId, branchId]
+      required: [companyId, branchId, paymentId]
       properties:
         companyId: { type: string, format: uuid }
         branchId: { type: string, format: uuid }
-        paymentId: { type: string, format: uuid }
+        paymentId:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Referencia del pago previo del periodo adicional (Nº de operación o comprobante). Obligatoria para autorizar.
         addendumDocumentRef: { type: string }
 
     RejectExtensionRequest:
@@ -1705,6 +1712,9 @@ components:
           type: array
           description: Solo en GET /rentals/{id}. Ampliaciones, la más reciente primero.
           items: { $ref: '#/components/schemas/RentalExtensionResponse' }
+        hasExtensionBreach:
+          type: boolean
+          description: Solo en el listado (GET /rentals). true si el alquiler tiene una falta grave de ampliación registrada (BR-ALQ-013); el front lo muestra como "Incumplimiento grave".
 
     RentalDocumentType:
       type: string

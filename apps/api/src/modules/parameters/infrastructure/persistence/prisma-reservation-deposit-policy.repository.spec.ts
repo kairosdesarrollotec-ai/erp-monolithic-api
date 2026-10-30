@@ -94,16 +94,19 @@ describe('PrismaReservationDepositPolicyRepository', () => {
       expect(result.amount).toBe('600.00');
     });
 
-    it('crea version 1 cuando no habia politica previa', async () => {
-      const created = makeRow({ version: 1, amount: '300.00' });
+    it('CR-05: sin politica previa persiste el valor inicial como version 1 y la nueva queda como version 2', async () => {
+      const created = makeRow({ version: 2, amount: '350.00' });
       const findFirst = jest.fn().mockResolvedValue(null);
-      const create = jest.fn().mockResolvedValue(created);
+      const create = jest.fn().mockResolvedValueOnce(makeRow({ version: 1 })).mockResolvedValueOnce(created);
       const prisma = buildPrisma({ findFirst, create });
       const repo = new PrismaReservationDepositPolicyRepository(prisma);
 
-      await repo.createVersion({ organizationId: 'org-nueva', amount: '300.00', currency: 'PEN', createdBy: 'admin' });
+      const result = await repo.createVersion({ organizationId: 'org-nueva', amount: '350.00', currency: 'PEN', createdBy: 'admin' });
 
-      expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ version: 1 }) }));
+      expect(create).toHaveBeenCalledTimes(2);
+      expect(create.mock.calls[0][0].data).toMatchObject({ version: 1, amount: '300.00', createdBy: 'system-default' });
+      expect(create.mock.calls[1][0].data).toMatchObject({ version: 2, amount: '350.00', createdBy: 'admin' });
+      expect(result.version).toBe(2);
     });
 
     it('usa el TransactionClient cuando se pasa tx', async () => {

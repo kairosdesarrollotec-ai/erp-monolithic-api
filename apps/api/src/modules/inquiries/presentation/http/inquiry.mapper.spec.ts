@@ -31,9 +31,13 @@ describe('inquiry.mapper', () => {
 
   it('P-03: requiredDocuments segun nacionalidad del cliente (peruano: agua/luz; extranjero: hospedaje; sin dato: vacio)', () => {
     expect(toInquiryResponse(buildInquiry({ customerNationality: 'PERUANO' })).requiredDocuments).toEqual([
+      { code: 'DNI', label: 'DNI' },
+      { code: 'LICENCIA_CONDUCIR', label: 'Licencia de conducir' },
       { code: 'RECIBO_AGUA_O_LUZ', label: 'Recibo de agua o luz' },
     ]);
     expect(toInquiryResponse(buildInquiry({ customerNationality: 'EXTRANJERO' })).requiredDocuments).toEqual([
+      { code: 'PASAPORTE_O_CE', label: 'Pasaporte o carné de extranjería' },
+      { code: 'LICENCIA_CONDUCIR', label: 'Licencia de conducir' },
       { code: 'CONSTANCIA_HOSPEDAJE', label: 'Constancia de hospedaje' },
     ]);
     expect(toInquiryResponse(buildInquiry({ customerNationality: null })).requiredDocuments).toEqual([]);

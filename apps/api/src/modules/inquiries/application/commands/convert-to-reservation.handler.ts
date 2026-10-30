@@ -126,7 +126,7 @@ export class ConvertToReservationHandler {
           });
         }
         if (customer.status === 'ROJO') {
-          throw new CustomerBlockedError();
+          throw new CustomerBlockedError('reserva');
         }
 
         // F-01: el monto de la reserva (politica ADM-03) no puede superar la

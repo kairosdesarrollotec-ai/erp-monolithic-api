@@ -121,6 +121,21 @@ describe('projectNotificationEvent', () => {
     });
   });
 
+  it('V-04: ReservationCancelled muestra el motivo legible y no el codigo interno', () => {
+    const result = projectNotificationEvent(
+      {
+        id: 'evt-4b',
+        aggregateId: 'res-1',
+        eventType: 'ReservationCancelled',
+        payload: { organizationId: 'org-1', operatingCompanyId: 'company-1', branchId: 'branch-1', reason: 'CUSTOMER_REQUESTED_CHANGE', cancelledBy: 'uid-cancelador' },
+      },
+      null,
+    );
+    const json = JSON.stringify(result);
+    expect(json).toContain('cambio solicitado por el cliente');
+    expect(json).not.toContain('CUSTOMER_REQUESTED_CHANGE');
+  });
+
   it('ignora eventos que no le corresponden', () => {
     const result = projectNotificationEvent({ id: 'evt-5', aggregateId: 'x', eventType: 'InquiryCreated', payload: {} }, null);
     expect(result).toEqual({ action: 'IGNORE' });

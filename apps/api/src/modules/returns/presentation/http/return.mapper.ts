@@ -201,6 +201,7 @@ export function toReturnResponse(record: ReturnRecord): ReturnResponse {
     customerPresent: record.customerPresent,
     mileageAtReturn: record.mileageAtReturn,
     fuelLevelAtReturn: record.fuelLevelAtReturn,
+    vehicleFuelPenaltyPerLine: record.vehicleFuelPenaltyPerLine ?? null,
     alcoholTestResult: record.alcoholTestResult,
     alcoholTestNotes: record.alcoholTestNotes,
     alcoholEscalation: toAlcoholEscalationResponse(record),
