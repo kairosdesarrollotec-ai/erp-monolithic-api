@@ -9,6 +9,7 @@ import {
   RentalStateConflictError,
   ExtensionAdvanceNoticeError,
   ExtensionMaxDurationError,
+  ExtensionBlockedByBreachError,
 } from '../../domain/rental-errors';
 import { RequestExtensionCommand } from './request-extension.command';
 
@@ -65,6 +66,11 @@ export class RequestExtensionHandler {
     }
     if (existing.status !== 'ACTIVE') {
       throw new RentalStateConflictError('solicitar ampliacion en', existing.status);
+    }
+    // BR-ALQ-013: tras una falta grave el cliente queda en ROJO; el alquiler solo sigue hasta la devolucion.
+    const withBreach = await this.rentals.findRentalIdsWithExtensionBreach([existing.id]);
+    if (withBreach.has(existing.id)) {
+      throw new ExtensionBlockedByBreachError();
     }
     if (!existing.expectedEndAt) {
       throw new BadRequestException({

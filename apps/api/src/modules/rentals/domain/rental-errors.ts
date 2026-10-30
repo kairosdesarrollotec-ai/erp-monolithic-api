@@ -119,6 +119,14 @@ export class ExtensionAdvanceNoticeError extends DomainUnprocessableError {
   }
 }
 
+export class ExtensionBlockedByBreachError extends DomainUnprocessableError {
+  readonly code = 'EXTENSION_BLOCKED_BY_BREACH';
+
+  constructor() {
+    super('El alquiler tiene una falta grave registrada (BR-ALQ-013): el cliente esta en ROJO y no se le puede aprobar otra ampliacion. Solo corresponde la devolucion.');
+  }
+}
+
 export class ExtensionMaxDurationError extends DomainUnprocessableError {
   readonly code = 'EXTENSION_MAX_DURATION_EXCEEDED';
 

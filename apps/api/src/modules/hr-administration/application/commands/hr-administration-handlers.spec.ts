@@ -23,6 +23,7 @@ import {
   InvalidLeaveResolutionError,
   LeaveAlreadyResolvedError,
   FieldTripLevelRoleMismatchError,
+  FieldTripSelfApprovalError,
   NoAuthorizationAvailableError,
   TerminationNotesRequiredError,
   VacationOverlapError,
@@ -95,6 +96,7 @@ function setup(role: Role = 'GERENCIA') {
     findMany: jest.fn(),
     update: jest.fn(),
     markTerminated: jest.fn(),
+    findByFirebaseUid: jest.fn(),
   } as unknown as jest.Mocked<EmployeeRepositoryPort>;
   const attendance = {
     create: jest.fn(),
@@ -738,15 +740,24 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('AuthorizeFieldTrip: solo jefatura (AUTHORIZE_FIELD_TRIP); Campo no autoriza', async () => {
     const s = setup('CAMPO');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip());
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 1))).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('AuthorizeFieldTrip: el solicitante no puede autorizar su propia salida a campo', async () => {
+    const s = setup('GERENCIA');
+    s.fieldTrips.findById.mockResolvedValue(fieldTrip());
+    s.employees.findByFirebaseUid.mockResolvedValue(buildEmployee({ id: 'emp-1', firebaseUid: UID }));
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
+    await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 1))).rejects.toBeInstanceOf(FieldTripSelfApprovalError);
+    expect(s.fieldTrips.transition).not.toHaveBeenCalled();
   });
 
   it('AuthorizeFieldTrip: registra el nivel alcanzado y quién autorizó', async () => {
     const s = setup('RRHH');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_2' }));
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 2 }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 2, 'ok'));
     expect(result.authorizationLevel).toBe(2);
     expect(s.fieldTrips.transition).toHaveBeenCalledWith(
@@ -764,7 +775,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('AuthorizeFieldTrip: el nivel 4 nunca es válido y no se puede saltar al nivel 3', async () => {
     const s = setup('RRHH');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip());
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 4))).rejects.toBeInstanceOf(
       InvalidAuthorizationLevelError,
     );
@@ -776,7 +787,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('AuthorizeFieldTrip: una salida NO_AUTORIZADA no se aprueba por defecto (NO_AUTHORIZATION_AVAILABLE)', async () => {
     const s = setup('RRHH');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'NO_AUTORIZADA' }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 3))).rejects.toBeInstanceOf(
       NoAuthorizationAvailableError,
     );
@@ -786,7 +797,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     const s = setup('GERENCIA');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_1' }));
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 1 }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 1, 'aprobado por gerencia'));
     expect(result.authorizationLevel).toBe(1);
     expect(result.status).toBe('AUTORIZADA');
@@ -796,7 +807,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     const s = setup('GERENCIA');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_2' }));
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 2 }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 2, 'aprobado L2'));
     expect(result.authorizationLevel).toBe(2);
     expect(result.status).toBe('AUTORIZADA');
@@ -806,7 +817,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
     const s = setup('ADMINISTRACION');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_3' }));
     s.fieldTrips.transition.mockResolvedValue(fieldTrip({ status: 'AUTORIZADA', authorizationLevel: 3 }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     const result = await handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 3, 'aprobado por cecilia'));
     expect(result.authorizationLevel).toBe(3);
     expect(result.status).toBe('AUTORIZADA');
@@ -815,7 +826,7 @@ describe('Cascada de salida a campo (BR-ADP-004 / BR-ADP-005)', () => {
   it('AuthorizeFieldTrip: ADMINISTRACION no puede aprobar nivel 1 ni nivel 2 (exclusivo Gerencia)', async () => {
     const s = setup('ADMINISTRACION');
     s.fieldTrips.findById.mockResolvedValue(fieldTrip({ status: 'PENDIENTE_NIVEL_1' }));
-    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    const handler = new AuthorizeFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
     await expect(handler.execute(new AuthorizeFieldTripCommand(UID, 'ft-1', 1))).rejects.toBeInstanceOf(
       FieldTripLevelRoleMismatchError,
     );

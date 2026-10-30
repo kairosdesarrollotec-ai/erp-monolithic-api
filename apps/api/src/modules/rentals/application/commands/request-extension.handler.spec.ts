@@ -10,6 +10,7 @@ import {
   RentalStateConflictError,
   ExtensionAdvanceNoticeError,
   ExtensionMaxDurationError,
+  ExtensionBlockedByBreachError,
 } from '../../domain/rental-errors';
 import { testRole } from '../../../users/testing/role-fixtures';
 
@@ -48,6 +49,7 @@ describe('RequestExtensionHandler', () => {
   function buildDeps() {
     const rentals = {
       findById: jest.fn().mockResolvedValue(fakeRental),
+      findRentalIdsWithExtensionBreach: jest.fn().mockResolvedValue(new Set<string>()),
       requestExtension: jest.fn().mockResolvedValue({
         ...fakeRental,
         status: 'EXTENSION_PENDING',
@@ -82,6 +84,9 @@ describe('RequestExtensionHandler', () => {
       recordIncidentEvent: jest.fn(),
       recordRecruitmentEvent: jest.fn(),
       recordHrAdministrationEvent: jest.fn(),
+      recordFleetEvent: jest.fn(),
+      recordPaymentEvent: jest.fn(),
+      recordEvidenceDeletionEvent: jest.fn(),
     };
 
     const outboxRepository: jest.Mocked<OutboxEventRepositoryPort> = {
@@ -167,5 +172,18 @@ describe('RequestExtensionHandler', () => {
         new RequestExtensionCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 4, new Date('2026-10-09T00:00:00Z')),
       ),
     ).rejects.toThrow(RentalStateConflictError);
+  });
+
+  it('rechaza con ExtensionBlockedByBreachError si el alquiler ya tiene una falta grave (cliente ROJO, BR-ALQ-013)', async () => {
+    const deps = buildDeps();
+    deps.rentals.findRentalIdsWithExtensionBreach.mockResolvedValue(new Set(['rent-1']));
+    const handler = buildHandler(deps);
+
+    await expect(
+      handler.execute(
+        new RequestExtensionCommand('rent-1', 'uid-1', 'comp-1', 'branch-1', 4, new Date('2026-10-09T00:00:00Z')),
+      ),
+    ).rejects.toThrow(ExtensionBlockedByBreachError);
+    expect(deps.rentals.requestExtension).not.toHaveBeenCalled();
   });
 });

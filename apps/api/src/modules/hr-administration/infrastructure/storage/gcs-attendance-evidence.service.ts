@@ -6,6 +6,7 @@ import {
   type AttendanceEvidenceContentType,
 } from '../../domain/hr-administration-rules';
 import { AttendanceEvidenceStorageUnavailableError } from '../../domain/hr-administration-errors';
+import { isLocalDevStorageEnabled, localDevUploadTarget } from '../../../../common/storage/local-dev-storage';
 
 const SIGNED_URL_TTL_MS = 15 * 60 * 1000;
 
@@ -42,12 +43,20 @@ export class GcsAttendanceEvidenceService implements AttendanceEvidenceStoragePo
     employeeId: string;
     contentType: AttendanceEvidenceContentType;
   }): Promise<{ uploadUrl: string; objectUrl: string; storageRef: string; expiresAt: Date }> {
-    if (!this.storage || !this.bucketName) {
+    const localMode = (!this.storage || !this.bucketName) && isLocalDevStorageEnabled();
+    if (!localMode && (!this.storage || !this.bucketName)) {
       throw new AttendanceEvidenceStorageUnavailableError();
     }
 
     const storageRef = `${attendanceEvidenceKeyPrefix(params.companyId, params.employeeId)}${crypto.randomUUID()}.${EXTENSION_BY_CONTENT_TYPE[params.contentType]}`;
     const expiresAt = new Date(Date.now() + SIGNED_URL_TTL_MS);
+    if (localMode) {
+      // Solo desarrollo (LOCAL_STORAGE_ENABLED=true): sin bucket de GCS.
+      return { ...localDevUploadTarget(storageRef), storageRef, expiresAt };
+    }
+    if (!this.storage || !this.bucketName) {
+      throw new AttendanceEvidenceStorageUnavailableError();
+    }
     const [uploadUrl] = await this.storage.bucket(this.bucketName).file(storageRef).getSignedUrl({
       version: 'v4',
       action: 'write',
