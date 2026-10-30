@@ -152,8 +152,9 @@ export class VehicleUnavailableForExtensionError extends DomainUnprocessableErro
 export class CustomerBlockedError extends DomainUnprocessableError {
   readonly code = 'CUSTOMER_BLOCKED';
 
-  constructor() {
-    super('El cliente esta en estado ROJO y no puede iniciar un nuevo alquiler.');
+  /** V-25: el mensaje nombra la operación bloqueada (alquiler por defecto; reserva al reservar/confirmar). */
+  constructor(operation: 'alquiler' | 'reserva' = 'alquiler') {
+    super(`El cliente esta en estado ROJO y no puede iniciar un nuevo ${operation}.`);
   }
 }
 

@@ -24,6 +24,7 @@ import { RentalRecord } from '../../../rentals/application/ports/rental-reposito
 describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
   function build(overrides: Partial<ReturnRecord> = {}, rental: Partial<RentalRecord> = {}, role: 'GERENCIA' | 'CAMPO' = 'GERENCIA') {
     const deps = buildDeps({ role });
+    const dashboardAlerts = { dismissByReturn: jest.fn().mockResolvedValue(2) };
     const base = buildReturnRecord({
       status: 'CIERRE_FINANCIERO',
       custodyHolder: 'VELOXRENT',
@@ -45,11 +46,28 @@ describe('CloseReturnHandler (DEV-09 / DEV-10 / DR-DEV-001)', () => {
       deps.outboxRepository,
       deps.openIncidents,
       deps.vehicleCommitments,
+      dashboardAlerts as never,
     );
-    return { deps, handler };
+    return { deps, handler, dashboardAlerts };
   }
 
   const cmd = () => new CloseReturnCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 11, 'data:image/png;base64,AAA', true, 'cierre');
+
+  it('V-23: al cerrar descarta las alertas de alcolímetro y de costo de daño no aceptado', async () => {
+    const { handler, dashboardAlerts } = build();
+    await handler.execute(cmd());
+    expect(dashboardAlerts.dismissByReturn).toHaveBeenCalledWith(
+      'ret-1',
+      ['return-alcohol-escalation:', 'return-damage-cost-rejected:'],
+      FIXED_NOW,
+    );
+  });
+
+  it('V-23: si descartar las alertas falla, el cierre no se revierte', async () => {
+    const { handler, dashboardAlerts } = build();
+    dashboardAlerts.dismissByReturn.mockRejectedValue(new Error('db'));
+    await expect(handler.execute(cmd())).resolves.toMatchObject({ status: 'CERRADA' });
+  });
 
   it('sin daños: CERRADA, alquiler CLOSED y vehículo AVAILABLE; publica DevolucionCompletada.v1', async () => {
     const { deps, handler } = build();

@@ -82,7 +82,7 @@ export class ConfirmReservationHandler {
     // Decisiones 29-oct #3: un cliente ROJO no se atiende en ningun proceso (tampoco se confirma su reserva).
     const customer = await this.reservations.findCustomerById(existing.customerId);
     if (customer?.status === 'ROJO') {
-      throw new CustomerBlockedError();
+      throw new CustomerBlockedError('reserva');
     }
     this.assertRequirementsComplete(existing.paymentValidatedAt, existing.documentsCompletedAt);
     this.assertRemoteRequirements(existing);

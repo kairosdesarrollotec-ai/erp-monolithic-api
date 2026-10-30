@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { RentalRepositoryPort } from '../../../rentals/application/ports/rental-repository.port';
 import { canTransitionRental } from '../../../rentals/domain/rental-status';
 import { FleetVehicleRepositoryPort } from '../../../fleet/application/ports/fleet-vehicle-repository.port';
@@ -8,6 +8,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
 import { ReturnOpenIncidentsPort } from '../ports/return-open-incidents.port';
+import { ReturnDashboardAlertPort } from '../ports/return-dashboard-alert.port';
 import { ReturnVehicleCommitmentPort } from '../ports/return-vehicle-commitment.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import {
@@ -22,6 +23,8 @@ import {
 import { appendNotes, findOpenIncidents, openIncidentLabel, resolveVehicleStatusAfterReturn } from '../../domain/return-rules';
 import { assertCanTransitionReturn } from '../../domain/return-status';
 import { CloseReturnCommand } from './close-return.command';
+
+export const RETURN_CLOSE_DISMISS_KEY_PREFIXES = ['return-alcohol-escalation:', 'return-damage-cost-rejected:'] as const;
 
 /**
  * DEV-09 / DEV-10 / DR-DEV-001 - Cierre formal del expediente. Sin incidencias abiertas: devolución CERRADA,
@@ -43,6 +46,7 @@ export class CloseReturnHandler {
     private readonly outboxRepository: OutboxEventRepositoryPort,
     private readonly openIncidentsPort: ReturnOpenIncidentsPort,
     private readonly vehicleCommitments: ReturnVehicleCommitmentPort,
+    @Optional() private readonly dashboardAlerts?: ReturnDashboardAlertPort,
   ) {}
 
   async execute(command: CloseReturnCommand): Promise<ReturnRecord> {
@@ -62,7 +66,7 @@ export class CloseReturnHandler {
 
     const now = this.clock.now();
 
-    return this.transactionManager.run(async (tx) => {
+    const closed = await this.transactionManager.run(async (tx) => {
       const current = await this.returns.findById(command.id, scope, tx);
       if (!current) {
         throw new ReturnNotFoundError(command.id);
@@ -177,5 +181,16 @@ export class CloseReturnHandler {
 
       return updated;
     });
+
+    // V-23: con el expediente cerrado, las alertas de Gerencia de este caso (alcolímetro y costo de daño no
+    // aceptado) dejan de ser accionables y salen del Tablero. No bloqueante; idempotente.
+    if (this.dashboardAlerts) {
+      try {
+        await this.dashboardAlerts.dismissByReturn(closed.id, RETURN_CLOSE_DISMISS_KEY_PREFIXES, now);
+      } catch {
+        // el cierre ya quedó registrado.
+      }
+    }
+    return closed;
   }
 }

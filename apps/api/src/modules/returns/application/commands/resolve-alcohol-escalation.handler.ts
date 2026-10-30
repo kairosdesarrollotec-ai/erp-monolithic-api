@@ -1,15 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { ReturnRecord, ReturnRepositoryPort } from '../ports/return-repository.port';
+import { ReturnDashboardAlertPort } from '../ports/return-dashboard-alert.port';
 import { ReturnCustomerRiskPort } from '../ports/return-customer-risk.port';
 import { ReturnAccessService } from '../services/return-access.service';
 import { ReturnNotFoundError, ReturnStateConflictError } from '../../domain/return-errors';
 import { assertCanTransitionReturn } from '../../domain/return-status';
 import { ResolveAlcoholEscalationCommand } from './resolve-alcohol-escalation.command';
 
+export const ALCOHOL_ESCALATION_KEY_PREFIX = 'return-alcohol-escalation:';
 const ACTION = 'resolver la escalada de alcolímetro de';
 
 function assertEscalationPending(current: ReturnRecord): void {
@@ -42,6 +44,7 @@ export class ResolveAlcoholEscalationHandler {
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly outboxRepository: OutboxEventRepositoryPort,
+    @Optional() private readonly dashboardAlerts?: ReturnDashboardAlertPort,
   ) {}
 
   async execute(command: ResolveAlcoholEscalationCommand): Promise<ReturnRecord> {
@@ -56,7 +59,7 @@ export class ResolveAlcoholEscalationHandler {
     const proceed = command.decision === 'CONTINUE_TO_INSPECTION';
     const now = this.clock.now();
 
-    return this.transactionManager.run(async (tx) => {
+    const result = await this.transactionManager.run(async (tx) => {
       const current = await this.returns.findById(command.id, scope, tx);
       if (!current) {
         throw new ReturnNotFoundError(command.id);
@@ -134,5 +137,16 @@ export class ResolveAlcoholEscalationHandler {
 
       return updated;
     });
+
+    // V-23: con la decisión de continuar, la escalada deja de estar pendiente y su alerta sale del Tablero.
+    // KEEP_IN_CUSTODY sigue pendiente (puede volver a resolverse), por eso conserva la alerta. No bloqueante.
+    if (proceed && this.dashboardAlerts) {
+      try {
+        await this.dashboardAlerts.dismissByReturn(result.id, [ALCOHOL_ESCALATION_KEY_PREFIX], now);
+      } catch {
+        // la decisión ya quedó registrada; el Tablero se reconcilia al cerrar la devolución.
+      }
+    }
+    return result;
   }
 }
