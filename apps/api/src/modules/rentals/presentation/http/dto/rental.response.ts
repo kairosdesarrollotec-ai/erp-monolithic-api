@@ -199,4 +199,6 @@ export interface RentalResponse {
   companyDriverCharge?: CompanyDriverChargeResponse | null;
   /** Solo en GET /rentals/{id}: ampliaciones, la mas reciente primero. */
   extensions?: RentalExtensionResponse[];
+  /** Solo en el listado: true si el alquiler tiene una falta grave de ampliacion registrada (BR-ALQ-013). */
+  hasExtensionBreach?: boolean;
 }

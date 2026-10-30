@@ -8,7 +8,7 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
 import { FleetVehicleRepositoryPort } from '../../../fleet/application/ports/fleet-vehicle-repository.port';
 import { ClockPort } from '../../../../common/application/ports/clock.port';
-import { RentalStateConflictError, MissingDeliveryEvidenceError, CompanyDriverRateRequiredError } from '../../domain/rental-errors';
+import { RentalStateConflictError, MissingDeliveryEvidenceError, CompanyDriverRateRequiredError, AlcoholTestRequiredError, AlcoholTestUnfavorableError, ExpectedEndDateRequiredError } from '../../domain/rental-errors';
 import { isCompanyDriverVariantCode } from '../../domain/contract-variant';
 import { normalizeManualDailyRate } from '../../domain/company-driver-charge';
 import { RentalCreationGuard } from '../services/rental-creation.guard';
@@ -97,6 +97,9 @@ export class CompleteDeliveryHandler {
     }
 
     assertCompanyDriverRateDefined(existing);
+    // Decisión 28-oct #6: sin resultado favorable del alcolímetro no se entrega el vehículo.
+    if (existing.alcoholTestResult == null) throw new AlcoholTestRequiredError();
+    if (existing.alcoholTestResult !== 'FAVORABLE') throw new AlcoholTestUnfavorableError(existing.alcoholTestResult);
 
     await this.syncGate?.assertSynced('ENTREGA', command.id, scope);
 
@@ -140,6 +143,9 @@ export class CompleteDeliveryHandler {
             expectedEndAt = new Date(startAt.getTime() + estimatedDays * MS_PER_DAY);
           }
         }
+
+        // Decisión 28-oct #8: la fecha de devolución prevista es obligatoria al entregar (consulta con días o fecha propia).
+        if (!expectedEndAt) throw new ExpectedEndDateRequiredError();
 
         const vehicle = await this.rentals.findVehicleById(current.vehicleId, tx);
         if (!vehicle) {

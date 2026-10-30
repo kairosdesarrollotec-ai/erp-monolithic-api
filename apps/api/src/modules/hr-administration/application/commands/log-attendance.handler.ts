@@ -8,6 +8,7 @@ import { AttendanceRepositoryPort } from '../ports/attendance-repository.port';
 import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import {
   AttendanceAlreadyLoggedError,
+  AttendanceDateInvalidError,
   EmployeeNotFoundError,
   InvalidAttendanceEvidenceError,
   EmployeeTerminatedError,
@@ -19,6 +20,7 @@ import {
   attendanceEvidenceKeyPrefix,
   resolveAttendanceRecord,
 } from '../../domain/hr-administration-rules';
+import { toLimaDateString } from '../../../../common/time/lima-time';
 import { resolveOnBehalfReason } from '../../domain/attendance-self-service-rules';
 import { LogAttendanceCommand, ATTENDANCE_EVIDENCE_KINDS } from './log-attendance.command';
 
@@ -71,6 +73,15 @@ export class LogAttendanceHandler {
       }
       if (employee.status === 'TERMINADO') {
         throw new EmployeeTerminatedError(employee.id);
+      }
+
+      // R-4/R-5: sin fechas futuras ni anteriores al ingreso del colaborador.
+      const dateOnly = command.date.toISOString().slice(0, 10);
+      if (dateOnly > toLimaDateString(new Date())) {
+        throw new AttendanceDateInvalidError('No se puede registrar asistencia en una fecha futura.');
+      }
+      if (employee.hireDate && dateOnly < employee.hireDate.toISOString().slice(0, 10)) {
+        throw new AttendanceDateInvalidError('No se puede registrar asistencia antes de la fecha de ingreso del colaborador.');
       }
 
       const existing = await this.attendance.findByEmployeeAndDate(command.employeeId, command.date, tx);

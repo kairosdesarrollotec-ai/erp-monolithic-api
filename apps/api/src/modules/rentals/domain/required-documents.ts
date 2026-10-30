@@ -77,8 +77,11 @@ export function missingRequiredDocuments(
   details: DocumentDetailsInput,
   customer: { countryEntryDate?: Date | null },
 ): RequiredDocument[] {
+  // CR-08 (29-oct-2026): el extranjero presenta pasaporte O carne de extranjeria segun su documento; basta uno validado.
+  const identityEither = details.passportValid === true || details.foreignerCardValid === true;
   return requiredDocumentsFor(nationality).filter((doc) => {
     if (doc.kind === 'DATA') return !customer.countryEntryDate;
+    if (doc.code === 'PASAPORTE' || doc.code === 'CARNE_EXTRANJERIA') return !identityEither;
     return details[doc.field as keyof DocumentDetailsInput] !== true;
   });
 }

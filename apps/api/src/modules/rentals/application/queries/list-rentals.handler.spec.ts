@@ -36,6 +36,7 @@ describe('ListRentalsHandler', () => {
   function buildDeps(list: RentalRecord[] = []) {
     const rentals = {
       list: jest.fn().mockResolvedValue(list),
+      findRentalIdsWithExtensionBreach: jest.fn().mockResolvedValue(new Set<string>()),
     } as unknown as jest.Mocked<RentalRepositoryPort>;
 
     const workContext = {

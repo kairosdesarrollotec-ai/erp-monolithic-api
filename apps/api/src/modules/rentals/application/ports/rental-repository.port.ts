@@ -130,6 +130,8 @@ export interface RentalRecord {
   reservationCredit?: ReservationCreditResolution | null;
   /** Solo en el detalle (GET): ampliaciones del alquiler, la mas reciente primero. */
   extensions?: RentalExtensionRecord[];
+  /** Solo en el listado: true si el alquiler tiene una falta grave de ampliacion registrada (BR-ALQ-013); decisión 28-oct #11. */
+  hasExtensionBreach?: boolean;
   /**
    * TODO(DEC-ALQ-CAPACITY-009): capacidad de pasajeros del vehiculo. `vehicles` no tiene la columna todavia
    * (requiere migracion en Flota); mientras no se complete no se valida el maximo de acompanantes.
@@ -466,6 +468,11 @@ export abstract class RentalRepositoryPort {
   ): Promise<number>;
   /** DEC-ALQ-CANCEL-001: cancela el alquiler (estado + motivo) y libera su compromiso de vehiculo. */
   abstract cancel(input: CancelRentalInput, tx: Prisma.TransactionClient): Promise<RentalRecord>;
+  /**
+   * CR-03 / Decisiones 29-oct #5: cancelar el alquiler cancela todo el proceso, incluida la reserva de origen
+   * (CONVERTED -> CANCELLED). Devuelve true si cancelo una reserva; false si no habia o ya no estaba CONVERTED.
+   */
+  abstract cancelOriginReservation(reservationId: string, scope: RentalScope, tx: Prisma.TransactionClient): Promise<boolean>;
   abstract countPreviousRentalsByCustomer(customerId: string, operatingCompanyId: string): Promise<number>;
   abstract list(filter: ListRentalsFilter): Promise<RentalRecord[]>;
   abstract transitionStatus(
@@ -494,6 +501,11 @@ export abstract class RentalRepositoryPort {
     rentalId: string,
     tx?: Prisma.TransactionClient,
   ): Promise<RentalExtensionRecord[]>;
+  /** Ids (de los recibidos) con una ampliacion en estado BREACH (falta grave registrada). */
+  abstract findRentalIdsWithExtensionBreach(
+    rentalIds: readonly string[],
+    tx?: Prisma.TransactionClient,
+  ): Promise<Set<string>>;
   abstract findVehicleCommitmentOverlap(
     vehicleId: string,
     organizationId: string,

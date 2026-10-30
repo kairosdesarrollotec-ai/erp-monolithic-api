@@ -17,6 +17,7 @@ describe('ResolveAlcoholEscalationHandler (DEV-04 / BR-DEV-005 / PROP-014 provis
     const status = options.status ?? 'RECEPCION_PROVISIONAL';
     const alcohol = options.alcohol === undefined ? 'DESFAVORABLE' : options.alcohol;
     const deps = buildDeps({ role: options.role ?? 'GERENCIA' });
+    const dashboardAlerts = { dismissByReturn: jest.fn().mockResolvedValue(1) };
     const base = buildReturnRecord({
       status,
       custodyHolder: 'VELOXRENT',
@@ -33,8 +34,9 @@ describe('ResolveAlcoholEscalationHandler (DEV-04 / BR-DEV-005 / PROP-014 provis
       deps.clock,
       deps.auditRepository,
       deps.outboxRepository,
+      dashboardAlerts as never,
     );
-    return { deps, handler };
+    return { deps, handler, dashboardAlerts };
   }
 
   const cmd = (decision: 'CONTINUE_TO_INSPECTION' | 'KEEP_IN_CUSTODY', markCustomerRed = false) =>
@@ -96,7 +98,7 @@ describe('ResolveAlcoholEscalationHandler (DEV-04 / BR-DEV-005 / PROP-014 provis
     const { deps, handler } = build();
     await handler.execute(cmd('CONTINUE_TO_INSPECTION', true));
     expect(deps.customerRisk.escalate).toHaveBeenCalledWith(
-      { customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target: 'ROJO' },
+      { customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target: 'ROJO', reason: expect.any(String) },
       fakeTx,
     );
     expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
@@ -162,5 +164,23 @@ describe('ResolveAlcoholEscalationHandler (DEV-04 / BR-DEV-005 / PROP-014 provis
     deps.returns.update.mockRejectedValue(new ReturnVersionConflictError());
     await expect(handler.execute(cmd('CONTINUE_TO_INSPECTION'))).rejects.toThrow(ReturnVersionConflictError);
     expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+  });
+
+  it('V-23: CONTINUE_TO_INSPECTION descarta la alerta de alcolímetro del Tablero', async () => {
+    const { handler, dashboardAlerts } = build();
+    await handler.execute(cmd('CONTINUE_TO_INSPECTION'));
+    expect(dashboardAlerts.dismissByReturn).toHaveBeenCalledWith('ret-1', ['return-alcohol-escalation:'], FIXED_NOW);
+  });
+
+  it('V-23: KEEP_IN_CUSTODY conserva la alerta (la escalada sigue pendiente)', async () => {
+    const { handler, dashboardAlerts } = build();
+    await handler.execute(cmd('KEEP_IN_CUSTODY'));
+    expect(dashboardAlerts.dismissByReturn).not.toHaveBeenCalled();
+  });
+
+  it('V-23: si descartar la alerta falla, la decisión igual se registra', async () => {
+    const { handler, dashboardAlerts } = build();
+    dashboardAlerts.dismissByReturn.mockRejectedValue(new Error('db'));
+    await expect(handler.execute(cmd('CONTINUE_TO_INSPECTION'))).resolves.toBeDefined();
   });
 });

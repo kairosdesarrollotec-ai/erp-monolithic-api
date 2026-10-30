@@ -10,6 +10,8 @@ export interface CustomerResponse {
   email?: string | null;
   phone?: string | null;
   address?: string | null;
+  riskStatus?: 'NORMAL' | 'AMBAR' | 'ROJO';
+  riskReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }

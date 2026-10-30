@@ -45,7 +45,20 @@ export class PrismaReservationDepositPolicyRepository implements ReservationDepo
       where: { organizationId: input.organizationId },
       orderBy: { version: 'desc' },
     });
-    const nextVersion = (latest?.version ?? 0) + 1;
+    // CR-05 (29-oct-2026): el valor inicial por defecto (S/300) se persiste como version 1 antes de la primera
+    // modificacion, para que el historial lo conserve (BR-RES-001: parametro versionado).
+    if (!latest) {
+      await client.reservationDepositPolicyVersion.create({
+        data: {
+          organizationId: input.organizationId,
+          version: CURRENT_RESERVATION_DEPOSIT_POLICY.version,
+          amount: CURRENT_RESERVATION_DEPOSIT_POLICY.amount,
+          currency: CURRENT_RESERVATION_DEPOSIT_POLICY.currency,
+          createdBy: 'system-default',
+        },
+      });
+    }
+    const nextVersion = (latest?.version ?? CURRENT_RESERVATION_DEPOSIT_POLICY.version) + 1;
     const created = await client.reservationDepositPolicyVersion.create({
       data: {
         organizationId: input.organizationId,

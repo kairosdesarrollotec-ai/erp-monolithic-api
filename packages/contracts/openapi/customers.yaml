@@ -411,6 +411,14 @@ components:
         address:
           type: string
           nullable: true
+        riskStatus:
+          type: string
+          enum: [NORMAL, AMBAR, ROJO]
+          description: Semáforo del cliente (BR-DEV-007/008). NORMAL equivale a sin observación; solo avanza NORMAL -> AMBAR -> ROJO.
+        riskReason:
+          type: string
+          nullable: true
+          description: Motivo del último cambio del semáforo (H-17). Null si nunca cambió o es anterior al registro de motivos.
         createdAt:
           type: string
           format: date-time

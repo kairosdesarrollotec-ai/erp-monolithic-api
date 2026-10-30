@@ -5,7 +5,7 @@ import { MatrixAuthorizationService } from '../../../authorization/matrix-author
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { OutboxEventRepositoryPort } from '../../../outbox/application/ports/outbox-event-repository.port';
-import { RentalStateConflictError } from '../../domain/rental-errors';
+import { BiometricVerificationRequiredError, RentalStateConflictError } from '../../domain/rental-errors';
 import { evaluateNotaryMatrix, NotaryEvaluationOutput } from '../policies/notary-matrix-policy';
 import { depositMultiplierFor, requiredGuarantee, RequiredGuarantee } from '../../domain/guarantee-requirement';
 import { EvaluateNotaryCommand } from './evaluate-notary.command';
@@ -65,6 +65,11 @@ export class EvaluateNotaryHandler {
     }
     if (existing.status !== 'NOTARY_EVALUATION') {
       throw new RentalStateConflictError('evaluar notaría en', existing.status);
+    }
+
+    // A-01: la casilla de biometria favorable es obligatoria para evaluar (antes se evaluaba sin marcarla).
+    if (command.biometricVerified !== true) {
+      throw new BiometricVerificationRequiredError();
     }
 
     const vehicle = await this.rentals.findVehicleById(existing.vehicleId);

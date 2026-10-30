@@ -1,4 +1,4 @@
-import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 import { AlcoholTestResult } from '../../../domain/alcohol-test-result';
 
 export class RegisterAlcoholTestDto {
@@ -11,4 +11,18 @@ export class RegisterAlcoholTestDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  reniecVerified?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  mtcVerified?: boolean;
+
+  /** Excepcion de RENIEC autorizada por Gerencia; requiere motivo. */
+  @IsOptional()
+  @IsString()
+  @MinLength(5)
+  reniecExceptionReason?: string;
 }

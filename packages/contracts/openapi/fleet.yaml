@@ -661,6 +661,7 @@ components:
         - brand
         - model
         - passengerCapacity
+        - fuelPenaltyPerLine
       properties:
         companyId:
           type: string
@@ -734,8 +735,8 @@ components:
           description: Tarifa diaria para el plan Libre (km libre/24 h) en PEN.
         fuelPenaltyPerLine:
           type: number
-          minimum: 0
-          description: Monto de penalidad por línea faltante de combustible (PEN) según tarifario VR.01.
+          minimum: 0.01
+          description: Obligatorio en el alta (decisión 28-oct-2026 #1). Precio en PEN por línea de combustible faltante (línea del RNC, Formato 06); la multa de devolución = líneas faltantes entre entrega y devolución x este precio.
         photoUrl:
           type: string
           format: uri

@@ -113,6 +113,21 @@ describe('ConfirmReservationHandler', () => {
    * por TransactionManagerPort.run, con aislamiento Serializable
    * (seccion 10.1 del TDD).
    */
+  it('cliente ROJO: no se confirma la reserva (29-oct #3); AMBAR si se permite', async () => {
+    const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
+    const red = buildDeps(existing);
+    (red.reservations.findCustomerById as jest.Mock).mockResolvedValue({ id: 'c', organizationId: 'org-1', operatingCompanyId: 'company-1', status: 'ROJO' });
+    const handlerRed = new ConfirmReservationHandler(red.reservations, red.workContext, red.audit, red.outbox, red.transactionManager, red.matrixAuth);
+    await expect(handlerRed.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1))).rejects.toThrow(/ROJO/);
+    expect(red.reservations.confirm).not.toHaveBeenCalled();
+
+    const amber = buildDeps(existing);
+    (amber.reservations.findCustomerById as jest.Mock).mockResolvedValue({ id: 'c', organizationId: 'org-1', operatingCompanyId: 'company-1', status: 'AMBAR' });
+    const handlerAmber = new ConfirmReservationHandler(amber.reservations, amber.workContext, amber.audit, amber.outbox, amber.transactionManager, amber.matrixAuth);
+    const result = await handlerAmber.execute(new ConfirmReservationCommand('res-1', 'uid-1', 'company-1', 'branch-1', 1));
+    expect(result.status).toBe('CONFIRMED');
+  });
+
   it('rechaza con RESERVATION_EXCEEDS_GUARANTEE si el monto supera la garantía del vehículo', async () => {
     const existing = buildRecord({ paymentValidatedAt: new Date(), documentsCompletedAt: new Date() });
     const { reservations, workContext, audit, outbox, transactionManager, matrixAuth } = buildDeps(existing);

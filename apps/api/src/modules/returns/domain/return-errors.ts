@@ -124,7 +124,11 @@ export class RentalNotReturnableError extends DomainConflictError {
   readonly code = 'RENTAL_NOT_RETURNABLE';
 
   constructor(status: string) {
-    super(`No se puede iniciar devolución para un alquiler en estado ${status}. Debe estar en ACTIVE o RETURN_IN_PROGRESS.`);
+    super(
+      status === 'EXTENSION_PENDING'
+        ? 'No se puede iniciar la devolución: el alquiler tiene una ampliación pendiente. Autorízala o recházala primero.'
+        : `No se puede iniciar devolución para un alquiler en estado ${status}. Debe estar en ACTIVE o RETURN_IN_PROGRESS.`,
+    );
   }
 }
 

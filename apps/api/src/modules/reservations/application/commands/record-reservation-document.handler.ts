@@ -3,6 +3,7 @@ import { ReservationDocumentRecord, ReservationDocumentRepositoryPort } from '..
 import { ReservationDocumentType } from '../ports/reservation-document-storage.port';
 import { ReservationRepositoryPort } from '../ports/reservation-repository.port';
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
+import { isTrustedObjectUrl } from '../../../../common/storage/local-dev-storage';
 
 export interface RecordReservationDocumentCommand {
   firebaseUid: string;
@@ -28,7 +29,7 @@ export class RecordReservationDocumentHandler {
       branchId: command.branchId,
     });
 
-    if (!command.objectUrl.startsWith('https://storage.googleapis.com/')) {
+    if (!isTrustedObjectUrl(command.objectUrl)) {
       throw new BadRequestException('objectUrl debe ser una URL de GCS válida (obtenida de upload-url).');
     }
 

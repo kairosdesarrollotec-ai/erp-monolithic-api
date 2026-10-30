@@ -164,7 +164,7 @@ describe('Incidents - ciclo de vida completo y aislamiento multiempresa (Postgre
         { id: vehicleB, organizationId: org, operatingCompanyId: companyB, plate: `IB-${vehicleB.slice(0, 6)}`, brand: 'Honda', model: 'Fit' },
       ],
     });
-    const rentalBase = { organizationId: org, createdBy: UID_A, updatedBy: UID_A };
+    const rentalBase = { organizationId: org, createdBy: UID_A, updatedBy: UID_A, status: 'ACTIVE' as const };
     await prisma.rental.createMany({
       data: [
         { id: rentalA, ...rentalBase, operatingCompanyId: companyA, branchId: branchA, customerId: customerA, vehicleId: vehicleA },

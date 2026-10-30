@@ -107,6 +107,20 @@ export class PrismaReturnDashboardAlertPersistence implements ReturnDashboardAle
     return rows.map(toReturnRecord);
   }
 
+  async dismissByReturn(returnId: string, keyPrefixes: readonly string[], at: Date): Promise<number> {
+    if (keyPrefixes.length === 0) return 0;
+    const result = await this.prisma.dashboardItem.updateMany({
+      where: {
+        sourceType: RETURN_DASHBOARD_SOURCE_TYPE,
+        sourceId: returnId,
+        dismissedAt: null,
+        OR: keyPrefixes.map((prefix) => ({ sourceEventId: { startsWith: prefix } })),
+      },
+      data: { dismissedAt: at },
+    });
+    return result.count;
+  }
+
   async dismissItems(ids: readonly string[], at: Date): Promise<number> {
     if (ids.length === 0) return 0;
     const result = await this.prisma.dashboardItem.updateMany({

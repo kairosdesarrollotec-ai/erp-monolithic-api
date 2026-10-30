@@ -6,7 +6,7 @@ import { RecruitmentAccessService } from '../services/recruitment-access.service
 import { CandidateDetailRecord, CandidateRepositoryPort } from '../ports/candidate-repository.port';
 import { CandidateNotFoundError, CandidateVersionConflictError } from '../../domain/recruitment-errors';
 import {
-  assertCandidateNotDecided,
+  assertCandidateNotDecided, assertCandidateNotDiscarded,
   assertNegotiationValid,
   maskCandidateSensitiveFields,
 } from '../../domain/recruitment-rules';
@@ -54,6 +54,7 @@ export class RecordNegotiationHandler {
         throw new CandidateNotFoundError(command.candidateId);
       }
       assertCandidateNotDecided(existing.decision);
+      assertCandidateNotDiscarded(existing.processState);
       if (existing.version !== command.expectedVersion) {
         throw new CandidateVersionConflictError();
       }

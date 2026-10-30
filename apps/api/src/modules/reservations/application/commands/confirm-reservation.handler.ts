@@ -12,6 +12,7 @@ import {
   ReservationStateConflictError,
 } from '../../domain/reservation-errors';
 import { isRemoteReservation } from '../../domain/channel-mode';
+import { CustomerBlockedError } from '../../../rentals/domain/rental-errors';
 import { ConfirmReservationCommand } from './confirm-reservation.command';
 
 /**
@@ -77,6 +78,11 @@ export class ConfirmReservationHandler {
     }
     if (existing.status !== 'DRAFT') {
       throw new ReservationStateConflictError('confirmar', existing.status);
+    }
+    // Decisiones 29-oct #3: un cliente ROJO no se atiende en ningun proceso (tampoco se confirma su reserva).
+    const customer = await this.reservations.findCustomerById(existing.customerId);
+    if (customer?.status === 'ROJO') {
+      throw new CustomerBlockedError('reserva');
     }
     this.assertRequirementsComplete(existing.paymentValidatedAt, existing.documentsCompletedAt);
     this.assertRemoteRequirements(existing);

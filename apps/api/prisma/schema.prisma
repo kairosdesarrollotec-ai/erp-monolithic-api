@@ -495,6 +495,9 @@ model Customer {
   /// (helper de dominio modules/returns/domain/customer-risk-status.ts).
   /// Es String: no requiere migracion.
   status             String              @default("NORMAL")
+  /// Motivo del ultimo cambio del semaforo (decision 28-oct H-17) y cuando ocurrio.
+  statusReason       String?             @map("status_reason") @db.VarChar(500)
+  statusChangedAt    DateTime?           @map("status_changed_at")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
 

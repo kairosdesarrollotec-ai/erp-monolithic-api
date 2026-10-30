@@ -18,12 +18,22 @@ export function thirdRequiredDocument(nationality: InquiryNationality): ThirdReq
   return nationality === 'PERUANO' ? 'RECIBO_AGUA_O_LUZ' : 'CONSTANCIA_HOSPEDAJE';
 }
 
+/** Documentos que Consulta informa al cliente (BR-CON-004; BDD-ALQ-001 ALQ-P01). */
+export type RequiredDocumentCode =
+  | 'DNI'
+  | 'PASAPORTE_O_CE'
+  | 'LICENCIA_CONDUCIR'
+  | ThirdRequiredDocument;
+
 export interface RequiredDocument {
-  code: ThirdRequiredDocument;
+  code: RequiredDocumentCode;
   label: string;
 }
 
-const REQUIRED_DOCUMENT_LABELS: Record<ThirdRequiredDocument, string> = {
+const REQUIRED_DOCUMENT_LABELS: Record<RequiredDocumentCode, string> = {
+  DNI: 'DNI',
+  PASAPORTE_O_CE: 'Pasaporte o carné de extranjería',
+  LICENCIA_CONDUCIR: 'Licencia de conducir',
   RECIBO_AGUA_O_LUZ: 'Recibo de agua o luz',
   CONSTANCIA_HOSPEDAJE: 'Constancia de hospedaje',
 };
@@ -36,6 +46,8 @@ const REQUIRED_DOCUMENT_LABELS: Record<ThirdRequiredDocument, string> = {
  */
 export function requiredDocumentsFor(nationality: InquiryNationality | null): RequiredDocument[] {
   if (!nationality) return [];
-  const code = thirdRequiredDocument(nationality);
-  return [{ code, label: REQUIRED_DOCUMENT_LABELS[code] }];
+  // 29-oct: se informan TODOS los documentos del tipo de cliente (no solo el tercero).
+  const identity: RequiredDocumentCode = nationality === 'PERUANO' ? 'DNI' : 'PASAPORTE_O_CE';
+  const codes: RequiredDocumentCode[] = [identity, 'LICENCIA_CONDUCIR', thirdRequiredDocument(nationality)];
+  return codes.map((code) => ({ code, label: REQUIRED_DOCUMENT_LABELS[code] }));
 }

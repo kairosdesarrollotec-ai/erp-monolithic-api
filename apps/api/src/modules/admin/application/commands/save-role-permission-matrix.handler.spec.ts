@@ -6,7 +6,7 @@ import { RolePermissionMatrixPort, RolePermissionEntry } from '../ports/role-per
 import { RoleRepositoryPort, RoleRecord } from '../ports/role-repository.port';
 import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit-event-repository.port';
 import { TransactionManagerPort } from '../../../../common/application/ports/transaction-manager.port';
-import { PERMISSION_ACTION_CATALOG } from '../../domain/permission-action-catalog';
+import { INCOMPATIBLE_ACTION_PAIRS, PERMISSION_ACTION_CATALOG } from '../../domain/permission-action-catalog';
 import { WORKER_ROLES, WorkerRole } from '../../../users/domain/worker-role';
 import { AdminMatrixAuthorizationService } from '../services/admin-matrix-authorization.service';
 import { AdministratorGuardService } from '../services/administrator-guard.service';
@@ -212,14 +212,33 @@ describe('SaveRolePermissionMatrixHandler', () => {
   });
 
   it('rechaza combinaciones incompatibles de segregacion de funciones (409 INCOMPATIBLE_PERMISSIONS)', async () => {
+    // El negocio no ha definido pares: se inyecta uno de prueba para cubrir el mecanismo.
+    INCOMPATIBLE_ACTION_PAIRS.push(['RESERVATION.REGISTER_PAYMENT', 'RESERVATION.CONFIRM']);
+    try {
+      const { handler, matrix } = buildDeps();
+      const conflicting = buildCompleteEntries([
+        { roleKey: 'FRONT_OFFICE', module: 'RESERVATION', action: 'REGISTER_PAYMENT', allowed: true },
+        { roleKey: 'FRONT_OFFICE', module: 'RESERVATION', action: 'CONFIRM', allowed: true },
+      ]);
+
+      await expect(handler.execute(command(conflicting))).rejects.toBeInstanceOf(ConflictException);
+      expect(matrix.saveNewVersion).not.toHaveBeenCalled();
+    } finally {
+      INCOMPATIBLE_ACTION_PAIRS.pop();
+    }
+  });
+
+  it('sin pares definidos por el negocio, registrar pago y confirmar a la vez (Administracion, Front Office, Gerencia) SI se guarda', async () => {
+    expect(INCOMPATIBLE_ACTION_PAIRS).toHaveLength(0);
     const { handler, matrix } = buildDeps();
-    const conflicting = buildCompleteEntries([
-      { roleKey: 'FRONT_OFFICE', module: 'RESERVATION', action: 'REGISTER_PAYMENT', allowed: true },
-      { roleKey: 'FRONT_OFFICE', module: 'RESERVATION', action: 'CONFIRM', allowed: true },
+    const overrides = (['ADMINISTRACION', 'FRONT_OFFICE', 'GERENCIA'] as const).flatMap((roleKey) => [
+      { roleKey, module: 'RESERVATION' as const, action: 'REGISTER_PAYMENT', allowed: true },
+      { roleKey, module: 'RESERVATION' as const, action: 'CONFIRM', allowed: true },
     ]);
 
-    await expect(handler.execute(command(conflicting))).rejects.toBeInstanceOf(ConflictException);
-    expect(matrix.saveNewVersion).not.toHaveBeenCalled();
+    await handler.execute(command(buildCompleteEntries(overrides)));
+
+    expect(matrix.saveNewVersion).toHaveBeenCalledTimes(1);
   });
 
   it('propaga 409 LAST_ADMINISTRATOR_ROLE del guard sin guardar ni auditar', async () => {

@@ -104,6 +104,13 @@ interface ReservationCancelledPayload {
   cancelledBy: string;
 }
 
+/** V-04: motivos de cancelacion de reserva en lenguaje de negocio (no el codigo interno). */
+const RESERVATION_CANCEL_REASON_LABELS: Record<string, string> = {
+  CUSTOMER_REQUESTED_CHANGE: 'cambio solicitado por el cliente',
+  NO_SHOW: 'el cliente no se presentó',
+  VEHICLE_SOLD_REFUND: 'vehículo vendido, con devolución',
+};
+
 const FALLBACK_TEMPLATES: Record<string, string> = {
   ReservationCreated: 'Reserva creada para el vehiculo {vehiculo}, del {fecha}.',
   ReservationConfirmed: 'Tu reserva fue confirmada.',
@@ -152,7 +159,7 @@ export function projectNotificationEvent(
     case 'ReservationCancelled': {
       const payload = event.payload as ReservationCancelledPayload;
       const body = templateBody ?? FALLBACK_TEMPLATES.ReservationCancelled;
-      const title = renderNotificationTemplate(body, { motivo: payload.reason });
+      const title = renderNotificationTemplate(body, { motivo: RESERVATION_CANCEL_REASON_LABELS[payload.reason] ?? payload.reason });
       return buildCreate(event, payload.organizationId, payload.operatingCompanyId, payload.branchId, payload.cancelledBy, title);
     }
 

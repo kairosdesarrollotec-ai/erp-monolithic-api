@@ -282,3 +282,21 @@ export class CandidateRequirementsIncompleteError extends DomainUnprocessableErr
   }
 }
 
+
+/** R-10 (Decisiones 29-oct #8): un candidato descartado es irreversible; no avanza, no se agenda ni se negocia. */
+export class CandidateDiscardedError extends DomainConflictError {
+  readonly code = 'CANDIDATE_DISCARDED';
+
+  constructor() {
+    super('El candidato fue descartado y el descarte es irreversible: no admite nuevas gestiones.');
+  }
+}
+
+/** Decisiones 29-oct (preguntas de negocio #4): no se agenda una entrevista con fecha pasada. */
+export class InterviewDateInPastError extends DomainUnprocessableError {
+  readonly code = 'INTERVIEW_DATE_IN_PAST';
+
+  constructor() {
+    super('La entrevista no puede agendarse en una fecha u hora pasada.');
+  }
+}

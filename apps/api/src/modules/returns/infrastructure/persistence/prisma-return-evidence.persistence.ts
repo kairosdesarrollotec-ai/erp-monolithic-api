@@ -1,3 +1,4 @@
+import { RETURN_ALCOHOL_TEST_EVIDENCE_ZONE } from '../../domain/return-evidence-requirements';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../common/persistence/prisma.service';
@@ -61,7 +62,10 @@ export class PrismaReturnEvidencePersistence {
   ): Promise<ReturnEvidenceCounts> {
     const client = tx ?? this.prisma;
     const [photos, videos] = await Promise.all([
-      client.returnEvidence.count({ where: { ...evidenceScopeWhere(returnId, scope), type: 'PHOTO' } }),
+      // BR-DEV-009 (decisión 28-oct #3): la foto del alcoholímetro es aparte, no cuenta dentro de las 35 de las zonas.
+      client.returnEvidence.count({
+        where: { ...evidenceScopeWhere(returnId, scope), type: 'PHOTO', zone: { not: RETURN_ALCOHOL_TEST_EVIDENCE_ZONE } },
+      }),
       client.returnEvidence.count({ where: { ...evidenceScopeWhere(returnId, scope), type: 'VIDEO' } }),
     ]);
     return { photos, videos };

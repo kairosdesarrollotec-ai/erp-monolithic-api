@@ -1,6 +1,7 @@
 import {
   calculateImmobilizationCharge,
   calculateFuelPenalty,
+  calculateFuelPenaltyByLines,
 } from './damage-calculator';
 import {
   getCosmeticDamageRate,
@@ -64,5 +65,22 @@ describe('Damage and Tariff calculations', () => {
       expect(calculateFuelPenalty('ONE_QUARTER')).toBe(150.0);
       expect(calculateFuelPenalty('EMPTY')).toBe(200.0);
     });
+  });
+});
+
+describe('calculateFuelPenaltyByLines (decisión 28-oct #1)', () => {
+  it('líneas faltantes entre entrega y devolución x precio por línea del vehículo', () => {
+    expect(calculateFuelPenaltyByLines(16, 12, 12.5)).toBe(50);
+    expect(calculateFuelPenaltyByLines(16, 0, 10)).toBe(160);
+  });
+  it('no hay multa si devuelve con igual o más combustible', () => {
+    expect(calculateFuelPenaltyByLines(8, 8, 10)).toBe(0);
+    expect(calculateFuelPenaltyByLines(8, 16, 10)).toBe(0);
+  });
+  it('devuelve null sin lecturas o sin precio por línea (se usa el cálculo anterior)', () => {
+    expect(calculateFuelPenaltyByLines(null, 8, 10)).toBeNull();
+    expect(calculateFuelPenaltyByLines(16, null, 10)).toBeNull();
+    expect(calculateFuelPenaltyByLines(16, 8, null)).toBeNull();
+    expect(calculateFuelPenaltyByLines(16, 8, 0)).toBeNull();
   });
 });

@@ -127,7 +127,7 @@ export function buildDeps(options: { role?: WorkerRole } = {}): IncidentTestDeps
     appendAction: jest.fn(),
   };
   const links: jest.Mocked<IncidentLinksPort> = {
-    findRental: jest.fn().mockResolvedValue({ id: 'rent-1' }),
+    findRental: jest.fn().mockResolvedValue({ id: 'rent-1', status: 'ACTIVE' }),
     findReturn: jest.fn().mockResolvedValue({ id: 'ret-1', rentalId: 'rent-1' }),
   };
   const transactionManager: jest.Mocked<TransactionManagerPort> = {

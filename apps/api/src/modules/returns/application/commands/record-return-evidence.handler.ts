@@ -8,6 +8,7 @@ import {
 } from '../../domain/return-errors';
 import { RETURN_EVIDENCE_ALLOWED_STATUSES } from '../../domain/return-evidence-requirements';
 import { RecordReturnEvidenceCommand } from './record-return-evidence.command';
+import { isLocalDevStorageEnabled, localDevStorageBaseUrl } from '../../../../common/storage/local-dev-storage';
 
 const GCS_URL_PREFIX = 'https://storage.googleapis.com/';
 
@@ -24,7 +25,8 @@ export class RecordReturnEvidenceHandler {
 
     // La URL debe ser un objeto de GCS emitido para ESTA devolución y empresa (aislamiento multiempresa).
     const ownedPath = `/companies/${command.companyId}/returns/${command.returnId}/`;
-    if (!command.objectUrl.startsWith(GCS_URL_PREFIX) || !command.objectUrl.includes(ownedPath)) {
+    const allowedPrefix = isLocalDevStorageEnabled() ? localDevStorageBaseUrl() : GCS_URL_PREFIX;
+    if (!command.objectUrl.startsWith(allowedPrefix) || !command.objectUrl.includes(ownedPath)) {
       throw new InvalidReturnEvidenceError(
         'objectUrl debe ser una URL de GCS válida emitida por upload-url para esta devolución.',
       );

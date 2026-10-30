@@ -138,4 +138,11 @@ describe('RecordExpectationDocumentHandler (REC-P13, BDD-05, BDD-00)', () => {
       ),
     ).rejects.toThrow(EmployeeNotFoundError);
   });
+
+  it.each(['', 'hola', 'javascript:alert(1)'])('R-6: URL invalida %p -> INVALID_URL y no guarda', async (url) => {
+    await expect(handler.execute(new RecordExpectationDocumentCommand('emp-1', 'user-1', url))).rejects.toMatchObject({
+      code: 'INVALID_URL',
+    });
+    expect(expectationRepo.upsert).not.toHaveBeenCalled();
+  });
 });

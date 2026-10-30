@@ -42,6 +42,34 @@ describe('RegisterReturnAlcoholTestHandler (DEV-04 / BR-DEV-005 / DR-DEV-003)', 
     return { deps, handler };
   }
 
+  it('H-02: DESFAVORABLE notifica a Gerencia en la campana y el tablero; FAVORABLE no notifica', async () => {
+    const recipients = { rolesWithAlertPermission: jest.fn().mockResolvedValue(['ADMINISTRACION']) };
+    const dashboardAlerts = { createDashboardItems: jest.fn().mockResolvedValue(2) };
+    const bell = { notifyRoles: jest.fn().mockResolvedValue(1) };
+    const { deps } = build();
+    const handler = new RegisterReturnAlcoholTestHandler(
+      deps.access,
+      deps.returns,
+      deps.transactionManager,
+      deps.auditRepository,
+      deps.outboxRepository,
+      recipients as never,
+      dashboardAlerts as never,
+      bell as never,
+    );
+    await handler.execute(new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'DESFAVORABLE'));
+    expect(bell.notifyRoles).toHaveBeenCalledWith(
+      expect.objectContaining({ notificationType: 'RETURN_ALCOHOL_ESCALATED', roles: expect.arrayContaining(['GERENCIA', 'ADMINISTRACION']) }),
+    );
+    expect(dashboardAlerts.createDashboardItems).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ role: 'GERENCIA', itemType: 'ALERT' })]),
+    );
+
+    bell.notifyRoles.mockClear();
+    await handler.execute(new RegisterReturnAlcoholTestCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 2, 'FAVORABLE'));
+    expect(bell.notifyRoles).not.toHaveBeenCalled();
+  });
+
   it('FAVORABLE pasa a INSPECCION y publica DevolucionAlcoholFavorable.v1', async () => {
     const { deps, handler } = build();
     const result = await handler.execute(

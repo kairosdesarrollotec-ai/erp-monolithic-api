@@ -11,7 +11,7 @@ import type { WorkerRole } from '../../../users/domain/worker-role';
 import { applyUpdate, buildDamage, buildDeps, buildReturnRecord, fakeTx } from '../../testing/return-test-fixtures';
 
 describe('AssessDamageHandler (DEV-06 / DEV-07 / BR-DEV-006)', () => {
-  function build(role: WorkerRole = 'GERENCIA', customerRisk: CustomerRiskStatus = 'NORMAL') {
+  function build(role: WorkerRole = 'GERENCIA', customerRisk: CustomerRiskStatus = 'NORMAL', alerts?: { dashboard: { createDashboardItems: jest.Mock }; bell: { notifyRoles: jest.Mock } }) {
     const deps = buildDeps({ role, customerRisk });
     const base = buildReturnRecord({ status: 'CON_DANOS', custodyHolder: 'VELOXRENT', version: 6 });
     deps.returns.findById.mockResolvedValue(base);
@@ -35,6 +35,8 @@ describe('AssessDamageHandler (DEV-06 / DEV-07 / BR-DEV-006)', () => {
       deps.transactionManager,
       deps.auditRepository,
       deps.outboxRepository,
+      alerts?.dashboard as never,
+      alerts?.bell as never,
     );
     return { deps, handler };
   }
@@ -116,7 +118,7 @@ describe('AssessDamageHandler (DEV-06 / DEV-07 / BR-DEV-006)', () => {
       const result = await handler.execute(technical('GRAVE'));
       expect(result.customerRiskStatus).toBe('ROJO');
       expect(deps.customerRisk.escalate).toHaveBeenCalledWith(
-        { customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target: 'ROJO' },
+        { customerId: 'cust-1', organizationId: 'org-1', operatingCompanyId: 'comp-1', target: 'ROJO', reason: expect.any(String) },
         fakeTx,
       );
       expect(deps.auditRepository.recordRentalEvent).toHaveBeenCalledWith(
@@ -193,5 +195,39 @@ describe('AssessDamageHandler (DEV-06 / DEV-07 / BR-DEV-006)', () => {
     });
 
     await expect(handler.execute(aesthetic())).rejects.toThrow(ForbiddenException);
+  });
+
+  describe('D-01 (29-oct): MODERADO + el cliente no acepta el costo -> Ámbar y escalamiento a Gerencia', () => {
+    const moderate = (accepts: boolean) =>
+      new AssessDamageCommand('ret-1', 'uid-1', 'comp-1', 'branch-1', 6, 'AESTHETIC', 'MODERADO', 'puerta_lateral_derecha', undefined, undefined, undefined, accepts);
+    const alerts = () => ({
+      dashboard: { createDashboardItems: jest.fn().mockResolvedValue(1) },
+      bell: { notifyRoles: jest.fn().mockResolvedValue(1) },
+    });
+
+    it('rechazo del costo: crea la alerta de tablero y la campana para GERENCIA', async () => {
+      const a = alerts();
+      const { handler } = build('GERENCIA', 'NORMAL', a);
+      await handler.execute(moderate(false));
+      expect(a.dashboard.createDashboardItems).toHaveBeenCalledWith([
+        expect.objectContaining({ role: 'GERENCIA', itemType: 'ALERT', sourceType: 'RETURN' }),
+      ]);
+      expect(a.bell.notifyRoles).toHaveBeenCalledWith(expect.objectContaining({ roles: ['GERENCIA'], isEscalated: true }));
+    });
+
+    it('si el cliente acepta el costo no se escala', async () => {
+      const a = alerts();
+      const { handler } = build('GERENCIA', 'NORMAL', a);
+      await handler.execute(moderate(true));
+      expect(a.dashboard.createDashboardItems).not.toHaveBeenCalled();
+      expect(a.bell.notifyRoles).not.toHaveBeenCalled();
+    });
+
+    it('un fallo del aviso no bloquea la evaluación del daño', async () => {
+      const a = alerts();
+      a.dashboard.createDashboardItems.mockRejectedValue(new Error('boom'));
+      const { handler } = build('GERENCIA', 'NORMAL', a);
+      await expect(handler.execute(moderate(false))).resolves.toEqual(expect.objectContaining({ damage: expect.anything() }));
+    });
   });
 });

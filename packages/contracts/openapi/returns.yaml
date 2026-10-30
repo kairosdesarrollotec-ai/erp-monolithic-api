@@ -1711,6 +1711,10 @@ components:
         customerPresent: { type: boolean }
         mileageAtReturn: { type: integer, nullable: true }
         fuelLevelAtReturn: { $ref: '#/components/schemas/ReturnFuelLevel', nullable: true }
+        vehicleFuelPenaltyPerLine:
+          type: number
+          nullable: true
+          description: Precio por línea de combustible fijado en Flota para el vehículo; null si aún no se definió.
         alcoholTestResult: { $ref: '#/components/schemas/AlcoholTestResult', nullable: true }
         alcoholTestNotes: { type: string, nullable: true }
         manualLateCharge:

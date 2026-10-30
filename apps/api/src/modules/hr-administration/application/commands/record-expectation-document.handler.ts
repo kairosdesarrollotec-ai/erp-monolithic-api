@@ -7,6 +7,7 @@ import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import { ExpectationDocumentRepositoryPort } from '../ports/expectation-document-repository.port';
 import { EmployeeNotFoundError } from '../../domain/hr-administration-errors';
 import { computeExpectationDeadlineDate } from '../../domain/expectation-document';
+import { assertHttpUrl } from '../../../../common/domain/http-url';
 import { RecordExpectationDocumentCommand } from './record-expectation-document.command';
 import type { ExpectationDocumentResponse } from '../../presentation/http/dto/hr-administration.response';
 
@@ -26,6 +27,9 @@ export class RecordExpectationDocumentHandler {
   ) {}
 
   async execute(command: RecordExpectationDocumentCommand): Promise<ExpectationDocumentResponse> {
+    // R-6: solo enlaces http/https (antes se guardaba "hola" o "javascript:...").
+    const fileUrl = assertHttpUrl(command.fileUrl);
+
     const found = await this.employees.findById(command.employeeId);
     if (!found) {
       throw new EmployeeNotFoundError(command.employeeId);
@@ -51,7 +55,7 @@ export class RecordExpectationDocumentHandler {
           employeeId: found.id,
           status: 'FIRMADO',
           deadlineDate,
-          fileUrl: command.fileUrl,
+          fileUrl,
           signedAt,
           registeredBy: found.candidateId ? 'RECLUTAMIENTO' : command.firebaseUid,
           signedRegisteredBy: command.firebaseUid,
@@ -70,7 +74,7 @@ export class RecordExpectationDocumentHandler {
           changes: {
             employeeId: found.id,
             status: 'FIRMADO',
-            fileUrl: command.fileUrl,
+            fileUrl,
             signedAt: signedAt.toISOString(),
             signedRegisteredBy: command.firebaseUid,
             notes: command.notes ?? null,
@@ -90,7 +94,7 @@ export class RecordExpectationDocumentHandler {
             organizationId: context.organizationId,
             operatingCompanyId: context.companyId,
             branchId: context.branchId,
-            fileUrl: command.fileUrl,
+            fileUrl,
             signedAt: signedAt.toISOString(),
             signedRegisteredBy: command.firebaseUid,
           },

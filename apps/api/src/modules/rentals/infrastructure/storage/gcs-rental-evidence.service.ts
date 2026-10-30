@@ -5,6 +5,7 @@ import {
   RentalEvidenceStoragePort,
 } from '../../application/ports/rental-evidence-storage.port';
 import { RentalEvidenceKind } from '../../application/ports/rental-evidence-repository.port';
+import { isLocalDevStorageEnabled, localDevUploadTarget } from '../../../../common/storage/local-dev-storage';
 
 const EXTENSION_BY_CONTENT_TYPE: Record<RentalEvidenceContentType, string> = {
   'image/jpeg': 'jpg',
@@ -54,7 +55,8 @@ export class GcsRentalEvidenceService implements RentalEvidenceStoragePort {
     zone: string;
     contentType: RentalEvidenceContentType;
   }): Promise<{ uploadUrl: string; objectUrl: string }> {
-    if (!this.storage || !this.bucketName) {
+    const localMode = (!this.storage || !this.bucketName) && isLocalDevStorageEnabled();
+    if (!localMode && (!this.storage || !this.bucketName)) {
       throw new ServiceUnavailableException(
         'GCS_BUCKET_NAME (o GCS_CLIENT_EMAIL / GCS_PRIVATE_KEY) no están configurados. Revisa las variables de entorno.',
       );
@@ -63,6 +65,14 @@ export class GcsRentalEvidenceService implements RentalEvidenceStoragePort {
     const ext = EXTENSION_BY_CONTENT_TYPE[params.contentType];
     const zoneSlug = params.zone.toLowerCase().replace(/[^a-z0-9-]+/g, '-');
     const objectKey = `rental-evidence/${params.companyId}/${params.rentalId}/${params.type.toLowerCase()}/${zoneSlug}/${crypto.randomUUID()}.${ext}`;
+
+    if (localMode) {
+      // Solo desarrollo (LOCAL_STORAGE_ENABLED=true): sin bucket de GCS.
+      return localDevUploadTarget(objectKey);
+    }
+    if (!this.storage || !this.bucketName) {
+      throw new ServiceUnavailableException('Almacenamiento no configurado.');
+    }
 
     const [uploadUrl] = await this.storage
       .bucket(this.bucketName)

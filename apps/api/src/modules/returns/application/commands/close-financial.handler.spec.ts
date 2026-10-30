@@ -18,7 +18,7 @@ import {
 import { ReturnRecord } from '../ports/return-repository.port';
 
 describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
-  function build(overrides: Partial<ReturnRecord> = {}, rentalDeposit = true) {
+  function build(overrides: Partial<ReturnRecord> = {}, rentalDeposit = true, readings?: { deliveryLines: number | null; returnLines: number | null }) {
     const deps = buildDeps({ role: 'FINANZAS' });
     const base = buildReturnRecord({ status: 'SIN_DANOS', custodyHolder: 'VELOXRENT', version: 9, fuelLevelAtReturn: 'FULL', ...overrides });
     deps.returns.findById.mockResolvedValue(base);
@@ -35,6 +35,7 @@ describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
       deps.auditRepository,
       deps.outboxRepository,
       deps.openIncidents,
+      { findLines: jest.fn().mockResolvedValue(readings ?? { deliveryLines: null, returnLines: null }) } as never,
     );
     return { deps, handler };
   }
@@ -83,6 +84,26 @@ describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
       }),
       fakeTx,
     );
+  });
+
+  it('garantía ya retenida (p. ej. falta grave de ampliación): cierra sin mover la garantía con devolución 0', async () => {
+    const { deps, handler } = build();
+    const rental = buildRentalRecord({ status: 'RETURN_IN_PROGRESS' });
+    deps.rentals.findById.mockResolvedValue({ ...rental, deposit: { ...rental.deposit!, status: 'RETAINED' } });
+
+    const result = await handler.execute(cmd(0, 500));
+
+    expect(result.status).toBe('CIERRE_FINANCIERO');
+    expect(deps.settlement.settleDeposit).not.toHaveBeenCalled();
+  });
+
+  it('garantía ya liquidada: pedir devolver dinero responde DEPOSIT_ALREADY_SETTLED (409)', async () => {
+    const { deps, handler } = build();
+    const rental = buildRentalRecord({ status: 'RETURN_IN_PROGRESS' });
+    deps.rentals.findById.mockResolvedValue({ ...rental, deposit: { ...rental.deposit!, status: 'RETAINED' } });
+
+    await expect(handler.execute(cmd(300, 200))).rejects.toMatchObject({ code: 'DEPOSIT_ALREADY_SETTLED' });
+    expect(deps.settlement.settleDeposit).not.toHaveBeenCalled();
   });
 
   it('INCIDENT_STILL_OPEN responde 422 (TDD §11.4), no 409', async () => {
@@ -273,6 +294,26 @@ describe('CloseFinancialHandler (DEV-08 / BR-DEV-001 / DR-DEV-001)', () => {
         }),
         fakeTx,
       );
+    });
+
+    it('decisión 28-oct #1: compara el RNC de entrega con el de devolución (líneas faltantes x precio por línea del vehículo)', async () => {
+      // Entrega 16 líneas, devolución 12 -> faltan 4; precio por línea S/ 12.50 -> multa S/ 50.00.
+      const { handler } = build(
+        { status: 'SIN_DANOS', fuelLevelAtReturn: 'FULL', vehicleFuelPenaltyPerLine: 12.5 },
+        true,
+        { deliveryLines: 16, returnLines: 12 },
+      );
+      await expect(handler.execute(cmd(500, 0))).rejects.toThrow('Lo retenido (0.00) no cubre la multa por combustible (50.00).');
+    });
+
+    it('decisión 28-oct #1: si devuelve con igual o más combustible que la entrega no hay multa', async () => {
+      const { handler } = build(
+        { status: 'SIN_DANOS', fuelLevelAtReturn: 'HALF', vehicleFuelPenaltyPerLine: 12.5 },
+        true,
+        { deliveryLines: 8, returnLines: 12 },
+      );
+      const result = await handler.execute(cmd(500, 0));
+      expect(result.status).toBe('CIERRE_FINANCIERO');
     });
 
     it('DEC-DEV-FUEL-PENALTY-001: combustible con ajuste manual previo -> usa el monto ajustado', async () => {

@@ -33,6 +33,7 @@ export function riskStatusesAtOrAbove(target: CustomerRiskStatus): CustomerRiskS
  * Objetivo del semáforo tras evaluar un daño (BR-DEV-007):
  *  - GRAVE -> ROJO siempre.
  *  - LEVE o MODERADO con `customerAcceptsCost === true` -> AMBAR.
+ *  - MODERADO con `customerAcceptsCost === false` -> AMBAR (escala a Gerencia, que decide).
  *  - Otro caso -> null (sin cambio).
  */
 export function resolveRiskTargetAfterDamage(
@@ -41,5 +42,7 @@ export function resolveRiskTargetAfterDamage(
 ): CustomerRiskStatus | null {
   if (severity === 'GRAVE') return 'ROJO';
   if (customerAcceptsCost === true) return 'AMBAR';
+  // Decisión de negocio 28-oct: MODERADO que el cliente no acepta -> AMBAR (observado) y Gerencia decide cómo queda.
+  if (severity === 'MODERADO' && customerAcceptsCost === false) return 'AMBAR';
   return null;
 }

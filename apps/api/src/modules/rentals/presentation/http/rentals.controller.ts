@@ -18,8 +18,6 @@ import {
   FirebaseAuthGuard,
 } from '../../../users/infrastructure/auth/firebase-auth.guard';
 import {
-  RecentAuth,
-  RecentAuthGuard,
 } from '../../../users/infrastructure/auth/recent-auth.guard';
 import { parseVersionIfMatch } from '../../../../common/http/etag';
 import { IdempotencyInterceptor } from '../../../../common/http/idempotency.interceptor';
@@ -278,6 +276,9 @@ export class RentalsController {
         parseVersionIfMatch(ifMatch),
         dto.result,
         dto.notes,
+        dto.reniecVerified === true,
+        dto.mtcVerified === true,
+        dto.reniecExceptionReason,
       ),
     );
     return toRentalResponse(updated);
@@ -409,8 +410,8 @@ export class RentalsController {
 
   @Post(':id/commands/formalize-contract')
   @HttpCode(200)
-  @UseGuards(RecentAuthGuard)
-  @RecentAuth(300)
+  // 29-oct (decision del usuario): formalizar contrato NO exige MFA reciente hasta que el negocio lo apruebe como
+  // operacion critica (SDD-TRANSVERSAL 15.5 / TR-03 solo citan ejemplos como liberar garantia).
   @UseInterceptors(IdempotencyInterceptor)
   async formalizeContractCommand(
     @Req() req: AuthenticatedRequest,

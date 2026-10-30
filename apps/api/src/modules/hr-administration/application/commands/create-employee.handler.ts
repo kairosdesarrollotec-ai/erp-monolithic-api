@@ -13,6 +13,7 @@ import {
 import { HrAreaResolverService } from '../services/hr-area-resolver.service';
 import { EmployeeAccountLinkService } from '../services/employee-account-link.service';
 import { normalizeEmail } from '../../domain/hr-administration-rules';
+import { assertValidIdentityDocument, assertValidPhone } from '../../../../common/domain/identity-document';
 import { CreateEmployeeCommand } from './create-employee.command';
 
 function isUniqueViolation(error: unknown): { target: string } | null {
@@ -37,6 +38,9 @@ export class CreateEmployeeHandler {
   ) {}
 
   async execute(command: CreateEmployeeCommand): Promise<Employee> {
+    assertValidIdentityDocument(command.documentType, command.documentNumber);
+    assertValidPhone(command.phone);
+
     const { context, scope } = await this.access.authorize(
       {
         firebaseUid: command.firebaseUid,

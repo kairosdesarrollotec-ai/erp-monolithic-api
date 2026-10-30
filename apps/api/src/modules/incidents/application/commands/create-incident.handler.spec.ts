@@ -1,7 +1,7 @@
 import { ForbiddenException } from '@nestjs/common';
 import { CreateIncidentHandler } from './create-incident.handler';
 import { CreateIncidentCommand } from './create-incident.command';
-import { IncidentInvalidTextError, IncidentRentalNotFoundError, IncidentReturnNotFoundError } from '../../domain/incident-errors';
+import { IncidentInvalidTextError, IncidentRentalNotDeliveredError, IncidentRentalNotFoundError, IncidentReturnNotFoundError } from '../../domain/incident-errors';
 import { buildDeps, buildIncident, FIXED_NOW, fakeTx } from '../../testing/incident-test-fixtures';
 import type { WorkerRole } from '../../../users/domain/worker-role';
 
@@ -101,6 +101,23 @@ describe('CreateIncidentHandler (INC-01 Registrar incidencia)', () => {
     expect(deps.incidents.create).not.toHaveBeenCalled();
     expect(deps.auditRepository.recordIncidentEvent).not.toHaveBeenCalled();
     expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+  });
+
+  it.each(['DRAFT', 'VALIDATION', 'NOTARY_EVALUATION', 'CONTRACTING', 'PENDING_DELIVERY', 'CANCELLED'])(
+    'A-06: alquiler %s (aun no entregado) -> 422 INCIDENT_RENTAL_NOT_DELIVERED y no escribe nada',
+    async (status) => {
+      const { deps, handler } = build();
+      deps.links.findRental.mockResolvedValue({ id: 'rent-1', status });
+      await expect(handler.execute(cmd())).rejects.toThrow(IncidentRentalNotDeliveredError);
+      expect(deps.incidents.create).not.toHaveBeenCalled();
+      expect(deps.outboxRepository.publish).not.toHaveBeenCalled();
+    },
+  );
+
+  it('A-06: alquiler ACTIVE o RETURN_IN_PROGRESS si admite incidencias', async () => {
+    const { deps, handler } = build();
+    deps.links.findRental.mockResolvedValue({ id: 'rent-1', status: 'RETURN_IN_PROGRESS' });
+    await expect(handler.execute(cmd())).resolves.toBeDefined();
   });
 
   it('devolucion inexistente o de otro alquiler -> 404 RETURN_NOT_FOUND', async () => {

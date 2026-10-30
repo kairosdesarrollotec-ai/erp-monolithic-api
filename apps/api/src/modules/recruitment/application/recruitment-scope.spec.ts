@@ -113,7 +113,7 @@ describe('Reclutamiento - ids de otra sede/empresa devuelven 404 (alcance)', () 
 
   it('ScheduleInterview', async () => {
     const s = setup();
-    const h = new ScheduleInterviewHandler(s.access, s.candidates, s.interviews, s.tm, s.audit);
+    const h = new ScheduleInterviewHandler(s.access, s.candidates, s.interviews, s.tm, s.audit, { now: () => new Date('2026-10-05T00:00:00Z') } as never);
     const p = h.execute(
       new ScheduleInterviewCommand(UID, OTHER_ID, COMPANY_ID, BRANCH_ID, new Date('2026-10-20T10:00:00Z'), true, 'int-1', 'https://meet', null),
     );

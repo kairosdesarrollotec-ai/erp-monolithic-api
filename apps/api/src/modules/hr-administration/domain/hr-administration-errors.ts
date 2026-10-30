@@ -587,3 +587,12 @@ export class BranchNotFoundError extends DomainNotFoundError {
     super(`No se encontró la sede ${branchId} en la empresa indicada.`);
   }
 }
+
+/** R-4/R-5 (Decisiones 29-oct #6): no se admiten fechas futuras ni anteriores al ingreso del colaborador. */
+export class AttendanceDateInvalidError extends DomainUnprocessableError {
+  readonly code = 'ATTENDANCE_DATE_INVALID';
+
+  constructor(detail: string) {
+    super(detail);
+  }
+}

@@ -95,6 +95,9 @@ export class CandidatesController {
     const detail = await this.getCandidateDetail.execute(
       new GetCandidateDetailQuery(req.firebaseUid!, id, query.companyId, query.branchId),
     );
+    // R-1: la version del candidato no cambia al agregar negociaciones/entrevistas; sin esto el navegador
+    // revalida con If-None-Match, recibe 304 y muestra el detalle viejo con negociations/interviews vacios.
+    res.setHeader('Cache-Control', 'no-store');
     res.setHeader('ETag', `"${detail.version}"`);
     return toCandidateDetailResponse(detail);
   }

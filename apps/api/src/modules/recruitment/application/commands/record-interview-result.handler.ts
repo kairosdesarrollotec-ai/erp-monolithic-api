@@ -15,7 +15,7 @@ import {
 } from '../../domain/recruitment-errors';
 import { CandidateProcessState, VacancyStatus } from '../../domain/recruitment-domain-types';
 import { advanceVacancyProgress, transitionCandidateProcess } from '../services/recruitment-progress';
-import { assertCandidateNotDecided } from '../../domain/recruitment-rules';
+import { assertCandidateNotDecided, assertCandidateNotDiscarded } from '../../domain/recruitment-rules';
 import { RecordInterviewResultCommand } from './record-interview-result.command';
 
 @Injectable()
@@ -57,6 +57,7 @@ export class RecordInterviewResultHandler {
       }
 
       assertCandidateNotDecided(candidate.decision);
+      assertCandidateNotDiscarded(candidate.processState);
 
       // DEC-REC-REQUIREMENTS-001 (Frente D): CV y pretensión salarial obligatorios antes del resultado de entrevista
       if (!candidate.hasCv && !candidate.cv) {
