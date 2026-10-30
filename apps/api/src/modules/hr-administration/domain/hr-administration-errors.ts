@@ -264,6 +264,14 @@ export class FieldTripLevelRoleMismatchError extends DomainForbiddenError {
   }
 }
 
+export class FieldTripSelfApprovalError extends DomainForbiddenError {
+  readonly code = 'FIELD_TRIP_SELF_APPROVAL_FORBIDDEN';
+
+  constructor() {
+    super('No puedes autorizar ni rechazar tu propia salida a campo: la resuelve Gerencia u otra persona con permiso.');
+  }
+}
+
 export class AttendanceAlreadyLoggedError extends DomainConflictError {
   readonly code = 'ATTENDANCE_ALREADY_LOGGED';
 
