@@ -16,6 +16,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "test:integration:api": "npm run test:integration --workspace apps/api",
     "seed:platform-admin": "ts-node --transpile-only --compiler-options '{\"rootDir\":\"../..\",\"types\":[\"node\"]}' -P apps/api/tsconfig.json scripts/seed-platform-admin.ts",
+    "cleanup:qa": "ts-node --transpile-only --compiler-options '{\"rootDir\":\"../..\",\"types\":[\"node\"]}' -P apps/api/tsconfig.json apps/api/prisma/cleanup-qa-data.ts",
     "seed:demo": "ts-node --transpile-only --compiler-options '{\"rootDir\":\"../..\",\"types\":[\"node\"]}' -P apps/api/tsconfig.json apps/api/prisma/seed-demo.ts",
     "audit:prod": "node scripts/audit-check.mjs",
     "audit:all": "node scripts/audit-check.mjs --include-dev"

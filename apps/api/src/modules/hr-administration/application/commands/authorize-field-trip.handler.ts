@@ -6,10 +6,12 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
 import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
+import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { UserDisplayNamePort } from '../ports/user-display-name.port';
 import {
   FieldTripLevelRoleMismatchError,
+  FieldTripSelfApprovalError,
   FieldTripNotFoundError,
 } from '../../domain/hr-administration-errors';
 import { validateAuthorizationLevel } from '../../domain/hr-administration-rules';
@@ -30,6 +32,7 @@ export class AuthorizeFieldTripHandler {
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly alerts: FieldTripAlertPublisher,
+    private readonly employees: EmployeeRepositoryPort,
   ) {}
 
   async execute(command: AuthorizeFieldTripCommand): Promise<FieldTripRequest> {
@@ -48,6 +51,12 @@ export class AuthorizeFieldTripHandler {
       },
       'AUTHORIZE_FIELD_TRIP',
     );
+
+    // El solicitante no resuelve su propia salida a campo: solo Gerencia u otro con permiso.
+    const actorEmployee = await this.employees.findByFirebaseUid(found.employee.operatingCompanyId, command.firebaseUid);
+    if (actorEmployee && actorEmployee.id === found.employee.id) {
+      throw new FieldTripSelfApprovalError();
+    }
 
     // DEC-ADP-FIELD-TRIP-001: Nivel 1 y 2 = Gerencia; Nivel 3 = Administracion (Cecilia) o Gerencia.
     if (command.authorizationLevel < 3 && context.roleKey === 'ADMINISTRACION') {

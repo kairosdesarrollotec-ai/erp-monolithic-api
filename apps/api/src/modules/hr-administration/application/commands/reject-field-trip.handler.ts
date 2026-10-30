@@ -6,9 +6,10 @@ import { AuditEventRepositoryPort } from '../../../audit/application/ports/audit
 import { HrAdministrationAccessService } from '../services/hr-administration-access.service';
 import { FieldTripCascadeService } from '../services/field-trip-cascade.service';
 import { FieldTripAlertPublisher } from '../services/field-trip-alert.publisher';
+import { EmployeeRepositoryPort } from '../ports/employee-repository.port';
 import { FieldTripRepositoryPort } from '../ports/field-trip-repository.port';
 import { UserDisplayNamePort } from '../ports/user-display-name.port';
-import { FieldTripNotFoundError } from '../../domain/hr-administration-errors';
+import { FieldTripNotFoundError, FieldTripSelfApprovalError } from '../../domain/hr-administration-errors';
 import { assertFieldTripRejectionReason } from '../../domain/hr-administration-rules';
 import { RejectFieldTripCommand } from './reject-field-trip.command';
 
@@ -27,6 +28,7 @@ export class RejectFieldTripHandler {
     private readonly clock: ClockPort,
     private readonly auditRepository: AuditEventRepositoryPort,
     private readonly alerts: FieldTripAlertPublisher,
+    private readonly employees: EmployeeRepositoryPort,
   ) {}
 
   async execute(command: RejectFieldTripCommand): Promise<FieldTripRequest> {
@@ -45,6 +47,12 @@ export class RejectFieldTripHandler {
       },
       'AUTHORIZE_FIELD_TRIP',
     );
+
+    // El solicitante no resuelve su propia salida a campo: solo Gerencia u otro con permiso.
+    const actorEmployee = await this.employees.findByFirebaseUid(found.employee.operatingCompanyId, command.firebaseUid);
+    if (actorEmployee && actorEmployee.id === found.employee.id) {
+      throw new FieldTripSelfApprovalError();
+    }
 
     const userName = await this.displayNames.findDisplayName(command.firebaseUid);
 

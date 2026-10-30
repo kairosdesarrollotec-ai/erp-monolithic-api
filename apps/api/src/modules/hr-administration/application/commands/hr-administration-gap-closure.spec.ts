@@ -6,6 +6,7 @@ import {
   AttendanceRecordNotFoundError,
   FieldTripNotPendingError,
   FieldTripRejectionReasonRequiredError,
+  FieldTripSelfApprovalError,
   InvalidAttendanceReclassificationError,
   InvalidLeaveEvidenceError,
   InvalidTrainingError,
@@ -179,7 +180,17 @@ describe('HrMemoService (BR-ADP-005 / ADP-P03)', () => {
 
 describe('RejectFieldTripHandler (ADP-07)', () => {
   const build = (s: ReturnType<typeof setup>) =>
-    new RejectFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts);
+    new RejectFieldTripHandler(s.access, s.fieldTrips, s.cascade, s.displayNames, s.tm, s.clock, s.audit, s.alerts, s.employees);
+
+  it('no deja que el solicitante rechace su propia salida a campo', async () => {
+    const s = setup('RRHH');
+    s.fieldTrips.findById.mockResolvedValue(fieldTrip());
+    s.employees.findByFirebaseUid.mockResolvedValue(buildEmployee({ id: 'emp-1', firebaseUid: UID }));
+    await expect(build(s).execute(new RejectFieldTripCommand(UID, 'ft-1', 'No corresponde'))).rejects.toBeInstanceOf(
+      FieldTripSelfApprovalError,
+    );
+    expect(s.fieldTrips.transition).not.toHaveBeenCalled();
+  });
 
   it('rechaza con motivo: NO_AUTORIZADA, nivel pendiente registrado y auditoría', async () => {
     const s = setup('RRHH');
