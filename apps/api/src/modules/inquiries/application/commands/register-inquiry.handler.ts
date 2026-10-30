@@ -3,7 +3,7 @@ import { InquiryRepositoryPort, InquiryRecord } from '../ports/inquiry-repositor
 import { WorkContextAuthorizationService } from '../../../users/application/services/work-context-authorization.service';
 import { MatrixAuthorizationService } from '../../../authorization/matrix-authorization.service';
 import { InquiryCustomerRedError, InvalidEstimatedDaysError } from '../../domain/inquiry-errors';
-import { assertValidIdentityDocument, assertValidPhone } from '../../../../common/domain/identity-document';
+import { assertValidIdentityDocument } from '../../../../common/domain/identity-document';
 import { RegisterInquiryCommand } from './register-inquiry.command';
 
 /**

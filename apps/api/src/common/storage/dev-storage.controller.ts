@@ -1,5 +1,4 @@
-import { Controller, Get, NotFoundException, Put, Req, Res, PayloadTooLargeException, BadRequestException } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
+import { Controller, Get, NotFoundException, Put, Req, Res, PayloadTooLargeException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -34,17 +33,24 @@ function resolveSafe(rawKey: string): string {
   return target;
 }
 
+function assertLoopbackRequest(req: Request): void {
+  const remoteAddress = req.socket.remoteAddress;
+  if (!remoteAddress || !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remoteAddress)) {
+    throw new ForbiddenException('El almacenamiento local solo acepta solicitudes desde loopback.');
+  }
+}
+
 /**
- * Equivalente local de la URL firmada de GCS (solo desarrollo, LOCAL_STORAGE_ENABLED=true).
- * Fuera de ese modo responde 404 como si la ruta no existiera.
+ * Equivalente local de la URL firmada de GCS. Solo acepta loopback en desarrollo;
+ * fuera de ese modo responde 404 como si la ruta no existiera.
  */
 @Public()
 @Controller('dev-storage')
-@SkipThrottle()
 export class DevStorageController {
   @Put('*path')
   async put(@Req() req: Request, @Res() res: Response): Promise<void> {
     if (!isLocalDevStorageEnabled()) throw new NotFoundException();
+    assertLoopbackRequest(req);
     const target = resolveSafe(keyOf(req));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     let received = 0;
@@ -70,6 +76,7 @@ export class DevStorageController {
   @Get('*path')
   get(@Req() req: Request, @Res() res: Response): void {
     if (!isLocalDevStorageEnabled()) throw new NotFoundException();
+    assertLoopbackRequest(req);
     const target = resolveSafe(keyOf(req));
     if (!fs.existsSync(target)) throw new NotFoundException();
     res.setHeader('Content-Type', CONTENT_TYPE_BY_EXT[path.extname(target).toLowerCase()]);
